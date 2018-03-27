@@ -703,7 +703,8 @@ CkModel <- function(model)
                          Logistic=25,
                          Weibull=26,
                          TwoPieceStudentT=27,
-                         Beta=28)
+                         Beta=28,
+                         TwoPieceGaussian=29,TwoPieceGauss=29)
     return(CkModel)
   }
 
@@ -937,7 +938,7 @@ NuisParam <- function(model,bivariate,num_betas)
       param <- c(mm, 'nugget', 'sill','shape1','shape2')
       return(param)}     
   # Skew Gaussian univariate random field:
-   if((model %in% c('SkewGaussian','SkewGauss'))  ){
+   if((model %in% c('SkewGaussian','SkewGauss','TwoPieceGaussian','TwoPieceGauss'))  ){
       param <- c(mm, 'nugget', 'sill','skew')
       return(param)}
   # Skew T univariate random field:
@@ -964,7 +965,7 @@ NuisParam <- function(model,bivariate,num_betas)
     return(param)} 
 
       # Skew Gaussian bivariate random field:
-     if(model %in% c('SkewGaussian','SkewGauss')){
+     if(model %in% c('SkewGaussian','SkewGauss','TwoPieceGaussian','TwoPieceGauss')){
       param <- c('mean_1', 'mean_2','skew_1','skew_2')
       return(param)}  
       }  
@@ -1102,17 +1103,17 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      {
       
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
-          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28)) {# Gaussian  or skewgauss or wrapped  gamma random field:
+          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29)) {# Gaussian  or skewgauss or wrapped  gamma random field:
            if(!bivariate) {mu <- mean(unlist(data))
                            if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
                            else fixed <- list(mean=mu)
                            nuisance <- c(mu, 0, var(c(unlist(data))))
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7) ) tapering <- 1
-                           if(model==10) nuisance <- c(nuisance,0)
-                           if(model==18||model==20||model==27) nuisance <- c(0,nuisance,0)
-                           if(model==21||model==24||model==12||model==26) nuisance <- c(0,nuisance)
-                           if(model==23||model==28) nuisance <- c(0,0,0,nuisance)
+                           if(model %in% c(10,29))         nuisance <- c(nuisance,0)
+                           if(model %in% c(18,20,27))      nuisance <- c(0,nuisance,0)
+                           if(model %in% c(21,24,12,26))   nuisance <- c(0,nuisance)
+                           if(model %in% c(23,28))  nuisance <- c(0,0,0,nuisance)
                        }
             else {
                            
@@ -1122,7 +1123,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(is.list(fixed)) {fixed$mean_1 <- mu1;fixed$mean_2<- mu2}
                            else fixed <- list(mean_1=mu1,mean_2=mu2)
                            nuisance <- c(mu1,mu2)
-                           if(model==10)  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model==10||model==29)  {nuisance <- c(nuisance,0.1,0.2)}
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }}
         if(model %in% c(11,14,15,16,19,17)){
@@ -1133,18 +1134,18 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             if(model==15) mu <- -1
             if(model==17) mu <- 1
             nuisance <- c(mu, 0, 1)
-            if(!is.null(start$nugget))
-                if(length(start)>1) start<-start[!names(start)%in%"nugget"]
-                else start<-NULL
-            if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
-            else fixed<-list(nugget=0)
+            #if(!is.null(start$nugget))
+            #    if(length(start)>1) start<-start[!names(start)%in%"nugget"]
+            #    else start<-NULL
+            #if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
+            #else fixed<-list(nugget=0)
             #set the nugget in case the sill is fixed
-            if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
+           # if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
         }
       }
  if(num_betas>1)
      {
-        if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28)) {
+        if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29)) {
         if(!bivariate) {
          if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
             if(is.list(fixed)) {
@@ -1154,10 +1155,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             else  fixed <- list(mean=mu)
             for(i in 1:num_betas) nuisance=c(nuisance,1);
             nuisance=c(nuisance,0,var(c(unlist(data))))
-            if(model==10)  nuisance=c(nuisance,1)  ## skew gaussian case
-            if(model==21||model==24||model==12||model==26)  nuisance=c(nuisance,1) 
-            if(model==20||model==18||model==27)  nuisance=c(1,nuisance,1) 
-            if(model==23||model==28)  nuisance=c(nuisance,1,1,1)  
+             if(model %in% c(10,29))        nuisance=c(nuisance,1)  
+             if(model %in% c(21,24,12,26))  nuisance=c(nuisance,1) 
+             if(model %in% c(18,20,27))     nuisance=c(1,nuisance,1) 
+            if(model %in% c(23,28))         nuisance=c(nuisance,1,1,1)  
              }
             # else{}
          }
@@ -1169,13 +1170,14 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
            # if(model==15) mu <- -1
            # if(model==17) mu <- 1
             nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
-            if(!is.null(start$nugget))
-                if(length(start)>1) start<-start[!names(start)%in%"nugget"]
-                else start<-NULL
-            if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
-            else fixed<-list(nugget=0)
+           
+           # if(!is.null(start$nugget))
+           #     if(length(start)>1) start<-start[!names(start)%in%"nugget"]
+           #     else start<-NULL
+            #if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
+            #else fixed<-list(nugget=0)
             #set the nugget in case the sill is fixed
-            if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
+           # if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
         }
      }
         # Update the parameter vector        
@@ -1212,11 +1214,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             namesstart <- names(start)
             if(any(type == c(1, 3, 7))){
                 if(!bivariate) {   # univariate case
-              if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28)))
+              if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29)))
                     if(any(namesstart == 'mean'))  start <- start[!namesstart == 'mean']
                     if(num_betas>1)
                     for(i in 1:(num_betas-1)) {  if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
-                            if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28)))
+                            if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29)))
                                                  start <- start[!namesstart == paste("mean",i,sep="")]
                                                  }}
 

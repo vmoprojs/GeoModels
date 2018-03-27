@@ -156,7 +156,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27))
                         vv=covmatrix$param['sill']
                         corri=((2*sk2/pi)*(sqrt(1-corr2) + cc$corri*asin(cc$corri)-1) + cc$corri*vv)/(vv+sk2*(1-2/pi));
                         }        
-        if(covmatrix$model==21)  # gamma.  ## ok nugget
+        if(covmatrix$model==21)  # gamma
                         corri=((1-covmatrix$param["nugget"])*cc$corri)^2
         if(covmatrix$model==12) # student T
                          {
@@ -164,7 +164,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27))
                         nu=1/covmatrix$param['df']
                         corri=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cc$corri^2)*cc$corri)/(2*gamma(nu/2)^2)
                       }
-        if(covmatrix$model==26) {  # weibull ## ok nugget
+        if(covmatrix$model==26) {  # weibull 
                         sh=covmatrix$param['shape']
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=(1-covmatrix$param["nugget"])*cc$corri

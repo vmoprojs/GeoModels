@@ -138,7 +138,12 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                 varcov[lower.tri(varcov,diag=TRUE)] <- corr
                 varcov <- t(varcov)
                 varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                if(model %in% c(2,11)) {
+                 pg=pnorm(mu)
+                 diag(varcov)=pg*(1-pg)*n}
+
                 }  
+
                  ## covariance matrix  min(n)=k for the type 2
             #   if(bivariate)      {
             #    varcov<-diag(dime)
@@ -170,7 +175,10 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                 varcov <-  diag(dime) 
                 varcov[lower.tri(varcov,diag=TRUE)] <- corr
                 varcov <- t(varcov)
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr } ## cov matrix
+                varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                pg=pnorm(mu)
+                diag(varcov)=(1-pg)/pg^2
+                } ## cov matrix
                 ##pp=pnorm(X%*%mm) # pr of success
                 ##varcov=varcov*((1-pp)/pp^2) ## covariance matrix
             #   if(bivariate)      {
@@ -199,7 +207,10 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                 varcov <-  diag(dime) 
                 varcov[lower.tri(varcov,diag=TRUE)] <- corr
                 varcov <- t(varcov)
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr }  
+                varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                pg=pnorm(mu)
+                diag(varcov)=n*(1-pg)/pg^2
+              }  
                  ## covariance matrix  min(n)=k for the type 2
             #   if(bivariate)      {
             #    varcov<-diag(dime)

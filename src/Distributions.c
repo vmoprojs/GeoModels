@@ -157,14 +157,12 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
     double a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);
     double gam = gammafn(shape/2);
     if(corr)   {
-        //printf("A:--sh2:%f\tsh:%f\tgf:%f\n\n",shape/2,shape,gammafn(shape/2));
-        a=1-R_pow(corr,2);  //1-R_pow(sill*corr,2);
+        a=1-R_pow(corr,2);  
         z=shape*sqrt(zi*zj*corr*corr)/(sqrt(ci*cj)*a);
         A=R_pow(zi*zj,shape/2-1) * exp(-shape*((zi/ci)+(zj/cj))/(2*a));
         C=R_pow(z/2,1-shape/2);
-        //printf("z0: %f alpha: %.3f C: %.3f\n",z,shape/2-1,C);
         B=gam*R_pow(a,shape/2)*R_pow(2,shape)*R_pow(shape,-shape)*R_pow(ci*cj,shape/2);  
-        D=bessel_i(z,shape/2-1,1);//bessel_i(z,shape/2-1,1)
+        D=bessel_i(z,shape/2-1,1);
         res=A*C*D/B;
     }
     else
@@ -815,7 +813,7 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
   double lim_inf[2]={0,0};//lower bound for the integration
   double lim_sup[2]={mean1,mean2};
   int infin[2]={0,0};//set the bounds for the integration
-  double corr[1]={var*CorFct(cormod,h,u,par,0,0)};
+  double corr[1]={(1-nugget)*CorFct(cormod,h,u,par,0,0)};
   res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
   return(res);
 }
@@ -1594,8 +1592,6 @@ return(pp1*app/pp2);
 }
 
 
-
-/*********** bivariate two piece-T distribution********************/ 
 /*********** bivariate two piece-T distribution********************/ 
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,
              double p11,double mui,double muj)
@@ -1622,4 +1618,34 @@ return(4*res/sill);
 
 
         
+double biv_half_Gauss(double rho,double zi,double zj)
+{
+double kk=0, dens=0,a=0,b=0,rho2=rho*rho;
+  kk=(M_PI)*sqrt(1-rho2);
+  a=exp(- (1/(2*(1-rho2)))*(R_pow(zi,2)+R_pow(zj,2)-2*rho*zi*zj));
+  b=exp(- (1/(2*(1-rho2)))*(R_pow(zi,2)+R_pow(zj,2)+2*rho*zi*zj));
+  dens=(a+b)/kk;
+  return(dens);
+}
+
+
+
+double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,
+             double p11,double mui,double muj)
+{
+double res;  
+double etamas=1+eta;
+double etamos=1-eta;
+double zistd=(zi-mui)/sqrt(sill);
+double zjstd=(zj-muj)/sqrt(sill);
+if(zi>=mui&&zj>=muj)
+{res=          (p11/R_pow(etamos,2))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamos);}
+if(zi>=mui&&zj<muj)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamas);}
+if(zi<mui&&zj>=muj)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
+if(zi<mui&&zj<muj)
+{res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
+return(4*res/sill);
+}
 

@@ -3167,7 +3167,7 @@ double pbnorm(int cormod, double h, double u, double mean1, double mean2, double
     //double lim_inf[2]={0,0};//lower bound for the integration
     double lim_sup[2]={mean1,mean2};
     //int infin[2]={0,0};//set the bounds for the integration
-    double corr[1]={var*CorFct(cormod,h,u,par0,par1,par2,par3,0,0)};
+    double corr[1]={(1-nugget)*CorFct(cormod,h,u,par0,par1,par2,par3,0,0)};
     //res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
     res = Phi2(lim_sup[0],lim_sup[1],corr[0]);
     return(res);
@@ -3450,7 +3450,7 @@ double appellF4_mod(double nu,double rho2,double x,double y)
 
 
 
-/*********** bivariate two piece-T distribution********************/
+
 /*********** bivariate two piece-T distribution********************/
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,
                       double p11,double mui,double muj)
@@ -3473,6 +3473,36 @@ double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,doub
     return(4*res/sill);
 }
 
+// Start: biv_two_pieceGaussian:
+double biv_half_Gauss(double rho,double zi,double zj)
+{
+    double kk=0, dens=0,a=0,b=0,rho2=rho*rho;
+    kk=(M_PI)*sqrt(1-rho2);
+    a=exp(- (1/(2*(1-rho2)))*(pow(zi,2)+pow(zj,2)-2*rho*zi*zj));
+    b=exp(- (1/(2*(1-rho2)))*(pow(zi,2)+pow(zj,2)+2*rho*zi*zj));
+    dens=(a+b)/kk;
+    return(dens);
+}
+
+double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,
+                             double p11,double mui,double muj)
+{
+    double res;
+    double etamas=1+eta;
+    double etamos=1-eta;
+    double zistd=(zi-mui)/sqrt(sill);
+    double zjstd=(zj-muj)/sqrt(sill);
+    if(zi>=mui&&zj>=muj)
+    {res=          (p11/pow(etamos,2))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamos);}
+    if(zi>=mui&&zj<muj)
+    {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamas);}
+    if(zi<mui&&zj>=muj)
+    {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
+    if(zi<mui&&zj<muj)
+    {res=    ((p11+eta)/pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
+    return(4*res/sill);
+}
+// End: biv_two_pieceGaussian:
 
 double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari, double nugget)
 {
@@ -4480,7 +4510,71 @@ __kernel void Comp_Pair_TWOPIECET2_OCL(__global const double *coordx,__global co
     
 }
 
-
+__kernel void Comp_Pair_TWOPIECEGauss2_OCL(__global const double *coordx,__global const double *coordy,__global const double *mean, __global const double *data, __global double *res,__global const int *int_par,__global const double *dou_par)
+{
+    
+    int j, gid = get_global_id(0);
+    
+    double lags,weights=1.0, sum=0.0;
+    double zi, zj, bl,corr,p11,qq;
+    
+    double maxdist = dou_par[6];
+    double nuis0 = dou_par[4];
+    double nuis1 = dou_par[5];
+    double nuis2 = dou_par[9];
+    double nuis3 = dou_par[10];
+    double par0 = dou_par[0];
+    double par1 = dou_par[1];
+    double par2 = dou_par[2];
+    double par3 = dou_par[3];
+    double REARTH = dou_par[8];
+    
+    
+    int cormod      = int_par[0];
+    int ncoord      = int_par[1];
+    int weigthed    = int_par[2];
+    int type        = int_par[3];
+    
+    
+    
+    qq=qnorm55((1-nuis2)/2,0,1,1,0);
+    for (j = 0; j < ncoord; j++) {
+        if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
+        {
+            
+            lags = dist(type,coordx[j],coordx[gid+j],coordy[j],coordy[gid+j],REARTH);
+            //lags=0.5;
+            //printf("lags:%f \n",lags);
+            if(lags<=maxdist){
+                
+                zi=data[j];
+                zj=data[gid+j];
+                //printf("zi:%f zj:%f \n",zi,zj);
+                
+                if(!isnan(zi)&&!isnan(zj) )
+                {
+                    //corr=CorFct(cormod,lags,0,par,0,0);
+                    corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
+                    p11=pbnorm(cormod,lags,0,qq,qq,0,1,par0,par1,par2,par3,0);
+                    if(weigthed) {weights=CorFunBohman(lags,maxdist);}
+                    bl=biv_two_pieceGaussian(corr,zi,zj,nuis1,nuis2,p11,mean[j],mean[gid+j]);
+                    //printf("corr:%f bl:%f\n",corr,bl);
+                    sum+= weights*log(bl);
+                    //printf("corr:%f bl:%f sum:%f\n",corr,bl,sum);
+                    
+                }
+                
+            }
+            
+        }
+        
+        else
+            continue;
+    }
+    
+    res[gid] = sum;
+    
+}
 
 /******************************************************************************************/
 /********************* SPACE TIME CASE ***************************************************/
@@ -6259,3 +6353,103 @@ __kernel void Comp_Pair_TWOPIECET_st2_OCL(__global const double *coordt,__global
 
 
 
+
+
+__kernel void Comp_Pair_TWOPIECEGauss_st2_OCL(__global const double *coordt,__global const double *coordx,__global const double *coordy,__global const double *data,__global const double *mean,  __global double *res,__global const int *int_par,__global const double *dou_par,__global const int *ns,__global const int *NS)
+{
+    double maxdist = dou_par[6];
+    double maxtime	=	dou_par[11];
+    double nuis0 = dou_par[4];
+    double nuis1 = dou_par[5];
+    double nuis2 = dou_par[9];
+    double nuis3 = dou_par[10];
+    double par0 = dou_par[0];
+    double par1 = dou_par[1];
+    double par2 = dou_par[2];
+    double par3 = dou_par[3];
+    double REARTH = dou_par[8];
+    double par4 = dou_par[12];
+    double par5 = dou_par[13];
+    double par6 = dou_par[14];
+    
+    int cormod      = int_par[0];
+    int ncoord      = int_par[1];
+    int ntime      = int_par[5];
+    int weigthed    = int_par[2];
+    int type        = int_par[3];
+    
+    int l = get_global_id(0);
+    int t = get_global_id(1);
+    
+    
+    int m=0,v =0;
+    double corr=0.0,zi=0.0,zj=0.0,lags=0.0,lagt=0.0,weights=1.0, sum=0.0,bl=0.0,qq,p11;
+    
+    int m1 = get_local_id(0);
+    int v1 = get_local_id(1);
+    
+    int lsize_m = get_local_size(0);
+    int lsize_v = get_local_size(1);
+    
+    int wx = (l-m1)/lsize_m;
+    int wy = (t-v1)/lsize_v;
+    
+    int gidx = (wx*lsize_m+m1);
+    int gidy = (wy*lsize_v+v1);
+    
+    int i = (ncoord*gidy+gidx);
+    
+    bool isValid = true;
+    
+    if(l >= ns[t]) isValid = false;
+    
+    if(t >= ntime) isValid = false;
+    
+    
+    if(isValid)
+        
+    {
+        qq=qnorm55((1-nuis2)/2,0,1,1,0);
+        for(v = t;v<ntime;v++){
+            if(t==v){
+                for(m=l+1;m<ns[t];m++){
+                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    if(lags<=maxdist){
+                        zi=data[(l+NS[t])];
+                        zj=data[(m+NS[v])];
+                        //printf("a:%f b:%f i:%d j:%d\n",data[(l+NS[t])],data[(m+NS[v])],(l+NS[t]),(m+NS[v]));
+                        if(!isnan(zi)&&!isnan(zj) ){
+                            corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
+                            if(weigthed) {weights=CorFunBohman(lags,maxdist);}
+                            //printf("a:%f b:%f\n",(mean[(l+NS[t])]),(mean[(m+NS[v])]));
+                            
+                            //p11=pbnorm_st(cormod,lags,0,qq,qq,nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
+                            p11=pbnorm(cormod,lags,0,qq,qq,0,1,par0,par1,par2,par3,0);
+                            bl=biv_two_pieceGaussian(corr,zi,zj,nuis1,nuis2,p11,mean[(l+NS[t])],mean[(m+NS[v])]);
+                            
+                            
+                            sum+= weights*log(bl);
+                        }}}}
+            else{
+                lagt=fabs(coordt[t]-coordt[v]);
+                for(m=0;m<ns[v];m++){
+                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    if(lagt<=maxtime && lags<=maxdist)
+                    {
+                        zi=data[(l+NS[t])];
+                        zj=data[(m+NS[v])];
+                        if(!isnan(zi)&&!isnan(zj) ){
+                            corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
+                            if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
+                            
+                            //p11=pbnorm_st(cormod,lags,0,qq,qq,nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
+                            p11=pbnorm(cormod,lags,0,qq,qq,0,1,par0,par1,par2,par3,0);
+                            bl=biv_two_pieceGaussian(corr,zi,zj,nuis1,nuis2,p11,mean[(l+NS[t])],mean[(m+NS[v])]);
+                            
+                            sum+= weights*log(bl);
+                        }
+                    }}}
+        }
+        res[i] = sum;
+    }
+}

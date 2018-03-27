@@ -25,39 +25,8 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 {
     call <- match.call()
 
-    CMdl<-CkCorrModel(corrmodel)
-    Stime <- CheckST(CMdl)
-    # print(Stime)
-    # if(Stime && is.null(coordx_dyn) && varest && likelihood=='Marginal')
-    # {
-    #   if(is.null(coordy)){coordy <- coordx[,2]
-    #   coordx <- coordx[,1]}
-    #   coordx_dyn=list()
-    #   datatemp=list()
-    #   for(k in 1:length(coordt))
-    #   {
-    #     coordx_dyn[[k]]=cbind(coordx,coordy)
-    #     datatemp[[k]]=data[k,]
-    #   }
-    #   data <- datatemp
-    #   rm(datatemp)
-    # }
-    
-    # if(Stime && is.null(coordx_dyn) && !is.null(GPU))
-    # {
-    #   if(is.null(coordy)){coordy <- coordx[,2]
-    #   coordx <- coordx[,1]}
-    #   coordx_dyn=list()
-    #   datatemp=list()
-    #   for(k in 1:length(coordt))
-    #   {
-    #     coordx_dyn[[k]]=cbind(coordx,coordy)
-    #     datatemp[[k]]=data[k,]
-    #   }
-    #   data <- datatemp
-    #   rm(datatemp)
-    # }
-    
+    #CMdl<-CkCorrModel(corrmodel)
+    #Stime <- CheckST(CMdl)  
     
     ### Check the parameters given in input:
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
@@ -120,7 +89,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    initparam$X)
-
+   
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)
     if(initparam$bivariate) numtime=2
@@ -191,6 +160,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'SkewGaussian';model <- 'SkewGaussian'}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
   if(x$model=='TwoPieceStudentT'){ process <- 'TwoPieceStudentT';model <- 'TwoPieceStudentT'}
+  if(x$model=='TwoPieceGaussian'||x$model=='TwoPieceGauss'){ process <- 'TwoPieceGaussian';model <- 'TwoPieceGaussian'}
   if(x$model=='SinhAsinh'){ process <- 'SinhAsinh'; model <- 'SinhAsinh'}    
   if(x$model=='Wrapped'){ process <- 'Wrapped'; model <- 'Wrapped'}
     if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}

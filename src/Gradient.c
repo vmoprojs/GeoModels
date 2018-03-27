@@ -168,7 +168,10 @@ for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
    i++; 
  }}
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+  if(flag[nbetas]==1) { delta=sqrt(EPS)*(nugget);
+    p11_dsill=pbnorm(cormod,lag,lagt,ai,aj,nugget+delta,sill,par,0);
+     grad[i]=(log(biv_binomneg(N,uu,vv,p1,p2,p11_dsill)) - log(biv_binomneg(N,uu,vv,p1,p2,p11)))/delta;
+    i++; }
   // Derivvativve of the difference respect with the sill
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*(sill);
@@ -229,7 +232,11 @@ for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*(betas[o]);
    i++; 
  }}
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+   if(flag[nbetas]==1) { delta=sqrt(EPS)*(nugget);
+    p11_dsill=pbnorm(cormod,lag,lagt,ai,aj,nugget+delta,sill,par,0);
+     grad[i]=(log(biv_binomneg(N,uu,vv,p1,p2,p11_dsill)) - log(biv_binomneg(N,uu,vv,p1,p2,p11)))/delta;
+    i++; }
+
   // Derivvativve of the difference respect with the sill
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
@@ -237,8 +244,6 @@ for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*(betas[o]);
      grad[i]=(log(biv_binom(N,uu,vv,p1,p2,p11_dsill)) - log(biv_binom(N,uu,vv,p1,p2,p11)))/delta;
     i++; }
   /* Derivvativves with respect to the correlation parameters*/
-
-
                     h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 

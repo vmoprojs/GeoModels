@@ -111,6 +111,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==27,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECET'
                                               if(varest & vartype==2) hessian <- TRUE} 
+     if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE} 
      if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
                                               if(varest & vartype==2) hessian <- TRUE}   
      if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
@@ -242,8 +244,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
           CompLikelihood$claic <- NULL;CompLikelihood$clbic <- NULL;
           CompLikelihood$convergence <- NULL
     }
-   if(model==2||model==11||model==14||model==15||model==16||model==17) 
-          fixed["nugget"] <- 1-CompLikelihood$par["sill"]
+  ## if(model==2||model==11||model==14||model==15||model==16||model==17) 
+    ##      CompLikelihood$fixed["nugget"] <- 1-CompLikelihood$par["sill"]
         ### Computation of the variance-covariance matrix:
    
         if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15) 

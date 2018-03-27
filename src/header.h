@@ -542,6 +542,11 @@ void Comp_Pair_TWOPIECET2(int *cormod, double *coordx, double *coordy, double *c
 void Comp_Pair_TWOPIECET_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
                         int *ns,int *NS, int *GPU,int *local);
+void Comp_Pair_TWOPIECEGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
+void Comp_Pair_TWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
+                        int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_LogLogistic_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
@@ -927,6 +932,10 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,double p11,
   double mui,double muj);
 /**********************************************/
+double biv_half_Gauss(double rho,double zi,double zj);
+double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,double p11,
+  double mui,double muj);
+
 
 
 double stirling(double x);
@@ -993,6 +1002,13 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
+
+
+
+
+
+
 
 
 

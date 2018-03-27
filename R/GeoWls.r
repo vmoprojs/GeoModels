@@ -165,11 +165,13 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     if(is.null(fixed)) fixed <- NA else fixed <- unlist(fixed)
     ### Checks if all the starting values have been passed by the user:
     if(initparam$numstart==initparam$numparam) {
-        if((model=='Gaussian' ||model=='Gauss' || model=='Chisq' || model=='LogLogistic'||model=='Logistic' ||
-           model=='Gamma' ||model=='Gamma2' ||model=='LogGaussian'|| model=='LogGauss'||model=='Weibull'||
-          model=='SkewGaussian'|| model=='SkewGauss'||model=='SinhAsinh'||model=='StudentT'||model=="TwoPieceStudentT"||
-          model=='Wrapped' ) & (type %in% c('Standard','Pairwise','Tapering'))){
 
+
+
+        if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','LogGaussian','LogGauss',
+          'Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT',"TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss")) & 
+          (type %in% c('Standard','Pairwise','Tapering')))
+        {
 ##########################################################        
         if(!initparam$bivariate){  ###spatial or temporal univariate case
           if(is.na(fixed["mean"])){
