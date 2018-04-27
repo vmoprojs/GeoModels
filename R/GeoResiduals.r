@@ -32,7 +32,7 @@ dd=c(t(fit$data))
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(mu)  
 
-if(model %in% c("Gaussian","SkewGaussian","StudentT"))
+if(model %in% c("Gaussian","SkewGaussian","StudentT","TwoPieceGaussian=","TwoPieceGauss"))
 res1=dd-mu  
 
 #if(binomial or binomialneg or geom or bernoulli)

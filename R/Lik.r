@@ -259,7 +259,6 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         invarcov <- MatInv(decompvarcov,method)
         #llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
         llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
-    
         return(llik)
     }
     ######### Standard log-likelihood function for multivariate bivariate normal density with sparse alg matrices
@@ -371,7 +370,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         # Standardizes the data:
-        stdata <- data-rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat*0.5)
+        stdata <- data-c(rep(nuisance['mean_1'],dimat/2),rep(nuisance['mean_2'],dimat/2))  
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
         # if(corr[1]==-2||is.nan(corr[1])) return(loglik)

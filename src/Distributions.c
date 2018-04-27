@@ -123,6 +123,23 @@ return(gammafn(k+a)/gammafn(a));
 
 
 
+
+double  biv_Weibull2(double rho11,double rho22,double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2)
+
+{
+double a1=0.0,a2=0.0,a=0.0,b=0.0,c=0.0,dens=.0,k=.0,mui=.0,muj=.0;
+a1=gammafn(1+1/shape1);
+a2=gammafn(1+1/shape2);
+mui=exp(mi);muj=exp(mj);
+k=rho11*rho22-rho12*rho12;
+a=(shape1*shape2*R_pow(a1,shape1)*R_pow(a2,shape2)*R_pow(zi,shape1-1)*R_pow(zj,shape2-1))/(R_pow(mui,shape1)*R_pow(muj,shape2)*k);
+b=exp(-(rho11*R_pow(a1*zi/mui,shape1) + rho22*R_pow(a2*zj/muj,shape2))/k);
+c=bessel_i(2*rho12*R_pow(a1*zi/mui,shape1/2)*R_pow(a2*zj/muj,shape2/2)/k,0,1);
+dens=a*b*c;
+//Rprintf("%f %f %f %f %f %f\n",a,b,c,k,rho11*rho11,rho12*rho12);
+return(dens);
+}
+
 /*********************************/
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
 {
@@ -1542,9 +1559,9 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
 /// indipendent t distributions
  if(fabs(rho)<=EPS1)
   {
-    C = gammafn(cc)*R_pow((1+x*x/nu),-cc)/(sqrt(M_PI*nu)*gammafn(nu/2));
-    B = gammafn(cc)*R_pow((1+y*y/nu),-cc)/(sqrt(M_PI*nu)*gammafn(nu/2));
-    return(B*C);
+    C = lgammafn(cc)+log(R_pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+    B = lgammafn(cc)+log(R_pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+    return(exp(B)*exp(C));
   }
     /*##################################################*/
   for (k=0;k<=5000;k=k+1)
@@ -1556,7 +1573,7 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
     bb2=log(pp2)+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
     RR=(b1/c1)*a1+(b2/c2)*a2;
-    if(fabs(RR-res0)<=1e-50) {break;}
+    if(fabs(RR-res0)<=1e-40) {break;}
     else {res0=RR;}
   }
 return(RR/sill);
@@ -1572,7 +1589,7 @@ double RR=0.0,bb=0.0,res0=0.0;int k=0;
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
                +log(hypergeo(a+k,b+k,c,x));
     RR=RR+exp(bb);
- if(fabs(RR-res0)<=1e-50) {break;}
+ if(fabs(RR-res0)<=1e-40) {break;}
     else {res0=RR;}
 }
 return(RR);

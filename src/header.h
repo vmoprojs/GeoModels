@@ -88,6 +88,8 @@ double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
+double  biv_Weibull2(double rho11,double rho22,double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2);
+
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
@@ -161,189 +163,100 @@ double marg_p(double categ_0,double psm,int *model,int n);
 double CheckCor(int *cormod, double *par);
 
 void Comp_supp(double *c_supp,int *cormod, double h,double u, double *par);
-
 double CorFct(int *cormod, double h, double u, double *par, int c11, int c22);
-
 double CorFunCauchy(double lag, double power2, double scale);
-
 double CorFunDagum(double lag, double power1, double power2, double scale);
-
 double CorFunGenCauchy(double lag, double power1, double power2, double scale);
-
+double CorFunGenCauchy2(double lag, double power1, double power2, double scale);
 double CorFunWitMatCau(double h, double scale12,double smo12);
-
+double Shkarofski(double lag, double a,double b, double k);
 double CorFunGenWitMatCau(double h, double scale,  double smoo,double beta);
-
 double CorFunSferical(double lag, double scale);
-
 double CorFunStable(double lag, double power, double scale);
-
 double CorFunWave(double lag, double scale);
-
 double CorFunWitMat(double lag, double scale, double smooth);
-
 double CorFunWitMat1(double lag, double scale, double smooth);
-
 double CorFunBohman(double lag,double scale);
-
 double CorFunW0(double h,double scale,double power);
-
 double CorFunW1(double h,double scale,double power);
-
 double CorFunW2(double h,double scale,double power);
-
 double CorFunW_gen(double h, double power1, double smooth, double scale);
-
 double CorFunWend1(double lag,double scale);
-
 double CorFunWend2(double lag,double scale);
-
 double CorFunWend3(double lag,double scale);
-
 double CorFunWend4(double lag,double scale);
-
 double CorFunWend5(double lag,double scale);
-
 double CorFunWendhole3(double lag,double scale);
-
 double CorFunWendhole2(double lag,double scale);
-
 double CorFunWendhole1(double lag,double scale);
-
 double CorFunWendhole(double lag,double scale);
-
 double CorFunWend0_tap(double lag,double scale,double smoo);
-
 double CorFunWend1_tap(double lag,double scale,double smoo);
-
 double CorFunWend2_tap(double lag,double scale,double smoo);
 
-
+/****** derivative **************/
 double DCauchyPow(double power2, double scale, double rho);
-
 double DCauchySc(double lag, double power2, double scale, double rho);
-
 double DExpoSc(double lag, double scale, double rho);
-
 double DGaussSc(double lag, double scale, double rho);
-
 double DGenCauP1(double lag, double power1, double power2, double scale, double rho);
-
 double DGenCauP2(double lag, double power1, double scale, double rho);
-
 double DGenCauSc(double lag, double power1, double power2, double scale, double rho);
-
 double DSferiSc(double lag, double scale);
-
 double DStabPow(double lag, double power, double scale, double rho);
-
 double DStabSc(double lag, double power, double scale, double rho);
-
 double DWaveSc(double lag, double scale);
-
 double DWhMatSc(double eps, double lag, double scale, double smooth);
-
 double DWhMatSm(double eps, double lag, double scale, double smooth);
-
 double Dwen1Sc(double lag, double scale);
-
 double DWen1Sc(double lag, double scale, double smooth);
-
 double DWen1Sm(double lag, double scale, double smooth);
-
 double DGneiting_sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_sep(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_32sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_32sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_32pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_32pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_32sep(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC_sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC_sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC_pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC_pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC_sep(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC2_sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC2_sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC2_pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC2_pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DGneiting_GC2_sep(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
-
 double DIaco_sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double power2);
-
 double DIaco_sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double power2);
-
 double DIaco_pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double power2);
-
 double DIaco_pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double power2);
-
 double DIaco_pw2(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double power2);
-
 double DPorcu_sc_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DPorcu_sc_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DPorcu_pw_s(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DPorcu_pw_t(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DPorcu_sep(double h,double u, double power_s,double power_t,double scale_s,double scale_t,double sep);
-
 double DStein_sc_s(double h,double u, double power_t,double scale_s,double scale_t,double smooth);
-
 double DStein_sc_t(double h,double u, double power_t,double scale_s,double scale_t,double smooth);
-
 double DStein_pw_s(double h,double u, double power_t,double scale_s,double scale_t,double smooth);
-
 double DStein_pw_t(double h,double u, double power_t,double scale_s,double scale_t,double smooth);
-
 double DStein_sm(double h,double u,   double power_t,double scale_s,double scale_t,double smooth);
-
 double DExp_Cauchy_sc_s(double h,double u,double scale_s,double scale_t,double power2);
-
 double DExp_Cauchy_sc_t(double h,double u,double scale_s,double scale_t,double power2);
-
 double DExp_Cauchy_pw2 (double h,double u,double scale_s,double scale_t,double power2);
-
 double DExp_Exp_sc_s(double h,double u,double scale_s,double scale_t);
-
 double DExp_Exp_sc_t(double h,double u,double scale_s,double scale_t);
-
 double DMat_Exp_sc_s(double h,double u,double scale_s,double scale_t,double smooth);
-
 double DMat_Exp_sc_t(double h,double u,double scale_s,double scale_t,double smooth);
-
 double DMat_Exp_sm(double h,double u,double eps,double scale_s,double scale_t,double smooth);
-
 double DMat_Cauchy_sc_s(double h,double u,double power2,double scale_s,double scale_t,double smooth);
-
 double DMat_Cauchy_sc_t(double h, double u,double power2,double scale_s,double scale_t,double smooth);
-
 double DMat_Cauchy_pw2(double h,double u,double power2,double scale_s,double scale_t,double smooth);
-
 double DMat_Cauchy_sm(double h,double u,double eps, double power2,double scale_s,double scale_t,double smooth);
 
 double DExpsep_biv_var11(double h,double var11,double var22,double nug11,double nug22, double scale, double col,int c11,int c22);
@@ -352,13 +265,10 @@ double DExpsep_biv_nug11(double h,double var11,double var22,double nug11,double 
 double DExpsep_biv_nug22(double h,double var11,double var22,double nug11,double nug22, double scale, double col,int c11,int c22);
 double DExpsep_biv_scale(double h,double var11,double var22,double nug11,double nug22, double scale, double col,int c11,int c22);
 double DExpsep_biv_col(double h,double var11,double var22,double nug11,double nug22, double scale, double col ,int c11,int c22);
-
 double DMat_biv_scale1_contr(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
                              double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
 double DMat_biv_scale2_contr(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
                              double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
-                   
-
 double Dmatsep_biv_var11(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
 double Dmatsep_biv_var22(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
 double Dmatsep_biv_nug11(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
@@ -493,8 +403,6 @@ File name: CompositeLikelihood.c
 Description: functions for composite log-likelihood evaluation
 Start
  ---------------------------------------------------------------*/
-
-
 void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_SinhGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
 void Comp_Pair_2Gamma2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
@@ -626,17 +534,13 @@ Start
 double cdf_norm(double lim1,double lim2,double a11,double a12);
 double cdf_norm2(double lim1,double lim2,double a11,double a12, double a22);
 
-
 double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari, double nugget);
-
 
 double d2norm(double x, double y, double rho);
 
 double d2lognorm(double x, double y, double sill,double nugget, double mux,double muy,double rho);
 
-
 double dNnorm(int N,double **M, double *dat);
-
 
 double int_pt(double x, double df);
 
@@ -650,9 +554,6 @@ void integr_gen(double *x, int n, void *ex);
 double int_gen_skew(double x,double data_i, double data_j,double c_0i,double c_0j,double rho,double *nuis);
 void integr_gen_skew(double *x, int n, void *ex);
 double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double data_j,double *nuis);
-
-
-
 
 double  wendintegral(double x, double *param);
 
@@ -1002,6 +903,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

@@ -311,6 +311,43 @@ if(model==27)   ##  two piece student case case
         #}
       ###  
 }
+###############################################################  
+if(model==29)   ##  two piece gaussian case
+    {
+        fname <-"CorrelationMat2"
+        if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
+        if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
+          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
+          corr2=sqrt(1-cr$corr^2)
+          xx=as.numeric(nuisance['skew']); xx2=xx^2
+          ll=qnorm((1-xx)/2)
+          p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
+          KK=3*xx2+2*xx+ 4*p11 - 1
+          corr=(2*((corr2 + cr$corr*atan(cr$corr/corr2))*KK)- 8*xx2)/(3*pi*xx2  -  8*xx2   +pi   )
+         # print(corr)
+  if(!bivariate) {
+        # Builds the covariance matrix:
+        varcov <-  diag(dime)
+        varcov[lower.tri(varcov)] <- corr
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- corr   
+        vv=(1+3*xx2)-8*xx2/pi
+        varcov=varcov*vv*nuisance['sill']
+        }
+    ## todo
+    #if(bivariate)      {
+     #     varcov<-diag(dime)
+      #    varcov[lower.tri(varcov,diag=T)] <- corr
+       #   varcov <- t(varcov)
+        #  varcov[lower.tri(varcov,diag=T)] <- corr
+        #}
+      ###  
+}
+
 
 ###############################################################           
 if(model==21)   ##  gamma case

@@ -118,6 +118,7 @@ if(show.vario && bivariate) {par(mfrow=c(2,2))}
     studentT<- model==12
     weibull<- model==26
     twopieceT<- model==27
+    twopieceGauss<- model==29
     loggauss<- model==22
     binary <- model==2
     binomial <- model==11
@@ -171,8 +172,8 @@ if(show.vario && bivariate) {par(mfrow=c(2,2))}
      # computing the spatio-temporal distances where to compute the fitted model
      #############################################
     if(isvario) {
-    lags_m <- seq(slow,max(vario$centers),length.out =80)
-    if (ispatim) lagt_m <-seq(slow,max(vario$bint),length.out =80)
+    lags_m <- seq(slow,max(vario$centers),length.out =150)
+    if (ispatim) lagt_m <-seq(slow,max(vario$bint),length.out =150)
     else         lagt_m<-0
         }
     else{
@@ -181,11 +182,11 @@ if(show.vario && bivariate) {par(mfrow=c(2,2))}
         p=.C("Maxima_Minima_dist",mmm=as.double(mmm),as.double(fitted$coordx),as.double(fitted$coordy)
         ,as.integer(fitted$numcoord),as.integer(type_dist),as.double(fitted$radius),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
        # if(type_dist==0) mmx=max(c(dist(cbind(fitted$coordx,fitted$coordy))))
-        lags_m <- seq(slow,p$mmm[2],length=80)
+        lags_m <- seq(slow,p$mmm[2],length=150)
         if (ispatim) {
             tt <- double(2)
             #p=.C("Maxima_Minima_time",tt=as.double(tt),as.double(fitted$coordt),as.integer(fitted$numtime),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-            lagt_m <- seq(slow,max(c(dist(fitted$coordt))) ,length=100)
+            lagt_m <- seq(slow,max(c(dist(fitted$coordt))) ,length=150)
         }
         else lagt_m<-0
     }
@@ -199,13 +200,13 @@ if(!bivariate) {
     corrmodel <- CkCorrModel(fitted$corrmodel)
 
      nui=nuisance
-    if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
-
+    nui['sill']=1;nui['nugget']=1-nui['sill']
+  #   nui=nuisance
+  #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param)
 
     # Gaussian random field:
-
     if(gaussian){
     
         if(bivariate){  covariance11 <- correlation[(0*length(lags_m)+1):(1*length(lags_m))]
@@ -248,6 +249,20 @@ if(!bivariate) {
                               ##
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   }  
+##########################################
+   if(twopieceGauss)        { if(bivariate) {}
+                        else {
+                              sk=nuisance['skew'];sill=nuisance['sill'];sk2=sk^2
+                              vs= sill*(1+3*sk2)-8*sk2/pi
+                              corr2=sqrt(1-correlation^2)
+                              ll=qnorm((1-sk)/2)
+                              p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+                              KK=3*sk2+2*sk+ 4*p11 - 1
+                              cc=(2*((corr2 + correlation*atan(correlation/corr2))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   ) 
+                              covariance=vs*cc;variogram=vs*(1-cc)  }
+                  } 
+
+
 ##########################################
    if(studentT)        { if(bivariate) {}
                         else {
@@ -387,21 +402,25 @@ if(!bivariate) {
     # display the variogram function
     if(show.vario){
       if(bivariate){
+
+
           #par(mfrow=c(2,2))
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram11, type='l',...)
-       if(max(vario$variogramst)>0) ll=max(vario$variogramst)
-       if(max(vario$variogramst)<0) ll=min(vario$variogramst)
-       plot(vario$centers,vario$variogramst, main="Cross semi-variogram",ylim=c(-abs(ll),abs(ll)),
+       if(min(vario$variogramst)>0) {ll1=0;ll=max(vario$variogramst)}
+       if(min(vario$variogramst)<0) {ll1=min(vario$variogramst);ll=-min(vario$variogramst)}
+       plot(vario$centers,vario$variogramst, main="Cross semi-variogram",ylim=c(ll1,ll),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram12, type='l',...)
-       plot(vario$centers,vario$variogramst, main="Cross semivariogram",ylim=c(-abs(ll),abs(ll)),
+       plot(vario$centers,vario$variogramst, main="Cross semivariogram",ylim=c(ll1,ll),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram12, type='l',...)
        plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram22, type='l',...)  }
+
+
     
         if(ispatim){# spatio-temporal case:
             plagt <- !is.null(fix.lags)

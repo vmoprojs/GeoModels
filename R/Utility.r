@@ -57,7 +57,7 @@ CkCorrModel <- function(corrmodel)
                              dagum = 5, Dagum = 5,
                              gauss=6,Gauss=6,Gaussian=6,gaussian=6,
                              gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
-                             spherical=10,Spherical=10,
+                             Shkarofski=10,shkarofski=10,
                              Wend0=11,wend0=11,
                              stable=12,Stable=12,
                              Wend1=13,wend1=13,
@@ -217,13 +217,13 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         if(!is.na(param['scale'])) if(param['scale'] <= 0) return(FALSE)
         if(!is.na(param['scale_s'])) if(param['scale_s'] <= 0) return(FALSE)
         if(!is.na(param['scale_t'])) if(param['scale_t'] <= 0) return(FALSE)
-        if(!is.na(param['scale_1']))   if(param['scale_1'] <= 0) return(FALSE)
-        if(!is.na(param['scale_2']))   if(param['scale_2'] <= 0) return(FALSE)
+        if(!is.na(param['scale_1']))   if(param['scale_1'] < 0) return(FALSE)
+        if(!is.na(param['scale_2']))   if(param['scale_2'] < 0) return(FALSE)
         if(!is.na(param['scale_12']))   if(param['scale_12'] <= 0) return(FALSE)
         if(!is.na(param['sill'])) if(param['sill'] <= 0) return(FALSE)
         if(!is.na(param['sill_1'])) if(param['sill_1'] <= 0) return(FALSE)
         if(!is.na(param['sill_2'])) if(param['sill_2'] <= 0) return(FALSE)
-        if(!is.na(param['smooth'])) if(param['smooth'] < 0) return(FALSE)
+        #if(!is.na(param['smooth'])) if(param['smooth'] <= 0) return(FALSE)
         if(!is.na(param['smooth_s'])) if(param['smooth_s'] <= 0) return(FALSE)
         if(!is.na(param['smooth_t'])) if(param['smooth_t'] <= 0) return(FALSE)
         #if(!is.na(param['smooth_1'])) if(param['smooth_1'] < 0) return(FALSE)
@@ -615,7 +615,13 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         #print(length(param))
         #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CheckCorrModel(corrmodel)))))
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
-                    CorrelationPar(CkCorrModel(corrmodel))))){
+                    CorrelationPar(CkCorrModel(corrmodel)))))
+
+             {
+    #                         print(length(param))
+     #        print(NuisParam(model,biv,num_betas))
+#print(CorrelationPar(CkCorrModel(corrmodel)))
+#print(unique(c(NuisParam("Gaussian",biv,num_betas))))
             error <- "some parameters are missing or does not match with the declared model\n"
             return(list(error=error))}
 
@@ -746,8 +752,11 @@ CorrelationPar <- function(corrmodel)
     if(is.null(corrmodel)){param <- NULL}
     else { 
     # Exponential and Gaussian and spherical and wave correlation :
-     if(corrmodel %in% c(4,6,10,16)) {
+     if(corrmodel %in% c(4,6,16)) {
       param <- c('scale')
+      return(param)}
+        if(corrmodel %in% c(10)) {
+      param <- c('scale_1','scale_2','smooth')
       return(param)}
     # Generalised Cauchy correlation model:
    if(corrmodel %in% c(8,5)) {
@@ -894,7 +903,7 @@ CorrelationPar <- function(corrmodel)
 
     if(corrmodel==136){
        param <- c('sill_1','sill_2','nugget_1','nugget_2','pcol','scale_1','scale_12','scale_2',
-        'smooth_1','smooth_12','smooth_2')
+        'smooth_1','smooth_12','smooth_2','power2_2')
        return(param)
     }
      if(corrmodel==137){
@@ -969,7 +978,7 @@ NuisParam <- function(model,bivariate,num_betas)
       param <- c('mean_1', 'mean_2','skew_1','skew_2')
       return(param)}  
       }  
-        if((model %in% c('Gamma','LogGauss','LogGaussian',"LogLogistic"))){
+        if((model %in% c('Gamma','Weibull','LogGauss','LogGaussian',"LogLogistic"))){
       param <- c('mean_1', 'mean_2','shape_1','shape_2')
       return(param)}  
 
@@ -1103,7 +1112,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      {
       
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
-          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29)) {# Gaussian  or skewgauss or wrapped  gamma random field:
+          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29)) {# Gaussian  or skewgauss or wrapped  gamma type random field:
            if(!bivariate) {mu <- mean(unlist(data))
                            if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
@@ -1123,7 +1132,9 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(is.list(fixed)) {fixed$mean_1 <- mu1;fixed$mean_2<- mu2}
                            else fixed <- list(mean_1=mu1,mean_2=mu2)
                            nuisance <- c(mu1,mu2)
-                           if(model==10||model==29)  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model %in% c(10,29))  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model %in% c(23,26))  {nuisance <- c(nuisance,0.1,0.2)}
+
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }}
         if(model %in% c(11,14,15,16,19,17)){
@@ -1180,7 +1191,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
            # if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
         }
      }
-        # Update the parameter vector        
+        # Update the parameter vector      
         names(nuisance) <- namesnuis
         namesparam <- sort(c(namescorr, namesnuis))
         param <- c(nuisance, paramcorr)

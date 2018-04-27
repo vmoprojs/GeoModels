@@ -19,7 +19,7 @@ double CheckCor(int *cormod, double *par)
      break;
     case 4:// Exponential correlation function
     case 6:// Gaussian correlation function
-    case 10:// Sferical correlation function
+    case 10:// skarofsky
     case 16://wave correlation function
       scale=par[0];
       if(scale<=0) rho=-2;
@@ -464,9 +464,11 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
       scale=par[2];
       rho=CorFunGenCauchy(h, R_power1, R_power2, scale);
       break;
-    case 10:// Sferical correlation function
-      scale=par[0];
-      rho=CorFunSferical(h, scale);
+    case 10:// Skarofski correlation function
+      scale_s=par[0];
+      scale_t=par[1];
+      smooth=par[2];
+      rho=Shkarofski(h*h, scale_s,scale_t,smooth);
       break;
     case 11://wen0
         R_power=par[0];
@@ -1277,17 +1279,19 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo11=par[8];
         smoo12=par[9];
         smoo22=par[10];
+        R_power22=par[11];
+       // Rprintf("%f %f %f %f%f %f %f \n",smoo11,scale11,smoo22,scale22,R_power22,scale12,smoo12);
        
         if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunWitMat1(h, sqrt(scale11),  smoo11);
+                                else      rho=var11*CorFunWitMat1(h*h, scale11,  smoo11);
                                 break;}
         if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunWitMatCau(h,scale12,smoo12);break;}
-        
-
+                                                else rho=col*sqrt(var11)*
+                                                         sqrt(var22)*Shkarofski(h*h,scale12,scale12,smoo12);
+                                                       //CorFunWitMatCau(h,scale12,smoo12);
+                                                       break;}
         if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunCauchy(h,2*smoo22,sqrt(scale22));
+                                 else      rho=var22*CorFunGenCauchy2(h*h,smoo22,R_power22,scale22);
                                  break;}
         break;
            case 137:       // gen matern cauchy
@@ -1568,6 +1572,14 @@ double CorFunGenCauchy(double lag, double R_power1, double R_power2, double scal
   return rho;
 }
 
+// Generalised Cauhcy class of correlation models:
+double CorFunGenCauchy2(double lag, double R_power1, double R_power2, double scale)
+{
+  double rho=0.0;
+  rho=R_pow((1+R_pow(lag,R_power2)/scale), -R_power1);
+  return rho;
+}
+
 
 double CorFunWitMatCau(double h, double scale12,double smo12)
 {
@@ -1633,13 +1645,24 @@ double CorFunWitMat(double lag, double scale, double smooth)
   return rho;
 }
 
+double Shkarofski(double lag, double a,double b, double k)
+{
+double corr=0.0;
+if(a==0 && k>0) return( R_pow(1+sqrt(lag/b),-2*k));
+if(b==0 && k<0) return( R_pow(2,1+k) * R_pow(gammafn(-k),-1)  * 
+                           R_pow(sqrt(lag/a),-k) * bessel_k(sqrt(lag/a),k,1));
+
+corr=R_pow(1+lag/b,-k/2)*bessel_k(sqrt((b+lag)/a),k,1)/bessel_k(sqrt(b/a),k,1);
+return(corr); 
+}
 
 double CorFunWitMat1(double lag, double scale, double smooth)
 {
   double rho=0.0;
+  double bb=sqrt(lag/scale);
   // Computes the correlation:
   if(lag==0) rho=1;
-  else  rho=(R_pow(scale/lag,smooth)*bessel_k(lag/scale,smooth,1))/(R_pow(2,-smooth-1)*gammafn(-smooth));
+  else  rho=(R_pow(2,smooth+1)*R_pow(bb,-smooth)*bessel_k(bb,smooth,1))/(gammafn(-smooth));
   return rho;
 }
 double CorFunBohman(double lag,double scale)
@@ -4655,7 +4678,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
       if(*model==1||*model==10||*model==12||*model==21||
-      *model==22||*model==24|*model==26||*model==27) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
+      *model==22||*model==24|*model==26||*model==27||*model==29) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
       //if(*model==12)                      rho[t]=R_pow(CorFct(cormod, h[i], u[j], par,0,0),2);  // chisq case
      // if(*model==10)  // skew gaussian case
       //{

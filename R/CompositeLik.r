@@ -31,12 +31,13 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
-        result <- .C(as.character(fun),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
+        #print(system.time(
+          result <- .C(as.character(fun),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
                    res=double(1),as.double(c(X%*%mm)),as.double(0),as.double(other_nuis),
                     as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                     PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res
-        #gc()      
+        #)     
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fun, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -47,11 +48,11 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         nuisance <- param[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
+        mm1=c(rep(mm[1],dimat/2),rep(mm[2],dimat/2))
         other_nuis=as.numeric(nuisance[!sel]) 
-      
         result <- .C(fun,as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data),as.integer(n), 
-                     as.double(paramcorr), as.integer(weigthed), res=double(1),as.double(c(X*mm)),
-                     as.double(0),as.double(other_nuis),as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
+                     as.double(paramcorr), as.integer(weigthed), res=double(1),as.double(c(X*mm1)),
+                    as.double(0),as.double(other_nuis),as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                      PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
         return(-result)
       }
