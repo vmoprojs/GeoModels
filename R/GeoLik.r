@@ -370,7 +370,13 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         # Standardizes the data:
-        stdata <- data-c(rep(nuisance['mean_1'],dimat/2),rep(nuisance['mean_2'],dimat/2))  
+         stdata <- data-c(
+              rep(as.numeric(nuisance['mean_1']),dimat/2),
+              rep(as.numeric(nuisance['mean_2']),dimat/2))
+        #stdata <- data-rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2)  
+        #print(head(as.numeric(rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2) )))
+
+        #print(head(as.numeric(rep(nuisance['mean_1'],dimat/2),rep(nuisance['mean_2'],dimat/2))))
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
         # if(corr[1]==-2||is.nan(corr[1])) return(loglik)

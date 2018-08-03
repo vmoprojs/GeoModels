@@ -131,22 +131,23 @@ forGaussparam<-function(model,param,bivariate)
           if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)}
 
         if(!bivariate){
-        if(num_betas==1)  mm<-param$mean
-
-        if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
-        param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
+           if(num_betas==1)  mm<-param$mean
+           if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
+           param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss",
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
         {
-        vv<-param$sill;
-        param$sill=1
+          vv<-param$sill;
+          param$sill=1-param$nugget
         }
-        
-        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) sk<-param$skew
+        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT",
+               "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) sk<-param$skew
         }
         else {
-            mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
-            vv1<-param$sill_1;param$sill_1=1;vv2<-param$sill_2;param$sill_2=1;vv=c(vv1,vv2)
+            mm1<-param$mean_1;param$mean_1=0; 
+            mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
+            vv1<-param$sill_1;param$sill_1=1-param$nugget_1;
+            vv2<-param$sill_2;param$sill_2=1-param$nugget_2;;vv=c(vv1,vv2)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
         }}
 #################################
@@ -175,7 +176,8 @@ forGaussparam<-function(model,param,bivariate)
             mm=c(mm1,mm2)
         }} 
 ################################# how many random fields ################
-    if(model %in% c("SkewGaussian","SkewGauss","LogLogistic","Logistic","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2    
+    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2    
+    if(model %in% c("LogLogistic","Logistic")) k=4
     if(model %in% c("Binomial"))   k=round(n)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999; if(model %in% c("Geometric")) {model="BinomialNeg";n=1}} 
     if(model %in% c("Gamma"))  k=round(param$shape)
@@ -206,7 +208,7 @@ forGaussparam<-function(model,param,bivariate)
  #########################################
      
 #### computing covariance matrix of the Gaussian random field
-#print(forGaussparam(model,param,bivariate)) pay attention to the parameter
+#print(forGaussparam(model,param,bivariate)) #pay attention to the parameter
     ccov = GeoCovmatrix(coordx, coordy, coordt,coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
     if(spacetime_dyn) ccov$numtime=1
@@ -269,7 +271,6 @@ forGaussparam<-function(model,param,bivariate)
                }
     }
  ####### end for #########################  
-
 ############################################
 ### using  gausssian random fields  in order to generate non gaussausan random fiels
 ###########################################
@@ -309,16 +310,16 @@ forGaussparam<-function(model,param,bivariate)
     #######################################
     if(model %in% c("SkewGaussian","SkewGauss"))   {
         sim=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2]
-          if(!grid)  {
+
+             if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
-                else sim <- matrix(sim, nrow=numtime, ncol=numcoord) 
-                 sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)  
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{numcoordx=length(coordx);numcoordy=length(coordy);
-         if(!spacetime&&!bivariate) sim <- array(sim, c(numcoordx, numcoordy))
-         else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
         }
-    }
     #######################################
     #######################################    
     #######################################
@@ -405,9 +406,13 @@ if(model %in% c("TwoPieceStudentT"))   {
 ################################################
 if(model %in% c("SkewStudentT"))   { 
      sim=NULL
+     print(k)
+     print(mm)
+     print(vv)
+     print(sk)
      for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
 
-        aa=0+sk*abs(dd[,,k-1])+dd[,,k]
+        aa=0+sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
         sim=mm+sqrt(vv)*(aa/sqrt(rowSums(sim)/(k-2)))
             if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
@@ -418,26 +423,35 @@ if(model %in% c("SkewStudentT"))   {
         else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
             }
         }    
-#######################################
-    if(model %in% c("Gamma","Gamma2","LogLogistic","Logistic","Weibull"))   { 
-      sim=NULL
 
-       for(i in 1:k)  sim=cbind(sim,dd[,,i]^2)
-     
-          if(model %in% c("Weibull"))   
-      {
-       sim=exp(mm)*(rowSums(sim)/2)^(1/param$shape)/(gamma(1+1/param$shape))
-       }
+#######################################
+    if(model %in% c("LogLogistic","Logistic"))   { 
+      sim1=sim2=NULL
+    for(i in 1:2)  sim1=cbind(sim1,dd[,,i]^2)
+    for(i in 3:4)  sim2=cbind(sim2,dd[,,i]^2)
+     sim1=rowSums(sim1)/2; sim2=rowSums(sim2)/2;
+     ######################################################
       if(model %in% c("LogLogistic"))   
-      { 
-       sim=rowSums(sim)/2
-       sim=exp(mm)*(sim/rgamma(length(sim),shape=1,scale=1))^(1/param$shape)
-       }
+       sim=exp(mm)*(sim1/sim2)^((1/param$shape))/(gamma(1+1/param$shape)*gamma(1-1/param$shape))
     if(model %in% c("Logistic"))   
-      { 
-       sim=rowSums(sim)/2
-       sim=log(exp(exp(mm))*(sim/rgamma(length(sim),shape=1,scale=1))^(vv))
-       }
+       sim=mm+log(sim1/sim2)*(param$sill)^(0.5)   
+  if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
+        }
+
+#######################################
+    if(model %in% c("Gamma","Gamma2","Weibull"))   { 
+      sim=NULL
+    for(i in 1:k)  sim=cbind(sim,dd[,,i]^2)
+     ######################################################
+      if(model %in% c("Weibull"))   
+                sim=exp(mm)*(rowSums(sim)/2)^(1/param$shape)/(gamma(1+1/param$shape))
       if(model %in% c("Gamma","Gamma2"))  
       { 
       #print(rowSums(sim)/k)
@@ -458,7 +472,8 @@ if(model %in% c("SkewStudentT"))   {
     #######################################
     if(model %in% c("Wrapped"))   {
         if(spacetime) mm=matrix(mm,nrow=nrow(sim),ncol=ncol(sim),byrow=TRUE)
-        sim=(sim+mm)%%(2*pi)}
+        sim=(sim+mm)%%(2*pi)
+      }
     #######################################   
      if(model %in% c("LogGaussian","LogGauss"))   {
         sim=exp(sim)}      ### 

@@ -67,7 +67,6 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, nuisance, numpairs,
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
     {
-
 #####################################################f
     if(model %in% c(1,20))   ## gaussian case  or sinhgaussian case (sinh no implementerd)
     {
@@ -125,6 +124,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             fname <-"CorrelationMat_bin2"
             if(spacetime) fname <- "CorrelationMat_st_bin2"
             if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_bin2"
+            print(other_nuis)
            # if(bivariate) fname <- "CorrelationMat_biv_bin_dyn2"
            # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_bin_dyn2"
             cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
@@ -141,7 +141,6 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                 if(model %in% c(2,11)) {
                  pg=pnorm(mu)
                  diag(varcov)=pg*(1-pg)*n}
-
                 }  
 
                  ## covariance matrix  min(n)=k for the type 2
@@ -160,6 +159,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
            fname <-"CorrelationMat_geom2"
+            print(other_nuis)
             if(spacetime) fname <- "CorrelationMat_st_geom2"
             if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_geom2"
            # if(bivariate) fname <- "CorrelationMat_biv_geom_dyn2"
@@ -257,7 +257,7 @@ if(model==12)   ##  student case
           as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
         nu=1/nuisance['df'];    
         print(nu)
-        corr=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cr$corr^2)*cr$corr)/(2*gamma(nu/2)^2)
+  corr=((nu-2)*gamma((nu-1)/2)^2*(gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cr$corr^2)*cr$corr))/(2*gamma(nu/2)^2)
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
@@ -430,24 +430,26 @@ if(model==26)   ##  weibull case
          sel=substr(names(nuisance),1,4)=="mean"
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm
-         other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
+         other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
         fname <-"CorrelationMat2"
         if(spacetime) fname <- "CorrelationMat_st2"
         if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
-        nuisance['sill']=1
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
-          PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
-    corr= ((pi*sin(2*pi/nuisance['shape']))/(2*nuisance['shape']*(sin(pi/nuisance['shape']))^2-pi*sin(2*pi/nuisance['shape'])))*(gsl::hyperg_2F1(-1/nuisance['shape'], -1/nuisance['shape'], 1,cr$corr^2) -1)
+          as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)       
+    corr= ((pi*sin(2*pi/nuisance['shape']))/(2*nuisance['shape']*
+           (sin(pi/nuisance['shape']))^2-pi*sin(2*pi/nuisance['shape'])))*
+             (gsl::hyperg_2F1(-1/nuisance['shape'], -1/nuisance['shape'], 1,cr$corr^2)*
+              gsl::hyperg_2F1( 1/nuisance['shape'],  1/nuisance['shape'], 1,cr$corr^2) -1)
   if(!bivariate) {
-        varcov <-  diag(dime)
-        corr <- corr 
-        varcov[lower.tri(varcov)] <- corr
+        varcov <-  diag(1,dime)
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <- corr   
-        vv=(exp(mu))^2*((2*pi)/(nuisance['shape']*sin(2*pi/nuisance['shape']))-(pi^2)/((nuisance['shape'])^2*(sin(pi/nuisance['shape']))^2))
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])  
+        vv=(exp(mu))^2*
+        (2*nuisance['shape']*sin(pi/nuisance['shape'])^2/(pi*sin(2*pi/nuisance['shape']))-1)
         V=vv%*%t(vv)
         varcov=varcov*sqrt(V)
         }
@@ -498,7 +500,7 @@ if(model==22)  {  ## Log Gaussian
     
             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
              as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-    
+              ##print(cr$corr)
               corr2=cr$corr^2; sk=as.numeric(nuisance['skew']); sk2=sk^2; vv=as.numeric(nuisance['sill'])
               corr=((2*sk2/pi)*(sqrt(1-corr2) + cr$corr*asin(cr$corr)-1) + cr$corr*vv)/(vv+sk2*(1-2/pi));
                 # Builds the covariance matrix:

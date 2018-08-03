@@ -63,6 +63,7 @@ double CheckCor(int *cormod, double *par)
             if( R_power<0 ) rho=-2;
             break;        
     case 14://  Whittle-Matern correlation function
+    case 20:
       scale=par[0];
       smooth=par[1];
       if(scale<=0 || smooth<=0) rho=-2;
@@ -508,8 +509,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
     break;
     case 18://  sinsphere correlation function valid on sphere
         R_power=par[0];
-        rho=1-R_pow(sin(h/(2)),R_power);
-        
+        rho=1-R_pow(sin(h/2),R_power);    
     break;
     case 19: // Generalised wend correlation function
         R_power1=par[0];
@@ -517,14 +517,19 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smooth=par[2];
         rho=CorFunW_gen(h, R_power1, smooth, scale);
         break;
+     case 20://  Whittle-Matern correlation function
+      scale=par[0];
+      smooth=par[1];
+      rho=CorFunSmoke(h, scale, smooth);
+      break;    
 
-      case 20: // Generalised wend correlation function
+      /*case 20: // Generalised wend correlation function
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
         rho=(pow(1,2*smooth+1)*CorFunW_gen(h, smooth+3+1.5, smooth, 1)-pow(0.75,2*smooth+1)*CorFunW_gen(h, smooth+3+1.5, smooth, 0.75) )/
            (pow(1,2*smooth+1)-pow(0.75,2*smooth+1));
-        break;
+        break;*/
  /***************** spatial tapers****************************/
    case 28:// Bohman taper
       rho=CorFunBohman(h,maxdist[0]);
@@ -686,6 +691,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_s=par[3];
         scale_t=par[4];
         sep=par[5];  
+        //Rprintf("%f %f %f %f\n",R_power_t,R_power_s,R_power,sep);
         arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));
         rho=R_pow(arg,R_power)*CorFunW0(h,scale_s*R_pow(arg,sep),R_power_s);   
         break;
@@ -1141,6 +1147,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo22=par[8];
         scale12=0.5*(scale11+scale22);
         smoo12=0.5*(smoo11+smoo22);
+      
         if((c11==0)&&(c22==0))    {if(h==0)  rho=var11+nug11;
                                    else      rho=var11*CorFunWitMat(h, scale11,  smoo11);
                                    break;}
@@ -1280,7 +1287,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo12=par[9];
         smoo22=par[10];
         R_power22=par[11];
-       // Rprintf("%f %f %f %f%f %f %f \n",smoo11,scale11,smoo22,scale22,R_power22,scale12,smoo12);
+      //  Rprintf("%f %f %f %f%f %f %f \n",scale11,scale12,scale22,smoo11,smoo12,smoo22,R_power22);
        
         if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
                                 else      rho=var11*CorFunWitMat1(h*h, scale11,  smoo11);
@@ -1635,6 +1642,35 @@ double CorFunWave(double lag, double scale)
   return rho;
 }
 
+// smoke class of correlation models:
+double CorFunSmoke(double lag, double scale, double smooth)
+{
+
+  double rho=0.0,a=0.0,kk1=0.0,kk2=0.0,iscale=0.0,res=0.0;
+  iscale=1/scale;
+
+  // Computes the correlation:
+  if(lag==0) {rho=1;}
+  else  {
+    //{
+    a=0.5+smooth;
+       //Rprintf("%f %f %f %f\n",lag,scale,smooth,hypergeo(iscale,iscale+0.5,2/scale+a,cos(lag)));
+    //kk=(gammafn(iscale+a)*gammafn(iscale+smooth))/(gammafn(2/scale+a)*gammafn(smooth));
+    //rho=kk*hypergeo(iscale,iscale+0.5,2/scale+a,cos(lag));
+    //}
+    double *param;
+    param=(double *) Calloc(3,double);
+    kk1=(gammafn(iscale+a)*gammafn(iscale+smooth))/(gammafn(2/scale+a)*gammafn(smooth));
+    param[0]= iscale;  // a
+    param[1]= iscale+0.5; //b
+    param[2]= 2/scale+a;  //c
+    kk2=gammafn(param[2])/(gammafn(param[1])*gammafn(param[2]-param[1]));
+    res=HyperG_integral(cos(lag), param);
+    Free(param);
+    rho=res*kk1*kk2;}
+  return(rho);
+}
+
 // Whittle=matern class of correlation models:
 double CorFunWitMat(double lag, double scale, double smooth)
 {
@@ -1928,7 +1964,7 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 	    for(j=(i+1);j<ncoord[0];j++){
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
     rho[h]=CorFct(cormod,lags,0,par,0,0);
-    h++;
+       h++;
     }}
   return;
 }
@@ -2380,23 +2416,19 @@ void CorrelationMat_biv2(double *rho,double *coordx, double *coordy, double *coo
   double *par,double *radius, int *ns)
 {
   int i=0,j=0,t=0,v=0,h=0;double lags=0.0;
-  //
-  if(sqrt(nuis[0])<0 ||sqrt(nuis[1])<0 ||sqrt(nuis[2])<0||sqrt(nuis[3])<0){rho[0]=-2;return;}
+  //if(sqrt(nuis[0])<0 ||sqrt(nuis[1])<0 ||sqrt(nuis[2])<0||sqrt(nuis[3])<0){rho[0]=-2;return;}
    for(t=0;t<ntime[0];t++){
     for(i=0;i<ncoord[0] ;i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ncoord[0];j++){
-
           lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-             
                 rho[h]=CorFct(cormod,lags,0,par,t,v);
                 // Rprintf("%f %d %d  %f %f %f %f %f %f \n",lags,ntime[0],ncoord[0],rho[h],par[0],par[1],par[2],par[3],par[4]);
                 h++;}}
     else {  
          for(j=0;j<ncoord[0];j++){
          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-
                 rho[h]=CorFct(cormod,lags,0,par,t,v);
                //  Rprintf("%f %d %d  %f  %f %f %f %f %f \n",lags,ntime[0],ncoord[0],rho[h],par[0],par[1],par[2],par[3],par[4]);
                 h++;}}
@@ -2423,19 +2455,22 @@ void CorrelationMat_biv_skew2(double *rho,double *coordx, double *coordy, double
     sk[0]=nuis[2];sk[1]=nuis[3];
      //if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
     //if(par[0]<=0 || par[1]<=0 || par[2]<0 || par[3]<0){rho[0]=-2;return;}
- for(t=0;t<ntime[0];t++){
+
+            for(t=0;t<ntime[0];t++){
     for(i=0;i<ncoord[0] ;i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                          cc=CorFct(cormod,lags,0,par,t,v);
+
+
+            lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                cc=CorFct(cormod,lags,0,par,t,v);
    rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
             h++;}}
-    else {
-      for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                          cc=CorFct(cormod,lags,0,par,t,v);
+   else {  
+         for(j=0;j<ncoord[0];j++){
+       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                cc=CorFct(cormod,lags,0,par,t,v);
    rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
                 h++;}}
     }}}

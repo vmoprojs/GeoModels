@@ -201,7 +201,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                fun=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)}
                                }} 
-    #print(CompLikelihood$hessian)
+    #print(CompLikelihood)
       ########################################################################################   
       ########################################################################################
      # print(CompLikelihood)
@@ -279,7 +279,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
               score=score,sensmat=sensmat,as.integer(spacetime),as.integer(type),
               varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
               as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-          
+               print(flagnuis)
+          #print((flagcorr))
             if(!sum(GD$varimat)) print("Std error estimation failed")
             # Set score vectore:
 

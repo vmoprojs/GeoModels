@@ -52,13 +52,15 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     if(!is.null(lower)||!is.null(upper)){
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")
     #setting alphabetic order
-      lower=lower[order(names(lower))];upper=upper[order(names(upper))] 
+      lower=lower[order(names(lower))]
+      upper=upper[order(names(upper))] 
       npar<-length(initparam$param) 
       ll<-as.numeric(lower);uu<-as.numeric(upper)
       if(length(ll)!=npar||length(uu)!=npar)
-           stop("lower and upper bound must be of the same length of starting values\n")  
-      if(sum(uu<=initparam$upper)<npar||sum(ll>=initparam$lower)>npar)
-           stop("one or more values of the lower and upper bounds are out of the valid  range\n")  
+           stop("lower and upper bound must be of the same length of starting values\n") 
+
+      #if(sum(uu<=initparam$upper)<npar||sum(ll>=initparam$lower)>npar)
+      #     stop("one or more values of the lower and upper bounds are out of the valid  range\n")  
       if(sum(names(initparam$param)==names(upper))<npar || sum(names(initparam$param)==names(lower))<npar){
            stop("the names of  parameters in the lower and/or  upper bounds do not match with starting parameters names .\n") }
       ll[ll==0]=.Machine$double.eps ## when 0 we don't want exactly zero

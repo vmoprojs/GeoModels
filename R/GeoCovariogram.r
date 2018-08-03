@@ -10,7 +10,7 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 28/03/2017.
+### Last change: 28/03/2018.
 ####################################################
    
  
@@ -61,12 +61,10 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                              p=.C('VectCorrelation_biv', corr=double(numlags*4),vario=double(numlags*4), as.integer(corrmodel), as.double(lags),
                              as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
                              as.double(lagt), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-                             cc=c(p$corr,p$vario)
-                           
+                             cc=c(p$corr,p$vario)   
                     }
         return(cc)
     }
-
     if(show.range)  {
     # Pratical range in the Gaussian case:
     PracRangeNorm <- function(corrmodel, lags, lagt, nuisance, numlags, numlagt, param, pract.range)
@@ -75,12 +73,10 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
             -(nuisance["nugget"]+nuisance["sill"]*(1-pract.range)))
     
     }
-  
-    }
+}
 ################    
 ### starting ###
 ################
-
     isvario <- !is.null(vario) # is empirical variogram is passed?
     bivariate <- fitted$bivariate
     if(bivariate) fitted$numtime=1
@@ -200,7 +196,8 @@ if(!bivariate) {
     corrmodel <- CkCorrModel(fitted$corrmodel)
 
      nui=nuisance
-    nui['sill']=1;nui['nugget']=1-nui['sill']
+     nui['sill']=1-nui['nugget']
+    #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
@@ -282,11 +279,19 @@ if(!bivariate) {
  if(weibull)        { if(bivariate) {} 
                         else {
                         vs=exp(mm)^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
-                        ##
                         auxcorr= (gamma(1+1/nuisance['shape']))^2/((gamma(1+2/nuisance['shape']))-(gamma(1+1/nuisance['shape']))^2)
                         cc=auxcorr*(gsl::hyperg_2F1(-1/nuisance['shape'], -1/nuisance['shape'], 1,((1-nuisance['nugget'] )*correlation)^2) -1)
-                        ##
                         covariance=vs*cc;variogram=vs*(1-cc)  }
+                    }
+##########################################
+  if(loglogistic)    { if(bivariate) {}  
+                      else { 
+                     sh=nuisance["shape"]
+                     vs=exp(mm)^2*(2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
+                     cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
+                                    (gsl::hyperg_2F1(-1/sh, -1/sh, 1,(1-nuisance['nugget'] )*correlation^2)*
+                                     gsl::hyperg_2F1( 1/sh,  1/sh, 1,(1-nuisance['nugget'] )*correlation^2) -1)
+                      covariance=vs*cc;variogram=vs*(1-cc)   }
                     }
 ##########################################
   if(loggauss)    { if(bivariate) {}  
@@ -298,13 +303,7 @@ if(!bivariate) {
                     covariance=vs*cc;variogram=vs*(1-cc)   
                      }
                   }
-##########################################
- # if(loglogistic)    { if(bivariate) {}  
- #                     else { 
- #                    sh=nuisance['shape']
- #                    vs=1
-  #          cc= ((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*(gsl::hyperg_2F1(-1/sh, -1/sh, 1,correlation^2) -1)
-   #                   }
+
    #                   
    if(binary||binomial||binomial2||geom) {
                     if(bivariate) {}
@@ -457,6 +456,8 @@ if(!bivariate) {
             vvv=nuisance["nugget"]+nuisance["sill"]
             if(gamma)    vvv=2*exp(mm["mean"])^2/nuisance["shape"]
             if(weibull)  vvv=exp(mm["mean"])^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
+            if(loglogistic)  vvv=exp(mm["mean"])^2*
+                               (2*nuisance['shape']*sin(pi/nuisance['shape'])^2/(pi*sin(2*pi/nuisance['shape']))-1)
             if(loggauss) vvv=(exp(nuisance["sill"])-1)*(exp(mm['mean']+0.5*nuisance["sill"]))^2
             if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2

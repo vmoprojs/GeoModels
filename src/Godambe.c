@@ -77,6 +77,7 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
     case 25: // logistic
     case 26: //Weibull
     case 27: //twopieceT
+    case 29: //twopiece Gaussian
     // more........
 
         if( (!*spt) && (!*biv)) 
@@ -125,7 +126,7 @@ void Sens_Pair(double *betas,double *coordx, double *coordy, double *coordt, int
   gradcor=(double *) Calloc(*nparc,double);// Correlation gradient  (double *) Calloc(*nparc,double);
   grad=(double *) Calloc(*npar,double);// ijth component of the gradient
   sens=(double *) Calloc(nsens,double);// One sensitive contribute
-Rprintf("%d %d \n ",ncoord[0],*model);
+//Rprintf("%d %d \n ",ncoord[0],*model);
       for(i=0; i<(ncoord[0]-1);i++){
     for(j=(i+1); j<ncoord[0];j++){
     /*****************************************************/    
@@ -205,6 +206,16 @@ if(lags<maxdist[0]){
            Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
        break;
+        case 27:
+       Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
+        break;
+
+         case 29:
+       Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
+        break;
+
        //case... more
        //break;
    }
@@ -360,6 +371,16 @@ for(t=0;t<ntime[0];t++){
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
+         case 27:
+       Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
+          case 29:
+       Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
   }
         /********************************************************/
 
@@ -453,6 +474,16 @@ else {
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
+       case 27:
+       Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+        break;
+         case 29:
+       Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+        break;
   }
         /********************************************************/
 		  //ADD TO THE SENSITIVITY MATRIX THE CONTRIBUTE OF THE GIVEN PAIR
@@ -971,6 +1002,15 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                                       Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
                         break;
+                         case 27: // 
+                                      Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
+                                       nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
+                        break;
+                          case 29: // 
+                                      Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
+                                       nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
+                        break;
+
                        
                        
                     }
@@ -1317,6 +1357,17 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                                          s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
                                                                           betas);
                                                         break;
+                                                        case 27:
+                                                        Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
+                                                                          betas);
+                                                        break;
+                                                        case 29:
+                                                        Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
+                                                                          betas);
+                                                        break;
+
                                                     }
                                                     //==============   end cases ============/
                                                     if(*weigthed) weigths=CorFunBohman(lagt,maxtime[0]);
@@ -1401,6 +1452,15 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                           s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
                                                         break;
+                                                        case 27:
+                                                        Grad_Pair_TwopieceT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
+                                                        break;
+                                                        case 29:
+                                                        Grad_Pair_Twopiecegauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
+                                                        break;
+
                                                     }
                                                     //==============   end cases ============/
                                                     if(*weigthed) weigths=CorFunBohman(lagt,maxtime[0]);

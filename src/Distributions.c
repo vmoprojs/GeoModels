@@ -4,7 +4,44 @@
 
 
 
+/* integrand  in  generalized wendland function*/
+double int_gen_hyp(double x,double a, double b,double z,double c)
+{
+    double res=0.0;
+    res=R_pow(x,b-1)*R_pow(1-x,c-b-1)* R_pow(1-z*x,-a);
+    return (res);///(R_pow(2,alpha-1)*gamma(alpha)*R_pow(supp,2*alpha)));
+}
+void integr_gen_hyp(double *x, int n, void *ex){
+    int i;double a,b,c,y;
+    a =    ((double*)ex)[0];  //a
+    b = ((double*)ex)[1];  //b
+    c=     ((double*)ex)[2];  //c
+    y =     ((double*)ex)[3];  //y
+    for (i=0;i<n;i++) {x[i]=int_gen_hyp(x[i],a,b,y,c);}
+    return;
+}
+// function computing generalized wendland
+double HyperG_integral(double x, double *param) {
+    
+    double ex[4], lower, upper, epsabs, epsrel, result, abserr, *work;
+    int neval, ier, subdiv, lenw, last, *iwork;
+    subdiv = 100;
+    epsabs = R_pow(DOUBLE_EPS, 0.25);
+    epsrel = epsabs;
+    lenw = 4 * subdiv;         /* as instructed in WRE */
+    iwork =   (int *) Calloc(subdiv, int);  /* idem */
+    work = (double *) Calloc(lenw, double); /* idem */
+    ex[0] = param[0]; ex[1] = param[1]; ex[2] = param[2];ex[3]=x;
+    lower=0;
+    upper=1;
+    // Compute the integral
+    Rdqags(integr_gen_hyp, (void *) &ex,
+               &lower, &upper, &epsabs, &epsrel, &result,
+               &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
 
+    Free(iwork);Free(work);
+    return(result);
+}
 
 /******************************************************************************/
 /******************************************************************************/
@@ -124,22 +161,21 @@ return(gammafn(k+a)/gammafn(a));
 
 
 
-double  biv_Weibull2(double rho11,double rho22,double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2)
+double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2)
 
 {
 double a1=0.0,a2=0.0,a=0.0,b=0.0,c=0.0,dens=.0,k=.0,mui=.0,muj=.0;
 a1=gammafn(1+1/shape1);
 a2=gammafn(1+1/shape2);
 mui=exp(mi);muj=exp(mj);
-k=rho11*rho22-rho12*rho12;
+k=1-rho12*rho12;
 a=(shape1*shape2*R_pow(a1,shape1)*R_pow(a2,shape2)*R_pow(zi,shape1-1)*R_pow(zj,shape2-1))/(R_pow(mui,shape1)*R_pow(muj,shape2)*k);
-b=exp(-(rho11*R_pow(a1*zi/mui,shape1) + rho22*R_pow(a2*zj/muj,shape2))/k);
-c=bessel_i(2*rho12*R_pow(a1*zi/mui,shape1/2)*R_pow(a2*zj/muj,shape2/2)/k,0,1);
+b=exp(-(R_pow(a1*zi/mui,shape1) + R_pow(a2*zj/muj,shape2))/k);
+c=bessel_i(2*fabs(rho12)*R_pow(a1*zi/mui,shape1/2)*R_pow(a2*zj/muj,shape2/2)/k,0,1);
 dens=a*b*c;
 //Rprintf("%f %f %f %f %f %f\n",a,b,c,k,rho11*rho11,rho12*rho12);
 return(dens);
 }
-
 /*********************************/
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
 {
@@ -175,7 +211,7 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
     double gam = gammafn(shape/2);
     if(corr)   {
         a=1-R_pow(corr,2);  
-        z=shape*sqrt(zi*zj*corr*corr)/(sqrt(ci*cj)*a);
+        z=shape*fabs(corr)*sqrt(zi*zj)/(sqrt(ci*cj)*a);
         A=R_pow(zi*zj,shape/2-1) * exp(-shape*((zi/ci)+(zj/cj))/(2*a));
         C=R_pow(z/2,1-shape/2);
         B=gam*R_pow(a,shape/2)*R_pow(2,shape)*R_pow(shape,-shape)*R_pow(ci*cj,shape/2);  
@@ -197,53 +233,7 @@ void biv_gamma_call(double *corr,double *zi,double *zj,double *mui, double *muj,
 }
 
 
-/**************/
-double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
-{
-    double a=0.0,A=0.0,D=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);
-    if(corr)   {
-        a=1-R_pow(corr,2);
-        
-        A=R_pow(shape/sqrt(ci*cj),2)*R_pow((zi*zj)/(ci*cj),shape-1)/R_pow(a,-3);
-        B=(R_pow((zi/ci),shape)+a)*(R_pow((zj/cj),shape)+a);
-        C=(R_pow(corr,2)*R_pow(zi*zj,shape))/(R_pow(ci*cj,shape)*B);
-        D=(C+1)/R_pow(1-C,3);
-        res=A*D/(R_pow(B,2));
-    }
-    else
-    {
-        B=(shape/ci)*R_pow((zi/ci),shape-1)*R_pow((R_pow((zi/ci),shape)+1),-2);
-        C=(shape/cj)*R_pow((zj/cj),shape-1)*R_pow((R_pow((zj/cj),shape)+1),-2);
-        res=B*C;
-    }
-    return(res);
-    
-}
-/**************/
-double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double beta)
-{
-    double a=0.0,A=0.0,D=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);
-    if(corr)   {
-        a=1-R_pow(corr,2);
-        
-        A=(exp((zi-ci)/beta)*exp((zj-cj)/beta))/(R_pow(a,-3)*R_pow(beta,2));
-        B=(exp((zi-ci)/beta)+a)*(exp((zj-cj)/beta)+a);
-        C=(R_pow(corr,2)*exp((zi-ci)/beta)*exp((zj-cj)/beta))/B;
-        D=(C+1)/R_pow(1-C,3);
-        res=A*D/R_pow(B,2);
-    }
-    else
-    {
-        B=exp((zi-ci)/beta)*R_pow((exp((zi-ci)/beta)+1),-2)/beta;
-        C=exp((zi-ci)/beta)*R_pow((exp((zi-ci)/beta)+1),-2)/beta;
-        res=B*C;
-    }
-    
-    //if(!R_FINITE(res))res = LOW;
-    //Rprintf("%f\n",res);
-    return(res);
-    
-}
+
 
 /***********/
 double Hyp_conf_laplace_approx(double a, double b, double z)
@@ -338,62 +328,45 @@ else
 
 
 //bivariate skew gaussian distribution
-double biv_skew(double corr,double zi,double zj,double mi,double mj,double vari,double skew)
+double biv_skew(double corr,double z1,double z2,double mi,double mj,double vari,double skew)
 {
-    double aux1=0.0,aux11=0.0, aux2=0.0,aux22=0.0, pdf1,pdf2,quadr;
-    zi=zi-mi;
-    zj=zj-mj;
-    double dens,det,fact1,fact2, fact3,c1,lim1,lim2,cdf1,cdf2,a11,a12;
-    double nu2=R_pow(skew,2.0);
-    double tau2 =vari;
-   /* if(-LOW<skew<LOW)
-    { det=R_pow(tau2,2)-R_pow(tau2*corr,2);
-      quadr=(1.0/det)*( aux1*(R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*corr*zi*zj  ) ; 
-      dens=(0.5/M_PI) * (1/sqrt(det)) * exp(- 0.5 * quadr) ;}
-  else{*/
-                                       c1= 1.0 /  (1-R_pow(corr,2)) ;
-                                       aux1 = tau2 + nu2 ;
-                                       aux2 =  tau2*corr + nu2*corr ;
-                                       det =   R_pow(aux1,2) - R_pow(aux2,2) ;   
-                                       quadr= (1.0/det)*( aux1*(R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*aux2*zi*zj  ) ;  
-                                       pdf1=  (0.5/M_PI) * (1/sqrt(det)) * exp(- 0.5 * quadr) ;
-                                       aux11 = (nu2/tau2)*c1 + c1 ;
-                                       aux22 = (nu2/tau2)*c1*corr + c1*corr;
-                                       det=  R_pow(aux1,2) - R_pow(aux2,2) ;  
-                                       a11  =  (1/det)* aux11   ;
-                                       a12  =  (1/det)* aux22   ;
-                                       fact3 =( c1*skew)/ ( tau2 * det ) ;
-                                       fact1 = fact3 * (aux11 - corr*aux22) ;
-                                       fact2 = fact3 * (aux22 - corr*aux11) ;
-                                       lim1 =   fact1*zi +  fact2*zj   ;
-                                       lim2 =   fact2*zi +  fact1*zj   ;
-                                       cdf1 = cdf_norm(lim1,lim2,a11,a12) ;
-      //printf("lim1: %f\tlim2: %f\ta11: %f\ta12: %f\tcdf1: %f\n",lim1,lim2,a11,a12,cdf1);
-                                       //////////////////////////////////////////////////////////////////////////////////
-                                       //aux1 = tau2 + nu2 ;
-                                       aux2 =  tau2*corr - nu2*corr ;
-                                       det =   R_pow(aux1,2) - R_pow(aux2,2) ;   
-                                       quadr= (1.0/det)*( aux1*(R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*aux2*zi*zj  ) ;  
-                                       pdf2=  (0.5/M_PI) * (1/sqrt(det)) * exp(- 0.5 * quadr) ;
-
-                                       // compute  bivariate normal standard pdf:
-                                       //////
-                                       //aux11 = (nu2/tau2)*c1 + c1 ;
-                                       aux22 = (nu2/tau2)*c1*corr - c1*corr;
-                                       det=  R_pow(aux1,2) - R_pow(aux2,2) ;  
-                                       a11  =  (1/det)* aux11   ;
-                                       a12  =  (1/det)* aux22   ;
-                                       fact3 =( c1*skew)/ ( tau2 * det  ) ;
-                                       fact1 = fact3 * (aux11 - corr*aux22) ;
-                                       fact2 = fact3 * (aux22 - corr*aux11) ;
-                                       lim1 =   fact1*zi +  fact2*zj   ;
-                                       lim2 =   fact2*zi +  fact1*zj   ;
-                                       cdf2 = cdf_norm(lim1,lim2,a11,a12) ;
-      //printf("lim1: %f\tlim2: %f\ta11: %f\ta12: %f\tcdf2: %f\n",lim1,lim2,a11,a12,cdf2);
-
-dens=2*(pdf1*cdf1+pdf2*cdf2);
-//}
-//printf("dens: %f\n",dens);
+    double aux1=0.0,aux11=0.0, aux2=0.0,aux21 = 0.0, aux22=0.0, pdf1=0,pdf2=0,cdf1=0,cdf2=0,quadr,zi,zj;
+    zi=z1-mi;
+    zj=z2-mj;
+    double det,dens,det1,det2,lim1,lim2,a11,a22;
+    double nu2  = R_pow(skew,2);
+                                       // pdf 1
+                                       aux1  =  vari + nu2 ;
+                                       aux2  =  corr * aux1;
+                                       det1  =  R_pow(aux1,2) - R_pow(aux2,2) ; 
+                                       det2  =  aux1 - aux1 * R_pow(corr,2)  ;
+                                       quadr =  (1.0/det2)*( (R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*corr*zi*zj  ) ;  
+                                       pdf1  =  (0.5/M_PI) * (1/sqrt(det1)) * exp(- 0.5 * quadr  ) ;
+                                       lim1  = (zi * skew)/(aux1);
+                                       lim2  = (zj * skew)/(aux1);
+                                       a11   = (vari)/(aux1);
+                                       a22   = (corr * vari)/(aux1);
+                                       cdf1  =  cdf_norm(lim1,lim2,a11,a22) ;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                       // pdf 2
+                                       aux1  =  vari + nu2 ;
+                                       aux2  =  vari * corr - nu2 * corr ;
+                                       det   =  R_pow(aux1,2) - R_pow(aux2,2) ;   
+                                       quadr =  (1.0/det)*( (aux1)*(R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*aux2*zi*zj  ) ;  
+                                       pdf2  =  (0.5/M_PI) * (1/sqrt(det)) * exp(- 0.5 * quadr) ;
+                                       aux1  =  vari + nu2 ;
+                                       aux2  =  vari * corr - nu2 * corr ;
+                                       aux11 = (skew)/( R_pow(aux1,2.0) - R_pow(aux2,2));
+                                       aux21 = nu2 * (1 - R_pow(corr,2.0));
+                                       aux22 = vari * (1 + R_pow(corr,2.0));
+                                       
+                                       lim1  = aux11 * (zi*aux21 + zi*aux22 - 2*zj*vari*corr);
+                                       lim2  = aux11 * (zj*aux21 + zj*aux22 - 2*zi*vari*corr); // bien hasta aquí
+                                       a11   =  1 - skew*aux11 * (nu2 + vari - nu2 * R_pow(corr,2.0) + 3*vari * R_pow(corr,2.0));
+                                       a22   =  - corr + (skew) * aux11 * ( nu2  *(corr - R_pow(corr,3.0)) + vari*(corr + R_pow(corr,3.0)) + 2 * corr * vari  ); 
+                                       cdf2  =  cdf_norm(lim1,lim2,a11,a22) ; 
+                                  
+dens = 2*(pdf1 * cdf1 + pdf2 * cdf2);
 return(dens);
 }
 
@@ -831,6 +804,7 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
   double lim_sup[2]={mean1,mean2};
   int infin[2]={0,0};//set the bounds for the integration
   double corr[1]={(1-nugget)*CorFct(cormod,h,u,par,0,0)};
+// Rprintf("%f %f %f %f %f  \n",corr[0],h,nugget,CorFct(cormod,h,u,par,0,0),par[0]);
   res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
   return(res);
 }
@@ -893,6 +867,19 @@ return(dens);
 */
 
 
+double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11)
+{
+          int i=0;
+  double kk1=0.0,dens=0.0;
+
+    for(i=fmax_int(0,NN-u-1);i<=NN-1;i++){
+      kk1=exp(lgammafn(NN-1+u+1)-(lgammafn(i+1)+lgammafn(NN-i)+lgammafn(NN-i)+lgammafn(u-NN+2+i)));
+      dens+=kk1*pow(p11,i+1)*pow(1+p11-(p01+p10),u-NN+1+i)*pow(p01-p11,NN-1-i)*pow(p10-p11,NN-1-i);
+       }
+         return(dens);
+}
+
+
 
 double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
 {
@@ -917,7 +904,7 @@ double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
   return(dens1+dens2);
 }
 
-// bivariate negative  binomial
+/*
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
 {
 double kk1=0.0,dens=0.0;int i=0;
@@ -931,8 +918,19 @@ if(u==v)            {
 
 if(u>v)    dens=aux_biv_binomneg(NN,v,u,p10,p01,p11);
 return(dens);
-}
+}*/
 
+
+double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
+{
+double dens=0.0;
+if(u<v)    dens=aux_biv_binomneg(NN,u,v,p01,p10,p11);
+
+if(u==v)      dens=aux_biv_binomneg_simple(NN,v,p10,p01,p11);
+
+if(u>v)    dens=aux_biv_binomneg(NN,v,u,p10,p01,p11);
+return(dens);
+}
 
 double bin_aux(int a,int NN,int u,int v,double p1, double p2,double p11)
 {
@@ -1536,7 +1534,8 @@ void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 }
 
 
-/*********** bivariate T distribution********************/ 
+/*********** bivariate T distribution*********************/
+
 double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,double sill)
 {
   int k=0;
@@ -1549,36 +1548,41 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
   double cc=(nu+1)/2; double nu2=nu/2;
   double x1=(x*x+nu); double y1=(y*y+nu);
   double rho2=R_pow(1-rho*rho,-cc);
+
   double b1 = (R_pow(nu,nu))*R_pow(x1*y1,-cc)*R_pow(gammafn(cc),2);
   double c1 = M_PI*R_pow(gammafn(nu/2),2)*rho2;
   double b2 = rho*x*y*R_pow(nu,nu+2)*R_pow(x1*y1,-nu2-1);
   double c2 = 2*M_PI*rho2;
+
   double a1 = 0; double a2 = 0;
   double aux  = R_pow(rho*x*y,2)/(x1*y1);
   double aux1 = R_pow(rho*nu,2)/(x1*y1);
-/// indipendent t distributions
  if(fabs(rho)<=EPS1)
   {
     C = lgammafn(cc)+log(R_pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
     B = lgammafn(cc)+log(R_pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
     return(exp(B)*exp(C));
   }
-    /*##################################################*/
   for (k=0;k<=5000;k=k+1)
   {
-    pp1=hypergeo(cc+k,cc+k,0.5,aux);
-    bb1=log(pp1)+k*log(aux1)+2*(lgammafn(cc+k)-lgammafn(cc))-lgammafn(k+1)-lgammafn(nu2+k)+lgammafn(nu2);
+   // pp1=hypergeo(cc+k,cc+k,0.5,aux);
+    pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
+    bb1=pp1+k*log(aux1)+2*(lgammafn(cc+k)-lgammafn(cc))-lgammafn(k+1)-lgammafn(nu2+k)+lgammafn(nu2);
     a1 = a1 + exp(bb1);
-    pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
-    bb2=log(pp2)+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
+   // pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
+    pp2=(1.5-2*(nu2+1+k))*log(1-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
+    bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
     RR=(b1/c1)*a1+(b2/c2)*a2;
-    if(fabs(RR-res0)<=1e-40) {break;}
+    //if(fabs(RR-res0)<=1e-40) {break;}
+    if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
     else {res0=RR;}
   }
-return(RR/sill);
+return(RR);
 }
 
+
+/*********** bivariate T distribution********************/ 
 
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
@@ -1587,9 +1591,10 @@ double RR=0.0,bb=0.0,res0=0.0;int k=0;
   {
     bb=k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
-               +log(hypergeo(a+k,b+k,c,x));
+               +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
+              // +log(hypergeo(a+k,b+k,c,x));
     RR=RR+exp(bb);
- if(fabs(RR-res0)<=1e-40) {break;}
+ if(fabs(RR-res0)<=1e-30) {break;}
     else {res0=RR;}
 }
 return(RR);
@@ -1605,7 +1610,7 @@ arg1=nu/2;
 pp1=R_pow(nu,nu)*R_pow(x2*y2,-arg)*R_pow(gammafn(arg),2);
 pp2=M_PI*R_pow(gammafn(arg1),2)*R_pow(1-rho2,-arg);
 app=appellF4(arg,arg,0.5,arg1,rho2*xx*yy/(x2*y2), nu*nu*rho2/(x2*y2));
-return(pp1*app/pp2);
+return(4*pp1*app/pp2);
 }
 
 
@@ -1628,7 +1633,7 @@ if(zi<mui&&zj>=muj)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho2,zistd/etamas,zjstd/etamos);}
 if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho2,zistd/etamas,zjstd/etamas);}
-return(4*res/sill);
+return(res/sill);
 }
 
 
@@ -1637,10 +1642,10 @@ return(4*res/sill);
         
 double biv_half_Gauss(double rho,double zi,double zj)
 {
-double kk=0, dens=0,a=0,b=0,rho2=rho*rho;
-  kk=(M_PI)*sqrt(1-rho2);
-  a=exp(- (1/(2*(1-rho2)))*(R_pow(zi,2)+R_pow(zj,2)-2*rho*zi*zj));
-  b=exp(- (1/(2*(1-rho2)))*(R_pow(zi,2)+R_pow(zj,2)+2*rho*zi*zj));
+double kk=0, dens=0,a=0,b=0,rho2=1-rho*rho;
+  kk=(M_PI)*sqrt(rho2);
+  a=exp(- (1/(2*(rho2)))*(R_pow(zi,2)+R_pow(zj,2)-2*rho*zi*zj));
+  b=exp(- (1/(2*(rho2)))*(R_pow(zi,2)+R_pow(zj,2)+2*rho*zi*zj));
   dens=(a+b)/kk;
   return(dens);
 }
@@ -1663,6 +1668,60 @@ if(zi<mui&&zj>=muj)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
 if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
-return(4*res/sill);
+return(res/sill);
 }
 
+
+/**************/
+double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill)
+{
+    double a=0.0,A=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=mui;double cj=muj;
+    double ki=exp((zi-ci)/sqrt(sill));
+    double kj=exp((zj-cj)/sqrt(sill));
+    double rho2=R_pow(corr,2);
+    if(corr)   {
+        a=1-rho2;
+        A=(ki*kj)/(R_pow(a,-2)*sill);
+        B=R_pow((ki+1)*(kj+1),-2);
+        C=appellF4(2,2,1,1,
+        (rho2*ki*kj)/((ki+1)*(kj+1)),
+        rho2/((ki+1)*(kj+1)));
+        res=A*B*C;
+         // Rprintf("%f %f %f %f %f\n",A,B,C,rho2,sill);
+    }
+    else
+    {
+        B=ki*R_pow((ki+1),-2)/sqrt(sill);
+        C=kj*R_pow((kj+1),-2)/sqrt(sill);
+        res=B*C;
+    }
+    return(res);
+}
+
+/**************/
+double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
+{
+    double c=gammafn(1+1/shape)*gammafn(1-1/shape);
+    double A=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=exp(mui);double cj=exp(muj);
+    double ki=R_pow(c*zi/ci,shape)+1;
+    double kj=R_pow(c*zj/cj,shape)+1;
+    double rho2=R_pow(corr,2);
+    double kij=ki*kj;
+    if(corr)   {
+        A=(R_pow(c*shape,2)/(ci*cj))*R_pow((c*c*zi*zj)/(ci*cj),shape-1)*R_pow(1-rho2,2);
+        B=R_pow(kij,-2);
+        C=appellF4(2,2,1,1,
+        (rho2*R_pow(c*c*zi*zj,shape))/(R_pow(ci*cj,shape)*kij),
+        rho2/(kij));
+        res=A*B*C;
+    }
+    else
+    {
+        B=(c*shape/ci)*R_pow((c*zi/ci),shape-1)*R_pow(ki,-2);
+        C=(c*shape/cj)*R_pow((c*zj/cj),shape-1)*R_pow(kj,-2);
+        res=B*C;
+    }
+    return(res);
+}

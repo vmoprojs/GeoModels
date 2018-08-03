@@ -308,7 +308,7 @@ fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
                     start=start,fixed=fixed)
                     
 # locations to predict
-xx<-seq(0,1,0.025)
+xx<-seq(0,1,0.02)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 ## simple kriging 
@@ -316,11 +316,118 @@ pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=mod
        sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
 
 #standard   binomial kriging
-map_binom=matrix(pr$pred,ncol=length(xx))
+map_binom=matrix(round(pr$pred),ncol=length(xx))
 image.plot(xx, xx, map_binom,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n),
            xlab="",ylab="",main="Simple Kriging ")
 
 
+
+
+################################################################
+###
+### Example 5. Spatial  simple kriging of a Weibull
+###            random field 
+###
+###############################################################
+set.seed(312)
+model="Weibull";
+
+# Define the spatial-coordinates of the points:
+x <- runif(1000)
+y <- runif(1000)
+coords=cbind(x,y)
+#### mean and covariance parameters ###
+mean<-0
+sill<-1
+nugget<-0
+scale<-0.2
+shape=0.8
+
+#################
+param<-list(mean=mean,sill=sill,shape=shape,nugget=nugget,scale=scale,power2=4)
+# Simulation of the Weibull random field:
+data <- GeoSim(coordx=coords, corrmodel="Wend0",model=model,
+              sparse=TRUE,param=param)$data
+
+
+par(mfrow=c(1,2))
+
+#### map of simulated data
+quilt.plot(x, y, data, main="Data")
+
+## estimation with pairwise likelihood
+fixed=list(nugget=nugget,power2=4,sill=1)
+start=list(mean=0,scale=scale,shape=shape)
+# Maximum pairwise likelihood fitting :
+fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,
+                    likelihood='Marginal', type='Pairwise',maxdist=0.03,
+                    start=start,fixed=fixed)
+                    
+# locations to predict
+xx<-seq(0,1,0.02)
+loc_to_pred<-as.matrix(expand.grid(xx,xx))
+
+#optimal linear  kriging
+pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
+       sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
+
+
+map_weibull=matrix(pr$pred,ncol=length(xx))
+image.plot(xx, xx, map_weibull,
+           xlab="",ylab="",main="Simple Kriging ")
+
+
+
+
+
+
+################################################################
+###
+### Example 5. Spatial  simple kriging of a StudenT
+###            random field 
+###
+###############################################################
+model="StudentT"
+df=6 
+corrmodel <- "Wend0"  
+nsel=800
+coords=cbind(runif(nsel),runif(nsel))
+
+mean <- 0
+sill <- 1.9       
+nugget <- 0
+power2=4
+scale <- 0.2
+ 
+# Starting value for the estimated parameters
+set.seed(3132)
+param=list(nugget=nugget,mean=mean, scale=scale,sill=sill,df=1/df,power2=power2)
+data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
+     model=model,sparse=TRUE)$data
+
+fixed<-list(nugget=nugget,power2=4,df=1/df)
+start<-list(mean=mean, scale=scale,sill=sill)
+
+# Maximum pairwise composite-likelihood fitting of the RF:
+fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
+                    maxdist=0.02,likelihood="Marginal",type="Pairwise",
+                    start=start,fixed=fixed, model = model)
+                    
+# locations to predict
+xx<-seq(0,1,0.02)
+loc_to_pred<-as.matrix(expand.grid(xx,xx))
+
+#optimal linear  kriging
+pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
+       sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
+
+par(mfrow=c(1,2))
+#### map of simulated data
+quilt.plot(coords[,1], coords[,2], data, main="Data")
+
+map_t=matrix(pr$pred,ncol=length(xx))
+image.plot(xx, xx, map_t,
+           xlab="",ylab="",main="Simple Kriging ")
 ################################################################
 ########### Examples of spatio temporal kriging ############
 ################################################################

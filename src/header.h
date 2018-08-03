@@ -88,17 +88,20 @@ double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
-double  biv_Weibull2(double rho11,double rho22,double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2);
+double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2);
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
+
+
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape);
-double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double beta);
+double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill);
 
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11);
 double bin_aux(int a,int NN,int u,int v,double p1, double p2,double p11);
 double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11);
+double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11);
 double aux_euv_binomneg (int N, double p1,double p2,double p11);
 double corr_binomneg (int N, double p1,double p2,double p11);
 double biv_poisbin (int NN,  int u, int v, double p01,double p10,double p11);
@@ -170,6 +173,7 @@ double CorFunGenCauchy(double lag, double power1, double power2, double scale);
 double CorFunGenCauchy2(double lag, double power1, double power2, double scale);
 double CorFunWitMatCau(double h, double scale12,double smo12);
 double Shkarofski(double lag, double a,double b, double k);
+double CorFunSmoke(double h, double  scale,double  smooth);
 double CorFunGenWitMatCau(double h, double scale,  double smoo,double beta);
 double CorFunSferical(double lag, double scale);
 double CorFunStable(double lag, double power, double scale);
@@ -546,8 +550,11 @@ double int_pt(double x, double df);
 
 double int_gen(double x,double mu, double alpha,double lag,double supp);
 double int_hyp(double x,double a, double b,double c,double z);
+double int_gen_hyp(double x,double a, double b,double z,double c);
 void integr_pt(double *x, int n, void *ex);
 void integr_hyp(double *x, int n, void *ex);
+void integr_gen_hyp(double *x, int n, void *ex);
+double HyperG_integral(double x, double *param);
 double IntHyp(double x, double *param);
 void integr_gen(double *x, int n, void *ex);
 
@@ -722,6 +729,14 @@ void Grad_Pair_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradc
 void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
+
+void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
+void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
 
 void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
@@ -903,8 +918,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
-
 
 
 

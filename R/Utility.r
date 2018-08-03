@@ -67,7 +67,7 @@ CkCorrModel <- function(corrmodel)
                              Multiquadric=17,multiquadric=17,
                              Sinpower=18,sinpower=18,
                              genWend=19,Genwend=19,GenWend=19,genwend=19,
-                             example=20,
+                             smoke=20,Smoke=20,
              # spatial-temporal non-separable models
                              gneiting=42,Gneiting=42,  #ok
                              iacocesare=44,Iacocesare=44, #ok
@@ -78,8 +78,8 @@ CkCorrModel <- function(corrmodel)
                              gneiting_GC2=54,Gneiting_GC2=54,
                              sinpower_st=56,Sinpower_st=56,    #ok
                              multiquadric_st=58,Multiquadric_st=58,   #ok
-                             gneiting_mat_time=61,
-                             gneiting_mat_space=62,
+                             gneiting_mat_time=61,Gneiting_mat_time=61, #ok
+                             gneiting_mat_space=62,Gneiting_mat_space=62, #ok
                              Wen0_space=63,wen0_space=63,  #ok
                              Wen0_time=64,wen0_time=64,    #ok
                              Wen1_space=65,wen1_space=65,  #ok
@@ -612,8 +612,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert the parameters as a list\n'
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
-        #print(length(param))
-        #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CheckCorrModel(corrmodel)))))
+        #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
 
@@ -763,7 +762,7 @@ CorrelationPar <- function(corrmodel)
       param <- c('power1', 'power2','scale')
       return(param)}
     # Generalised wend correlation model:
-     if(corrmodel %in% c(19,20)) {
+     if(corrmodel %in% c(19)) {
         param <- c('power2', 'scale','smooth')
         return(param)}
     # sine power on sphere 
@@ -779,7 +778,7 @@ CorrelationPar <- function(corrmodel)
         param <- c('power2', 'scale')
         return(param)}
     # Whittle-Matern correlation model:
-    if(corrmodel==14){
+    if(corrmodel %in% c(14,20)){
       param <- c('scale', 'smooth')
       return(param)}
     # Gneiting or Porcu model:
@@ -934,7 +933,7 @@ NuisParam <- function(model,bivariate,num_betas)
    if(!bivariate)     
    {
   if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg',
-      'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic','LogLogistic')))
+      'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic')))
   {
     param <- c(mm, 'nugget', 'sill')
     return(param)}
@@ -978,7 +977,12 @@ NuisParam <- function(model,bivariate,num_betas)
       param <- c('mean_1', 'mean_2','skew_1','skew_2')
       return(param)}  
       }  
-        if((model %in% c('Gamma','Weibull','LogGauss','LogGaussian',"LogLogistic"))){
+
+      if(model %in% c('Gamma')){
+      param <- c('mean_1', 'mean_2','shape')
+       return(param)} 
+
+        if((model %in% c('Weibull','LogGauss','LogGaussian',"LogLogistic"))){
       param <- c('mean_1', 'mean_2','shape_1','shape_2')
       return(param)}  
 
@@ -1048,6 +1052,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     {
       if(is.list(X))  num_betas=ncol(X[[1]])
       else  num_betas=ncol(X) }
+
+
     namesnuis <- NuisParam(model,bivariate,num_betas)
  
     ### Set returning variables and initialize the model parameters:
@@ -1133,7 +1139,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            else fixed <- list(mean_1=mu1,mean_2=mu2)
                            nuisance <- c(mu1,mu2)
                            if(model %in% c(10,29))  {nuisance <- c(nuisance,0.1,0.2)}
-                           if(model %in% c(23,26))  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model %in% c(26))  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model %in% c(21))  {nuisance <- c(nuisance,0.1)}
 
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }}

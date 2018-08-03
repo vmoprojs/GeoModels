@@ -102,21 +102,21 @@ library(fields)
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- seq(-1,1,0.05)
-y <- seq(-1,1,0.05)
+x <- seq(0,1,0.045)
+y <- seq(0,1,0.045)
 set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
 data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Matern", param=list(smooth=0.5,
-             mean=0,sill=1,scale=0.2/3,nugget=0))$data
+             mean=0,sill=1,scale=0.4/3,nugget=0))$data
 
 # Simulation of a spatial Gaussian RF with Generalized Wendland correlation function
 # using sparse alghorithm matrices
 set.seed(261)
 data2 <- GeoSim(x,y,grid=TRUE, corrmodel="GenWend", param=list(smooth=0,
-              power2=4,mean=0,sill=1,scale=0.2,nugget=0))$data
+              power2=4,mean=0,sill=1,scale=0.4,nugget=0))$data
 par(mfrow=c(1,2))
-image.plot(x,y,data1,col=terrain.colors(100),main="1",xlab="",ylab="")
-image.plot(x,y,data2,col=terrain.colors(100),main="2",xlab="",ylab="")   
+image.plot(x,y,data1,col=terrain.colors(100),main="Matern",xlab="",ylab="")
+image.plot(x,y,data2,col=terrain.colors(100),main="Wendland",xlab="",ylab="")   
 
              
 
@@ -129,38 +129,57 @@ image.plot(x,y,data2,col=terrain.colors(100),main="2",xlab="",ylab="")
 ################################################################
 
 # Define the spatial-coordinates of the points:
-x <- seq(0, 1, 0.04)
-y <- seq(0, 1, 0.04)
+x <- seq(0, 1, 0.022)
+y <- seq(0, 1, 0.022)
 coords <- cbind(x,y)
 set.seed(251)
 n=5
 # Simulation of a spatial Binomial RF:
-sim <- GeoSim(x,y,grid=TRUE, corrmodel="Exp",
-             model="Binomial",n=n,
-             param=list(nugget=0,mean=0,scale=.2,sill=1))
+sim <- GeoSim(x,y,grid=TRUE, corrmodel="Wend0",
+             model="Binomial",n=n,sparse=TRUE,
+             param=list(nugget=0,mean=0,scale=.2,sill=1,power2=4))
 
 image.plot(x,y,sim$data,nlevel=n+1,col=terrain.colors(n+1),zlim=c(0,n)) 
 
 
 ################################################################
 ###
-### Example 3. Simulation of a spatial Gamma  RF
+### Example 3. Simulation of a spatial Weibull  RF
 ### with  exponential correlation 
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
-x <- seq(-1,1,0.05)
-y <- seq(-1,1,0.05)
+x <- seq(0,1,0.032)
+y <- seq(0,1,0.032)
 set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
-data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Exponential",model="Gamma", 
-         param=list(shape=3,mean=0,sill=1,scale=0.2/3,nugget=0))$data
-image.plot(x,y,data1,col=terrain.colors(100),main="1",xlab="",ylab="")
+data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Exponential",model="Weibull", 
+         param=list(shape=1.2,mean=0,sill=1,scale=0.3/3,nugget=0))$data
+image.plot(x,y,data1,col=terrain.colors(200),main="Weibull RF",xlab="",ylab="")
+
 
 
 ################################################################
 ###
-### Example 4. Simulation of a sinhasinh RF
+### Example 4. Simulation of a spatial t  RF
+### with  exponential correlation 
+###
+###############################################################
+# Define the spatial-coordinates of the points:
+x <- seq(0,1,0.03)
+y <- seq(0,1,0.03)
+set.seed(268)
+# Simulation of a spatial Gaussian RF with Matern correlation function
+data1 <- GeoSim(x,y,grid=TRUE, corrmodel="GenWend",model="StudentT", sparse=TRUE,
+         param=list(df=1/4,mean=0,sill=1,scale=0.3,nugget=0,smooth=1,power2=5))$data
+image.plot(x,y,data1,col=terrain.colors(100),main="Student-t RF",xlab="",ylab="")
+
+
+
+
+################################################################
+###
+### Example 5. Simulation of a sinhasinh RF
 ### with  Wend0 correlation.
 ###
 ###############################################################
@@ -194,7 +213,7 @@ lines(density(data2),lty=3)
 
 ################################################################
 ###
-### Example 5. Simulation of a bivariate Gaussian RF
+### Example 6. Simulation of a bivariate Gaussian RF
 ### with separable bivariate exponential correlation model
 ### on a regular grid.
 ###
@@ -222,7 +241,7 @@ image.plot(x,y,data[,,2],col=terrain.colors(100),main="2",xlab="",ylab="")
 
 ################################################################
 ###
-### Example 6. Simulation of a  spatio temporal Gaussian RF.
+### Example 7. Simulation of a  spatio temporal Gaussian RF.
 ### observed on  dynamical location sites with double exponential correlation 
 ###
 ###############################################################
@@ -232,6 +251,7 @@ image.plot(x,y,data[,,2],col=terrain.colors(100),main="2",xlab="",ylab="")
 coordt=1:5
 coordx_dyn=list()
 maxN=40
+set.seed(8)
 for(k in 1:length(coordt))
 {
 NN=sample(1:maxN,size=1)
@@ -254,7 +274,7 @@ data[[3]]
 
 ################################################################
 ###
-### Example 7. Simulation of a Gaussian RF 
+### Example 8. Simulation of a Gaussian RF 
 ###  with a Wend0 correlation on the planet earth
 ###
 ###############################################################
@@ -279,6 +299,32 @@ x0 = b[,1]; y0 = b[,2]; z0 = b[,3]
 # plotting
 scatter3D(x0,y0,z0,colvar=data,clim=c(min(data),max(data)),pch=20,cex=0.8,
 col=rainbow(200))
+
+
+
+
+################################################################
+###
+### Example 9. Simulation of a Gaussian RF 
+###  with Wend0 model  on USA
+###
+###############################################################
+
+distance="Geod";radius=6378.88
+NN=40
+x=seq(-125,-64,length.out=NN)
+y=seq(27,50, length.out =NN)
+nrow(expand.grid(x,y))
+## Set the wendland parameters
+corrmodel <- "Wend0"
+param<-list(mean=0,sill=1,nugget=0,scale=radius*0.3,power2=3)
+# Simulation of a spatial Gaussian RF on the sphere
+#set.seed(2)
+data <- GeoSim(x,y,grid=TRUE,corrmodel=corrmodel,sparse=TRUE,
+        distance=distance,radius=radius,param=param)$data
+image.plot(x,y,data,col=terrain.colors(100),xlab="",ylab="")
+map("usa", add = TRUE)
+
 
 
 

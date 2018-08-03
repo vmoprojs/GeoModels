@@ -187,6 +187,12 @@ The associated parameters in the argument \code{param} are
     \deqn{R(h) = 1-(sin(h/2))^{\alpha},\quad h \in [0,\pi]}
       This model is valid on the unit sphere and \eqn{h} is the geodesic distance.
   
+    \item \eqn{Smoke} defined as:
+    \deqn{R(h) =   K*1F2(1/{\alpha},1/{\alpha}+0.5,
+                2/{\alpha}+0.5+{\kappa}),\quad h \in [0,\pi]}
+      where      \eqn{K =(\Gamma(a)\Gamma(i))/\Gamma(i)\Gamma(o)) }.      
+      This model is valid on the unit sphere and \eqn{h} is the geodesic distance.
+      
   }
 
   \item Spatio-temporal correlation models. 

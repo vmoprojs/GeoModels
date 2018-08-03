@@ -28,11 +28,12 @@ mu=fit$X%*%beta2
 #################################
 
 dd=c(t(fit$data))
-
+### multiplicative models
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(mu)  
-
-if(model %in% c("Gaussian","SkewGaussian","StudentT","TwoPieceGaussian=","TwoPieceGauss"))
+### additive models
+if(model %in% c("Gaussian","Logistic","SkewGaussian","TwoPieceGaussian",
+         "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 res1=dd-mu  
 
 #if(binomial or binomialneg or geom or bernoulli)
@@ -80,7 +81,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          numbetas=fit$numbetas,
                          numcoord=fit$numcoord,
                          numtime=fit$numtime,
-                         param = fit$par,
+                         param = fit$param,
                          nozero = fit$setup$nozero,
                          score = fit$score,
                          maxdist =fit$maxdist,

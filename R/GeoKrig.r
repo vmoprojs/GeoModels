@@ -47,7 +47,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     #######################################################
     ############ standard (tapered) kriging ###############
     #######################################################
-    if(type=="Standard"||type=="standard"||type=="Tapering"||type=="tapering")  {
+    if(type %in% c("Standard","standard","Tapering","tapering")) {
     #################################################
     ##### computing covariance  matrix ##############
     #################################################
@@ -55,7 +55,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     if(model=="LogGaussian") {model="Gaussian"    # we need a "Gaussian" covariance matrix
                              logGausstemp=TRUE}
 
-    if(model=="Weibull"||model=="Gamma")          # we need a x covariane matrix with with mean=0   x=gamma,weibull
+    if(model %in% c("Weibull","Gamma","LogLogistic"))          # we need a x covariane matrix with with mean=0   x=gamma,weibull,loglogistic
      {
      paramtemp=param 
      sel=substr(names(param),1,4)=="mean";  ## selecting mean values 
@@ -76,7 +76,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     dimat2=numloc*tloc
     ###############
     ###############
-    if(model=="Weibull"||model=="Gamma"){
+     if(model %in% c("Weibull","Gamma","LogLogistic")) {
           if(is.null(Xtemp)) X=matrix(rep(1,dimat))
           else               X=Xtemp    
           param=paramtemp
@@ -96,7 +96,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     other_nuis=as.numeric(nuisance[!sel]) 
     ################################################
     ################################################
-    if(type=="Tapering"||type=="tapering") {
+    if(type %in% c("Tapering","tapering")) {
       covmatrix_true <-  GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param, 
       radius, sparse, NULL, NULL, "Standard",X) }
     ############
@@ -169,7 +169,14 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                         sh=covmatrix$param['shape']
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=(1-covmatrix$param["nugget"])*cc$corri
-                        corri=bcorr*((1-cc1^2)^(1+2/sh)*gsl::hyperg_2F1(1+1/sh, 1+1/sh, 1,cc1^2) -1)              
+                        corri=bcorr*((1-cc1^2)^(1+2/sh)*gsl::hyperg_2F1(1+1/sh, 1+1/sh, 1,cc1^2) -1) #ojo es una tranformada de la 1F2             
+         }
+          if(covmatrix$model==24) {  # loglogistic
+                        sh=covmatrix$param['shape']
+                        cc1=(1-covmatrix$param["nugget"])*cc$corri
+corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
+                        (gsl::hyperg_2F1(-1/sh, -1/sh, 1,cc1^2)*
+                         gsl::hyperg_2F1( 1/sh, 1/sh, 1,cc1^2) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
                         nu=1/covmatrix$param['df'];sk=covmatrix$param['skew']
@@ -201,7 +208,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                       if(covmatrix$model==12)  vvar=nu/(nu-2)              ## studentT
                       if(covmatrix$model==27)  vvar=nu*(3*sk2+1)/(nu-2)-
                                                      (4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) # two pieceT
-                      if(covmatrix$model==29)  vvar=(1+3*sk2)-8*sk2/pi
+                      if(covmatrix$model==29)  vvar=(1+3*sk2)-8*sk2/pi                  # two piece Gaussian
                       #if(covmatrix$model==21)  vvar=2*exp(muloc)/covmatrix$param['shape']
                       #if(covmatrix$model==22) {kk=exp(2*(muloc)+covmatrix$param['sill']);vvar=kk*(exp(covmatrix$param['sill'])-1)}
                       }
@@ -209,43 +216,50 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
 ########################################################################################
 ########################################################################################
 ########################################################################################
- #### inverse of var covar  ##################################   
+ #### inverse of var covar  ################################## 
+ #print(covmatrix$covmatrix)  
         invcov <- getInv(covmatrix)  ### invserse of cov matrix
         #############################################################
         ##### multiplying the correlations for the variance
         cc <- t(matrix(corri,nrow=dimat,ncol=dimat2)) 
+  #      print(cc)
         if(!bivariate){
-          if(covmatrix$model==1)  cc=cc* vv            #gaussian
-          if(covmatrix$model==10) cc=cc* (vv+sk^2*(1-2/pi)) #skewgaussian
-          if(covmatrix$model==12) cc=cc* vv *(nu/(nu-2)) #studentT
-          if(covmatrix$model==27)   ##two piece studentT
+          #gaussian
+          if(covmatrix$model==1)  cc=cc* vv            
+          #skewgaussian
+          if(covmatrix$model==10) cc=cc* (vv+sk^2*(1-2/pi)) 
+          #studentT
+          if(covmatrix$model==12) cc=cc* vv *(nu/(nu-2)) 
+          ##two piece studentT
+          if(covmatrix$model==27)   
                           cc=cc* vv *(nu*(3*sk2+1)/(nu-2)-(4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) )       
-          if(covmatrix$model==29)   ##two piece gaussian
+          ##two piece gaussian
+          if(covmatrix$model==29)   
                           cc=cc* vv *((1+3*sk2)-8*sk2/pi) 
-          if(covmatrix$model==21)  { # gamma
+          # gamma                
+          if(covmatrix$model==21)  { 
                                     emuloc=exp(muloc) 
                                     emu=exp(mu)
-                                   # V0=NULL;for(i in 1:dimat) V0=cbind(V0,emuloc^2) 
-                                   # V0=2*V0/covmatrix$param['shape']
-                                   # V1=2*diag(c(emuloc^2))/covmatrix$param['shape']
-                                   # cc=V0*cc
                                     cc=2*cc/covmatrix$param['shape']
                                     }
-           if(covmatrix$model==26)  { # weibull
+           # weibull                         
+           if(covmatrix$model==26)  { 
                                     emuloc=exp(muloc)
                                     emu=exp(mu)
-                                    #V0=NULL;for(i in 1:dimat) V0=cbind(V0,emuloc^2) 
-                                    #V0=V0*(gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1) 
-                                    #V1=diag(c( emuloc^2))*(gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1) 
                                     cc=cc*(gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1)
-                                    #cc=V0%*%cc
                                   }
-          if(covmatrix$model==24)  {}
+          #loglogistic                        
+          if(covmatrix$model==24)  { 
+                                    emuloc=exp(muloc)
+                                    emu=exp(mu)
+                                    cc=cc*(2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/(pi*sin(2*pi/covmatrix$param['shape']))-1)
+                                  }
          }
          else{}
 ##################################################################
 #################kriging weights##################################
 ##################################################################
+
 krig_weights <- cc%*%invcov
 
 ##################################################################
@@ -255,7 +269,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
 
       if(!bivariate) {  ## space and spacetime simple kringing
       
-               ####gaussian  and StudenT  two piece simple kriging
+               ####gaussian  and StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10))
                {
                              pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
@@ -290,10 +304,18 @@ if(type_krig=='Simple'||type_krig=='simple')  {
    ####### here!!!!!
       if(mse) {
 if(covmatrix$model %in% c(1,12,27,29,10))  vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%t(cc)))  ## simple variance  kriging predictor variance
+#gamma
 if(covmatrix$model %in% c(21)) vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)   
                                                 - krig_weights%*%t(cc)))
+#weibull
 if(covmatrix$model %in% c(26)) vv=emuloc^2*diag(as.matrix(diag( gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1,dimat2)   
                                                 - krig_weights%*%t(cc)))
+#loglogistic          
+if(covmatrix$model %in% c(24)) vv=emuloc^2*diag(as.matrix(diag(
+  (2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/
+                       (pi*sin(2*pi/covmatrix$param['shape']))-1)
+ ,dimat2) - krig_weights%*%t(cc)))
+
 if(covmatrix$model==1&&logGausstemp)
        vv <-    exp(muloc+covmatrix$param['nugget']+covmatrix$param['sill']/2)^2 *  
                                diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%t(cc)))) 

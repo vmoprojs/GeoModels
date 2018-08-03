@@ -20,13 +20,10 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
 }
 
 \arguments{
-  \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{n \times d}{n x d})-matrix
-   (\eqn{n} iid spatial realisations) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
-   or an (\eqn{d \times d \times n}{d x d x n})-array (\eqn{n} iid spatial realisations on regular grid) or a
-   (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation) or an (\eqn{t \times d \times n }{t x d x n})-array
-   (\eqn{n} iid spatial-temporal realisations) or or an (\eqn{d \times d \times t \times n }{d x d x t})-array
-   (a single spatial-temporal realisation on regular grid) or an (\eqn{d \times d \times t \times n }{d x d x t x n})-array
-   (\eqn{n} iid spatial-temporal realisations on regular grid).
+  \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
+   or a
+   (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)   or an (\eqn{d \times d \times t \times n }{d x d x t})-array
+   (a single spatial-temporal realisation on regular grid).
    For the description see the Section \bold{Details}.}
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
     \code{d} is the number of spatial sites) assigning 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector assigning
@@ -215,6 +212,7 @@ Specifically:
    RF with positive right skewed marginal distribution:
   \itemize{
     \item \code{Gamma} for a Gamma  RF (see  Bevilacqua, M. Caamano C., 2018)
+     \item \code{Gamma} for a Weibull  RF (see  Bevilacqua, M. Caamano C., 2018)
     \item \code{LogGaussian} for a  LogGaussian  RF
     \item \code{LogLogistics} for a  LogLogistic RF   (see  Bevilacqua, M. Caamano C., Gaetan , C. 2018)
 }
@@ -395,7 +393,7 @@ Rf with marginal counts data
    \item{nozero}{In the case of tapered likelihood  the percentage of non zero values in the covariance matrix.
   Otherwise is NULL.}
   \item{numcoord}{The number of spatial coordinates;}
-  \item{numtime}{The number the temporal realisations of the RF;}
+  \item{numtime}{The number of the temporal realisations of the RF;}
   \item{param}{The vector of  parameters' estimates;}
   \item{param}{The radius of the sphere in the case of great  circle distance;}
    \item{stderr}{The vector of standard errors;}
@@ -539,9 +537,7 @@ param<-list(mean=mean,mean1=mean1,sill=sill,nugget=nugget,scale=scale)
 # Simulation of the spatial Gaussian RF:
 data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,X=X)$data
 
-# Fixed parameters
 fixed<-list(nugget=nugget)
-# Starting value for the estimated parameters
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 
 ################################################################
@@ -581,6 +577,9 @@ print(fit3)
 
 
 
+###############################################################
+############ Examples of spatial non-Gaussian RFs #############
+###############################################################
 
 
 ################################################################
@@ -604,13 +603,11 @@ scale=0.2
 model="Weibull"
 corrmodel="Wend0"
 param=list(mean=mean,mean1=mean1,sill=1-nugget,scale=scale,shape=shape,nugget=nugget,power2=4)
-# Simulation of a a non stationary weibull RF:
+# Simulation of a  non stationary weibull RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 
-# Fixed parameters
 fixed<-list(nugget=nugget,power2=4,sill=1-nugget)
-# Starting value for the estimated parameters
 start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
@@ -629,9 +626,53 @@ fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
 
 print(fit$param)
 
+
 ################################################################
 ###
 ### Example 5. Maximum pairwise likelihood fitting of
+### StudendT spatial  RFs with Wendland correlation
+###
+###############################################################
+
+set.seed(15274)
+# Define the spatial-coordinates of the points:
+N=300
+x <- runif(N, 0, 1)
+y <- runif(N, 0, 1)
+coords <- cbind(x,y)
+X=cbind(rep(1,N),runif(N))
+mean=1; mean1=2 # regression parameters
+nugget=0
+sill=0.5
+scale=0.2
+df=4   ## degrees of freedom
+model="StudentT"
+corrmodel="Wend0"
+param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,df=1/df,nugget=nugget,power2=4)
+# Simulation of a studentT RF:
+data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
+           param=param)$data
+##  estimation assuming df unknown
+fixed<-list(nugget=nugget,power2=4)
+start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill,df=1/df)
+# Maximum pairwise composite-likelihood fitting of the RF:
+fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    start=start,fixed=fixed)
+print(fit1$param)
+
+##  df must be rounded and fixed
+df=round(1/(as.numeric(fit1$param['df'])))
+ fixed<-list(nugget=nugget,power2=4,df=1/df)
+ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+# Maximum pairwise composite-likelihood fitting of the RF:
+fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    start=start,fixed=fixed)
+print(fit$param)
+################################################################
+###
+### Example 6. Maximum pairwise likelihood fitting of
 ### SinhAsinh-Gaussian spatial  RFs with Wendland correlation
 ###
 ###############################################################
@@ -656,9 +697,7 @@ param=list(power2=power2,skew=skew,tail=tail,
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
 
 plot(density(data))
-# Fixed parameters
 fixed=list(power2=power2,nugget=nugget)
-# Starting value for the estimated parameters
 start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 # Maximum pairwise likelihood:
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
@@ -674,7 +713,7 @@ print(fit2$param)
 
 ################################################################
 ###
-### Example 6. Maximum pairwise likelihood fitting of 
+### Example 7. Maximum pairwise likelihood fitting of 
 ### Binomial and negative Binomial   RFs 
 ### with exponential correlation.
 ###
@@ -743,7 +782,7 @@ data <- GeoSim(coordx=coords,coordt=time,corrmodel=corrmodel,
 
 ################################################################
 ###
-### Example 7. Maximum pairwise likelihood fitting of a
+### Example 8. Maximum pairwise likelihood fitting of a
 ### space time Gaussian RF with double-exponential correlation.
 ###
 ###############################################################
@@ -760,7 +799,7 @@ fit <- GeoFit(data=data,coordx=coords,coordt=time,
 print(fit)
 ################################################################
 ###
-### Example 8. Maximum standard likelihood fitting of a
+### Example 9. Maximum standard likelihood fitting of a
 ### space time Gaussian RF observed on  dynamical spatial coordinates
 ### with double-exponential correlation.
 ###############################################################
@@ -795,7 +834,7 @@ print(fit)
 
 ################################################################
 ###
-### Example 8. Maximum, and pairwise  likelihood fitting of a
+### Example 10. Maximum, and pairwise  likelihood fitting of a
 ### bivariate Gaussian RF with separable Bivariate  matern 
 ### (cross) correlation model.
 ###

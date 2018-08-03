@@ -3381,41 +3381,28 @@ double biv_T(double rho,double zi,double zj,double nuu)
         C = tgamma(cc)*pow((1+x*x/nu),-cc)/(sqrt(M_PI*nu)*tgamma(nu/2));
         B = tgamma(cc)*pow((1+y*y/nu),-cc)/(sqrt(M_PI*nu)*tgamma(nu/2));
         return(B*C);
+   // C = lgammafn(cc)+log(pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+   // B = lgammafn(cc)+log(pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+   // return(exp(B)*exp(C));
+ 
+
         //printf("rho:%f zi:%f zj:%f nu:%f\n",rho,zi,zj,nu);
-    }
-    //======================================
-    //printf("rho:%f\n",rho);
-    /*for (k=0;k<1;k=k++)
-    {
-        pp1=hypergeo(cc+k,cc+k,0.5,aux);
-        bb1=log(pp1)+k*log(aux1)+2*(lgamma(cc+k)-lgamma(cc))-lgamma(k+1.0)-lgamma(nu2+k)+lgamma(nu2);
-        a1 = a1 + exp(bb1);
-        pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
-        bb2=log(pp2)+k*log(aux1)+2*log((1+k/nu2))+lgamma(nu2+k)-lgamma(k+1.0)-lgamma(nu2);
-        a2 = a2 + exp(bb2);
-        RR=(b1/c1)*a1+(b2/c2)*a2;
-        //printf("a1:%f a2:%f b1:%f b2:%f c1:%f c2:%f\n",a1,a2,b1,b2,c1,c2);
-        if(fabs(RR-res0)<1e-50) {break;}
-        else {res0=RR;}
-    }*/
-    
-    
+    } 
     while( k<=5000 )
     {
-        pp1=hypergeo(cc+k,cc+k,0.5,aux);
-        bb1=log(pp1)+k*log(aux1)+2*(lgamma(cc+k)-lgamma(cc))-lgamma(k+1.0)-lgamma(nu2+k)+lgamma(nu2);
+        //pp1=log(hypergeo(cc+k,cc+k,0.5,aux));
+        pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
+        bb1=pp1+k*log(aux1)+2*(lgamma(cc+k)-lgamma(cc))-lgamma(k+1.0)-lgamma(nu2+k)+lgamma(nu2);
         a1 = a1 + exp(bb1);
-        pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
-        bb2=log(pp2)+k*log(aux1)+2*log((1+k/nu2))+lgamma(nu2+k)-lgamma(k+1.0)-lgamma(nu2);
+        //pp2=log(hypergeo(nu2+1+k,nu2+1+k,1.5,aux));
+        pp2=(1.5-2*(nu2+1+k))*log(1-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
+        bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgamma(nu2+k)-lgamma(k+1.0)-lgamma(nu2);
         a2 = a2 + exp(bb2);
         RR=(b1/c1)*a1+(b2/c2)*a2;
         if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
         else {res0=RR;}
         k++;
     }
-    
-    
-    //printf("RR:%f\n",RR);
     return(RR);
 }
 
@@ -3426,7 +3413,10 @@ double appellF4(double a,double b,double c,double d,double x,double y)
     int k=0;
     while( k<=5000 )
     {
-        bb=k*log(y)+(lgamma(a+k)+lgamma(b+k)+lgamma(d))-(lgamma(a)+lgamma(b)+lgamma(d+k)+lgamma(k+1.0))+log(hypergeo(a+k,b+k,c,x));
+        bb=k*log(y)+(lgamma(a+k)+lgamma(b+k)+lgamma(d))-(lgamma(a)+lgamma(b)+
+        lgamma(d+k)+lgamma(k+1.0))+
+           (c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
+        //log(hypergeo(a+k,b+k,c,x));
         RR=RR+exp(bb);
         if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
         else {res0=RR;}
@@ -3445,7 +3435,7 @@ double appellF4_mod(double nu,double rho2,double x,double y)
     pp1=pow(nu,nu)*pow(x2*y2,-arg)*pow(tgamma(arg),2);
     pp2=M_PI*pow(tgamma(arg1),2)*pow(1-rho2,-arg);
     app=appellF4(arg,arg,0.5,arg1,rho2*xx*yy/(x2*y2), nu*nu*rho2/(x2*y2));
-    return(pp1*app/pp2);
+    return(4*pp1*app/pp2);
 }
 
 
@@ -3470,7 +3460,7 @@ double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,doub
     {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho2,zistd/etamas,zjstd/etamos);}
     if(zi<mui&&zj<muj)
     {res=    ((p11+eta)/pow(etamas,2))*appellF4_mod(nu,rho2,zistd/etamas,zjstd/etamas);}
-    return(4*res/sill);
+    return(res/sill);
 }
 
 // Start: biv_two_pieceGaussian:
@@ -3500,7 +3490,7 @@ double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double e
     {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
     if(zi<mui&&zj<muj)
     {res=    ((p11+eta)/pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
-    return(4*res/sill);
+    return(res/sill);
 }
 // End: biv_two_pieceGaussian:
 
@@ -3981,28 +3971,19 @@ __kernel void Comp_Pair_BinomGauss2_OCL(__global const double *coordx,__global c
                 
                 u=data[gid+j];
                 v=data[j];
-                
                 if(!isnan(u)&&!isnan(v) )
                 {
-                    
-                    
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                     uu=(int) u;
                     vv=(int) v;
                     dens=biv_binom(NN,uu,vv,p1,p2,psj);//biv_binom(NN,uu,vv,p1,p2,psj)
                     sum+=  log(dens)*weights; //
                     
-                }
-                
-            }
-        }
-        
+                } } }
         else
             continue;
     }
-    
     res[gid] = sum;
-    
 }
 
 __kernel void Comp_Pair_BinomnegGauss2_OCL(__global const double *coordx,__global const double *coordy,__global const double *mean, __global const double *data, __global double *res,__global const int *int_par,__global const double *dou_par)
