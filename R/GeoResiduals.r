@@ -6,8 +6,8 @@ GeoResiduals<-function(fit)
 {
 if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
 ######
-num_betas=fit$numbetas
-model=fit$model
+num_betas=fit$numbetas #number of mean parameters
+model=fit$model        #type of model
 
 ## extracting mean parameters
 namescorr <- CorrParam(fit$corrmodel) 
@@ -17,7 +17,11 @@ namesparam<- names(param)
 paramcorr <- param[namescorr]
 nuisance <- param[namesnuis]
 sel=substr(names(nuisance),1,4)=="mean"
-beta2=as.numeric(nuisance[sel])   
+beta2=as.numeric(nuisance[sel])
+## names of estimated and fixed parameters
+nm=names(fit$param)
+nf=names(fit$fixed)
+ 
 
 #################################
 #### computing mean ########
@@ -26,21 +30,26 @@ mu=fit$X%*%beta2
 #################################
 #### computing residuals ########
 #################################
-
-dd=c(t(fit$data))
-### multiplicative models
+if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
+else dd=c(t(fit$data))
+### 
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(mu)  
-### additive models
-if(model %in% c("Gaussian","Logistic","SkewGaussian","TwoPieceGaussian",
+### 
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
-res1=dd-mu  
-
+res1=(dd-mu)/sqrt(as.numeric(param['sill']))
+###
+if(model %in% c("SkewGaussian"))  res1=(dd-mu)/sqrt( as.numeric(param['sill']) +
+                                      as.numeric(param['skew'])^2)
 #if(binomial or binomialneg or geom or bernoulli)
 #
 #............
 
 fit$X=as.matrix(rep(1,length(dd)))
+
+
+
 
 #### updating  object
 mm=0
@@ -50,8 +59,35 @@ fit$param=c(nuis_update,paramcorr)
 fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
+param=param[names(fit$param)]
+
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
+         "StudentT","TwoPieceGauss","TwoPieceStudentT"))
+{param['sill']=1;param['mean']=0}
+
+if(model %in% c("SkewGaussian")) 
+{param['mean']=0;param['skew']=0.5;param['sill']=0.5}#param['sill']=1;}
+
+
+fit$param=param[nm]
+fit$fixed=param[nf]
+
+fit$param=fit$param[!is.na(fit$param)]
+fit$fixed=fit$fixed[!is.na(fit$fixed)]
 ### formatting data
-if(fit$spacetime) data_res=matrix(res1,nrow=nrow(fit$data),ncol=ncol(fit$data),byrow=TRUE)
+if(fit$spacetime) 
+{if(!is.list(fit$coordx_dyn)) 
+          data_res=matrix(res1,nrow=nrow(fit$data),ncol=ncol(fit$data),byrow=TRUE)
+ else{ 
+     ns=unlist(lapply(fit$coordx_dyn,nrow))
+     sim_temp=list()
+                    for(k in 1:length(fit$coordt))
+                       { if(k==1) {indx=1:(sum(ns[1:k]))}
+                         if(k>1)    {indx=(sum(ns[1:(k-1)])+1):(sum(ns[1:k]))}
+                         sim_temp[[k]]=c(res1)[indx] }
+    data_res=sim_temp  
+ }
+}   
 else   data_res=as.vector(res1)
 
 fit$data=data_res

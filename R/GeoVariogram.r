@@ -85,12 +85,25 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
   #***********************************************************************************************#
     if(initparam$bivariate){
                n_var=initparam$numtime
+               spacetime_dyn=FALSE
+               if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
+               ns=initparam$ns
+               NS=cumsum(ns)
+               if(!spacetime_dyn){
+                                  data=c(t(data))
+                                  coordx=rep(coordx,n_var)
+                                  coordy=rep(coordy,n_var)
+                         }
+               if(spacetime_dyn) data=unlist(data)
+               NS=c(0,NS)[-(length(ns)+1)]
+
                moments_marg<-double(n_var*numvario)   # vect of square differences for each component (n_var) 11  e 22
                lenbins_marg<-integer(n_var*numvario)  #
                moments_cross<-double(0.5*n_var*(n_var-1)*numvario)  # vect of square differences for cross components (12)
                lenbins_cross<-integer(0.5*n_var*(n_var-1)*numvario) #
                DEV=.C("Binned_Variogram_biv2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
-               lenbins_cross=lenbins_cross, moments_cross=moments_cross, as.integer(numbins),lenbins_marg=lenbins_marg,moments_marg=moments_marg,
+               lenbins_cross=lenbins_cross, moments_cross=moments_cross, as.integer(numbins),lenbins_marg=lenbins_marg,
+               moments_marg=moments_marg,as.integer(ns),as.integer(NS),
                PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
                bins=DEV$bins
                lenbins_cross=DEV$lenbins_cross
@@ -115,6 +128,11 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
   #***********************************************************************************************#
   #***********************************************************************************************#
     if(initparam$spacetime){
+      numtime=initparam$numtime
+      spacetime_dyn=FALSE
+      if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
+      ns=initparam$ns
+      NS=cumsum(ns)
       numbint <- initparam$numtime-1 # number of temporal bins
       bint <- double(numbint)        # temporal bins
       momentt <- double(numbint)     # vector of temporal moments
@@ -124,14 +142,23 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
       momentst <- double(numbinst)   # vector of spatial-temporal moments
       lenbinst <- integer(numbinst)  # vector of spatial-temporal bin sizes
       if(cloud) fname <- 'Cloud_Variogram_st' else fname <- 'Binned_Variogram_st'
-      if(type=="lorelogram") fname <- "Binned_Lorelogram_st"
+      #if(type=="lorelogram") fname <- "Binned_Lorelogram_st"
       if(initparam$bivariate)  fname <- 'Binned_Variogram_biv'
       if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
+      else{
+      if(!spacetime_dyn){
+                                  data=c(t(data))
+                                  coordx=rep(coordx,numtime)
+                                  coordy=rep(coordy,numtime)
+                         }
+      if(spacetime_dyn) data=unlist(data)
+      }
+         NS=c(0,NS)[-(length(ns)+1)]
       fname <- paste(fname,"2",sep="") 
       # Compute the spatial-temporal moments:
       EV=.C(fname, bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
            lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments=moments,momentst=momentst,momentt=momentt,
-           as.integer(numbins), as.integer(numbint),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+           as.integer(numbins), as.integer(numbint),as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
        bins=EV$bins
        bint=EV$bint
        lenbins=EV$lenbins
@@ -141,28 +168,28 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
        momentt=EV$momentt
        momentst=EV$momentst
       centers <- bins[1:numvario]+diff(bins)/2
-      if(type=="lorelogram"){
-      elorel <- matrix(momentst,nrow=numvario,ncol=numbint,byrow=TRUE)
-      elorel <- rbind(c(0,momentt),cbind(moments,elorel))
-      a <- rowSums(elorel)==0
-      b <- colSums(elorel)==0
-      d <- rowSums(elorel)!=0
-      f <- colSums(elorel)!=0
-      if(sum(a)){
-          elorel <- elorel[-which(a),]
-          centers <- c(0,centers)[which(d)]
-          centers <- centers[-1]}
-      if(sum(b)){
-          elorel <- elorel[,-which(b)]
-          bint <- c(0,bint)[which(f)]
-          bint <- bint[-1]}
-      elorel[elorel==0] <- NA
-      moments <- as.vector(elorel[,1][-1])
-      momentt <- as.vector(elorel[1,][-1])
-      momentst <- c(t(elorel[-1,-1]))
-      lenbins <- rep(1,length(moments))
-      lenbint <- rep(1,length(momentt))
-      lenbinst <- rep(1,length(momentst))}
+    #  if(type=="lorelogram"){
+    #  elorel <- matrix(momentst,nrow=numvario,ncol=numbint,byrow=TRUE)
+    #  elorel <- rbind(c(0,momentt),cbind(moments,elorel))
+    #  a <- rowSums(elorel)==0
+    #  b <- colSums(elorel)==0
+    #  d <- rowSums(elorel)!=0
+    #  f <- colSums(elorel)!=0
+    #  if(sum(a)){
+    #      elorel <- elorel[-which(a),]
+    #      centers <- c(0,centers)[which(d)]
+    #      centers <- centers[-1]}
+    #  if(sum(b)){
+    #      elorel <- elorel[,-which(b)]
+    #      bint <- c(0,bint)[which(f)]
+    #      bint <- bint[-1]}
+    #  elorel[elorel==0] <- NA
+    #  moments <- as.vector(elorel[,1][-1])
+    #  momentt <- as.vector(elorel[1,][-1])
+    #  momentst <- c(t(elorel[-1,-1]))
+    #  lenbins <- rep(1,length(moments))
+    #  lenbint <- rep(1,length(momentt))
+    #  lenbinst <- rep(1,length(momentst))}
       indbin <- lenbins>0
       indbint <- lenbint>0
       indbinst <- lenbinst>0
@@ -175,11 +202,8 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
       lenbint <- lenbint[indbint]
       momentst <- momentst[indbinst]
       lenbinst <- lenbinst[indbinst]
-      # Computes the spatial marginal variogram:
       variograms <- moments/lenbins
-      # Computes the temporal marginal variogram:
       variogramt <- momentt/lenbint
-      # Computes the spatial-temporal variogram:
       variogramst <- momentst/lenbinst
     }
   #***********************************************************************************************#

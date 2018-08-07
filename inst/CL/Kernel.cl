@@ -3858,7 +3858,7 @@ __kernel void Comp_Pair_SkewGauss2_OCL(__global const double *coordx,__global co
                     corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                    sum+=  weights*log(biv_skew(corr,zi,zj,mean[gid+j],mean[j],nuis1,nuis2));
+                    sum+=  weights*log(biv_skew((1-nuis0)*corr,zi,zj,mean[gid+j],mean[j],nuis1,nuis2));
                 }
                 
             }
@@ -5351,7 +5351,7 @@ __kernel void Comp_Pair_SkewGauss_st2_OCL(__global const double *coordt,__global
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,t,v);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                            sum+= weights*log(biv_skew(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1,nuis2));
+                            sum+= weights*log(biv_skew((1-nuis0)*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1,nuis2));
                         }
                     }}
             }
@@ -5368,7 +5368,7 @@ __kernel void Comp_Pair_SkewGauss_st2_OCL(__global const double *coordt,__global
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,t,v);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
-                            sum+= weights*log(biv_skew(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1,nuis2));}
+                            sum+= weights*log(biv_skew((1-nuis0)*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1,nuis2));}
                     }
                 }
             }

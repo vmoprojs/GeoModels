@@ -438,7 +438,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
     
     int i=0,j=0,t=0,v=0;
     double corr,zi,zj,lags,lagt,weights=1.0;
-      if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+      if(nuis[1]<0 || nuis[0]<0|| nuis[0]>1) {*res=LOW;  return;}
 
         for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -452,7 +452,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                                    *res+= weights*log(biv_skew(corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]));
+                                    *res+= weights*log(biv_skew((1-nuis[0])*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]));
                          }}}}
                     else {  
          lagt=fabs(coordt[t]-coordt[v]);
@@ -465,7 +465,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                                    *res+=  weights*log(biv_skew(corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]));
+                                    *res+=  weights*log(biv_skew((1-nuis[0])*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]));
                                 }}}}
                 }}}
     if(!R_FINITE(*res))*res = LOW;
@@ -1046,7 +1046,7 @@ void Comp_Pair_SkewGauss2(int *cormod, double *coordx, double *coordy, double *c
 {
     
     int i=0,j=0;double corr,zi,zj,lags,weights=1.0;
-       if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+         if(nuis[1]<0 || nuis[0]<0|| nuis[0]>1){*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
             for(j=(i+1); j<ncoord[0];j++){
                 lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1058,7 +1058,7 @@ void Comp_Pair_SkewGauss2(int *cormod, double *coordx, double *coordy, double *c
                       if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=CorFct(cormod,lags,0,par,0,0);
                           if(*weigthed) {weights=CorFunBohman(lags,maxdist[0]);}
-                     *res+= weights*log(biv_skew(corr,zi,zj,mean[i],mean[j],nuis[1],nuis[2]));
+                     *res+= weights*log(biv_skew((1-nuis[0])*corr,zi,zj,mean[i],mean[j],nuis[1],nuis[2]));
                  }}}}
     // Checks the return values
     if(!R_FINITE(*res)) *res = LOW;

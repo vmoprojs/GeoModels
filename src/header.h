@@ -802,10 +802,11 @@ void Binned_Variogram_22(double *bins,double *coordx, double *coordy, double *co
 
 void Binned_Variogram_st2(double *bins, double *bint,double *coordx, double *coordy, double *coordt, double *data, int *lbins,
                          int *lbinst, int *lbint, double *moms, double *momst,
-                         double *momt, int *nbins, int *nbint);
+                         double *momt, int *nbins, int *nbint, int *ns,int *NS);
 
 
-void Binned_Variogram_biv2(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *cross_lbins, double *cross_moms, int *nbins,int *marg_lbins, double *marg_moms);
+void Binned_Variogram_biv2(double *bins,double *coordx, double *coordy, double *coordt, double *data, 
+  int *cross_lbins, double *cross_moms, int *nbins,int *marg_lbins, double *marg_moms,int *ns, int *NS);
 
 
 void Cloud_Variogram2(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
@@ -918,6 +919,8 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
+
 
 
 

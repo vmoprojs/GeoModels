@@ -50,11 +50,8 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
     Section \bold{Details}.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere when 
   using the great circle distance. Default value is the radius of the earth in Km (i.e. 6378.88)} 
-  \item{type}{A String denoting the type of variogram. Two options
-    are available: \code{variogram}, 
-    and \code{lorelogram}. It is returned respectively,
-    the standard variogram with the first (Gaussian responses),
-    lorelogram with the fourth (Binary data).}
+  \item{type}{A String denoting the type of variogram. The option
+     available is : \code{variogram}.}
     \item{bivariate}{Logical; if \code{FALSE} (the default) the data
     are interpreted as univariate spatial or spatial-temporal realisations. 
     Otherwise they are intrepreted as a a realization from a bivariate field.}
@@ -62,23 +59,13 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
 
 \details{
 
-  We briefly report the definitions of variogram used in this function.
+  We briefly report the definitions of semi-variogram used in this function.
   In the case of a spatial Gaussian random field
   the sample \code{variogram} estimator is defined by
   \deqn{\hat{\gamma}(h) = 0.5 \sum_{x_i, x_j \in N(h)} (Z(x_i) - Z(x_j))^2 / |N(h)|}
   where \eqn{N(h)} is the set of all the sample pairs whose distances fall into a tolerance region with size \eqn{h}
   (equispaced intervalls are considered).
-  Observe, that in the literature often the above definition is termed semivariogram (see e.g. the first reference).
-  Nevertheless, here this defition has been used in order to be consistent with the variogram defition used for the extremes
-  (see e.g. the third reference).
-
-  In the case of a spatial binary random field, the sample \code{lorelogram}
-  estimator (the analogue of the correlation) is defined by
-  \deqn{\hat{L}(h) = (N_{11}(h) N_{00}(h) )/ (N_{01}(h) N_{10}(h)).}
-  where \eqn{N_{11}(h)} is the number of pairs who are both equal to
-  \eqn{1}{1} and that falls in the bin
-  \eqn{h}{h}. Similarly are defined the other quantities.
-
+  
   In the case of a spatio-temporal Gaussian random field the sample
   \code{variogram} estimator is defined by
   \deqn{\hat{\gamma}(h, u) = 0.5 \sum_{(x_i, l), (x_j, k) \in N(h, u)} (Z(x_i, l) - Z(x_j, k))^2 / |N(h, u)|}
@@ -86,8 +73,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
   spatial distances fall into a tolerance region with size \eqn{h}{h}
   and \eqn{|k - l| = u}{\|k-l\|=u}. Note, that \eqn{Z(x_i, l)}{Z(x_i,l)}
   is the observation at site \eqn{x_i}{x_i} and time
-  \eqn{l}{l}. Taking this in mind and given the above definition of
-  lorelogram, the spatio-temporal extention is straightforward.
+  \eqn{l}{l}. 
 
   The  \code{numbins} parameter indicates the number of adjacent
   intervals to consider in order to grouped distances with which to
@@ -135,12 +121,6 @@ Cressie, N. A. C. (1993) \emph{Statistics for Spatial Data}. New York: Wiley.
 
   Gaetan, C. and Guyon, X. (2010) \emph{Spatial Statistics and Modelling}.
   Spring Verlang, New York.
-
-  Heagerty, P. J., and Zeger, S. L. (1998). Lorelogram: A Regression
-  Approach to Exploring Dependence in Longitudinal Categorical
-  Responses.
-  \emph{Journal of the American Statistical Association},
-  \bold{93}(441), 150--162
 }
 
 \seealso{\code{\link{GeoFit}}}

@@ -429,7 +429,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
 
         # START - checks the format of the coordinates and dataset
   if(!is.null(coordx_dyn))
-     {print("do checking")}
+     {AS=1}
   else
     {
     dimdata <- dim(data) # set the data dimension

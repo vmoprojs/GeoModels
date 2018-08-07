@@ -152,7 +152,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                          vv=covmatrix$param['sill'];
                          corri=cc$corri  }
         if(covmatrix$model==10) {    #skew gaussian
-                        corr2=cc$corri^2   
+                        corr2=((1-covmatrix$param["nugget"])*cc$corri)^2
                         sk=covmatrix$param['skew'];sk2=sk^2
                         vv=covmatrix$param['sill']
                         corri=((2*sk2/pi)*(sqrt(1-corr2) + cc$corri*asin(cc$corri)-1) + cc$corri*vv)/(vv+sk2*(1-2/pi));

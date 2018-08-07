@@ -2991,12 +2991,7 @@ __kernel void Comp_Pair_SkewGauss2_OCL(__global const double *coordx,__global co
                     corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                    //printf("corr: %f\t%f\t%f\t%f\t%f\n",corr,zi,zj,nuis1,nuis2);
-                    //double aux = biv_skew(corr,zi,zj,nuis1,nuis2);
-                    //printf("aux: %f\n",aux);
-                    sum+=  weights*log(biv_skew(corr,zi,zj,nuis1,nuis2));
-                    //printf("sum: %f\n",sum);
-                    //if(!(isfinite(sum))) sum = LOW;
+                    sum+=  weights*log(biv_skew((1-nuis0)*corr,zi,zj,nuis1,nuis2));
                 }
                 
             }
@@ -3051,12 +3046,7 @@ __kernel void Comp_Pair_Gamma2_OCL(__global const double *coordx,__global const 
                     corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                    //printf("corr: %f\t%f\t%f\t%f\t%f\n",corr,zi,zj,nuis1,nuis2);
-                    //double aux = biv_skew(corr,zi,zj,nuis1,nuis2);
-                    //printf("aux: %f\n",aux);
                     sum+=  weights*log(biv_gamma(corr,zi,zj,mean[gid+j],mean[j],nuis2)); //
-                    //printf("sum: %f\n",sum);
-                    //if(!(isfinite(sum))) sum = LOW;
                 }
                 
             }

@@ -255,7 +255,7 @@ if(model==12)   ##  student case
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
           as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
-        nu=1/nuisance['df'];    
+        nu=as.numeric(1/nuisance['df'])    
         print(nu)
   corr=((nu-2)*gamma((nu-1)/2)^2*(gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cr$corr^2)*cr$corr))/(2*gamma(nu/2)^2)
   if(!bivariate) {
@@ -265,7 +265,7 @@ if(model==12)   ##  student case
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- corr   
         vv=(nu)/(nu-2)
-        varcov=varcov*vv*nuisance['sill']
+        varcov=varcov*vv*as.numeric(nuisance['sill'])
         }
         }
 ###############################################################           
@@ -504,12 +504,12 @@ if(model==22)  {  ## Log Gaussian
               corr2=cr$corr^2; sk=as.numeric(nuisance['skew']); sk2=sk^2; vv=as.numeric(nuisance['sill'])
               corr=((2*sk2/pi)*(sqrt(1-corr2) + cr$corr*asin(cr$corr)-1) + cr$corr*vv)/(vv+sk2*(1-2/pi));
                 # Builds the covariance matrix:
-              vs=nuisance['sill']+nuisance['skew']^2*(1-2/pi)
-              varcov <- (nuisance['nugget'] + vs) * diag(dime)
-              corr <- corr * vs
-              varcov[lower.tri(varcov)] <- corr
-              varcov <- t(varcov)
-              varcov[lower.tri(varcov)] <- corr
+             varcov <-  diag(1,dime)
+             varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
+             varcov <- t(varcov)
+             varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
+             vv=nuisance['sill']+nuisance['skew']^2*(1-2/pi)
+             varcov=varcov*vv
             }
             if(bivariate)      {
                 fname <- "CorrelationMat_biv_skew2"

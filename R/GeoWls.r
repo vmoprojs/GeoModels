@@ -305,7 +305,13 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
     lenbins <- integer(numvario) # vector of spatial bin sizes
     ### Checks the type of variogram:
     fname <- 'Binned_Variogram'
+
+
     if(initparam$spacetime){### Computes the spatial-temporal variogram:
+      spacetime_dyn=FALSE
+      if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
+      ns=initparam$ns
+      NS=cumsum(ns)
       numbint <- initparam$numtime-1 # number of temporal bins
       bint <- double(numbint)        # vector temporal bins
       momentt <- double(numbint)     # vector of temporal moments
@@ -314,11 +320,18 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
       binst <- double(numbinst)      # spatial-temporal bins
       momentst <- double(numbinst)   # vector of spatial-temporal moments
       lenbinst <- integer(numbinst)  # vector of spatial-temporal bin sizes
-      fname <- 'Binned_Variogram_st'
-      fname <- paste(fname,"2",sep="") 
+      if(!spacetime_dyn){
+                                  data=c(t(data))
+                                  coordx=rep(coordx,length(coordt))
+                                  coordy=rep(coordy,length(coordt))
+                         }
+      if(spacetime_dyn) data=unlist(data)
+         NS=c(0,NS)[-(length(ns)+1)]
+      fname <- 'Binned_Variogram_st';fname <- paste(fname,"2",sep="") 
       # Compute the spatial-temporal moments:
       EV=.C(fname, bins=bins, bint=bint, as.double(coordx),as.double(coordy),as.double(coordt),as.double(initparam$data),
-           lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments= moments, momentst=momentst, momentt=momentt, as.integer(numbins), as.integer(numbint),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+           lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments= moments, momentst=momentst, momentt=momentt, as.integer(numbins), as.integer(numbint),
+           as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
       bins=EV$bins
       bint=EV$bint
       lenbins=EV$lenbins

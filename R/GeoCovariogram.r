@@ -224,6 +224,7 @@ if(!bivariate) {
               else {
               vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;
               vs=(vv+sk2*(1-2/pi))
+              correlation=(1-nuisance['nugget'] )*correlation
               corr2=correlation^2;  
               cc=((2*sk2/pi)*(sqrt(1-corr2) + correlation*asin(correlation)-1) + correlation*vv)/(vv+sk2*(1-2/pi))
               covariance=vs*cc;variogram=vs*(1-cc) }
