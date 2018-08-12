@@ -3342,7 +3342,7 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
         A=pow(shape,2)*pow(k,2*shape)*pow(zi*zj,shape-1);
         B= exp(-pow(k,shape)*(pow(zi/ci,shape)+pow(zj/cj,shape))/a);
         C=a*pow(ci*cj,shape);
-        res=A*B*bessel_ii(z,0,1)/C;
+        res=A*B*bessel_ii(z,0,2)/(exp(-z)*C);
         
     }
     else
@@ -3357,6 +3357,7 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 
 /*********** bivariate T distribution********************/
+
 double biv_T(double rho,double zi,double zj,double nuu)
 {
     //printf("rho:%f zi:%f zj:%f nu:%f\n",rho,zi,zj,nu);
@@ -3378,16 +3379,10 @@ double biv_T(double rho,double zi,double zj,double nuu)
     /// indipendent t distributions
     if(fabs(rho)<=EPS1)
     {
-        C = tgamma(cc)*pow((1+x*x/nu),-cc)/(sqrt(M_PI*nu)*tgamma(nu/2));
-        B = tgamma(cc)*pow((1+y*y/nu),-cc)/(sqrt(M_PI*nu)*tgamma(nu/2));
-        return(B*C);
-   // C = lgammafn(cc)+log(pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
-   // B = lgammafn(cc)+log(pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
-   // return(exp(B)*exp(C));
- 
-
-        //printf("rho:%f zi:%f zj:%f nu:%f\n",rho,zi,zj,nu);
-    } 
+        C = lgamma(cc)*pow((1+x*x/nu),-cc)/(sqrt(M_PI*nu)*lgamma(nu/2));
+        B = lgamma(cc)*pow((1+y*y/nu),-cc)/(sqrt(M_PI*nu)*lgamma(nu/2));
+        return(exp(B)*exp(C));
+    }
     while( k<=5000 )
     {
         //pp1=log(hypergeo(cc+k,cc+k,0.5,aux));
@@ -3399,31 +3394,35 @@ double biv_T(double rho,double zi,double zj,double nuu)
         bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgamma(nu2+k)-lgamma(k+1.0)-lgamma(nu2);
         a2 = a2 + exp(bb2);
         RR=(b1/c1)*a1+(b2/c2)*a2;
-        if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
+        if(RR>DBL_MAX) return(res0);
+        if((fabs(RR-res0)<1e-30) ) {break;}
         else {res0=RR;}
         k++;
     }
-    return(RR);
+        return(RR);
 }
 
-
 double appellF4(double a,double b,double c,double d,double x,double y)
+
 {
+
     double RR=0.0,bb=0.0,res0=0.0;
     int k=0;
     while( k<=5000 )
     {
         bb=k*log(y)+(lgamma(a+k)+lgamma(b+k)+lgamma(d))-(lgamma(a)+lgamma(b)+
-        lgamma(d+k)+lgamma(k+1.0))+
-           (c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
-        //log(hypergeo(a+k,b+k,c,x));
+                                                         lgamma(d+k)+lgamma(k+1.0))+
+        (c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
         RR=RR+exp(bb);
-        if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
+           if(RR>DBL_MAX) return(res0);
+        if((fabs(RR-res0)<1e-30)  ) {break;}
         else {res0=RR;}
         k++;
     }
     return(RR);
 }
+
+
 double appellF4_mod(double nu,double rho2,double x,double y)
 {
     double xx,yy,x2,y2,arg,arg1,pp1,pp2,app;
@@ -4404,7 +4403,7 @@ __kernel void Comp_Pair_T2_OCL(__global const double *coordx,__global const doub
                     corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                    bl=biv_T(corr,(zi-mean[j])/sqrt(nuis2),(zj-mean[gid+j])/sqrt(nuis2),nuis0)/nuis2;
+                    bl=biv_T(corr*(1-nuis1),(zi-mean[j])/sqrt(nuis2),(zj-mean[gid+j])/sqrt(nuis2),nuis0)/nuis2;
                     //printf("corr:%f bl:%f\n",corr,bl);
                     sum+= weights*log(bl);
                     //printf("corr:%f bl:%f sum:%f\n",corr,bl,sum);
@@ -6145,7 +6144,7 @@ __kernel void Comp_Pair_T_st2_OCL(__global const double *coordt,__global const d
     double maxdist = dou_par[6];
     double maxtime	=	dou_par[11];
     double nuis0 = dou_par[4];
-    //double nuis1 = dou_par[5];
+    double nuis1 = dou_par[5];
     double nuis2 = dou_par[9];
     double nuis3 = dou_par[10];
     double par0 = dou_par[0];
@@ -6206,7 +6205,7 @@ __kernel void Comp_Pair_T_st2_OCL(__global const double *coordt,__global const d
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                             //printf("a:%f b:%f\n",(mean[(l+NS[t])]),(mean[(m+NS[v])]));
-                            bl=biv_T(corr,(zi-mean[(l+NS[t])])/sqrt(nuis2), (zj-mean[(m+NS[v])])/sqrt(nuis2),nuis0)/nuis2;
+                            bl=biv_T(corr*(1-nuis1),(zi-mean[(l+NS[t])])/sqrt(nuis2), (zj-mean[(m+NS[v])])/sqrt(nuis2),nuis0)/nuis2;
                             sum+= weights*log(bl);
                         }}}}
             else{
@@ -6220,7 +6219,7 @@ __kernel void Comp_Pair_T_st2_OCL(__global const double *coordt,__global const d
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
-                            bl=biv_T(corr,(zi-mean[(l+NS[t])])/sqrt(nuis2),(zj-mean[(m+NS[v])])/sqrt(nuis2),nuis0)/nuis2;
+                            bl=biv_T(corr*(1-nuis1),(zi-mean[(l+NS[t])])/sqrt(nuis2),(zj-mean[(m+NS[v])])/sqrt(nuis2),nuis0)/nuis2;
                             sum+= weights*log(bl);
                         }
                     }}}

@@ -21,7 +21,6 @@ beta2=as.numeric(nuisance[sel])
 ## names of estimated and fixed parameters
 nm=names(fit$param)
 nf=names(fit$fixed)
- 
 
 #################################
 #### computing mean ########
@@ -59,19 +58,16 @@ fit$param=c(nuis_update,paramcorr)
 fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
-param=param[names(fit$param)]
 
 if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
-{param['sill']=1;param['mean']=0}
+{fit$param['sill']=1;fit$param['mean']=0}
 
 if(model %in% c("SkewGaussian")) 
 {param['mean']=0;param['skew']=0.5;param['sill']=0.5}#param['sill']=1;}
-
-
-fit$param=param[nm]
-fit$fixed=param[nf]
-
+fit$param=fit$param[nm]
+fit$fixed=fit$fixed[nf]
+### deleting NA
 fit$param=fit$param[!is.na(fit$param)]
 fit$fixed=fit$fixed[!is.na(fit$fixed)]
 ### formatting data

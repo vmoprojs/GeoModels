@@ -383,7 +383,7 @@ image.plot(xx, xx, map_weibull,
 
 ################################################################
 ###
-### Example 5. Spatial  simple kriging of a StudenT
+### Example 5. Spatial  simple kriging of a t
 ###            random field 
 ###
 ###############################################################

@@ -507,7 +507,7 @@ matrix3$nozero
 ###
 ###############################################################
 
-# Gen Wendland Parameters 
+# Gen Cauchy Parameters 
 param=list(sill=1,scale=0.2,nugget=0,power1=1,power2=1)
 
 # Correlation Parameters for Gen Cauchy model
@@ -543,7 +543,7 @@ dim(matrix5$covmatrix)
 ################################################################
 ###
 ### Example 6. Covariance matrix associated to
-### a  skew gaussian RF with Gen Wendland correlation model
+### a  skew gaussian RF with Exp correlation model
 ###
 ###############################################################
 
@@ -560,18 +560,18 @@ matrix6$covmatrix[1:10,1:10]
 ################################################################
 ###
 ### Example 7. Covariance matrix associated to
-### a  Gamma RF with Gen Wendland correlation model
+### a  Weibull RF with Genwend correlation model
 ###
 ###############################################################
 
 
-param=list(sill=1,scale=0.3/3,nugget=0,shape=4,mean=0)
+param=list(sill=1,scale=0.3,nugget=0,shape=4,mean=0,smooth=1,power2=5)
 # Simulation of a spatial Gaussian random field:
-matrix6 <- GeoCovmatrix(coordx=coords,  corrmodel="Exp", param=param, 
-                     model="Gamma")
+matrix7 <- GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
+                     sparse=TRUE,model="Weibull")
 
 # covariance matrix
-matrix6$covmatrix[1:10,1:10]
+matrix7$nozero
 
 
 ################################################################
@@ -584,18 +584,18 @@ matrix6$covmatrix[1:10,1:10]
 
 param=list(sill=1,scale=0.2,nugget=0,power2=4)
 # Simulation of a spatial Gaussian random field:
-matrix7 <- GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
+matrix8 <- GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
                      model="Binomial")
 
 # covariance matrix
-matrix7$covmatrix[1:10,1:10]
+matrix8$covmatrix[1:10,1:10]
 
 
 
 ################################################################
 ###
 ### Example 9.  Covariance matrix associated to
-### a bivariate separable exponential correlation model
+### a bivariate Matern exponential correlation model
 ###
 ###############################################################
 
@@ -610,7 +610,7 @@ param=list(scale=0.3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
              nugget_1=0,nugget_2=0,smooth=0.5,pcol=-0.25)
 
 # Covariance matrix 
-matrix8 <- GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
+matrix9 <- GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
 
 head(matrix8)
 

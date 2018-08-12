@@ -1430,9 +1430,10 @@ void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,do
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                    bl=biv_T((1-nugget)*corr,(zi-mean[i])/sqrt(sill),
                                             (zj-mean[j])/sqrt(sill),0,0,df,1)/sill;
-                   //Rprintf("%f\n",log(bl));
+                     if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
                              *res+= weights*log(bl);
                 }}}}
+
     // Checks the return values
     if(!R_FINITE(*res)) *res = LOW;
     return;

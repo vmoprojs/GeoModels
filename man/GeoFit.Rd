@@ -501,7 +501,7 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}
   
 \examples{
 library(GeoModels)
-library(spam)
+library(fields)
 
 ###############################################################
 ############ Examples of spatial Gaussian RFs ################

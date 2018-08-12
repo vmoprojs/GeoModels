@@ -4,7 +4,7 @@
 
 
 
-/* integrand  in  generalized wendland function*/
+/* integrand  in  hypergeometric function*/
 double int_gen_hyp(double x,double a, double b,double z,double c)
 {
     double res=0.0;
@@ -187,7 +187,7 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
         A=pow(shape,2)*pow(k,2*shape)*pow(zi*zj,shape-1);
         B= exp(-pow(k,shape)*(pow(zi/ci,shape)+pow(zj/cj,shape))/a);
         C=a*pow(ci*cj,shape); 
-        res=A*B*bessel_i(z,0,1)/C;
+        res=A*B*bessel_i(z,0,2)/(exp(-z)*C);
 
     }
     else
@@ -1574,8 +1574,8 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
     bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
     RR=(b1/c1)*a1+(b2/c2)*a2;
-    //if(fabs(RR-res0)<=1e-40) {break;}
-    if((fabs(RR-res0)<1e-50) || isnan(RR) ) {break;}
+    if(!R_FINITE(RR)) return(res0);
+    if((fabs(RR-res0)<1e-30)  ) {break;}
     else {res0=RR;}
   }
 return(RR);
@@ -1594,6 +1594,7 @@ double RR=0.0,bb=0.0,res0=0.0;int k=0;
                +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
               // +log(hypergeo(a+k,b+k,c,x));
     RR=RR+exp(bb);
+    if(!R_FINITE(RR)) return(res0);
  if(fabs(RR-res0)<=1e-30) {break;}
     else {res0=RR;}
 }

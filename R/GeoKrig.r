@@ -152,7 +152,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                          vv=covmatrix$param['sill'];
                          corri=cc$corri  }
         if(covmatrix$model==10) {    #skew gaussian
-                        corr2=((1-covmatrix$param["nugget"])*cc$corri)^2
+                        corr2=(as.numeric((1-covmatrix$param["nugget"])*cc$corri))^2
                         sk=covmatrix$param['skew'];sk2=sk^2
                         vv=covmatrix$param['sill']
                         corri=((2*sk2/pi)*(sqrt(1-corr2) + cc$corri*asin(cc$corri)-1) + cc$corri*vv)/(vv+sk2*(1-2/pi));
@@ -161,14 +161,15 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                         corri=((1-covmatrix$param["nugget"])*cc$corri)^2
         if(covmatrix$model==12) # student T
                          {
+                        cc=as.numeric((1-covmatrix$param["nugget"])*cc$corri ) 
                         vv=covmatrix$param['sill']  
                         nu=1/covmatrix$param['df']
-                        corri=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cc$corri^2)*cc$corri)/(2*gamma(nu/2)^2)
+                        corri=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cc^2)*cc)/(2*gamma(nu/2)^2)
                       }
         if(covmatrix$model==26) {  # weibull 
                         sh=covmatrix$param['shape']
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
-                        cc1=(1-covmatrix$param["nugget"])*cc$corri
+                        cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
                         corri=bcorr*((1-cc1^2)^(1+2/sh)*gsl::hyperg_2F1(1+1/sh, 1+1/sh, 1,cc1^2) -1) #ojo es una tranformada de la 1F2             
          }
           if(covmatrix$model==24) {  # loglogistic
@@ -205,7 +206,7 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                           if(which==2)    vvar=covmatrix$param["sill_2"]+covmatrix$param["nugget_2"]}
              else    {if(covmatrix$model==1)   vvar=vv     #gaussian
                       if(covmatrix$model==10)  vvar= (vv+sk^2*(1-2/pi))   ## skewgaus
-                      if(covmatrix$model==12)  vvar=nu/(nu-2)              ## studentT
+                      if(covmatrix$model==12)  vvar=vv*nu/(nu-2)              ## studentT
                       if(covmatrix$model==27)  vvar=nu*(3*sk2+1)/(nu-2)-
                                                      (4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) # two pieceT
                       if(covmatrix$model==29)  vvar=(1+3*sk2)-8*sk2/pi                  # two piece Gaussian
