@@ -164,26 +164,26 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
                         cc=as.numeric((1-covmatrix$param["nugget"])*cc$corri ) 
                         vv=covmatrix$param['sill']  
                         nu=1/covmatrix$param['df']
-                        corri=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,cc^2)*cc)/(2*gamma(nu/2)^2)
+                        corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2))*cc)/(2*gamma(nu/2)^2)
                       }
         if(covmatrix$model==26) {  # weibull 
                         sh=covmatrix$param['shape']
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
-                        corri=bcorr*((1-cc1^2)^(1+2/sh)*gsl::hyperg_2F1(1+1/sh, 1+1/sh, 1,cc1^2) -1) #ojo es una tranformada de la 1F2             
+                        corri=bcorr*((1-cc1^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc1^2)) -1) #ojo es una tranformada de la 1F2             
          }
           if(covmatrix$model==24) {  # loglogistic
                         sh=covmatrix$param['shape']
                         cc1=(1-covmatrix$param["nugget"])*cc$corri
 corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
-                        (gsl::hyperg_2F1(-1/sh, -1/sh, 1,cc1^2)*
-                         gsl::hyperg_2F1( 1/sh, 1/sh, 1,cc1^2) -1)              
+                        (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,cc1^2))*
+                         Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
                         nu=1/covmatrix$param['df'];sk=covmatrix$param['skew']
                         vv=covmatrix$param['sill']
                         corr2=cc$corri^2;sk2=sk^2
-                        a1=gsl::hyperg_2F1(0.5, 0.5, nu/2,corr2)
+                        a1=Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,corr2))
                         a2=cc$corri*asin(cc$corri) + (1-corr2)^(0.5)
                         ll=qnorm((1-sk)/2)
                         p11=pbivnorm::pbivnorm(ll,ll, rho = cc$corri, recycle = TRUE)

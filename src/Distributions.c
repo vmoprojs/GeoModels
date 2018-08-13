@@ -1538,7 +1538,7 @@ void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 
 double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,double sill)
 {
-  int k=0;
+  int k=0; 
   zi=(zi-ai)/sqrt(sill);
   zj=(zj-aj)/sqrt(sill);
   double nu=1/nuu;

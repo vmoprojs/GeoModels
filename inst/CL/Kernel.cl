@@ -3360,7 +3360,6 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 double biv_T(double rho,double zi,double zj,double nuu)
 {
-    //printf("rho:%f zi:%f zj:%f nu:%f\n",rho,zi,zj,nu);
     double nu=1/nuu;
     int k=0;
     double B=0.0,C=0.0,res0=0.0,RR=0.0,pp1=0.0,pp2=0.0;
@@ -3379,9 +3378,9 @@ double biv_T(double rho,double zi,double zj,double nuu)
     /// indipendent t distributions
     if(fabs(rho)<=EPS1)
     {
-        C = lgamma(cc)*pow((1+x*x/nu),-cc)/(sqrt(M_PI*nu)*lgamma(nu/2));
-        B = lgamma(cc)*pow((1+y*y/nu),-cc)/(sqrt(M_PI*nu)*lgamma(nu/2));
-        return(exp(B)*exp(C));
+    C = lgamma(cc)+log(pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgamma(nu/2);
+    B = lgamma(cc)+log(pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgamma(nu/2);
+    return(exp(B)*exp(C));
     }
     while( k<=5000 )
     {
