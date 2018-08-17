@@ -23,7 +23,9 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
               decompvarcov <- MatDecomp(covmatrix$covmatrix,method)
               if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}      
                invcov <- MatInv(decompvarcov,method)}
-        else{  decompvarcov  <- try(spam::as.spam(covmatrix$covmatrix),silent=TRUE)
+        else{  
+
+               decompvarcov  <- try(spam::as.spam(covmatrix$covmatrix),silent=TRUE)
                if(class(decompvarcov)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
                invcov<-spam::solve.spam(decompvarcov)
         }
@@ -82,13 +84,17 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
           param=paramtemp
           covmatrix$namesnuis=unique(c(meantemp,covmatrix$namesnuis))
     }
-    else 
-        X=covmatrix$X 
+    else { X=covmatrix$X }
     ###############
     ###############
     num_betas=ncol(X)
-    
-    if(is.null(Xloc))   Xloc=as.matrix(rep(1,dimat2))  
+    if(is.null(Xloc))   Xloc=as.matrix(rep(1,dimat2)) 
+    if(spacetime_dyn)
+    { if(!is.list(Xloc)) {stop("covariates must be given as a list")}
+      else               {env <- new.env();Xloc=do.call(rbind,args=c(Xloc),envir = env)
+                          Xloc=as.matrix(Xloc)}
+    } 
+  
 
     nuisance <- param[covmatrix$namesnuis]
     sel=substr(names(nuisance),1,4)=="mean"
@@ -147,41 +153,41 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
         as.integer(covmatrix$spacetime),
         as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
         as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-        if(covmatrix$model==1)    #gaussian
-                        {
-                         vv=covmatrix$param['sill'];
-                         corri=cc$corri  }
+        if(covmatrix$model==1) { #gaussian
+                         vv=as.numeric(covmatrix$param['sill'])
+                         corri=cc$corri 
+                          }
         if(covmatrix$model==10) {    #skew gaussian
                         corr2=(as.numeric((1-covmatrix$param["nugget"])*cc$corri))^2
-                        sk=covmatrix$param['skew'];sk2=sk^2
-                        vv=covmatrix$param['sill']
+                        sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
+                        vv=as.numeric(covmatrix$param['sill'])
                         corri=((2*sk2/pi)*(sqrt(1-corr2) + cc$corri*asin(cc$corri)-1) + cc$corri*vv)/(vv+sk2*(1-2/pi));
                         }        
         if(covmatrix$model==21)  # gamma
-                        corri=((1-covmatrix$param["nugget"])*cc$corri)^2
+                        corri=((1-as.numeric(covmatrix$param["nugget"]))*cc$corri)^2
         if(covmatrix$model==12) # student T
                          {
-                        cc=as.numeric((1-covmatrix$param["nugget"])*cc$corri ) 
-                        vv=covmatrix$param['sill']  
-                        nu=1/covmatrix$param['df']
+                        cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
+                        vv=as.numeric(covmatrix$param['sill']) 
+                        nu=1/as.numeric(covmatrix$param['df'])
                         corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2))*cc)/(2*gamma(nu/2)^2)
                       }
         if(covmatrix$model==26) {  # weibull 
-                        sh=covmatrix$param['shape']
+                        sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
                         corri=bcorr*((1-cc1^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc1^2)) -1) #ojo es una tranformada de la 1F2             
          }
           if(covmatrix$model==24) {  # loglogistic
-                        sh=covmatrix$param['shape']
-                        cc1=(1-covmatrix$param["nugget"])*cc$corri
+                        sh=as.numeric(covmatrix$param['shape'])
+                        cc1=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
 corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                         (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,cc1^2))*
                          Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
-                        nu=1/covmatrix$param['df'];sk=covmatrix$param['skew']
-                        vv=covmatrix$param['sill']
+                        nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
+                        vv=as.numeric(covmatrix$param['sill'])
                         corr2=cc$corri^2;sk2=sk^2
                         a1=Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,corr2))
                         a2=cc$corri*asin(cc$corri) + (1-corr2)^(0.5)
@@ -193,7 +199,7 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                       }
         if(covmatrix$model==29) {  # two piece Gaussian 
                           corr2=sqrt(1-cc$corri^2)
-                          vv=covmatrix$param['sill']
+                          vv=as.numeric(covmatrix$param['sill'])
                           sk=as.numeric(nuisance['skew']); sk2=sk^2
                           ll=qnorm((1-sk)/2)
                           p11=pbivnorm::pbivnorm(ll,ll, rho = cc$corri, recycle = TRUE)
@@ -273,6 +279,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                ####gaussian  and StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10))
                {
+          
                              pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
               }
                       
@@ -304,6 +311,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
 
    ####### here!!!!!
       if(mse) {
+# Gaussian,StudentT,skew-Gaussian,two piece        
 if(covmatrix$model %in% c(1,12,27,29,10))  vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%t(cc)))  ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)   

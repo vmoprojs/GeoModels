@@ -385,12 +385,11 @@ void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *gr
   thre[0]=thres[1];thre[1]=thret[1];
 
   double **csu;                                   //2x2 matrix of compact support in bivariate tapering
-  if ( (csu=(double **) R_alloc(ntime[0],sizeof(double *))) != NULL ){
-  for(i = 0; i < ntime[0]; i++) if ( (csu[i] = (double *) R_alloc(ntime[0], sizeof(double))) == NULL )  Rprintf("Allocazione fallita");
-  csu[0][0]=thres[1];csu[0][1]=thres[2];csu[1][0]=thres[2];csu[1][1]=thres[3];
+  if ( (csu=(double **) R_alloc(ntime[0],sizeof(double *))) != NULL )
+   {
+                  for(i = 0; i < ntime[0]; i++) if ( (csu[i] = (double *) R_alloc(ntime[0], sizeof(double))) == NULL )  Rprintf("Allocazione fallita");
+                  csu[0][0]=thres[1];csu[0][1]=thres[2];csu[1][0]=thres[2];csu[1][1]=thres[3];
    }
-
-
 
   double dij=0.0,dtv=0.0;
   int count=0;
@@ -428,39 +427,57 @@ void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *gr
                 ia[k+1]=ia[k]+cc;
                 k=k+1;}}
      }
-     else{
+else{
 
  if(isst[0]){  // space time case
 
-   ia[0] = 1;
-          for(i=0;i<ncoord[0];i++){
-          for(t=0;t<*ntime;t++){
+        ia[0] = 1;
+for(t=0;t<*ntime;t++){
+  for(i=0;i<ncoord[0];i++){
           cc=0;
+           for(v=0;v<*ntime;v++){
+               dtv=fabs(coordt[t]-coordt[v]);
+               *maximtime=fmax(*maximtime, dtv);
+               if(dtv) *minimtime=fmin(*minimtime, dtv);
           for(j=0;j<ncoord[0];j++){
           dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
           *maximdista=fmax(*maximdista, dij);
           if(dij) *minimdista=fmin(*minimdista, dij);
-          for(v=0;v<*ntime;v++){
-               dtv=fabs(coordt[t]-coordt[v]);
-               *maximtime=fmax(*maximtime, dtv);
-               if(dtv) *minimtime=fmin(*minimtime, dtv);
                 Comp_supp(c_supp,tapmodel, dij, dtv,thre);
+                  
                   if((dij<c_supp[0]||is_equal(dij,c_supp[0]))&&(dtv<c_supp[1] ||  is_equal(dtv,c_supp[1]))){
-
+                              // Rprintf("%f %f %f %f %f %f\n",dtv,dij,c_supp[0],c_supp[1],thre[0],thre[1]);      
                                tlags[count]=dij;
                                tlagt[count]=dtv;
-                               idx[count] =(i * (*ntime) * (*ntime) * ncoord[0]) +  (t*  ncoord[0] *  *ntime) +  (1+v+ *ntime * j);
-                               ja[count]=1+v+(*ntime) * j;
+                               idx[count] =(t * (ncoord[0]) * (ncoord[0]) * ntime[0]) +  (i*  ntime[0] *  *ncoord) +  (1+j+ *ntime * v);
+                               ja[count]=1+j+(*ncoord) * v;
                                cc=cc+1;
                                count = count +1 ;
                 }}}
                 ia[k+1]=ia[k]+cc;
                 k=k+1;}}
-
-
          }   // end space time case
      if(isbiv[0]) {    //bivariate case
-          ia[0] = 1;
+       ia[0] = 1;
+   for(t=0;t<*ntime;t++){
+   for(i=0;i<ncoord[0];i++){
+          cc=0;
+           for(v=0;v<*ntime;v++){
+             for(j=0;j<ncoord[0];j++){
+                    dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                    *maximdista=fmax(*maximdista, dij);
+                    if(dij<=csu[t][v]){
+                  if(j<i)  {tfirst[count]=v;tsecond[count]=t;}
+                  else     {tfirst[count]=t;tsecond[count]=v;}
+                               tlags[count]=dij;
+                               idx[count] =(t * ncoord[0] * ncoord[0] * ntime[0]) +  (i*  ntime[0] *  ncoord[0]) +  (1+j+ ncoord[0] * v);
+                               ja[count]=1+j+ncoord[0] * v;
+                               cc=cc+1;
+                               count = count +1 ;
+                }}}
+                ia[k+1]=ia[k]+cc;
+                k=k+1;}}
+         /* ia[0] = 1;
           for(i=0;i<ncoord[0];i++){
           for(t=0;t<ntime[0];t++){
           cc=0;
@@ -479,7 +496,7 @@ void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *gr
                                count = count +1 ;
                 }}}
                 ia[k+1]=ia[k]+cc;
-                k=k+1;}}
+                k=k+1;}}*/
        }}
   *npairs=count;
   if(!isst[0]&&!isbiv[0]) { lags=(double *) Calloc(count,double);
@@ -490,13 +507,15 @@ void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *gr
   lagt=(double *) Calloc(count,double);
   for(i=0;i<count;i++) { lags[i]=tlags[i];lagt[i]=tlagt[i];}
   Free(tlagt);Free(tlags);}
+
   if(isbiv[0]){  //saving indices for the bivariate case
-  first =(int *)  Calloc(count,int);
-  second=(int *)  Calloc(count,int);
-  lags=(double *) Calloc(count,double);
-  //lagt=(double *) Calloc(count,double);
-  for(i=0;i<count;i++) { lags[i]=tlags[i];first[i]=tfirst[i];second[i]=tsecond[i];}
-  Free(tlags);Free(tfirst);Free(tsecond);}
+    first =(int *)  Calloc(count,int);
+    second=(int *)  Calloc(count,int);
+    lags=(double *) Calloc(count,double);
+    //lagt=(double *) Calloc(count,double);
+    for(i=0;i<count;i++) { lags[i]=tlags[i];first[i]=tfirst[i];second[i]=tsecond[i];}
+    Free(tlags);Free(tfirst);Free(tsecond);
+     }
   }}    // end tapering case
 
   else {   // no tapering
@@ -588,6 +607,15 @@ void Comp_supp(double *c_supp,int *cormod, double h,double u, double *par)
         //c_supp[1]=par[1]*pow(1+pow(h/par[0],1),-tapsep[1]);
         break;
         case 230:
+        case 69:
+        case 70:
+        case 71:
+        case 72:
+        case 73:
+        case 74:
+        case 75:
+        case 76:
+        case 77:
             c_supp[0]=par[0];
             c_supp[1]=par[1];
             break;
@@ -1098,15 +1126,9 @@ void DeleteGlobalVar()
 {
   int i=0;
   // Delete all the global variables:
-  Free(maxdist);
-  Free(minimdista);
-  Free(maximdista);
-  Free(ncoordx);
-  Free(ncoordy);
-  Free(npairs);
-  Free(nrep);
-  Free(type);
-  Free(REARTH);
+  Free(maxdist);Free(minimdista);Free(maximdista);
+  Free(ncoordx);Free(ncoordy);Free(npairs);
+  Free(nrep);Free(type);Free(REARTH);
   if(!isst[0]&&!isbiv[0]) {  //spatial case
       if(istap[0])    Free(lags); //tapering case
       else         {
@@ -1115,9 +1137,7 @@ void DeleteGlobalVar()
            }
       }
   else   {    // temporal or bivariate case
-  Free(maxtime);
-  Free(maximtime);
-  Free(minimtime);
+  Free(maxtime);Free(maximtime);Free(minimtime);
   if(istap[0]) {// tapering case}
            Free(lags);
            if(isst[0])     Free(lagt);
@@ -1137,15 +1157,10 @@ void DeleteGlobalVar()
   if(isbiv[0]) {for(i=0;i<ntime[0];i++)  Free(dista[i]);
                 Free(dista);
                 }
-  
-  Free(ntime);
-  Free(ncoord);
-  Free(isbiv);
-  Free(istap);
-  Free(isst);
-  Free(ismem);
-    Free(cdyn);
-    
+  Free(ntime);Free(ncoord);
+  Free(isbiv); Free(istap);
+  Free(isst);Free(ismem);
+  Free(cdyn);
   return;
 }
 

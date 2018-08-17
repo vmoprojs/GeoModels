@@ -2240,7 +2240,7 @@ void CorrelationMat_st_tap(double *rho,double *coordx, double *coordy, double *c
 
   for(i=0;i<*npairs;i++) {
       rho[i]=CorFct(cormod,lags[i],lagt[i],par,0,0);
- 
+     // Rprintf("%d %f %f  \n",*cormod,lags[i],lagt[i]);
   }
 return;
 }

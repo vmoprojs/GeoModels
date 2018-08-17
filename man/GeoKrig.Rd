@@ -313,7 +313,7 @@ loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 ## simple kriging 
 pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,n=n,
-       sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
+       sparse=TRUE,param= as.list(c(fit$param,fixed)))
 
 #standard   binomial kriging
 map_binom=matrix(round(pr$pred),ncol=length(xx))

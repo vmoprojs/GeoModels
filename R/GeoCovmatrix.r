@@ -108,6 +108,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
            PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
         corr=cr$corr
         if(!bivariate){
              vcov <- corr*nuisance['sill']; vcov[vcov==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
