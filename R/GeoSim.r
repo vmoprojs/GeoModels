@@ -101,7 +101,6 @@ forGaussparam<-function(model,param,bivariate)
     checkinput <- CkInput(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
     NULL, grid, NULL, NULL, NULL, model, n,  NULL, param,radius,
      NULL, NULL, NULL, "Standard", NULL, NULL, NULL,X)
-
     if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
     ################################################################################################################
@@ -112,8 +111,17 @@ forGaussparam<-function(model,param,bivariate)
   ################################################################################ 
   ################ setting parameters for each model #############################
   ################################################################################
-    sel=substr(names(param),1,4)=="mean"; 
+    
+    if(!bivariate)
+    {sel=substr(names(param),1,4)=="mean"; 
     num_betas=sum(sel)   ## number of covariates
+    }
+    else
+    {
+    print(param)  
+    }
+    
+
     k=1
 
   

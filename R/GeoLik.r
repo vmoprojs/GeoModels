@@ -371,8 +371,8 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         nuisance <- pram[namesnuis]
         # Standardizes the data:
          stdata <- data-c(
-              rep(as.numeric(nuisance['mean_1']),dimat/2),
-              rep(as.numeric(nuisance['mean_2']),dimat/2))
+              rep(as.numeric(nuisance['mean_1']),ns[1]),
+              rep(as.numeric(nuisance['mean_2']),ns[2]))
         #stdata <- data-rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2)  
         #print(head(as.numeric(rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2) )))
 
@@ -675,12 +675,14 @@ if(!onlyvar){   # performing optimization
             else {
                   zeros<-rep(0,numparam)
                   if(flagnuis[1]){  #mean_1 parameter
-                                  unozeros<-rep(c(1,0),numcoord*numtime);
+                                  #unozeros<-rep(c(1,0),numcoord*numtime);
+                                  unozeros<-c(rep(1,ns[1]),rep(0,ns[2]));
                                   fishmean1=t(unozeros)%*%invar%*%unozeros;
                                   fisher<-rbind(c(fishmean1,zeros),cbind(zeros,fisher));zeros=c(0,zeros)
                                  }
                   if(flagnuis[2]){   #mean_2 parameter
-                                  zerounos<-rep(c(0,1),numcoord*numtime);
+                                  #zerounos<-rep(c(0,1),numcoord*numtime);
+                                  zerounos<-c(rep(0,ns[1]),rep(1,ns[2]));
                                   fishmean2=t(zerounos)%*%invar%*%zerounos;
                                   fisher<-rbind(c(fishmean2,zeros),cbind(zeros,fisher)) }
                   }

@@ -382,8 +382,6 @@ int h=0, i=0, j=0;
           for(j=i+1;j<ns[v];j++){
                   lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
         if(lags<=dista[t][v]) {
-
-
     for(h=0;h<(*nbins-1);h++)     {
       if((bins[h]<=lags) && (lags<bins[h+1])){
                x=data[(i+NS[t])];
@@ -393,8 +391,6 @@ int h=0, i=0, j=0;
                   marg_lbins[h+t*(*nbins-1)]+=1;
                   
               }}}
-
-
             }}}}
    else{// computes the   cross  variogram:
              for(i=0;i<ns[t];i++){

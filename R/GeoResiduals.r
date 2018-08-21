@@ -6,6 +6,9 @@ GeoResiduals<-function(fit)
 {
 if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
 ######
+
+if(!fit$bivariate)
+{
 num_betas=fit$numbetas #number of mean parameters
 model=fit$model        #type of model
 
@@ -39,16 +42,18 @@ if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 res1=(dd-mu)/sqrt(as.numeric(param['sill']))
 ###
-if(model %in% c("SkewGaussian"))  res1=(dd-mu)/sqrt( as.numeric(param['sill']) +
-                                      as.numeric(param['skew'])^2)
+if(model %in% c("SkewGaussian"))  
+{vskew=as.numeric(param['sill']) + as.numeric(param['skew'])^2
+res1=(dd-mu)/sqrt(vskew)
+}
+
+
+
 #if(binomial or binomialneg or geom or bernoulli)
 #
 #............
 
 fit$X=as.matrix(rep(1,length(dd)))
-
-
-
 
 #### updating  object
 mm=0
@@ -64,7 +69,10 @@ if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
 {fit$param['sill']=1;fit$param['mean']=0}
 
 if(model %in% c("SkewGaussian")) 
-{param['mean']=0;param['skew']=0.5;param['sill']=0.5}#param['sill']=1;}
+{param['mean']=0;
+ fit$param['skew']=as.numeric(param['skew'])/sqrt(vskew);
+ fit$param['sill']=as.numeric(param['sill'])/sqrt(vskew)
+}
 fit$param=fit$param[nm]
 fit$fixed=fit$fixed[nf]
 ### deleting NA
@@ -87,8 +95,12 @@ if(fit$spacetime)
 else   data_res=as.vector(res1)
 
 fit$data=data_res
+}
+else
+{
 #if(fit$bivariate.....)
 
+}
 
 ### geofit object
 GeoFit <- list(bivariate=fit$bivariate,

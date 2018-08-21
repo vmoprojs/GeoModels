@@ -330,42 +330,44 @@ else
 //bivariate skew gaussian distribution
 double biv_skew(double corr,double z1,double z2,double mi,double mj,double vari,double skew)
 {
-    double aux1=0.0,aux11=0.0, aux2=0.0,aux21 = 0.0, aux22=0.0, pdf1=0,pdf2=0,cdf1=0,cdf2=0,quadr,zi,zj;
+   double aux1=0.0,aux11=0.0, aux2=0.0,aux21 = 0.0, aux22=0.0, pdf1=0,pdf2=0,cdf1=0,cdf2=0,quadr,zi,zj;
     zi=z1-mi;
     zj=z2-mj;
-    double det,dens,det1,det2,lim1,lim2,a11,a22;
+    double det,dens,det1,det2,lim1,lim2,a11,a12,a22;
     double nu2  = R_pow(skew,2);
-                                       // pdf 1
-                                       aux1  =  vari + nu2 ;
-                                       aux2  =  corr * aux1;
+    double om2  = R_pow(vari,1);
+    double cor = corr;
+                                      // pdf 1
+                                       aux1  =  om2 + nu2 ;
+                                       aux2  =  cor * aux1;
                                        det1  =  R_pow(aux1,2) - R_pow(aux2,2) ; 
-                                       det2  =  aux1 - aux1 * R_pow(corr,2)  ;
-                                       quadr =  (1.0/det2)*( (R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*corr*zi*zj  ) ;  
+                                       det2  =  aux1 - aux1 * R_pow(cor,2)  ;
+                                       quadr =  (1.0/det2)*( (R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*cor*zi*zj  ) ;  
                                        pdf1  =  (0.5/M_PI) * (1/sqrt(det1)) * exp(- 0.5 * quadr  ) ;
                                        lim1  = (zi * skew)/(aux1);
                                        lim2  = (zj * skew)/(aux1);
-                                       a11   = (vari)/(aux1);
-                                       a22   = (corr * vari)/(aux1);
+                                       a11   = (om2)/(aux1);
+                                       a22   = (cor * om2)/(aux1);
                                        cdf1  =  cdf_norm(lim1,lim2,a11,a22) ;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                        // pdf 2
-                                       aux1  =  vari + nu2 ;
-                                       aux2  =  vari * corr - nu2 * corr ;
+                                       aux1  =  om2 + nu2 ;
+                                       aux2  =  om2 * cor - nu2 * cor ;
                                        det   =  R_pow(aux1,2) - R_pow(aux2,2) ;   
                                        quadr =  (1.0/det)*( (aux1)*(R_pow(zj,2.0)+R_pow(zi,2.0)) - 2.0*aux2*zi*zj  ) ;  
                                        pdf2  =  (0.5/M_PI) * (1/sqrt(det)) * exp(- 0.5 * quadr) ;
-                                       aux1  =  vari + nu2 ;
-                                       aux2  =  vari * corr - nu2 * corr ;
+                                       aux1  =  om2 + nu2 ;
+                                       aux2  =  om2 * cor - nu2 * cor ;
                                        aux11 = (skew)/( R_pow(aux1,2.0) - R_pow(aux2,2));
-                                       aux21 = nu2 * (1 - R_pow(corr,2.0));
-                                       aux22 = vari * (1 + R_pow(corr,2.0));
-                                       
-                                       lim1  = aux11 * (zi*aux21 + zi*aux22 - 2*zj*vari*corr);
-                                       lim2  = aux11 * (zj*aux21 + zj*aux22 - 2*zi*vari*corr); // bien hasta aquí
-                                       a11   =  1 - skew*aux11 * (nu2 + vari - nu2 * R_pow(corr,2.0) + 3*vari * R_pow(corr,2.0));
-                                       a22   =  - corr + (skew) * aux11 * ( nu2  *(corr - R_pow(corr,3.0)) + vari*(corr + R_pow(corr,3.0)) + 2 * corr * vari  ); 
+                                       aux21 = nu2 * (1 - R_pow(cor,2.0));
+                                       aux22 = om2 * (1 + R_pow(cor,2.0));
+                                      
+                                       lim1  = aux11 * (zi*aux21 + zi*aux22 - 2*zj*om2*cor);
+                                       lim2  = aux11 * (zj*aux21 + zj*aux22 - 2*zi*om2*cor); // bien hasta aquí
+                                       a11   =  1 - skew*aux11 * (nu2 + om2 - nu2 * R_pow(cor,2.0) + 3*om2 * R_pow(cor,2.0));
+                                       a22   =  - cor + (skew) * aux11 * ( nu2  *(cor - R_pow(cor,3.0)) + om2*(cor + R_pow(cor,3.0)) + 2 * cor * om2  ); 
                                        cdf2  =  cdf_norm(lim1,lim2,a11,a22) ; 
-                                  
+  
 dens = 2*(pdf1 * cdf1 + pdf2 * cdf2);
 return(dens);
 }

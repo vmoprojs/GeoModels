@@ -237,7 +237,7 @@ if(!bivariate) {
                               vs= sill* nu*(3*sk^2+1)/(nu-2)-(4*sk^2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2)
                               ##
                               corr2=correlation^2;sk2=sk^2
-                              a1=gsl::hyperg_2F1(0.5, 0.5, nu/2,corr2)
+                              a1=Re(hypergeo::hypergeo(0.5, 0.5, nu/2,corr2))
                               a2=correlation*asin(correlation) + (1-corr2)^(0.5)
                               ll=qnorm((1-sk)/2)
                               p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
@@ -266,7 +266,7 @@ if(!bivariate) {
                         else {
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
-                              cc=((nu-2)*gamma((nu-1)/2)^2*gsl::hyperg_2F1(0.5,0.5 ,nu/2 ,correlation^2)*correlation)/(2*gamma(nu/2)^2)
+                              cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   }     
 ##########################################
@@ -281,7 +281,7 @@ if(!bivariate) {
                         else {
                         vs=exp(mm)^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
                         auxcorr= (gamma(1+1/nuisance['shape']))^2/((gamma(1+2/nuisance['shape']))-(gamma(1+1/nuisance['shape']))^2)
-                        cc=auxcorr*(gsl::hyperg_2F1(-1/nuisance['shape'], -1/nuisance['shape'], 1,((1-nuisance['nugget'] )*correlation)^2) -1)
+                        cc=auxcorr*(Re(hypergeo::hypergeo(-1/nuisance['shape'], -1/nuisance['shape'], 1,((1-nuisance['nugget'] )*correlation)^2)) -1)
                         covariance=vs*cc;variogram=vs*(1-cc)  }
                     }
 ##########################################
@@ -290,8 +290,8 @@ if(!bivariate) {
                      sh=nuisance["shape"]
                      vs=exp(mm)^2*(2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
                      cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
-                                    (gsl::hyperg_2F1(-1/sh, -1/sh, 1,(1-nuisance['nugget'] )*correlation^2)*
-                                     gsl::hyperg_2F1( 1/sh,  1/sh, 1,(1-nuisance['nugget'] )*correlation^2) -1)
+                                    (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,(1-nuisance['nugget'] )*correlation^2))*
+                                     Re(hypergeo::hypergeo( 1/sh,  1/sh, 1,(1-nuisance['nugget'] )*correlation^2)) -1)
                       covariance=vs*cc;variogram=vs*(1-cc)   }
                     }
 ##########################################
