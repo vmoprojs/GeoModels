@@ -1530,7 +1530,7 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -1545,7 +1545,7 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
                                 }}}}
             else {  
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+         lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -1613,95 +1613,6 @@ void Comp_Pair_SkewGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
     return;
 }
 
-
-
-void Comp_Pair_Gamma_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
-    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
-
-{
-   int i=0, j=0,  t=0, v=0;
-    double rhotv=0.0, zi=0.0, zj=0.0,lags=0.0,weights=1.0;
-    // Checks the validity of the nuisance and correlation parameters (nuggets, sills and corr):
-    //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
-    // Computes the log-likelihood:
-      weights=1;
-//if(nuis[0]<=0||nuis[1]<=0) {*res=LOW;  return;}
-  //    double sill1=1-par[2];par[2]=0;    
-    //  double sill2=1-par[3];par[3]=0;   
-    for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        if(lags<=dista[t][v]){
-                            zi=data[(i+NS[t])];
-                            zj=data[(j+NS[v])];
-                            rhotv=CorFct(cormod,lags,0,par,t,v);
-                                if(!ISNAN(zi)&&!ISNAN(zj) ){
-                                    if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                         *res+= log(biv_gamma(rhotv,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0]));
-
-                                }}}}
-            else {  
-         for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        if(lags<=dista[t][v]){
-                            zi=data[(i+NS[t])];
-                            zj=data[(j+NS[v])];
-                            rhotv=CorFct(cormod,lags,0,par,t,v);
-                                   if(!ISNAN(zi)&&!ISNAN(zj) ){
-                                    if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                  *res+= log(biv_gamma(rhotv, zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0]));
-                                }}}}}}}
-    if(!R_FINITE(*res))*res = LOW;
-    return;
-}
-
-
-
-void Comp_Pair_Weibull_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
-    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
-
-{
-   int i=0, j=0,  t=0, v=0;
-    double rhotv=0.0, zi=0.0, zj=0.0,lags=0.0,weights=1.0;
-    // Checks the validity of the nuisance and correlation parameters (nuggets, sills and corr):
-    //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
-    // Computes the log-likelihood:
-      weights=1;
-//if(nuis[0]<=0||nuis[1]<=0) {*res=LOW;  return;}
-  //    double sill1=1-par[2];par[2]=0;    
-    //  double sill2=1-par[3];par[3]=0;   
-    for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        if(lags<=dista[t][v]){
-                            zi=data[(i+NS[t])];
-                            zj=data[(j+NS[v])];
-                            rhotv=CorFct(cormod,lags,0,par,t,v);
-                                if(!ISNAN(zi)&&!ISNAN(zj) ){
-                                    if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                         *res+= log(biv_Weibull2(rhotv,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[t],nuis[v]));
-
-                                }}}}
-            else {  
-         for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        if(lags<=dista[t][v]){
-                            zi=data[(i+NS[t])];
-                            zj=data[(j+NS[v])];
-                            rhotv=CorFct(cormod,lags,0,par,t,v);
-                                   if(!ISNAN(zi)&&!ISNAN(zj) ){
-                                    if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                  *res+= log(biv_Weibull2(rhotv, zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[t],nuis[v]));
-                                }}}}}}}
-    if(!R_FINITE(*res))*res = LOW;
-    return;
-}
 
 
 

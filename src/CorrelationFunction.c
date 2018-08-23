@@ -2267,6 +2267,8 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
       if(t==v){
          for(j=i+1;j<ns[t];j++){
           lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          // u=data[(i+NS[t])];      
+                                //w=data[(j+NS[t])];
            rho[h]=CorFct(cormod,lags,0,par,t,v);
            h++;}}
 
@@ -2497,22 +2499,28 @@ void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double 
   double *par,double *radius, int *ns)
 {
   int i=0,j=0,t=0,v=0,h=0;double lags=0.0;
-   for(t=0;t<ntime[0];t++){
+  int *NS;
+  NS=(int *) Calloc(2,int);
+  NS[0]=0;NS[1]=ns[0];
+    for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                rho[h]=CorFct(cormod,lags,0,par,t,v);
+          lags=dist(type[0],coordx[i+NS[t]],coordx[j+NS[v]],coordy[i+NS[t]],coordy[j+NS[v]],*REARTH);
+                rho[h]=CorFct(cormod,lags,0,par,t,t);
                 h++;}}
     else {  
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[i+NS[t]],coordx[j+NS[v]],coordy[i+NS[t]],coordy[j+NS[v]],*REARTH);
                 rho[h]=CorFct(cormod,lags,0,par,t,v);
                 h++;}}
     }}}
+    Free(NS);
   return;
 }
+
+
 
 
 /*

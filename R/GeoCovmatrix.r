@@ -80,6 +80,8 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
         if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
 
+
+
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), as.integer(ns),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
@@ -623,7 +625,9 @@ if(model==22)  {  ## Log Gaussian
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
 
     initparam$param=initparam$param[names(initparam$param)!='mean']
+    if(sparse==TRUE) if(!spam::is.spam(covmatrix)) covmatrix=spam::as.spam(covmatrix)
     if(type=="Tapering") sparse=TRUE
+
     # Delete the global variables:
     .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     if(initparam$bivariate)   initparam$numtime=2

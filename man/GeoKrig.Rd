@@ -1,13 +1,12 @@
 \name{GeoKrig}
 \alias{GeoKrig}
 \encoding{UTF-8}
-\title{Spatial and spatio temporal standard, tapered and pairwise (simple and ordinary) kriging and bivariate
-	 cokriging for Gaussian and non Gaussian RFs.}
+\title{Spatial (bivariate) and spatio temporal optimal linear prediction 
+          for Gaussian and non Gaussian RFs.}
 \description{
-  The function computes simple or ordinary (tapered) kriging, in
-  addition, for a set of unknown spatial location sites and temporal
-  instants and a given space or space-time covariance model, it computes
-  the Kriging variance.
+For a  given set of  spatial location sites and temporal instants,
+the function computes optimal linear prediction and associated mean square error 
+for the Gaussian and non Gaussian case.
 
 }
 \usage{
@@ -80,8 +79,7 @@ GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,dista
     \item{type_mse}{String; if  \code{Theoretical} then theoretical MSE pairwise kriging is computed.
        If \code{SubSamp} then  an estimation based on subsampling is computed.}  
    \item{type_krig}{String; the type of kriging. If \code{Simple} (the
-    default) then simple kriging is performed.
-    If \code{ordinary}  then ordinary  kriging is performed. (See the Section \bold{Details}).}
+    default) then simple kriging is performed. (See the Section \bold{Details}).}
    \item{weigthed}{Logical; if \code{TRUE} then decreasing weigths coming 
   from a compactly supported correlation function
   with compact support \code{maxdist} (\code{maxtime})are used in the pairwise kriging.}
@@ -98,7 +96,7 @@ GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,dista
   Specifically, for a spatial or spatio-temporal or spatial bivariate dataset, given a set of  spatial locations and
   temporal istants and a correlation model
 \code{corrmodel} with some fixed parameters and given  the type of RF (\code{model}) the function computes
-  simple or ordinary kriging, for the specified spatial locations
+  simple  kriging, for the specified spatial locations
   \code{loc} and temporal instants \code{time},
   providing also the respective mean square error.
   For the choice of the spatial or spatio temporal correlation model see details in \code{\link{GeoCovmatrix}} function.
@@ -144,7 +142,7 @@ In this case, space or space-time tapered function and spatial or spatio- tempor
    \item{tapmod}{String: the taper model if \code{type} is \code{Tapering}. Otherwise is NULL.}
   \item{time}{A \eqn{m}{m}-dimensional vector of temporal coordinates to be predicted;}
   \item{type}{String:  the type of kriging (Standard or Tapering).}
-  \item{type_krig}{String: the type of kriging (Simple or Ordinary).}
+  \item{type_krig}{String: the type of kriging.}
   \item{mse}{A (\eqn{m \times n}{n x m})-matrix of spatio or spatio temporal mean square error kriging prediction;}
 
 }

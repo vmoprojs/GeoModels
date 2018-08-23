@@ -6,9 +6,9 @@
 ### File name: GeoKrig.r  
 ### Description:  
 ### This file contains a set of procedures
-### for computing simple (tapered) and ordinary kriging
+### for computing simple (tapered)  kriging
 ### predictor  at an unknown space (time) locations.
-### Last change: 28/02/2017.
+### Last change: 28/08/2018.
 #################################################### 
 
 GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
@@ -17,20 +17,21 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
                which=1, X=NULL,Xloc=NULL)
 
 { 
-  ##################################
-  getInv<-function(covmatrix){
+######################################
+    getInv<-function(covmatrix,b){
      if(!covmatrix$sparse){
-              decompvarcov <- MatDecomp(covmatrix$covmatrix,method)
-              if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}      
-               invcov <- MatInv(decompvarcov,method)}
+               U <- MatDecomp(covmatrix$covmatrix,method)
+               if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}      
+               return(backsolve(U, backsolve(U, b, transpose = TRUE)))
+             }
         else{  
-
-               decompvarcov  <- try(spam::as.spam(covmatrix$covmatrix),silent=TRUE)
-               if(class(decompvarcov)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
-               invcov<-spam::solve.spam(decompvarcov)
+               if(spam::is.spam(covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
+               else                    U = try(spam::chol.spam(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
+               
+               if(class(U)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
+              return(spam::backsolve(U, spam::forwardsolve(U, b)))
         }
     }
-######################################
 ###################################### 
 ######################################  
     if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
@@ -39,7 +40,6 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     if(!is.null(Xloc)) Xloc=as.matrix(Xloc)
     if(is.matrix(X) &&is.null(Xloc))  stop("Covariates for locations to predict are missing ")
     if(is.null(X) &&is.matrix(Xloc))  stop("Covariates  are missing ")
-###################################### 
 ###################################### 
 ###################################### 
     #### number of points to predict
@@ -67,8 +67,6 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
      }
     covmatrix <- GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param, 
       radius, sparse, taper, tapsep, type, X) 
-
-
     ###########
     spacetime_dyn=FALSE
     if(!is.null(covmatrix$coordx_dyn)) spacetime_dyn=TRUE
@@ -90,12 +88,14 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     num_betas=ncol(X)
     if(is.null(Xloc))   Xloc=as.matrix(rep(1,dimat2)) 
     if(spacetime_dyn)
-    { if(!is.list(Xloc)) {stop("covariates must be given as a list")}
+    { 
+      if(!ncol(X)==1)
+      {
+      if(!is.list(Xloc)) {stop("covariates must be given as a list")}
       else               {env <- new.env();Xloc=do.call(rbind,args=c(Xloc),envir = env)
                           Xloc=as.matrix(Xloc)}
+                        }
     } 
-  
-
     nuisance <- param[covmatrix$namesnuis]
     sel=substr(names(nuisance),1,4)=="mean"
     betas=as.numeric(nuisance[sel])   ## mean paramteres
@@ -141,7 +141,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
 ## twopieceGaussian=29
     ################################
     ## standard kriging  ##############
-    ################################      
+    ################################    
        mu=X%*%betas
        muloc=Xloc%*%betas
 
@@ -222,14 +222,8 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
            }
 ########################################################################################
 ########################################################################################
-########################################################################################
- #### inverse of var covar  ################################## 
- #print(covmatrix$covmatrix)  
-        invcov <- getInv(covmatrix)  ### invserse of cov matrix
-        #############################################################
-        ##### multiplying the correlations for the variance
-        cc <- t(matrix(corri,nrow=dimat,ncol=dimat2)) 
-  #      print(cc)
+##### multiplying the correlations for the variance
+        cc <- matrix(corri,nrow=dimat,ncol=dimat2)
         if(!bivariate){
           #gaussian
           if(covmatrix$model==1)  cc=cc* vv            
@@ -266,42 +260,33 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
 ##################################################################
 #################kriging weights##################################
 ##################################################################
-
-krig_weights <- cc%*%invcov
-
+krig_weights <- t(getInv(covmatrix,cc))
 ##################################################################
 ################# simple kriging #################################
 ################################################################## 
 if(type_krig=='Simple'||type_krig=='simple')  {  
-
       if(!bivariate) {  ## space and spacetime simple kringing
-      
-               ####gaussian  and StudenT  two piece  skew gaussian simple kriging
+               ####gaussian, StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10))
-               {
-          
-                             pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
-              }
-                      
+                     pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))       
                ####gamma weibbull loglogistic simple kriging
                if(covmatrix$model %in% c(21,24,26))
                       {       ones=rep(1,length(c(dataT)))
                               one=rep(1,length(c(muloc)))
                               pp <- c(emuloc) * ( one+krig_weights %*% (c(dataT)/emu-ones) )    
                       }
-                       
                ####log gaussian   simple kriging
                if(covmatrix$model==1&&logGausstemp)   {
                  pp <- c(muloc)      +  krig_weights %*% (c(log(dataT))-c(mu)) 
-                QQ=diag(as.matrix(diag(covmatrix$param['nugget']+covmatrix$param['sill'],dimat2) - krig_weights%*%t(cc)))
+                QQ=diag(as.matrix(diag(covmatrix$param['nugget']+covmatrix$param['sill'],dimat2) - krig_weights%*%cc))
                 pp=exp(pp+QQ/2)
               } 
                #pp <- (c(emuloc)+covmatrix$param['sill']/2) + 
                 #                          krig_weights %*% (c(dataT)-exp(c(mu)+covmatrix$param['sill']/2)) 
         }     ####simple kriging
       else  {   ## bivariate  case   cokriging
-                      dat <- c(dataT) - 
-                      as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
+          dat <- c(dataT) - as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$ns[1]), 
+                            rep(covmatrix$param['mean_2'],covmatrix$ns[2])))
                       if(which==1) pp <- param$mean_1 + krig_weights %*% dat
                       if(which==2) pp <- param$mean_2 + krig_weights %*% dat
             } 
@@ -312,35 +297,35 @@ if(type_krig=='Simple'||type_krig=='simple')  {
    ####### here!!!!!
       if(mse) {
 # Gaussian,StudentT,skew-Gaussian,two piece        
-if(covmatrix$model %in% c(1,12,27,29,10))  vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%t(cc)))  ## simple variance  kriging predictor variance
+if(covmatrix$model %in% c(1,12,27,29,10))  vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc))  ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)   
-                                                - krig_weights%*%t(cc)))
+                                                - krig_weights%*%cc))
 #weibull
 if(covmatrix$model %in% c(26)) vv=emuloc^2*diag(as.matrix(diag( gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1,dimat2)   
-                                                - krig_weights%*%t(cc)))
+                                                - krig_weights%*%cc))
 #loglogistic          
 if(covmatrix$model %in% c(24)) vv=emuloc^2*diag(as.matrix(diag(
   (2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/
                        (pi*sin(2*pi/covmatrix$param['shape']))-1)
- ,dimat2) - krig_weights%*%t(cc)))
+ ,dimat2) - krig_weights%*%cc))
 
 if(covmatrix$model==1&&logGausstemp)
        vv <-    exp(muloc+covmatrix$param['nugget']+covmatrix$param['sill']/2)^2 *  
-                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%t(cc)))) 
+                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%cc))) 
                }        
             }               
 ##################################################################
 ################# ordinary kriging ###############################
 ################################################################## 
-if(type_krig=='Ordinary'||type_krig=='ordinary')  {
-                 if(!bivariate) { 
-                         betas=  solve(t(X)%*%invcov%*%X)%*%t(X)%*%invcov%*%data    # GLS estomator of Beta
-                         pp <- c(Xloc%*%betas) + krig_weights %*% (c(dataT)-c(X%*%betas)) } 
-                  else{}      ##todo
-                  if(mse) {ss <- (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
-                           vv <-  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
-                      }
+#if(type_krig=='Ordinary'||type_krig=='ordinary')  {
+#                 if(!bivariate) { 
+#                         betas=  solve(t(X)%*%invcov%*%X)%*%t(X)%*%invcov%*%data    # GLS estomator of Beta
+#                         pp <- c(Xloc%*%betas) + krig_weights %*% (c(dataT)-c(X%*%betas)) } 
+#                  else{}      ##todo
+#                  if(mse) {ss <- (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
+#                           vv <-  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
+#                      }
 ########################## 
 
 ######################################################
@@ -351,7 +336,6 @@ if(mse)
      if(spacetime||bivariate)  varpred=matrix(c(vv),nrow=tloc,ncol=numloc)
      else                      varpred=c(vv)
 }
-
 if(spacetime||bivariate)  pred=matrix(t(pp),nrow=tloc,ncol=numloc)
 else pred=c(pp)
 }#end gaussian standard kriging
@@ -376,30 +360,25 @@ if(type=="Tapering"||type=="tapering")  {
                               if(which==2)   vvar=covmatrix$param["sill_2"]+covmatrix$param["nugget_2"]; }
              else   vvar=covmatrix$param["sill"]+covmatrix$param["nugget"];
            }
-      #### inverse of var covar  ##################################   
-        invcov <- getInv(covmatrix)  ### invserse of cov matrix
         #############################################################
-        if(!bivariate) cc <- t(matrix(corri*vvar,nrow=dimat,ncol=dimat2))
-        else           cc <- t(matrix(corri,nrow=dimat,ncol=dimat2))
-        krig_weights <- cc%*%invcov
+        if(!bivariate) cc <- matrix(corri*(covmatrix$param["sill"]+covmatrix$param["nugget"]),nrow=dimat,ncol=dimat2)
+        else           cc <- matrix(corri,nrow=dimat,ncol=dimat2)
 
-    cc_tap <- t(matrix(corri_tap,nrow=dimat,ncol=dimat2))
-    krig_weights_tap1 <- cc_tap%*%as.matrix(invcov)
-   
+    cc_tap <- matrix(corri_tap,nrow=dimat,ncol=dimat2)
+    krig_weights_tap1 <- t(getInv(covmatrix,cc_tap))    # cc_tap%*%as.matrix(invcov)
     if(type_krig=='Simple'||type_krig=='simple')  {
     if(!bivariate) pp <- c(Xloc%*%betas) + krig_weights_tap1 %*% (c(dataT)-c(X%*%betas)) 
      else           { 
-             #dat <- as.numeric((c(dataT)-rep(c(covmatrix$param['mean_1'],covmatrix$param['mean_2']),covmatrix$numcoord))  ) 
-              #dat=as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
-               dat <- c(dataT) - 
-                                 as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
+          dat <- c(dataT) - as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
              ww1<- krig_weights_tap1  %*% dat
              if(which==1) pp <- param$mean_1 + ww1  
              if(which==2) pp <- param$mean_2 + ww1    
                      }    
-     if(mse) {vv <- diag(as.matrix(diag(vvar,dimat2) - 2*krig_weights_tap1%*%t(cc))
-                            +krig_weights_tap1%*%covmatrix_true$covmatrix%*%t(krig_weights_tap1) )       ## simple variance kriging tapering predictor variance
-              vv2 <- diag(as.matrix(diag(vvar,dimat2) - krig_weights_tap1%*%t(cc_tap)))}
+     if(mse) {
+         vv <- diag(as.matrix(diag(vvar,dimat2) - 2*krig_weights_tap1%*%cc)
+                            +krig_weights_tap1%*%covmatrix_true$covmatrix%*%t(krig_weights_tap1 ) )      ## simple variance kriging tapering predictor variance
+
+              vv2 <- diag(as.matrix(diag(vvar,dimat2) - krig_weights_tap1%*%cc_tap))}
      
        if(spacetime||bivariate) {varpred=matrix(c(vv),nrow=tloc,ncol=numloc); varpred2=matrix(c(vv2),nrow=tloc,ncol=numloc);} 
         else                    {varpred=c(vv);varpred2=c(vv2)} 
@@ -430,11 +409,13 @@ if(covmatrix$model %in% c(2,11,14,19))
     as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
     corri=ccorr$corri
     ###inverse of cov matrix
-    invcov <- getInv(covmatrix)  
+    
         #############################################################
-        if(!bivariate) cc <- t(matrix(corri,nrow=dimat,ncol=dimat2))
+        if(!bivariate) cc <- matrix(corri,nrow=dimat,ncol=dimat2)
         else           {}
-        krig_weights <- cc%*%invcov
+
+        krig_weights <- t(getInv(covmatrix,cc))
+
        if(type_krig=='Simple'||type_krig=='simple')  {
        ##########################################################
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
@@ -442,14 +423,14 @@ if(covmatrix$model %in% c(2,11,14,19))
             else{} #todo
            if(mse){
                    vvar=c(n*p0*(1-p0))  ### variance (possibly no stationary)
-                   vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%t(cc)))}
+                   vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%cc))}
           } 
       ###########################################################    
            if(covmatrix$model==19){  ### binomial2
             if(!bivariate)   pp <- nloc*c(p0) + krig_weights %*% (c(dataT)-c(n*pmu))  ## simple kriging
             else{} #todo
           if(mse) {vvar=c(nloc*p0*(1-p0)) ### variance (possibly no stationary)
-                   vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%t(cc))) }
+                   vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%cc)) }
           }
          ##########################################################
        if(covmatrix$model==14){    ###geometric
@@ -458,23 +439,23 @@ if(covmatrix$model %in% c(2,11,14,19))
               pp <- (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2) }
             else{}   #tood
             if(mse) { vvar=(1-k1)/k1^2   ### variance (possibly no stationary)
-                      vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%t(cc))) }
+                      vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%cc)) }
           }   
         }
 
-     if(type_krig=='Ordinary'||type_krig=='ordinary')  {
-                 if(!bivariate) { 
-                          betas=  solve(t(X)%*%invcov%*%X)%*%t(X)%*%invcov%*%dataT    # GLS estomator of Beta
-                         if(covmatrix$model==2||covmatrix$model==11||covmatrix$model==19)
-                          pp <- nloc*c(pnorm(Xloc%*%betas)) + krig_weights %*% (c(dataT)-c(n*pnorm(X%*%betas)))   
-                          if(covmatrix$model==14){
-                          k1=c(pnorm(Xloc%*%betas));k2=c(pnorm(X%*%betas))
-                          pp <- (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2)  }
-                        }
-                  else{}     ### todo   
-                  if(mse) {ss <- (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
-                           vv <-  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
-                      }    
+    # if(type_krig=='Ordinary'||type_krig=='ordinary')  {
+            #     if(!bivariate) { 
+            #              betas=  solve(t(X)%*%invcov%*%X)%*%t(X)%*%invcov%*%dataT    # GLS estomator of Beta
+            #             if(covmatrix$model==2||covmatrix$model==11||covmatrix$model==19)
+            #              pp <- nloc*c(pnorm(Xloc%*%betas)) + krig_weights %*% (c(dataT)-c(n*pnorm(X%*%betas)))   
+            #              if(covmatrix$model==14){
+            #              k1=c(pnorm(Xloc%*%betas));k2=c(pnorm(X%*%betas))
+            #              pp <- (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2)  }
+            #            }
+            #      else{}     ### todo   
+            #      if(mse) {ss <- (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
+            #               vv <-  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
+           #           }    
       if(spacetime||bivariate) {
             pred=matrix(t(pp),nrow=tloc,ncol=numloc);
             varpred=matrix(c(vv),nrow=tloc,ncol=numloc);
@@ -505,16 +486,18 @@ if(covmatrix$model==9) {   ### ### optimal linear  tukey gaussian case
      else      tm=(exp(sk2/(2*t1))-1)/(sk*sqrt(t1))
      mm=me + sqrt(v) * tm
        ###inverse of cov matrix
-    invcov <- getInv(covmatrix)
-       if(!bivariate) cc <- t(matrix(cc$corri*v,nrow=dimat,ncol=dimat2))
-       krig_weights <- cc%*%invcov
+    
+       if(!bivariate) cc <- matrix(cc$corri*v,nrow=dimat,ncol=dimat2)
+
+       krig_weights <- t(getInv(covmatrix,cc))
+       
        if(type_krig=='Simple'||type_krig=='simple')  {
             if(!bivariate)  pp <- mm+ krig_weights %*% (c(dataT)-mm)   ## simple kriging predictor for skew data
             else {} ## todo
          }
-       if(mse) vv <- diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%t(cc)))  ## simple mse  kriging predictor variance for skew data           
+       if(mse) vv <- diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc))  ## simple mse  kriging predictor variance for skew data           
         
-       if(type_krig=='Ordinary'||type_krig=='ordinary')  {}    
+       #if(type_krig=='Ordinary'||type_krig=='ordinary')  {}    
 
           if(spacetime||bivariate) {
             pred=matrix(t(pp),nrow=tloc,ncol=numloc);
@@ -692,7 +675,7 @@ if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
     if(grid) ccc=expand.grid(initparam$coordx,initparam$coordy)
     else     ccc=cbind(initparam$coordx,initparam$coordy)
     if(type_krig=='Simple'||type_krig=='simple')  type_krig=0
-    if(type_krig=='Ordinary'||type_krig=='ordinary')  type_krig=1  ## to be done
+    #if(type_krig=='Ordinary'||type_krig=='ordinary')  type_krig=1  ## to be done
     
     ###########################################################
     ## Standard simple pairwise (co)-kriging  ##############

@@ -83,12 +83,14 @@ forGaussparam<-function(model,param,bivariate)
                                sel=substr(names(nuisance),1,4)=="mean"; num_betas=sum(sel) ;mm=NULL
                                if(num_betas==1) mm=nuisance$mean
                                if(num_betas>1)  mm=c(mm,as.numeric((nuisance[sel])))
-                               sim <- X%*%mm+simd  }
+                               sim <- X%*%mm+simd 
+                              }
                 else   { 
-                   if(is.null(ns))  sim <- c(rep(as.numeric(c(nuisance['mean_1'])),numcoord),
-                                     rep(as.numeric(c(nuisance['mean_2'])),numcoord)) +simd 
-                    else            sim <- c(rep(as.numeric(c(nuisance['mean_1'])),ns[1]),
-                                     rep(as.numeric(c(nuisance['mean_2'])),ns[2])) +simd 
+                  
+                   if(is.null(ns))  sim <- c(rep(as.numeric(nuisance['mean_1']),numcoord),
+                                     rep(as.numeric(nuisance['mean_2']),numcoord)) + simd 
+                    else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
+                                     rep(as.numeric(nuisance['mean_2']),ns[2])) + simd 
                           }
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
@@ -117,14 +119,8 @@ forGaussparam<-function(model,param,bivariate)
     num_betas=sum(sel)   ## number of covariates
     }
     else
-    {
-    print(param)  
-    }
-    
-
+    {}
     k=1
-
-  
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",
                     "StudentT","SkewStudentT",
@@ -132,7 +128,6 @@ forGaussparam<-function(model,param,bivariate)
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
        {
-
         if(spacetime_dyn){
           env <- new.env()
           #coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
@@ -217,18 +212,15 @@ forGaussparam<-function(model,param,bivariate)
      
 #### computing covariance matrix of the Gaussian random field
 #print(forGaussparam(model,param,bivariate)) #pay attention to the parameter
-    ccov = GeoCovmatrix(coordx, coordy, coordt,coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
+    ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
     varcov<-ccov$covmat;  ######covariance matrix!!
-
 #########################################################    
   for(i in 1:k) {  
     ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-   
-
    #### simulating with cholesky decomposition using GPU
     if(!is.null(GPU)&&sparse) sparse=FALSE   ### if gpu no sparse 
 
@@ -247,7 +239,7 @@ forGaussparam<-function(model,param,bivariate)
         decompvarcov <- MatDecomp(varcov,method)
         if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
         sqrtvarcov <- MatSqrt(decompvarcov,method)
-       if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))[]
+       if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))# []
        else simd=crossprod(sqrtvarcov,ss)
     }
     #######################################################################
@@ -414,10 +406,6 @@ if(model %in% c("TwoPieceStudentT"))   {
 ################################################
 if(model %in% c("SkewStudentT"))   { 
      sim=NULL
-     print(k)
-     print(mm)
-     print(vv)
-     print(sk)
      for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
 
         aa=0+sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)

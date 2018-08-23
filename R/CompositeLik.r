@@ -32,6 +32,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         #print(system.time(
+
           result <- .C(as.character(fun),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
                    res=double(1),as.double(c(X%*%mm)),as.double(0),as.double(other_nuis),

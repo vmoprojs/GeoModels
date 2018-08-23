@@ -25,9 +25,9 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
     if(type=='variogram'){
         model <- 'Gaussian'
         fname <- 'Binned_Variogram'}
-    if(type=="lorelogram"){
-        model <- "BinaryGauss"
-        fname <- "Binned_Lorelogram"}
+    ##if(type=="lorelogram"){
+    ##    model <- "BinaryGauss"
+    ##    fname <- "Binned_Lorelogram"}
     
     # Checks if its a spatial or spatial-temporal random field:
     if(bivariate) coordt=c(0,1)
