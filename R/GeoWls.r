@@ -247,7 +247,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
 ####################################################################################################################
 GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, corrmodel, distance="Eucl",
                          fixed=NULL,grid=FALSE, maxdist=NULL, maxtime=NULL, model='Gaussian',
-                         optimizer='Nelder-Mead', numbins=NULL, radius=6378.388,  start=NULL,
+                         optimizer='Nelder-Mead', numbins=NULL, radius=6371,  start=NULL,
                          weighted=FALSE)
   {
     ### Check first if the model is not binary:

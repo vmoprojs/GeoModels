@@ -40,11 +40,11 @@ res1=dd/exp(mu)
 ### 
 if(model %in% c("Gaussian","Logistic","TwoPieceGaussian",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
-res1=(dd-mu)/sqrt(as.numeric(param['sill']))
+res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
 ###
 if(model %in% c("SkewGaussian"))  
 {vskew=as.numeric(param['sill']) + as.numeric(param['skew'])^2
-res1=(dd-mu)/sqrt(vskew)
+res1=(dd-c(mu))/sqrt(vskew)
 }
 
 

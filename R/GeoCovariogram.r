@@ -77,10 +77,12 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
 ################    
 ### starting ###
 ################
+    dyn=FALSE
     isvario <- !is.null(vario) # is empirical variogram is passed?
     bivariate <- fitted$bivariate
     if(bivariate) fitted$numtime=1
     ispatim <- fitted$spacetime
+    dyn<- is.list(fitted$coordx_dyn)
 par(mfrow=c(1,1))
 if(!ispatim && !bivariate){ if( (show.cov && show.vario) || (show.cov)) par(mfrow=c(1,2))}
 if(show.vario && ispatim) par(mfrow=c(1,2))
@@ -88,7 +90,7 @@ if(show.vario && ispatim && !is.null(fix.lags) && !is.null(fix.lagt)) par(mfrow=
 if(show.cov && ispatim && !is.null(fix.lags) && !is.null(fix.lagt)) par(mfrow=c(2,2))
 if(show.cov && ispatim && is.null(fix.lags) && is.null(fix.lagt)) par(mfrow=c(1,1))
 if(show.vario && bivariate) {par(mfrow=c(2,2))}
-
+if(bivariate&&dyn) par(mfrow=c(1,2))
 
 
     
@@ -122,8 +124,7 @@ if(show.vario && bivariate) {par(mfrow=c(2,2))}
     geom <- model==14
     studentT <- model ==12
     loglogistic <- model==24
-    if(binary) {zero <- NA;slow<-1e-3} else {zero <- 0;slow=0}
-
+    zero <- 0;slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
     lags <- c(0,vario$centers);numlags <- length(lags)
@@ -266,6 +267,7 @@ if(!bivariate) {
                         else {
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
+                              print(vs)
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   }     
@@ -332,24 +334,25 @@ if(!bivariate) {
                              param=param, pract.range=pract.range)$root
         }
     # binary random field:
-    if(binary){
-        covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
-        p <- pnorm(nuisance["mean"])
-        q <- vpbnorm(corrmodel, lags_m, lagt_m, nuisance,
-                     numlags_m, numlagt_m, param, 0)
-        variogram <- log(q*(1-2*p+q)/(p-q)^2)
-        vario.main <- "Spatial lorelogram"
-        vario.ylab <- "Lorelogram"
-        if(ispatim){
-            dim(covariance) <- c(numlags_m, numlagt_m)
-            dim(variogram) <- c(numlags_m, numlagt_m)
-            vario.main <- "Space-time lorelogram"
-            vario.zlab <- "Lorelogram"}}
+    #if(binary){
+    #    covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
+    #    p <- pnorm(nuisance["mean"])
+    #    q <- vpbnorm(corrmodel, lags_m, lagt_m, nuisance,
+    #                 numlags_m, numlagt_m, param, 0)
+    #    variogram <- log(q*(1-2*p+q)/(p-q)^2)
+    #    vario.main <- "Spatial lorelogram"
+    #    vario.ylab <- "Lorelogram"
+    #    if(ispatim){
+    #        dim(covariance) <- c(numlags_m, numlagt_m)
+    #        dim(variogram) <- c(numlags_m, numlagt_m)
+    #        vario.main <- "Space-time lorelogram"
+    #        vario.zlab <- "Lorelogram"}
+    #      }
 
 
     # display the covariance function
     if(show.cov){
-        if(bivariate){
+        if(bivariate&&!dyn){
             #par(mfrow=c(2,2))
        plot(lags_m, covariance11, type='l', ylim=c(min(covariance11),
                      max(covariance11)), main="First covariance",
@@ -360,6 +363,15 @@ if(!bivariate) {
        plot(lags_m, covariance12, type='l', ylim=c(min(covariance12),
                      max(covariance12)), main="Cross covariance",
                      xlab="Distance", ylab="Covariance",...)   
+       plot(lags_m, covariance22, type='l', ylim=c(min(covariance22),
+                     max(covariance22)), main="Second covariance",
+                     xlab="Distance", ylab="Covariance",...)          
+         }
+          if(bivariate&&dyn){
+            #par(mfrow=c(2,2))
+       plot(lags_m, covariance11, type='l', ylim=c(min(covariance11),
+                     max(covariance11)), main="First covariance",
+                     xlab="Distance", ylab="Covariance",...)
        plot(lags_m, covariance22, type='l', ylim=c(min(covariance22),
                      max(covariance22)), main="Second covariance",
                      xlab="Distance", ylab="Covariance",...)          
@@ -401,9 +413,7 @@ if(!bivariate) {
 
     # display the variogram function
     if(show.vario){
-      if(bivariate){
-
-
+      if(bivariate&&!dyn){
           #par(mfrow=c(2,2))
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
@@ -419,7 +429,15 @@ if(!bivariate) {
        plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram22, type='l',...)  }
-
+ 
+   if(bivariate&&dyn){
+          #par(mfrow=c(2,2))
+       plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
+                     xlab="Distance", ylab="Semi-Variogram",...)
+       lines(lags_m, variogram11, type='l',...)
+       plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
+                     xlab="Distance", ylab="Semi-Variogram",...)
+       lines(lags_m, variogram22, type='l',...)  }
 
     
         if(ispatim){# spatio-temporal case:
@@ -455,6 +473,7 @@ if(!bivariate) {
                   theta=30,main=vario.main, cex.axis=.8,
                    cex.lab=.8)  #zlim=c(0,max(variogram))
             vvv=nuisance["nugget"]+nuisance["sill"]
+            ########
             if(gamma)    vvv=2*exp(mm["mean"])^2/nuisance["shape"]
             if(weibull)  vvv=exp(mm["mean"])^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
             if(loglogistic)  vvv=exp(mm["mean"])^2*
@@ -464,7 +483,7 @@ if(!bivariate) {
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
-            #print(vvv)
+            ########
             if(plagt){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lagt_m, variogram[fix.lags,], xlab="Time",cex.axis=.8,cex.lab=.8,
@@ -500,25 +519,16 @@ if(!bivariate) {
     if(answer.cov) {result <- list(lags=lags_m,lagt=lagt_m, covariance=covariance)}
     # return the estimated variogram/lorelogram function
     if(answer.vario) {
-        if(!is.list(result)) {if(!bivariate){if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram=variogram)
-                                             if(binary)   result <- list(lags=lags_m,lagt=lagt_m, lorelogram=variogram)}
-
-                              if(bivariate){if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram11=variogram11,
-                                                                        variogram12=variogram12,variogram22=variogram22)
-                                            if(binary) result <- list(lags=lags_m,lagt=lagt_m, lorelogram11=variogram11,
-                                                                     lorelogram12=variogram12,lorelogram22=variogram22 )}
+        if(!is.list(result)) {if(!bivariate) if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram=variogram)
+                              if(bivariate)  if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram11=variogram11,
+                                                                        variogram12=variogram12,variogram22=variogram22)          
                               }
-
         else {
-            if(!bivariate){
-                if(gaussian) {result$variogram <- variogram}
-                if(binary)   {result$lorelogram <- variogram}}
+            if(!bivariate){if(gaussian) result$variogram <- variogram}
             if(bivariate){
                 if(gaussian) {result$variogram11 <- variogram11;result$variogram12 <- variogram12;result$variogram22 <- variogram22}
-                if(binary)   {result$lorelogram11 <- variogram11;result$lorelogram12 <- variogram12;result$lorelogram22 <- variogram22;}}    
-           }
-          }
-
+                }}}
     if(!is.null(result))
+    #par(mfrow=c(1,1))
     return(result)
   }

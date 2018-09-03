@@ -13,7 +13,7 @@ for the Gaussian and non Gaussian case.
 GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,distance="Eucl",
     grid=FALSE, loc, maxdist=NULL, maxtime=NULL, method="cholesky", 
     model="Gaussian", n=1,nloc=NULL,mse=FALSE, lin_opt=TRUE, 
-    param, radius=6378.388, sparse=FALSE,taper=NULL,tapsep=NULL, 
+    param, radius=6371, sparse=FALSE,taper=NULL,tapsep=NULL, 
      time=NULL, type="Standard",type_mse=NULL,
      type_krig="Simple",weigthed=TRUE,which=1, X=NULL,Xloc=NULL)
 }
@@ -277,8 +277,8 @@ set.seed(312)
 model="Binomial";n=6
 
 # Define the spatial-coordinates of the points:
-x <- runif(1000)
-y <- runif(1000)
+x <- runif(800)
+y <- runif(800)
 coords=cbind(x,y)
 #### mean and covariance parameters ###
 mean<-0
@@ -306,7 +306,7 @@ fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
                     start=start,fixed=fixed)
                     
 # locations to predict
-xx<-seq(0,1,0.02)
+xx<-seq(0,1,0.03)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 ## simple kriging 
@@ -331,8 +331,8 @@ set.seed(312)
 model="Weibull";
 
 # Define the spatial-coordinates of the points:
-x <- runif(1000)
-y <- runif(1000)
+x <- runif(800)
+y <- runif(800)
 coords=cbind(x,y)
 #### mean and covariance parameters ###
 mean<-0
@@ -362,7 +362,7 @@ fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,
                     start=start,fixed=fixed)
                     
 # locations to predict
-xx<-seq(0,1,0.02)
+xx<-seq(0,1,0.04)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
@@ -412,7 +412,7 @@ fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
                     start=start,fixed=fixed, model = model)
                     
 # locations to predict
-xx<-seq(0,1,0.02)
+xx<-seq(0,1,0.04)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
@@ -464,7 +464,7 @@ set.seed(3)
 param<-as.list(c(fit$param,fit$fixed))
 
 # locations to predict
-xx<-seq(0,1,0.03)
+xx<-seq(0,1,0.04)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
 times_to_pred<-1:2
@@ -518,7 +518,7 @@ fitcl<- GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
 
 
 # locations to predict
-xx<-seq(0,1,0.03)
+xx<-seq(0,1,0.04)
 loc_to_pred<-as.matrix(expand.grid(xx,xx))
 
 

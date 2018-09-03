@@ -19,7 +19,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=NULL,
                           maxtime=NULL, method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,optimizer='Nelder-Mead',
-                         radius=6378.388,  sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
+                         radius=6371,  sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
                          winconst_t=NULL, winstp_t=NULL,X=NULL)
 {

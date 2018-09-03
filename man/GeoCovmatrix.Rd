@@ -10,7 +10,7 @@
 \usage{
 GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
           distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
-          model="Gaussian", n=1, param, radius=6378.388, sparse=FALSE,
+          model="Gaussian", n=1, param, radius=6371, sparse=FALSE,
           taper=NULL, tapsep=NULL, type="Standard",X=NULL)
 }
 
@@ -53,7 +53,7 @@ GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
   model.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere 
      when using covariance models valid using the great circle distance. 
-     Default value is the radius of the earth in Km (i.e. 6378.88)} 
+     Default value is the radius of the earth in Km (i.e. 6371)} 
   \item{sparse}{Logical; if \code{TRUE} the function return an object of class spam.
   This option  should be used when  a parametric compactly supporte covariance is 
   used. Default is FALSE. }

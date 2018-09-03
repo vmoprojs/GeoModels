@@ -9,7 +9,7 @@
 \usage{
 GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALSE,
            distance='Eucl', grid=FALSE, maxdist=NULL,
-           maxtime=NULL, numbins=NULL, radius=6378.388,  
+           maxtime=NULL, numbins=NULL, radius=6371,  
            type='variogram',bivariate=FALSE)
 }
 \arguments{
@@ -49,7 +49,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
   \item{numbins}{A numeric value denoting the numbers of bins, see the
     Section \bold{Details}.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere when 
-  using the great circle distance. Default value is the radius of the earth in Km (i.e. 6378.88)} 
+  using the great circle distance. Default value is the radius of the earth in Km (i.e. 6371)} 
   \item{type}{A String denoting the type of variogram. The option
      available is : \code{variogram}.}
     \item{bivariate}{Logical; if \code{FALSE} (the default) the data

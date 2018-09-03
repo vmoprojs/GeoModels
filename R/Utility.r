@@ -109,31 +109,33 @@ CkCorrModel <- function(corrmodel)
                              prove=96,
               # Bivariate models
                              Bi_wend0_sep=111,Bi_Wend0_sep=111,
-                             Bi_wend0=112,Bi_Wend0=112,
                              Bi_Wend0_contr=129,Bi_wend0_contr=129,
-                           #  Bi_exp_asy=130,
-
+                             Bi_wend0=112,Bi_Wend0=112,
+                             
+                             Bi_smoke=117,Bi_Smoke=117,
+                              Bi_smoke_sep=119,Bi_Smoke_sep=119,
+                              Bi_smoke_contr=121,Bi_Smoke_contr=121,
+                             
 
                              Bi_wend1_sep=113,Bi_Wend1_sep=113,
-                             Bi_wend1=114,Bi_Wend1=114,  
                              Bi_Wend1_contr=131,Bi_wend1_contr=131,
-
+                             Bi_wend1=114,Bi_Wend1=114,  
+                             
 
                              Bi_wend2_sep=115,Bi_Wend2_sep=115,
                              Bi_wend2=116,Bi_Wend2=116,
                              Bi_Wend2_contr=120,Bi_wend2_contr=120,
 
-
                              Bi_matern_contr=118,Bi_Matern_contr=118, 
-                             
-                             Bi_matern_sep=122,  Bi_Matern_sep=122,  
-                             Bi_LMC_contr=124,
-                             Bi_LMC=126,
+                             Bi_matern_sep=122,  Bi_Matern_sep=122, 
                              Bi_matern=128,Bi_Matern=128,
 
+                             Bi_LMC_contr=124,
+                             Bi_LMC=126,
+
                              Bi_GenWend_sep=130,Bi_genWend_sep=130,
-                             Bi_GenWend=132,Bi_genWend=132,
                              Bi_GenWend_contr=134,Bi_genWend_contr=134,
+                             Bi_GenWend=132,Bi_genWend=132,
 
                              Bi_Matern_Cauchy=136,  
                              Bi_GenMatern_Cauchy=137,   Bi_genMatern_Cauchy=137,
@@ -182,7 +184,7 @@ CkCorrModel <- function(corrmodel)
 CheckSph<- function(numbermodel)
   {
     Check <- FALSE
-    if(numbermodel %in% c(17,18,56,58))  Check=TRUE    
+    if(numbermodel %in% c(17,18,56,58,20,117))  Check=TRUE    
     return(Check)
   }
 
@@ -612,6 +614,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert the parameters as a list\n'
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
+        #print(length(param));
         #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
@@ -709,7 +712,8 @@ CkModel <- function(model)
                          Weibull=26,
                          TwoPieceStudentT=27,
                          Beta=28,
-                         TwoPieceGaussian=29,TwoPieceGauss=29)
+                         TwoPieceGaussian=29,TwoPieceGauss=29,
+                         Poisson=30,Poisson=30)
     return(CkModel)
   }
 
@@ -746,7 +750,6 @@ CorrParam <- function(corrmodel)
 #####  names of the correlation models ###############
 CorrelationPar <- function(corrmodel)
   {
-  
     param <- NULL  
     if(is.null(corrmodel)){param <- NULL}
     else { 
@@ -846,7 +849,8 @@ CorrelationPar <- function(corrmodel)
    #   param <- c('sill_1','sill_2','nugget_1','nugget_2','pcol','scale')
    #   return(param)}
    ## biv sep matern
-   if(corrmodel==122){
+
+   if(corrmodel==122||corrmodel==119){
       param <- c('sill_1','sill_2','nugget_1','nugget_2','pcol','scale','smooth')
       return(param)}
       ## biv sep wendland
@@ -878,12 +882,12 @@ CorrelationPar <- function(corrmodel)
     return(param)}
 
       ## biv full matern a bivariate models
-       if(corrmodel==128){
+       if(corrmodel==128||corrmodel==117){
      param <- c('sill_1','sill_2','nugget_1','nugget_2','pcol','scale_1','scale_12','scale_2',
         'smooth_1','smooth_12','smooth_2')
     return(param)}
      ## biv  matern with contrainsts
-   if(corrmodel==118){
+   if(corrmodel==118||corrmodel==121){
      param <- c('sill_1','sill_2','nugget_1','nugget_2','pcol','scale_1','scale_2','smooth_1','smooth_2')
      return(param)}
       ## biv contr wend bivariate models

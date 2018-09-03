@@ -54,8 +54,8 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-             
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+           
                         if(lags<=maxdist[0]){
                             corr=CorFct(cormod,lags, 0,par,t,v);
                                 u=data[(i+NS[t])];      
@@ -63,13 +63,12 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                 *res+= log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget)*weights;   
-                                    //printf("CPU: %d\t%d\t%d\t%d\t%f\n",i,t,v,j,*res);
-                                    
                                     }}}}
                else {
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+            //  Rprintf("%f\n",lags);
                         if(lags<=maxdist[0]&&lagt<=maxtime[0]){
                         corr=CorFct(cormod,lags, lagt,par,t,v);
                                 u=data[(i+NS[t])];    
@@ -102,7 +101,7 @@ void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                                 u=data[(i+NS[t])];//-2*atan(mean[(i+NS[t])])-M_PI;
                                 w=data[(j+NS[v])];//-2*atan(mean[(j+NS[v])])-M_PI;
@@ -115,7 +114,7 @@ void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double
                else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                 u=data[(i+NS[t])];//-2*atan(mean[(i+NS[t])])-M_PI;
                                 w=data[(j+NS[v])];//-2*atan(mean[(j+NS[v])])-M_PI;
@@ -151,7 +150,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -167,7 +166,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
                     else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                
                                zi=data[(i+NS[t])];
@@ -206,7 +205,7 @@ void  Comp_Pair_TWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, d
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -221,7 +220,7 @@ void  Comp_Pair_TWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, d
                     else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -255,7 +254,7 @@ void Comp_Pair_PoisbinGauss_st2(int *cormod, double *coordx, double *coordy, dou
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){  
                 psj=pbnorm(cormod,lags,0,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0],nuis[1],par,0);
                 p1=pnorm((mean[(i+NS[t])]),0,1,1,0);
@@ -270,7 +269,7 @@ void Comp_Pair_PoisbinGauss_st2(int *cormod, double *coordx, double *coordy, dou
                 else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                            psj=pbnorm(cormod,lags,lagt,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0],nuis[1],par,0);
                              p1=pnorm((mean[(i+NS[t])]),0,1,1,0);
@@ -308,7 +307,7 @@ void Comp_Pair_PoisbinnegGauss_st2(int *cormod, double *coordx, double *coordy, 
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){           
                  psj=pbnorm(cormod,lags,0,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0],nuis[1],par,0);
                  p1=pnorm((mean[(i+NS[t])]),0,1,1,0);
@@ -322,7 +321,7 @@ void Comp_Pair_PoisbinnegGauss_st2(int *cormod, double *coordx, double *coordy, 
                  else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){   
                        psj=pbnorm(cormod,lags,lagt,mean[(i+NS[t])],mean[(j+NS[v])],nuis[0],nuis[1],par,0);
                        p1=pnorm((mean[(i+NS[t])]),0,1,1,0);
@@ -359,7 +358,7 @@ void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                             s12=nuis[1]*CorFct(cormod,lags,0,par,t,v);
                             det=R_pow(s1,2)-R_pow(s12,2);
@@ -373,7 +372,7 @@ void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
                  else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                             s12=nuis[1]*CorFct(cormod,lags,lagt,par,t,v);
                             det=R_pow(s1,2)-R_pow(s12,2);
@@ -406,7 +405,7 @@ void Comp_Diff_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                                 vario=Variogram(cormod,lags,0,nuis[0],nuis[1],par);
                                       u=data[(i+NS[t])];w=data[(j+NS[v])];
@@ -417,7 +416,7 @@ void Comp_Diff_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
                 else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                 vario=Variogram(cormod,lags,lagt,nuis[0],nuis[1],par);
                                      u=data[(i+NS[t])];w=data[(j+NS[v])];
@@ -445,7 +444,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -457,7 +456,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
                     else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                                
                                zi=data[(i+NS[t])];
@@ -486,7 +485,7 @@ void Comp_Pair_SinhGauss_st2(int *cormod, double *coordx, double *coordy, double
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                               
                                 zi=data[(i+NS[t])];//-mean[(i+NS[t])])/sqrt(nuis[1]);
@@ -499,7 +498,7 @@ void Comp_Pair_SinhGauss_st2(int *cormod, double *coordx, double *coordy, double
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                                
                               zi=data[(i+NS[t])];//-mean[(i+NS[t])])/sqrt(nuis[1]);
@@ -534,7 +533,7 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -546,7 +545,7 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -576,7 +575,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -588,7 +587,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -617,7 +616,8 @@ void Comp_Pair_LogGauss_st2(int *cormod, double *coordx, double *coordy, double 
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+         // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -629,7 +629,7 @@ void Comp_Pair_LogGauss_st2(int *cormod, double *coordx, double *coordy, double 
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                             if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                                 zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
@@ -658,7 +658,7 @@ void Comp_Pair_BinomGauss_st2(int *cormod, double *coordx, double *coordy, doubl
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                             a=mean[(i+NS[t])];b=mean[(j+NS[v])];
                             psj=pbnorm(cormod,lags,0,a,b,nuis[0],nuis[1],par,0);
@@ -673,7 +673,7 @@ void Comp_Pair_BinomGauss_st2(int *cormod, double *coordx, double *coordy, doubl
                  else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                               a=mean[(i+NS[t])];b=mean[(j+NS[v])];
                               psj=pbnorm(cormod,lags,lagt,a,b,nuis[0],nuis[1],par,0);
@@ -708,7 +708,7 @@ void Comp_Pair_Binom2Gauss_st2(int *cormod, double *coordx, double *coordy, doub
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                           a=mean[(i+NS[t])];b=mean[(j+NS[v])];
                psj=pbnorm(cormod,lags,0,a,b,nuis[0],nuis[1],par,0);
@@ -723,7 +723,7 @@ void Comp_Pair_Binom2Gauss_st2(int *cormod, double *coordx, double *coordy, doub
                 else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                            a=mean[(i+NS[t])];b=mean[(j+NS[v])];
                            psj=pbnorm(cormod,lags,lagt,a,b,nuis[0],nuis[1],par,0);
@@ -757,9 +757,8 @@ void Comp_Pair_BinomnegGauss_st2(int *cormod, double *coordx, double *coordy, do
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
-                    
               a=mean[(i+NS[t])];b=mean[(j+NS[v])];
               psj=pbnorm(cormod,lags,0,a,b,nuis[0],nuis[1],par,0);
               p1=pnorm(a,0,1,1,0);p2=pnorm(b,0,1,1,0);
@@ -768,14 +767,13 @@ void Comp_Pair_BinomnegGauss_st2(int *cormod, double *coordx, double *coordy, do
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                                     dens=biv_binomneg (NN[0],uu,ww,p1,p2,psj);
-                                  
                                                  if(R_FINITE(dens))  {
                                      *res+=log(dens)*weights;}
                                 }}}}
                  else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
                               a=mean[(i+NS[t])];b=mean[(j+NS[v])];
                               psj=pbnorm(cormod,lags,lagt,a,b,nuis[0],nuis[1],par,0);
@@ -812,7 +810,7 @@ void Comp_Pair_LogLogistic_st2(int *cormod, double *coordx, double *coordy, doub
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                             zi=data[(i+NS[t])];zj=data[(j+NS[v])];
                             if(!ISNAN(zi)&&!ISNAN(zj) ){
@@ -823,7 +821,7 @@ void Comp_Pair_LogLogistic_st2(int *cormod, double *coordx, double *coordy, doub
                  else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                             zi=data[(i+NS[t])];zj=data[(j+NS[v])];
                             if(!ISNAN(zi)&&!ISNAN(zj) ){
@@ -852,7 +850,7 @@ void Comp_Pair_Logistic_st2(int *cormod, double *coordx, double *coordy, double 
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
                             zi=data[(i+NS[t])];zj=data[(j+NS[v])];
                             if(!ISNAN(zi)&&!ISNAN(zj) ){
@@ -863,7 +861,7 @@ void Comp_Pair_Logistic_st2(int *cormod, double *coordx, double *coordy, double 
                 else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] &&lags<=maxdist[0]){
                             zi=data[(i+NS[t])];zj=data[(j+NS[v])];
                             if(!ISNAN(zi)&&!ISNAN(zj) ){
@@ -910,7 +908,6 @@ void Comp_Cond_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
     for(i=0; i<(ncoord[0]-1);i++)
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-            //printf("%f\t%d\t%d\t%f\t%f\t\n",lags,i,j,data[i],data[j]);
             if(lags<=maxdist[0]){
                 s12=nuis[1]*CorFct(cormod, lags, 0, par,0,0); //sill * corr
                 det=R_pow(s1,2)-R_pow(s12,2);
@@ -1006,7 +1003,6 @@ void Comp_Pair_WrapGauss2(int *cormod, double *coordx, double *coordy, double *c
                 wrap_gauss=biv_wrapped(alfa,u,v,mean[i],mean[j],nuis[0],nuis[1],corr);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                     *res+=log(wrap_gauss)*weights ;
-                    //printf("res: %f\n",*res);
                 }}}
     // Checks the return values
     if(!R_FINITE(*res))*res = LOW;
@@ -1050,10 +1046,7 @@ void Comp_Pair_SkewGauss2(int *cormod, double *coordx, double *coordy, double *c
     for(i=0;i<(ncoord[0]-1);i++){
             for(j=(i+1); j<ncoord[0];j++){
                 lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                
                  if(lags<=maxdist[0]){
-                //   if(lags<=250&&lags>0){
-                 //   Rprintf("%f %f %f  %f %f\n",lags,coordx[i],  coordx[j],coordy[i],coordy[j]);}
                     zi=data[i];zj=data[j];
                       if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=CorFct(cormod,lags,0,par,0,0);
@@ -1179,7 +1172,6 @@ void Comp_Pair_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
     // Set nuisance parameters:
     sill=nuis[1];nugget=nuis[0];
     if(sill<0||nugget<0) {*res=LOW;  return;}
-//Rprintf("%f",*REARTH);
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
  			lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1285,7 +1277,6 @@ void Comp_Pair_BinomnegGauss2(int *cormod, double *coordx, double *coordy, doubl
                           uu=(int) u; 
                          vv=(int) v; 
                         dens=biv_binomneg (NN[0],uu,vv,p1,p2,psj);
-                       // Rprintf("%d %f %f %f %f %f %f\n",NN[0],dens,nuis[0],psj,u,v,lags);
                          *res+=log(dens)*weights;
                 }}}}
     if(!R_FINITE(*res))*res = LOW;
@@ -1350,7 +1341,6 @@ void Comp_Pair_Binom2Gauss2(int *cormod, double *coordx, double *coordy, double 
                          *res+=log(dens)*weights;
                      
                 }}}}
-                Rprintf("%f\n",*res);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -1430,7 +1420,7 @@ void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,do
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                    bl=biv_T((1-nugget)*corr,(zi-mean[i])/sqrt(sill),
                                             (zj-mean[j])/sqrt(sill),0,0,df,1)/sill;
-                     if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
+                     //if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
                              *res+= weights*log(bl);
                 }}}}
 
@@ -1585,7 +1575,7 @@ void Comp_Pair_SkewGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+             lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                              u=data[(i+NS[t])]-mean[(i+NS[t])];
@@ -1598,7 +1588,7 @@ void Comp_Pair_SkewGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
                                 }}}}
             else {  
            for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                                 u=data[(i+NS[t])]-mean[(i+NS[t])];
@@ -1634,7 +1624,7 @@ void Comp_Pair_WrapGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+        lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -1655,7 +1645,7 @@ void Comp_Pair_WrapGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
                                 }}}}
            else {  
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);

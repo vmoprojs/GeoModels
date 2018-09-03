@@ -173,7 +173,6 @@ a=(shape1*shape2*R_pow(a1,shape1)*R_pow(a2,shape2)*R_pow(zi,shape1-1)*R_pow(zj,s
 b=exp(-(R_pow(a1*zi/mui,shape1) + R_pow(a2*zj/muj,shape2))/k);
 c=bessel_i(2*fabs(rho12)*R_pow(a1*zi/mui,shape1/2)*R_pow(a2*zj/muj,shape2/2)/k,0,1);
 dens=a*b*c;
-//Rprintf("%f %f %f %f %f %f\n",a,b,c,k,rho11*rho11,rho12*rho12);
 return(dens);
 }
 /*********************************/
@@ -307,9 +306,7 @@ if(!R_FINITE(r1*r2)||ISNAN(r1*r2)){
  r1=asym_aprox_1F1(ar,br,c*rho2*x);
  r2=asym_aprox_1F1(ar,br,c*rho2*y);}
 
-//Rprintf(" %f %f %f %f \n", r1 ,r2,ff(shape1/2,k)*r1*r2*R_pow((R_pow(c,2)*rho2*x*y),k)/(gammafn(k+1)*R_pow(ff(beta/2,k),2)),rho);
 ss=ff(shape1/2,k)*r1*r2*R_pow((R_pow(c,2)*rho2*x*y),k)/(gammafn(k+1)*R_pow(ff(beta/2,k),2));
-//Rprintf("%f  %f %d\n",ss,rho,k);
 a=a+ss;
 }
 b=R_pow(rate/2,beta)*R_pow(x*y,beta/2-1)*exp(-c*(x+y));
@@ -322,7 +319,6 @@ else
   f=(R_pow(rate,beta/2)*R_pow(y,beta/2-1)*exp(-(rate*y/2)) )/(R_pow(2,beta/2)*gammafn(beta/2));
   res=b*f;
 }
-//Rprintf("%f  %f %f %f  %f %f %f \n",res,x,y,rho,alpha,nu,n);
   return(res);
 }
 
@@ -333,7 +329,7 @@ double biv_skew(double corr,double z1,double z2,double mi,double mj,double vari,
    double aux1=0.0,aux11=0.0, aux2=0.0,aux21 = 0.0, aux22=0.0, pdf1=0,pdf2=0,cdf1=0,cdf2=0,quadr,zi,zj;
     zi=z1-mi;
     zj=z2-mj;
-    double det,dens,det1,det2,lim1,lim2,a11,a12,a22;
+    double det,dens,det1,det2,lim1,lim2,a11,a22;
     double nu2  = R_pow(skew,2);
     double om2  = R_pow(vari,1);
     double cor = corr;
@@ -735,9 +731,7 @@ double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, d
                   nuis[2]*CorFct(cormod,h1,u1,par,0,0),
                   nuis[2]*CorFct(cormod,h2,u2,par,0,0)};
 
-  //Rprintf("%f %f %f %f %f \n",lower[0],upper[0],a ,corr[0],corr[1]);
- // res=F77_CALL(sadmvn)(N,lim_inf,lim_sup,infin,corr,nval,abseps, releps,
-  //  esterror, res2int,fail);
+
   mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &res2, &fail );
   //Free(lim_inf);Free(lim_sup);Free(infin);
   Free(lower);Free(upper);Free(infin);
@@ -806,7 +800,6 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
   double lim_sup[2]={mean1,mean2};
   int infin[2]={0,0};//set the bounds for the integration
   double corr[1]={(1-nugget)*CorFct(cormod,h,u,par,0,0)};
-// Rprintf("%f %f %f %f %f  \n",corr[0],h,nugget,CorFct(cormod,h,u,par,0,0),par[0]);
   res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
   return(res);
 }
@@ -1024,7 +1017,6 @@ for(a=fmax_int(0,u+v-k-i-j);a<=fmin_int(u-i,v-j);a++){
        const2=exp(lgammafn(NN_i-k+1)-(lgammafn(NN_i-k-i+1)+lgammafn(i+1)));
        const3=exp(lgammafn(NN_j-k+1)-(lgammafn(NN_j-k-j+1)+lgammafn(j+1)));
 
-       //Rprintf("%f %f %f\n",const2,const3,dens1);
        dens+=dens1*const2*const3*
              R_pow(P11+P10,i) * R_pow(P11+P01,j) *
              R_pow(P00+P01,NN_i-k-i) * R_pow(P00+P10,NN_j-k-j);
@@ -1345,8 +1337,7 @@ double hyt2f1( double a,double b,double c,double x,double *loss )
     
     d = c - a - b;
     id = round(d);  /* nearest integer to d */
-    
-    // Rprintf("%lf  %lf %lf %lf\n" , d, a, b, c);
+  
     if( x > 0.9 )
     {
         if( fabs(d-id) > EPS1 ) /* test for integer c-a-b */

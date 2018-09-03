@@ -49,7 +49,7 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal lag separation in the composite-likelihood.}
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
-   The default is 6378.88, the radius of the earth.}  
+   The default is 6371, the radius of the earth.}  
   \item{model}{String; the density associated to the likelihood
     objects. \code{Gaussian} is the default.}
   \item{n}{Numeric; the number of trials in a binomial random fields.

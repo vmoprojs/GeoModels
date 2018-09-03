@@ -876,20 +876,23 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew)) - log(biv_skew(rho,u,v,ai,aj,sill,skew)))/delta; 
+   grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai_d,aj_d,sill,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
    i++; }
 }  
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+  if(flag[nbetas]==1) {  delta=sqrt(EPS)*nugget;
+    grad[i]=(log(biv_skew((1-(nugget+delta))*rho,u,v,ai,aj,sill+delta,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
+    i++; 
+  }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
-    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew)) - log(biv_skew(rho,u,v,ai,aj,sill,skew)))/delta; 
+    grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill+delta,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
     i++; 
   }
     if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*skew;
-    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill,skew+delta)) - log(biv_skew(rho,u,v,ai,aj,sill,skew)))/delta; 
+    grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew+delta)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/

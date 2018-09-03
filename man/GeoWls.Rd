@@ -11,7 +11,7 @@
 GeoWLS(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, 
              distance="Eucl", fixed=NULL, grid=FALSE, maxdist=NULL,
              maxtime=NULL,  model='Gaussian', optimizer='Nelder-Mead',
-             numbins=NULL, radius=6378.388, start=NULL, weighted=FALSE)
+             numbins=NULL, radius=6371, start=NULL, weighted=FALSE)
 }
 \arguments{
  \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -56,7 +56,7 @@ GeoWLS(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
   \item{numbins}{A numeric value denoting the numbers of bins, see the
     Section \bold{Details}}
        \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great circle distance.
-          Default value is the radius of the earth in Km (i.e. 6378.88)} 
+          Default value is the radius of the earth in Km (i.e. 6371)} 
   \item{start}{A named list with the initial values of the
     parameters that are used by the numerical routines in maximization
     procedure. \code{NULL} is the default (see \code{\link{GeoFit}}).}

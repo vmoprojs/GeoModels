@@ -144,19 +144,7 @@ void Transpose(double **a,int n,double k)
 /*************************************************************************************/
 
 
-double Dist_chordal(double loni, double lati, double lonj, double latj,double radius)
- {
-   double ai, bi, aj, bj, val=0.0;
-   if (loni == lonj && lati == latj) return val;
-   ai = (lati)*M_PI/180;
-   bi = (loni)*M_PI/180;
-   aj = (latj)*M_PI/180;
-   bj = (lonj)*M_PI/180;
- val=*REARTH  *sqrt(R_pow(cos(ai) * cos(bi)-cos(aj)  *cos(bj) ,2) +
-                    R_pow(cos(ai) * sin(bi)-cos(aj) * sin(bj) ,2)+
-                         R_pow(sin(ai)-sin(aj) ,2));
- return(val);
- }
+
 
 // Computes the Geodesic distance between to coordinates:
 double Dist_geodesic(double loni, double lati, double lonj, double latj,double radius)
@@ -173,19 +161,24 @@ double Dist_geodesic(double loni, double lati, double lonj, double latj,double r
   val2 = acos(val)*radius; 
   return(val2);
 }
-/*
-void GeoDist(double *coordx, double *coordy, int *ncoord, double *res,int *type_dist,double radius)
-{
-  int i=0, h=0, j=0;
 
-  for(i=0;i<(*ncoord-1);i++)
-    for(j=(i+1);j<ncoord[0];j++){
-      if(*type_dist==1) res[h]=Dist_chordal(coordx[i],coordy[i],coordx[j],coordy[j],radius);
-      if(*type_dist==2) res[h]=Dist_geodesic(coordx[i],coordy[i],coordx[j],coordy[j,radius]);
-      h++;}
+double Dist_chordal(double loni, double lati, double lonj, double latj,double radius)
+ {
+   double val=0.0;/*,val1=0.0,ai, bi, aj, bj ;
+   if (loni == lonj && lati == latj) return val;
+   ai = (lati)*M_PI/180;
+   bi = (loni)*M_PI/180;
+   aj = (latj)*M_PI/180;
+   bj = (lonj)*M_PI/180;
+ val1=radius  *sqrt(R_pow(cos(ai) * cos(bi)-cos(aj)  *cos(bj) ,2) +
+                    R_pow(cos(ai) * sin(bi)-cos(aj) * sin(bj) ,2)+
+                         R_pow(sin(ai)-sin(aj) ,2));
+ */
+        val=radius*2*sin(Dist_geodesic(loni,lati,lonj,latj,1)/2);
+ return(val);
+ }
 
-  return;
-}*/
+
 
 double dist(int type_dist,double coordx,double locx,double coordy,double locy,double radius)
 {

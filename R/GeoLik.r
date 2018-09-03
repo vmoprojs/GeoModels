@@ -8,7 +8,7 @@
 ### This file contains a set of procedures
 ### for maximum likelihood fitting of
 ### random fields.
-### Last change: 27/01/2016.
+### Last change: 27/01/2018.
 ####################################################
 
 ### Procedures are in alphabetical order.
@@ -19,10 +19,10 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
                        optimizer,onlyvar,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X)
 {
  ######### computing upper trinagular of covariance matrix   
-    matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+    matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
         cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
-        as.double(paramcorr),as.double(radius),as.integer(ns),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+        as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
         return(cc$cr)
 
     }
@@ -284,7 +284,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 ##################################################################################################################
         # Call to the objective functions:
          loglik_loggauss <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns)
+                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -298,7 +298,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
-        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
         cova <- corr
@@ -309,7 +309,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
       }
 
     loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns)
+                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -323,7 +323,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
-        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
         cova <- corr
@@ -336,7 +336,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 
     # Call to the objective functions:
     loglik <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns)
+                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -348,7 +348,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
-        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         #if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
         cova <- corr*nuisance['sill']
@@ -362,7 +362,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
  
                           
    loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns)
+                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
       {
         # Set the parameter vector:
         names(param) <- namesparam
@@ -378,7 +378,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 
         #print(head(as.numeric(rep(nuisance['mean_1'],dimat/2),rep(nuisance['mean_2'],dimat/2))))
         # Computes the vector of the correlations:
-        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         # if(corr[1]==-2||is.nan(corr[1])) return(loglik)
         # Computes the log-likelihood
         #loglik <- sum(apply(stdata,1,fname,const=const,cova=corr,dimat=dimat,ident=ident,nuisance=nuisance,setup=setup))
@@ -393,7 +393,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 #################################################################################################################################
 
     ### START the main code of the function:
-    spacetime_dyn=FALSE
+    spacetime_dyn=FALSE; NS=0
     if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
     if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
     ####################################
@@ -401,14 +401,14 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
     if(spacetime_dyn)  dimat =sum(ns)
     if(is.null(dim(X)))  X=as.matrix(rep(1,dimat))  # matrix of covariates
     num_betas=ncol(X)  
-    corrmat<-"CorrelationMat"# set the type of correlation matrix
-    if(spacetime&&!spacetime_dyn){ corrmat<-"CorrelationMat_st";  data=matrix(t(data),nrow=1)}
-    if(bivariate&&!spacetime_dyn){ corrmat<-"CorrelationMat_biv"; data=matrix(t(data),nrow=1)}
-    if((spacetime||bivariate)&&spacetime_dyn){ 
-          if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
-          if(bivariate) corrmat<-"CorrelationMat_biv_dyn"
-          data=t(unlist(data))       
-       }                
+    corrmat<-"CorrelationMat"# set the type of correlation matrix     
+    if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
+    if(bivariate)  corrmat<-"CorrelationMat_biv_dyn"  
+     if(spacetime||bivariate){
+          NS=cumsum(ns);
+          if(spacetime_dyn){ data=t(unlist(data));NS=c(0,NS)[-(length(ns)+1)]}
+          else {data=matrix(t(data),nrow=1);NS=rep(0,numtime)}  
+    }       
     ####################################
     dd=0
      
@@ -443,7 +443,7 @@ if(model==1){  ## gaussian case
         tapcorr <- double(numpairs)
         #tp<-.C(corrmat, tcor=tapcorr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(setup$tapmodel),as.double(c(0,0,1)),
         #   as.double(1),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-           tcor=matr(corrmat,tapcorr,coordx,coordy,coordt,setup$tapmodel,c(0,0,1),1,ns,radius)
+           tcor=matr(corrmat,tapcorr,coordx,coordy,coordt,setup$tapmodel,c(0,0,1),1,ns,NS,radius)
            tape <- try(new("spam",entries=tcor,colindices=setup$ja,rowpointers=setup$ia,dimension=as.integer(rep(dimat,2))),silent=TRUE)
            setup$struct <- try(spam::chol.spam(tape,silent=TRUE))
            setup$taps<-tcor
@@ -478,11 +478,11 @@ if(!onlyvar){   # performing optimization
    if(length(param)==1)
         {
          optimizer="optimize"         
-         Likelihood <- optimize(f=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+  Likelihood <- optimize(f=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,maximum = FALSE,met=method,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-                          upper=upper,radius=radius,setup=setup,X=X,ns=ns)
+                          upper=upper,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
         }
   if(length(param)>1)
         {
@@ -492,20 +492,21 @@ if(!onlyvar){   # performing optimization
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,met=method,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns)
+                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
   if(optimizer=='Nelder-Mead'||optimizer=='BFGS')
                        Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                           fixed=fixed,fname=fname,grid=grid,ident=ident,met=method,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns)
+                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,met=method,hessian=hessian,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns)
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS)
     }
 #}
+
     if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS')
                    {param <- Likelihood$par
                    maxfun <- -Likelihood$value
@@ -591,7 +592,7 @@ if(!onlyvar){   # performing optimization
         numfish<-numparam*(numparam-1)/2+numparam# set variance-covariance matrix size
         
         # computing the off diagonal elements of the correlation matrix
-        corr<-matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,radius)
+        corr<-matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         if(!bivariate) varian<-corr*nuisance['sill']# computes covariance components
         else           varian<-corr
         dname<-"DCorrelationMat"

@@ -57,7 +57,7 @@ WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall,
   \item{paramrange}{A numeric vector with the range of the parameter
     space.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great circle distance.
-          Default value is the radius of the earth in Km (i.e. 6378.88)}   
+          Default value is the radius of the earth in Km (i.e. 6371)}   
   \item{start}{A numeric vector with starting values.}
    \item{taper}{String; the name of the type of covariance matrix.
      It can be \code{Standard} (the default value) or

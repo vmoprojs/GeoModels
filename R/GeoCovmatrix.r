@@ -58,7 +58,7 @@ MatLogDet<-function(mat.decomp,method)    {
 ######################################################################################################
 
 GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl", grid=FALSE,
-                       maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, radius=6378.388, 
+                       maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, radius=6371, 
                        sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",X=NULL)
 
 {
@@ -66,24 +66,24 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
   ##########  Internal function: computing covariance matrix #############################################
   ########################################################################################################
 
-    Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, nuisance, numpairs,
+    Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, NS, nuisance, numpairs,
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
     {
+ 
 #####################################################f
     if(model %in% c(1,20))   ## gaussian case  or sinhgaussian case (sinh no implementerd)
     {
       
         if(type=="Standard")  {
+
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
-
-
-
+     #  if(spacetime) fname <- "CorrelationMat_st2"
+      if(spacetime) fname <- "CorrelationMat_st_dyn2"
+      #  if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), as.integer(ns),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
+          as.integer(ns),as.integer(NS),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
         corr=cr$corr
@@ -104,12 +104,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
        if(type=="Tapering")  {
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_tap_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv_tap"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_tap_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st_tap_dyn2"
+       if(bivariate) fname <- "CorrelationMat_biv_tap"
+        #if(bivariate) fname <- "CorrelationMat_biv_tap_dyn2"
+
+
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
-           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+           as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
         corr=cr$corr
         if(!bivariate){
@@ -127,14 +129,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
             fname <-"CorrelationMat_bin2"
-            if(spacetime) fname <- "CorrelationMat_st_bin2"
-            if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_bin2"
+            ##if(spacetime) fname <- "CorrelationMat_st_bin2"
+            if(spacetime) fname <- "CorrelationMat_st_dyn_bin2"
             #print(other_nuis)
            # if(bivariate) fname <- "CorrelationMat_biv_bin_dyn2"
-           # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_bin_dyn2"
+            if(bivariate) fname <- "CorrelationMat_biv_bin_dyn2"
             cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-              as.integer(ns),
+              as.integer(ns), as.integer(NS),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             corr=cr$corr
             if(!bivariate)                  {
@@ -165,14 +167,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
            fname <-"CorrelationMat_geom2"
             #print(other_nuis)
-            if(spacetime) fname <- "CorrelationMat_st_geom2"
-            if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_geom2"
+            #if(spacetime) fname <- "CorrelationMat_st_geom2"
+            if(spacetime) fname <- "CorrelationMat_st_dyn_geom2"
            # if(bivariate) fname <- "CorrelationMat_biv_geom_dyn2"
-           # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_geom_dyn2"
+            if(bivariate) fname <- "CorrelationMat_biv_geom_dyn2"
       
             cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-              as.integer(ns),
+              as.integer(ns), as.integer(NS),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             corr=cr$corr
             if(!bivariate)                  {
@@ -199,13 +201,13 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
             fname <-"CorrelationMat_binneg2"
-            if(spacetime) fname <- "CorrelationMat_st_binneg2"
-            if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_binneg2"
+            #if(spacetime) fname <- "CorrelationMat_st_binneg2"
+            if(spacetime) fname <- "CorrelationMat_st_dyn_binneg2"
            # if(bivariate) fname <- "CorrelationMat_biv_binneg_dyn2"
            # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_binneg_dyn2"
             cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-              as.integer(ns), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+              as.integer(ns), as.integer(NS), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             corr=cr$corr
             if(!bivariate)                  {
                 # Builds the covariance matrix:
@@ -227,12 +229,12 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 ###############################################################
             if(model==9)  {  ## tukey  Gaussian
             fname <-"CorrelationMat_tukey2"
-            if(spacetime) fname <- "CorrelationMat_st_tukey2"
-            if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn_tukey2"
+            #if(spacetime) fname <- "CorrelationMat_st_tukey2"
+            if(spacetime) fname <- "CorrelationMat_st_dyn_tukey2"
            # if(bivariate) fname <- "CorrelationMat_biv_tukey_dyn2"
-           # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_tukey_dyn2"
+            if(bivariate) fname <- "CorrelationMat_biv_tukey_dyn2"
             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
-             as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
+             as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns), as.integer(NS),
              PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             corr=cr$corr
             if(!bivariate)                  {
@@ -253,13 +255,13 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 if(model==12)   ##  student case 
     {
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
         nu=as.numeric(1/nuisance['df'])    
   corr=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cr$corr^2))*cr$corr)/(2*gamma(nu/2)^2)
   if(!bivariate) {
@@ -277,22 +279,19 @@ if(model==12)   ##  student case
 if(model==27)   ##  two piece student case case
     {
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
           corr2=cr$corr^2;sk2=sk^2
           a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr^2))
           a2=cr$corr*asin(cr$corr) + (1-corr2)^(0.5)
           ll=qnorm((1-sk)/2)
           p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
-        #  print(p11)
-       #   print(nu)
-       ##   print(sk)
           a3=3*sk2 + 2*sk + 4*p11 - 1
           KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
           corr= KK*(a1*a2*a3-4*sk2);
@@ -319,13 +318,13 @@ if(model==27)   ##  two piece student case case
 if(model==29)   ##  two piece gaussian case
     {
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
           corr2=sqrt(1-cr$corr^2)
           xx=as.numeric(nuisance['skew']); xx2=xx^2
           ll=qnorm((1-xx)/2)
@@ -361,13 +360,13 @@ if(model==21)   ##  gamma case
          mu = X%*%mm
          other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+       # if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+       #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
   
   corr=cr$corr^2   ### gamma correlation
   if(!bivariate) {
@@ -389,6 +388,44 @@ if(model==21)   ##  gamma case
         #}
       ###  
 }
+###############################################################
+if(model==30)   ##  poisson case
+    {
+         sel=substr(names(nuisance),1,4)=="mean"
+         mm=as.numeric(nuisance[sel]) 
+         mu = X%*%mm
+         other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
+        fname <-"CorrelationMat2"
+       # if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+       #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+  
+corr=cr$corr^2   ### gamma correlation
+z=4*exp(mu)/(1-corr)
+corr2=(corr)*(1-exp(-z/2)*(besselI(z/2,0)+besselI(z/2,1)))
+  if(!bivariate) {
+        # Builds the covariance matrix:
+        varcov <-  diag(1,dime)
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <-corr*(1-nuisance['nugget'])  
+        vv=exp(mu)
+        V=vv%*%t(vv)
+        varcov=varcov*sqrt(V)
+        }
+    ## todo
+    #if(bivariate)      {
+     #     varcov<-diag(dime)
+      #    varcov[lower.tri(varcov,diag=T)] <- corr
+       #   varcov <- t(varcov)
+        #  varcov[lower.tri(varcov,diag=T)] <- corr
+        #}
+      ###  
+}
 ###############################################################           
 if(model==26)   ##  weibull case
     {
@@ -397,13 +434,13 @@ if(model==26)   ##  weibull case
          mu = X%*%mm
          other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
            bcorr=    gamma(1+1/nuisance['shape'])^2/
            (gamma(1+2/nuisance['shape'])-gamma(1+1/nuisance['shape'])^2)    
          # weibull correlations                
@@ -436,13 +473,13 @@ if(model==26)   ##  weibull case
          mu = X%*%mm
          other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)       
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)       
     corr= ((pi*sin(2*pi/nuisance['shape']))/(2*nuisance['shape']*
            (sin(pi/nuisance['shape']))^2-pi*sin(2*pi/nuisance['shape'])))*
              (Re(hypergeo::hypergeo(-1/nuisance['shape'],-1/nuisance['shape'] ,1 ,cr$corr^2))*
@@ -465,15 +502,15 @@ if(model==22)  {  ## Log Gaussian
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
          fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
-        if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_dyn2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
         vvar=nuisance['sill']+nuisance['nugget']
         nuisance['sill']=1
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
             corr=(exp(vvar*cr$corr)-1)/(exp(vvar)-1)
        if(!bivariate)                  {
            ### cov matrix of the GRF
@@ -499,11 +536,11 @@ if(model==22)  {  ## Log Gaussian
 
           if(!bivariate){ 
         fname <-"CorrelationMat2"
-        if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime&&spacetime_dyn) fname <- "CorrelationMat_st_dyn2"
+       # if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
     
             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
-             as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+             as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
               ##print(cr$corr)
               corr2=cr$corr^2; sk=as.numeric(nuisance['skew']); sk2=sk^2; vv=as.numeric(nuisance['sill'])
               corr=((2*sk2/pi)*(sqrt(1-corr2) + cr$corr*asin(cr$corr)-1) + cr$corr*vv)/(vv+sk2*(1-2/pi));
@@ -516,9 +553,9 @@ if(model==22)  {  ## Log Gaussian
              varcov=varcov*vv
             }
             if(bivariate)      {
-                fname <- "CorrelationMat_biv_skew2"
+                fname <- "CorrelationMat_biv_skew_dyn2"
                 cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
-                  as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                  as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
                 corr=cr$corr
                 varcov <- diag(dime)
                 varcov[lower.tri(varcov,diag=T)] <- corr
@@ -618,8 +655,13 @@ if(model==22)  {  ## Log Gaussian
         setup$taps<-tp$tapcorr
     }
     if(is.null(X))  initparam$X=as.matrix(rep(1,dime))
-
+    if(spacetime||bivariate){
+          initparam$NS=cumsum(initparam$ns);
+            if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}
+            else{               initparam$NS=rep(0,initparam$numtime)}
+    }
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
+                        initparam$NS,
                         initparam$param[initparam$namesnuis],
                         initparam$numpairs,numpairstot,initparam$model,
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
@@ -646,6 +688,7 @@ if(model==22)  {  ## Log Gaussian
                    maxtime = maxtime,
                    n=n,
                    ns=initparam$ns,
+                   NS=initparam$NS,
                    model=initparam$model,
                    namescorr = initparam$namescorr,
                    namesnuis = initparam$namesnuis,

@@ -123,36 +123,6 @@ double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double da
 double cond_exp_bin(int *cormod,double data_i,double data_j,double lags_i,double lags_j,double lags,double *nuis,double *par,double psm);
 
 
-
-
-void pair_k(double *coordx, double *coordy, double *coordt,int *cormod, double *data,double *locx,  
-  double *locy, double *loct,int *n,int *ncoord,int *nloc,int *tloc,int *ntime, double *maxdist,
-  double *maxtime,double *nuis,int *model,double *par,int *pair,double *radius, int *type_krig,int *type_dist,int *spt,
-  int *lin_opt,int *weighted,double *res);
-
-void mse_pair_k(double *coordx, double *coordy, double *coordt,int *cormod,double *locx,
-            double *locy, double *loct,int *n,int *ncoord,int *nloc,int *tloc,int *ntime, double *maxdist,
-            double *maxtime,double *nuis,int *model,double *par,double *radius, int *type_krig,int *type_dist,int *spt,
-            int *lin_opt,int *weighted,double *res);
-
-double MSE_pair_space(double *coordx, double *coordy, int *cormod,double locx,  double locy,int *n,int *ncoord,
-              double *maxdist,double *nuis,int *model,double *par, double *radius,int *type_krig,int *type_dist,
-              int *lin_opt,int *weighted);
-
-double pair_kri_space(double *coordx, double *coordy, int *cormod, double *data,double locx,  double locy,int *n,int *ncoord, 
-  double *maxdist,double *nuis,int *model,double *par, double *radius,int *type_krig,int *type_dist,int *lin_opt,int *weighted);
-
-
-double uni_kri_space(double *coordx, double *coordy, int *cormod, double *data,double locx,  double locy,int *n,int *ncoord, 
-  double *maxdist,double *nuis,int *model,double *par, double *radius,int *type_krig,int *type_dist,int *lin_opt,int *weighted);
-
-
-double pair_kri_spacetime(double *coordx, double *coordy, double *coordt, int *cormod, double *data,
-  double locx,  double locy, double loct,int *n,int *ncoord, int *ntime,double *maxdist,
-  double *maxtime,double *nuis,int *model,double *par, double *radius, int *type_krig,int *type_dist,
-  int *lin_opt,int *weighted);
-
-
 double marg_binom(int n,double x,double p);
 
 double marg_binomneg(int n,int x,double p);
@@ -629,7 +599,7 @@ void Sens_Pair_st(double *betas,double *coordx, double *coordy, double *coordt, 
 
 void Sens_Pair_biv(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis,
                          double *NN, double *nuis, int *np,int *npar, int *nparc,int *nparcT, double *mean,int *mode,
-                         double *parcor, double *score, double *sens,int *weigthed);
+                         double *parcor, double *score, double *sens,int *weigthed,double *Z, int *ns, int *NS);
 
 void Sens_Pair_Gauss_ij(double rho, int *flag, double *gradcor, int *npar, int nbetas,
       int *nparc, double *par, double *sensmat, double *Xi, double *Xj);
@@ -651,7 +621,7 @@ void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coor
                   int *dst,double *eps, int *flagcor, int *flagnuis, int *grid,
                   int *like, int *model, double *NN,int *npar, int *nparc,int *nparcT, double *nuis, int *np,
                   double *parcor,  int *type_lik, double *varimat,
-                  double *winc, double *winstp,int *weigthed);
+                  double *winc, double *winstp,int *weigthed,double *Z,int *ns,int *NS);
 
 void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, int *dst, double *eps, int *flagcor,
                    int *flagnuis,int *like,double *mean,int *model,double *NN,int *nbetas,int *npar, int *nparc,int *nparcT, double *nuis,int *np, double *parcor,
@@ -789,11 +759,7 @@ Description: procedures for the estimation of the model parameters
 via the weighted least square method.
 Start
  ---------------------------------------------------------------*/
-void Binned_Lorelogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms,int *nbins);
 
-void Binned_Lorelogram_st2(double *bins, double *bint, double *coordx, double *coordy, double *coordt,double *data, int *lbins,
-                          int *lbinst, int *lbint, double *moms,double *momst,
-                          double *momt, int *nbins, int *nbint);
 
 
 void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins);
@@ -919,6 +885,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

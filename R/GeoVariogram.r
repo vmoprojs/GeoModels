@@ -14,7 +14,7 @@
 
 GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
                        grid=FALSE, maxdist=NULL, maxtime=NULL, numbins=NULL,
-                       radius=6378.388, type='variogram',bivariate=FALSE)
+                       radius=6371, type='variogram',bivariate=FALSE)
   {
     call <- match.call()
     corrmodel <- 'gauss'
@@ -96,12 +96,11 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                          }
                if(spacetime_dyn) data=unlist(data)
                NS=c(0,NS)[-(length(ns)+1)]
-
                moments_marg<-double(n_var*numvario)   # vect of square differences for each component (n_var) 11  e 22
                lenbins_marg<-integer(n_var*numvario)  #
                moments_cross<-double(0.5*n_var*(n_var-1)*numvario)  # vect of square differences for cross components (12)
                lenbins_cross<-integer(0.5*n_var*(n_var-1)*numvario) #
-               DEV=.C("Binned_Variogram_biv2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
+               DEV=.C("Binned_Variogram_biv2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double(data),
                lenbins_cross=lenbins_cross, moments_cross=moments_cross, as.integer(numbins),lenbins_marg=lenbins_marg,
                moments_marg=moments_marg,as.integer(ns),as.integer(NS),
                PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)

@@ -321,6 +321,7 @@ scale22=par[7];
 if(nug11<0 || nug22<0 ||  scale11<=0 || scale22<=0   ) rho=-2;
      break;
      case 118:  //bivariate matern with contrainsts
+     case 121:
      var11=par[0];
      var22=par[1];
      nug11=par[2];
@@ -366,6 +367,7 @@ if(nug11<0 || nug22<0 ||  scale11<=0 || scale22<=0   ) rho=-2;
      break;
 
    case 128:  //bivariate matern
+   case 117: //bivariate smoke
      var11=par[0];
      var22=par[1];
      nug11=par[2];
@@ -910,6 +912,28 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
                                               else       rho=var22*CorFunWitMat(h, scale, smooth);
                                               break;}
         break;
+
+         case 119:       //bivariate smoke sep
+     var11=par[0];
+     var22=par[1];
+     nug11=par[2];
+     nug22=par[3];
+     col=par[4];
+     scale=par[5];
+     smooth=par[6];
+     if((c11==0)&&(c22==0))                   {if(h==0)  rho=var11+nug11;
+                                              else       rho=var11*CorFunSmoke(h, scale, smooth);
+                                              break;}
+     if((c11==0&&c22==1)||(c11==1&&c22==0))   {
+                                          if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                          else     rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale, smooth); 
+                                          break;}
+     if((c11==1)&&(c22==1))                   {if(h==0)  rho=var22+nug22;
+                                              else       rho=var22*CorFunSmoke(h, scale, smooth);
+                                              break;}
+        break;
+
+
         case 124:   /*parsimonious LMC */
         var11=par[0];
         col=par[1];
@@ -1157,6 +1181,28 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
                                   else      rho=var22*CorFunWitMat(h, scale22,  smoo22);
                                   break;}
         break;
+        case 121:       // full bivariate smoke with contraists
+        var11=par[0];
+        var22=par[1];
+        nug11=par[2];
+        nug22=par[3];
+        col=par[4];
+        scale11=par[5];
+        scale22=par[6];
+        smoo11=par[7];
+        smoo22=par[8];
+        scale12=0.5*(scale11+scale22);
+        smoo12=0.5*(smoo11+smoo22);
+      
+        if((c11==0)&&(c22==0))    {if(h==0)  rho=var11+nug11;
+                                   else      rho=var11*CorFunSmoke(h, scale11,  smoo11);
+                                   break;}
+        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                                else rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale12,  smoo12);break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
+                                  else      rho=var22*CorFunSmoke(h, scale22,  smoo22);
+                                  break;}
+        break;
         case 128:       // full bivariate matern
         var11=par[0];
         var22=par[1];
@@ -1181,24 +1227,30 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
                                  else      rho=var22*CorFunWitMat(h, scale22,  smoo22);
                                  break;}
         break;
-        /*  
-        case 130:
+             case 117:       // full bivariate matern
         var11=par[0];
         var22=par[1];
         nug11=par[2];
         nug22=par[3];
         col=par[4];
-        scale=par[5];
-        if((c11==0)&&(c22==0)) {if(h==0)   rho=var11+nug11;
-                                else       rho=var11*CorFunWendhole2(h,scale);
+        scale11=par[5];
+        scale12=par[6];
+        scale22=par[7];
+        smoo11=par[8];     
+        smoo12=par[9];
+        smoo22=par[10];
+     // Rprintf("%f %f %f %f %f %f %f %f %f %f %f  \n",var11,var22,nug11,nug22,col,scale11,scale12,scale22,smoo11,smoo12,smoo22);
+        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
+                                else      rho=var11*CorFunSmoke(h, scale11,  smoo11);
                                 break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0)) {rho=col*sqrt(var11+nug11)*
-                                                         sqrt(var22+nug22)*CorFunWendhole2(h,scale );break;}
-        if((c11==1)&&(c22==1)) {if(h==0)   rho=var22+nug22;
-                                else       rho=var22*CorFunWendhole2(h,scale);
-                                break;}
+        if((c11==0&&c22==1)||(c11==1&&c22==0))    {
+                                               if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                                     else rho=col*sqrt(var11*
+                                                         var22)*CorFunSmoke(h, scale12,  smoo12);break;}
+        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
+                                 else      rho=var22*CorFunSmoke(h, scale22,  smoo22);
+                                 break;}
         break;
-        */
         /************************************************/
         case 130:       //biv gen wend sep
         var11=par[0];
@@ -1878,74 +1930,6 @@ double CorFunWendhole(double lag,double scale)
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************//************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************//************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************//************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************//************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************//************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-
-
-
-
-
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
 /****************** SPATIAL CORRELATION MATRIX (upper trinagular) *******************************/
 /************************************************************************************************/
 /************************************************************************************************/
@@ -1953,7 +1937,8 @@ double CorFunWendhole(double lag,double scale)
 /************************************************************************************************/
 
 // Computation of the upper (lower) triangular spatial correlation matrix: spatial case
-void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *nuis, double *par,double *radius)
+void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
+ double *nuis, double *par,double *radius,int *ns, int *NS)
 {
   int i=0,j=0,h=0;// check the paramaters range:
   double lags=0.0;
@@ -1971,7 +1956,7 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 
 // Computation of the upper (lower) triangular spatial binomial type 1 covmatrix
 void CorrelationMat_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
-        int *n,double *nuis, double *par,double *radius, int *ns)
+        int *n,double *nuis, double *par,double *radius, int *ns, int *NS)
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double psj=0.0,lags=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
@@ -1993,7 +1978,7 @@ void CorrelationMat_bin2(double *rho,double *coordx, double *coordy, double *coo
 
 // Computation of the upper (lower) triangular spatial binomial type 2 covamtrix
 void CorrelationMat_binneg2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  
-  double *mean,int *n,double *nuis, double *par,double *radius, int *ns)
+  double *mean,int *n,double *nuis, double *par,double *radius, int *ns, int *NS)
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
@@ -2013,7 +1998,7 @@ void CorrelationMat_binneg2(double *rho,double *coordx, double *coordy, double *
 
 // Computation of the upper (lower) triangular spatial geom cov matrix
 void CorrelationMat_geom2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,
-  double *nuis, double *par,double *radius,int *ns)
+  double *nuis, double *par,double *radius,int *ns, int *NS)
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
@@ -2031,7 +2016,7 @@ void CorrelationMat_geom2(double *rho,double *coordx, double *coordy, double *co
 
 // Computation of the upper (lower) triangular spatial tukey cov matrix
 void CorrelationMat_tukey2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
- double *nuis, double *par,double *radius,int *ns)
+ double *nuis, double *par,double *radius,int *ns, int *NS)
 {
   int i=0,j=0,h=0;// check the paramaters range:
   double cc,lags=0.0,a=0.0,b=0.0,c=0.0,tm=0.0,sk2=0.0,consta=0.0,t1;
@@ -2063,7 +2048,7 @@ void CorrelationMat_tukey2(double *rho,double *coordx, double *coordy, double *c
 
 // Computation of the correlations for spatial tapering:
 void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
-  int *ns)
+  int *ns, int *NS)
 {
   int i=0;// check the paramaters range:
   //if(nuis[1]<0 || nuis[2]<=0 ){rho[0]=-2;return;} //CheckCor(cormod,par)==-2
@@ -2082,157 +2067,13 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-/************************************************************************************************/
+/*************************************************************************************************/
 
-// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius, int *ns)
-{
-  int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
-  for(t=0;t<ntime[0];t++){
-    for(i=0;i<ncoord[0];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-           rho[h]=CorFct(cormod,lags,0,par,t,v);
-           h++;}}
-
-    else {  
-         lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-rho[h]=CorFct(cormod,lags,lagt,par,t,v);
-              h++;
-              }}
-    }}}
-    //Rprintf("%d %d %d %d %d %d\n",h,ntime[0],ns[0],ns[1],ns[2],ns[3]);
-  return;
-}
-
-
-
-
-
-
-
-
-
-
-
-// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st_geom2(double *rho,double *coordx, double *coordy,
- double *coordt,  int *cormod,  double *mean,double *nuis, double *par,double *radius, int *ns)
-
-{
-    int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
-       double psj,ai,aj,p1,p2;
-  for(t=0;t<ntime[0];t++){
-    for(i=0;i<ncoord[0];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-            for(j=i;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                         ai=mean[i+ncoord[0]*t];aj=mean[j+ncoord[0]*v];
-                        psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                   rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-                        h++;}}
-      else {  
-               lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        ai=mean[i+ncoord[0]*t];aj=mean[j+ncoord[0]*v];
-                        psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-                        h++;}}
-            }}}
-    return;
-}
-
-
-
-
-
-void CorrelationMat_st_tukey2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
-  int *ns)
-{
-  int i=0,j=0,t=0,v=0,h=0; 
-   double lagt=0.0,cc,lags=0.0,a=0.0,b=0.0,c=0.0,tm=0.0,sk2=0.0,consta=0.0,t1;
-  t1=1-nuis[4];
-    c=R_pow(t1,2) - R_pow(nuis[4],2);
-    sk2=R_pow(nuis[3],2);
-    if(nuis[3]==0) {consta= ( 2/(1-nuis[4]*(2))   -1)/sqrt(c) ;}
-    else {tm=(exp(sk2/(2*t1))-1)/(nuis[3]*sqrt(t1));
-          consta= ((exp(sk2 * 2/(1-2*nuis[4])) -
-               2* exp( sk2 *0.5)+1))/(sk2*sqrt(c)) - R_pow(tm,2);}
-
-for(t=0;t<ntime[0];t++){
-    for(i=0;i<ncoord[0];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-         cc=CorFct(cormod,lags,0,par,t,v);
-       a=(1+cc)/(1-nuis[4]*(1+cc));
-        b=0.5* (1-nuis[4]*(1-cc*cc));
-
-  if(nuis[3]==0)        rho[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  rho[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-           h++;}}
-    else {  
-      lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-     cc=CorFct(cormod,0,lagt,par,t,v);
-      a=(1+cc)/(1-nuis[4]*(1+cc));
-        b=0.5* (1-nuis[4]*(1-cc*cc));
-
-  if(nuis[3]==0)        rho[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  rho[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-              h++;}}
-    }}}
-  return;
-}
-
-
-// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
-  double *nuis, double *par,double *radius, int *ns)
-
-{
-    int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
-       double psj,ai,aj,p1,p2;
-  for(t=0;t<*ntime;t++){
-    for(i=0;i<ncoord[0];i++){
-      for(v=t;v<*ntime;v++){
-      if(t==v){
-         for(j=i;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-
-                         ai=mean[i+ncoord[0]*t];aj=mean[j+ncoord[0]*v];
-   
-                        psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);///sqrt(p1*(1-p1)*p2*(1-p2));
-                        h++;}}
-                else {  
-                    lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                       ai=mean[i+ncoord[0]*t];aj=mean[j+ncoord[0]*v];
-                        psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);///sqrt(p1*(1-p1)*p2*(1-p2));
-                        h++;}}
-            }}}
-    return;
-}
 
 
 // Computation of the correlations for spatio-temporal tapering:
 void CorrelationMat_st_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod, double *nuis, 
-  double *par,double *radius, int *ns)
+  double *par,double *radius, int *ns, int *NS)
 {
   int i=0;
 //if(nuis[1]<0 || nuis[2]<=0 ){rho[0]=-2;return;}
@@ -2240,7 +2081,6 @@ void CorrelationMat_st_tap(double *rho,double *coordx, double *coordy, double *c
 
   for(i=0;i<*npairs;i++) {
       rho[i]=CorFct(cormod,lags[i],lagt[i],par,0,0);
-     // Rprintf("%d %f %f  \n",*cormod,lags[i],lagt[i]);
   }
 return;
 }
@@ -2258,24 +2098,25 @@ return;
 /************************************************************************************************/
 
 // Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius, int *ns)
+void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  
+  double *nuis, double *par,double *radius, int *ns,int *NS)
 {
   int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-          // u=data[(i+NS[t])];      
-                                //w=data[(j+NS[t])];
+         for(j=i+1;j<ns[v];j++){
+           //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
            rho[h]=CorFct(cormod,lags,0,par,t,v);
            h++;}}
 
     else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+       // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
 rho[h]=CorFct(cormod,lags,lagt,par,t,v);
               h++;
               }}
@@ -2291,7 +2132,7 @@ rho[h]=CorFct(cormod,lags,lagt,par,t,v);
 
 // Computation of the upper (lower) triangular  correlation matrix:  geom spatial-temporal case
 void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, double *coordt, 
-                    int *cormod,  double *mean,double *nuis, double *par,double *radius, int *ns)
+                    int *cormod,  double *mean,double *nuis, double *par,double *radius, int *ns, int *NS)
 
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
@@ -2301,8 +2142,8 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-
+         // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+    lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2311,7 +2152,8 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
                 else {  
                     lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+         //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2323,7 +2165,7 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
 
 // Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
 void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
-  double *nuis, double *par,double *radius, int *ns)
+  double *nuis, double *par,double *radius, int *ns, int *NS)
 
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
@@ -2333,8 +2175,8 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-
+      //    lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+ lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                          ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
    
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
@@ -2344,7 +2186,8 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
                 else {  
                     lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+        // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                        ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2357,7 +2200,7 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
 
 
 void CorrelationMat_st_dyn_tukey2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
-  int *ns)
+  int *ns, int *NS)
 {
   int i=0,j=0,t=0,v=0,h=0; 
    double lagt=0.0,cc,lags=0.0,a=0.0,b=0.0,c=0.0,tm=0.0,sk2=0.0,consta=0.0,t1;
@@ -2374,7 +2217,8 @@ for(t=0;t<ntime[0];t++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
          cc=CorFct(cormod,lags,0,par,t,v);
        a=(1+cc)/(1-nuis[4]*(1+cc));
         b=0.5* (1-nuis[4]*(1-cc*cc));
@@ -2385,7 +2229,8 @@ for(t=0;t<ntime[0];t++){
     else {  
       lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+         //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
      cc=CorFct(cormod,0,lagt,par,t,v);
       a=(1+cc)/(1-nuis[4]*(1+cc));
         b=0.5* (1-nuis[4]*(1-cc*cc));
@@ -2397,50 +2242,44 @@ for(t=0;t<ntime[0];t++){
   return;
 }
 
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/****************** SPATIO-DYNAMICAL BIVARIATE CORRELATION MATRIX (upper trinagular) **********/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
 
-
-
-
-
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/****************** SPATIO-BIVARIATE CORRELATION MATRIX (upper trinagular) ***************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
 
 // Computation of the upper (lower) triangular covariance matrix: bivariate case
-void CorrelationMat_biv2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, 
-  double *par,double *radius, int *ns)
+void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, 
+  double *par,double *radius, int *ns,int *NS)
 {
   int i=0,j=0,t=0,v=0,h=0;double lags=0.0;
-  //if(sqrt(nuis[0])<0 ||sqrt(nuis[1])<0 ||sqrt(nuis[2])<0||sqrt(nuis[3])<0){rho[0]=-2;return;}
-   for(t=0;t<ntime[0];t++){
-    for(i=0;i<ncoord[0] ;i++){
+    for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i;j<ncoord[0];j++){
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                rho[h]=CorFct(cormod,lags,0,par,t,v);
-                // Rprintf("%f %d %d  %f %f %f %f %f %f \n",lags,ntime[0],ncoord[0],rho[h],par[0],par[1],par[2],par[3],par[4]);
+         for(j=i;j<ns[t];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                rho[h]=CorFct(cormod,lags,0,par,t,t);
                 h++;}}
     else {  
-         for(j=0;j<ncoord[0];j++){
-         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                 rho[h]=CorFct(cormod,lags,0,par,t,v);
-               //  Rprintf("%f %d %d  %f  %f %f %f %f %f \n",lags,ntime[0],ncoord[0],rho[h],par[0],par[1],par[2],par[3],par[4]);
                 h++;}}
     }}}
   return;
 }
 
+
 // Computation of the upper (lower) triangular covariance matrix: bivariate case
-void CorrelationMat_biv_skew2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod, 
- double *nuis, double *par,double *radius, int *ns)
+void CorrelationMat_biv_skew_dyn2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod, 
+ double *nuis, double *par,double *radius, int *ns,int *NS)
 {
  int i=0,j=0,t=0,v=0,h=0;
   double cc=0.0,lags=0.0;
@@ -2457,141 +2296,30 @@ void CorrelationMat_biv_skew2(double *rho,double *coordx, double *coordy, double
     sk[0]=nuis[2];sk[1]=nuis[3];
      //if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
     //if(par[0]<=0 || par[1]<=0 || par[2]<0 || par[3]<0){rho[0]=-2;return;}
-
-            for(t=0;t<ntime[0];t++){
-    for(i=0;i<ncoord[0] ;i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i;j<ncoord[0];j++){
-
-
-            lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                cc=CorFct(cormod,lags,0,par,t,v);
-   rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
-            h++;}}
-   else {  
-         for(j=0;j<ncoord[0];j++){
-       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                cc=CorFct(cormod,lags,0,par,t,v);
-   rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
-                h++;}}
-    }}}
-  return;
-}
-
-
-
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/****************** SPATIO-DYNAMICAL BIVARIATE CORRELATION MATRIX (upper trinagular) **********/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-
-
-
-// Computation of the upper (lower) triangular covariance matrix: bivariate case
-void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, 
-  double *par,double *radius, int *ns)
-{
-  int i=0,j=0,t=0,v=0,h=0;double lags=0.0;
-  int *NS;
-  NS=(int *) Calloc(2,int);
-  NS[0]=0;NS[1]=ns[0];
-    for(t=0;t<ntime[0];t++){
+           for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-          lags=dist(type[0],coordx[i+NS[t]],coordx[j+NS[v]],coordy[i+NS[t]],coordy[j+NS[v]],*REARTH);
-                rho[h]=CorFct(cormod,lags,0,par,t,t);
-                h++;}}
-    else {  
-         for(j=0;j<ns[v];j++){
-          lags=dist(type[0],coordx[i+NS[t]],coordx[j+NS[v]],coordy[i+NS[t]],coordy[j+NS[v]],*REARTH);
-                rho[h]=CorFct(cormod,lags,0,par,t,v);
+            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                cc=CorFct(cormod,lags,0,par,t,v);
+   rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
+            h++;}}
+   else {  
+        for(j=0;j<ns[v];j++){
+        lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                cc=CorFct(cormod,lags,0,par,t,v);
+   rho[h]=2*sk[t]*sk[v]*(sqrt(1-cc*cc)+cc*asin(cc)-1)/M_PI+sqrt(vari[t])*sqrt(vari[v])*cc;
                 h++;}}
     }}}
-    Free(NS);
   return;
 }
-
-
-
-
-/*
-double Cor_asy(double coordxi,double coordxj,double coordyi,double coordyj,double *par,int t,int v)
-{
-    double rho;
-    double lags,lags1,lags2;
-    double var11,var22,nugget1,nugget2,col,scale,asy1;
-    var11=par[0];
-    var22=par[1];
-    nugget1=par[2];nugget2=par[3];
-    col=par[4];
-    scale=par[5];
-    asy1=par[6]; 
-    
-    
-    lags=hypot(coordxi-coordxj,coordyi-coordyj);
-    lags1=hypot(coordxi-coordxj-asy1,coordyi-coordyj-asy1);
-    lags2=hypot(coordxi-coordxj+asy1,coordyi-coordyj+asy1);
-    if(t==0 && v==0)   { rho=var11* CorFunStable(lags, 1, scale);}
-    if(t==0 && v==1)   { rho=col*sqrt(var11*var22)*CorFunStable(lags1, 1, scale);}
-    if(t==1 && v==0)   { rho=col*sqrt(var11*var22)*CorFunStable(lags2, 1, scale);}
-    if(t==1 && v==1)   { rho=var22*CorFunStable(lags, 1, scale);}
-    return(rho);
-}
-
-
-
-// Computation of the upper (lower) triangular covariance matrix: bivariate case
-void CorrelationMat_biv2_asy(double *rho,double *coordx, double *coordy, double *coordt, int *cormod, 
- double *nuis, double *par,double *radius, int *ns)
-{
-    int i=0,j=0,t=0,v=0,h=0;
-    //if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
-    if(par[0]<=0 || par[1]<=0 || par[2]<0 || par[3]<0){rho[0]=-2;return;}
-    for(i=0;i<ncoord[0];i++){
-        for(t=0;t<*ntime;t++){
-            for(j=i;j<ncoord[0];j++){
-                if(i==j){for(v=t;v<*ntime;v++){rho[h]=Cor_asy(coordx[i],coordx[j],coordy[i],coordy[j],par,t,v);h++;}}
-                else {
-                    
-                    
-                    for(v=0;v<*ntime;v++){rho[h]=Cor_asy(coordx[i],coordx[j],coordy[i],coordy[j],par,t,v);h++;}}
-            }}}
-    return;
-}
-*/
-
-
-
-
-
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-
 
 
 
 // Computation of the correlations for bivariate tapering:
 void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,
- double *nuis, double *par,double *radius, int *ns)
+ double *nuis, double *par,double *radius, int *ns,int *NS)
 {
   int i=0;
   //if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
@@ -2599,6 +2327,21 @@ void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double 
     for(i=0;i<*npairs;i++) { rho[i]=CorFct(cormod,lags[i],0,par,first[i],second[i]);}
   return;
 }
+
+
+
+
+
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/****************** SPATIO-Temporal(BIVARIATE) CORRELATION Vector *******************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
 
 
 
@@ -2825,6 +2568,7 @@ if(*spt) {
 }
 
 
+
 // Derivatives with respect to R_power2 of the Cauchy correlation model:
 double DCauchyPow(double R_power2, double scale, double rho)
 {
@@ -2849,8 +2593,8 @@ double DGaussSc(double lag, double scale, double rho)
 double DGenCauP1(double lag, double R_power1, double R_power2, double scale, double rho)
 {
   if(lag)return R_power2*rho/R_power1*(log(1+R_pow(lag/scale,R_power1))/R_power1-
-				   R_pow(lag/scale,R_power1)*log(lag/scale)/
-				   (1+R_pow(lag/scale,R_power1)));
+           R_pow(lag/scale,R_power1)*log(lag/scale)/
+           (1+R_pow(lag/scale,R_power1)));
   else return 0.0;
 }
 // Derivatives with respect to R_power2 of the generalised Cauchy correlation model:
@@ -2900,7 +2644,7 @@ double DWhMatSc(double eps, double lag, double scale, double smooth)
   if (lag){
     double pscale=0.0;
     pscale=(bessel_k(lag/(scale+eps),smooth,1)-
-	    bessel_k(lag/scale,smooth,1))/ eps;
+      bessel_k(lag/scale,smooth,1))/ eps;
     return R_pow(2,1-smooth)/gammafn(smooth)*R_pow(lag/scale,smooth)*
       (pscale-smooth*bessel_k(lag/scale,smooth,1)/scale);}
   else return 0;
@@ -2922,7 +2666,7 @@ double DWhMatSm(double eps, double lag, double scale, double smooth)
   if (lag){
     double psmooth=0.0;
     psmooth=(bessel_k(lag/scale,smooth+ eps,1)-
-	     bessel_k(lag/scale,smooth,1))/ eps;
+       bessel_k(lag/scale,smooth,1))/ eps;
     return R_pow(2,1-smooth)*R_pow(lag/scale,smooth)/gammafn(smooth)*
       ((log(lag/scale)-log(2)-digamma(smooth))*bessel_k(lag/scale,smooth,1)+psmooth);}
   else return 0;
@@ -2936,310 +2680,7 @@ double DWen1Sm(double lag, double scale, double smooth)
 }
 
 
-// Derivatives with respect to the temporal scale parameter of the Gneiting correlation model:
-double DGneiting_sc_t(double h,double u, double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-    double arg=0.0,rho=0.0,a=0.0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    rho=exp(-R_pow(h/scale_s, R_power_s)/(R_pow(arg, 0.5*sep*R_power_s)))/arg;
-    if (arg) a= (R_power_t*R_pow(u/scale_t, R_power_t)*rho)/(scale_t*R_pow(arg,2))-( 0.5*R_power_t*R_power_s*sep*rho*R_pow(h/scale_s, R_power_s)*R_pow(u/scale_t, R_power_t)*R_pow(arg,-0.5*sep*R_power_s-2))/scale_t;
-    return(a);
-}
-// Derivatives with respect to the spatial scale parameter of the Gneiting correlation model:
-double DGneiting_sc_s(double h,double u,double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-    double arg=0.0,rho=0.0,a=0.0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    rho=exp(-R_pow(h/scale_s, R_power_s)/(R_pow(arg, 0.5*sep*R_power_s)))/arg;
-    a=(R_pow(h/scale_s, R_power_s)*R_power_s*rho*R_pow(arg,-0.5*R_power_s*sep-1))/scale_s;
-    return (a);
-}
-// Derivatives with respect to the separable parameter of the Gneiting correlation model:
-double DGneiting_sep(double h,double u, double R_power_s,double R_power_t,
-		     double scale_s,double scale_t,double sep)
-{
-  double a=0,arg=0,rho=0;
-  arg=1+R_pow(u/scale_t, R_power_t);
-  rho=exp(-R_pow(h/scale_s, R_power_s)*(R_pow(arg,- 0.5*sep*R_power_s)));
-  if(arg) a=0.5*R_pow(h/scale_s, R_power_s)*R_pow(arg,-0.5*sep*R_power_s-1)*R_power_s*rho*log(arg);
-  return(a);
-}
-// Derivatives with respect to spatial R_power of the Gneiting correlation model:
-double DGneiting_pw_s(double h,double u, double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0;
-  arg=1+R_pow(u/scale_t, R_power_t);
-  rho=exp(-R_pow(h/scale_s, R_power_s)/(R_pow(arg, 0.5*sep*R_power_s)))/arg;
-  if(h && arg){a=(-R_pow(h/scale_s, R_power_s)*R_pow(arg,-0.5*sep*R_power_s)*log(h/scale_s) +
-                  0.5*R_pow(h/scale_s, R_power_s)*R_pow(arg,-0.5*sep*R_power_s)*sep*log(arg) )*rho;}
-  return(a);
-}
 
-// Derivatives with respect to temporal R_power of the Gneiting correlation model:
-double DGneiting_pw_t(double h,double u, double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0;
-  arg=1+R_pow(u/scale_t, R_power_t);
-  rho=exp(-R_pow(h/scale_s, R_power_s)/(R_pow(arg, 0.5*sep*R_power_s)))/arg;
-  if(u){a=( -R_pow(u/scale_t, R_power_t)*log(u/scale_t)*rho+
-             0.5*rho*R_pow(h/scale_s, R_power_s)*R_power_s*sep*log(u/scale_t)*R_pow(arg,-0.5*sep*R_power_s))/arg;}
-  return(a) ;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Derivatives with respect to the temporal scale parameter of the Gneiting correlation model:
-double DGneiting_32sc_t(double h,double u, double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-    double arg=0.0,rho=0.0,R_power=0.0,a1=0.0,a2=0.0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    R_power=R_pow(h/scale_s, R_power_s)*R_pow(arg, -0.5*sep*R_power_s);
-    rho=exp(-R_power)*(1+R_power);
-    
-    a1=(0.5/scale_t)*sep*R_power_s*R_power_t*R_pow(h/scale_s, R_power_s)*R_pow(u/scale_t, R_power_t)*R_pow(arg,-0.5*R_power_s*sep-2)*(exp(-R_power)-rho);
-    a2=(R_pow(u/scale_t, R_power_t)*R_power_t*rho)/(scale_t*R_pow(arg,2));
-    return(a1+a2);
-}
-// Derivatives with respect to the spatial scale parameter of the Gneiting correlation model:
-double DGneiting_32sc_s(double h,double u,double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-    double arg=0.0,rho=0.0,R_power=0.0,a=0.0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    R_power=R_pow(h/scale_s, R_power_s)*R_pow(arg, -0.5*sep*R_power_s);
-    rho=exp(-R_power)*(1+R_power);
-    a= (R_power_s*R_pow(h/scale_s, R_power_s)* R_pow(arg,-0.5*R_power_s*sep-1))*(rho-exp(-R_power))/scale_s;
-    return (a);
-    
-}
-// Derivatives with respect to the separable parameter of the Gneiting correlation model:
-double DGneiting_32sep(double h,double u, double R_power_s,double R_power_t,
-                     double scale_s,double scale_t,double sep)
-{
-    double a=0,arg=0,R_power=0.0,rho=0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    R_power=R_pow(h/scale_s, R_power_s)*R_pow(arg, -0.5*sep*R_power_s);
-    rho=exp(-R_power)*(1+R_power);
-    if (arg) a=(0.5)*R_power_s*R_pow(h/scale_s, R_power_s)*R_pow(arg,-0.5*R_power_s*sep-1)*log(arg)*(rho-exp(-R_power));
-    return(a);
-}
-// Derivatives with respect to spatial R_power of the Gneiting correlation model:
-double DGneiting_32pw_s(double h,double u, double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-     double a=0,arg=0,R_power=0.0,rho=0,a1=0.0;
-    arg=1+R_pow(u/scale_t, R_power_t);
-    R_power=R_pow(h/scale_s, R_power_s)*R_pow(arg, -0.5*sep*R_power_s);
-    rho=exp(-R_power)*(1+R_power);
-    if(h&&arg) a1=(0.5*sep*R_pow(h/scale_s, R_power_s)*log(arg)-log(h/scale_s)*R_pow(h/scale_s, R_power_s))/R_pow(arg,0.5*R_power_s*sep);
-    a=(rho-exp(-R_power))*(a1/arg);
-    return(a);
-}
-
-// Derivatives with respect to temporal R_power of the Gneiting correlation model:
-double DGneiting_32pw_t(double h,double u, double R_power_s,double R_power_t,
-                      double scale_s,double scale_t,double sep)
-{
-    double arg=0,R_power=0.0,rho=0,a1=0.0,a2=0.0;
-    a1=R_pow(u/scale_t, R_power_t);a2=R_pow(h/scale_s, R_power_s);
-    arg=1+R_pow(u/scale_t, R_power_t);
-    R_power=R_pow(h/scale_s, R_power_s)*R_pow(arg, -0.5*sep*R_power_s);
-    if(u) rho=exp(-R_power)*log(u/scale_t)*a1*R_pow(arg,-sep*R_power_s-2)*
-                              (2*R_pow(arg,R_power_s*sep)+2*a2*R_pow(arg,R_power_s*sep*0.5)-R_power_s*R_pow(a2,2)*sep)/2;
-
-    return(rho) ;
-}
-///////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-// Derivatives with respect to the separable parameter of the Gneiting correlation model:
-double DIaco_sc_s(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double R_power2)
-{
- double rho=0,arg=0;
- arg=1+R_pow(h/scale_s, R_power_s)+R_pow(u/scale_t, R_power_t);
- rho=R_pow(arg,-R_power2);
- return (rho*R_power_s*R_power2*R_pow(h/scale_s, R_power_s))/(arg*scale_s);
- }
-
-// Derivatives with respect to temporal scale of the Gneiting GC  correlation model:
-double DGneiting_GC_sc_t(double h,double u, double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0;
-      arg=1+R_pow(h/scale_s, R_power_s);
-      rho=exp(-R_pow(u/scale_t, 2*R_power_t)/(R_pow(arg, sep*R_power_t)));
-      return((R_power_t*R_pow(u/scale_t,2*R_power_t)*rho*2)/(R_pow(arg,1+sep*R_power_t)*scale_t));
-}
-
-
-// Derivatives with respect to temporal R_power of the Gneiting GC correlation model:
-double DGneiting_GC_pw_t(double h,double u, double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-double arg=0.0,rho=0.0,a=0.0;
-    arg=1+R_pow(h/scale_s, R_power_s);
-    rho=exp(-R_pow(u/scale_t, 2*R_power_t)/(R_pow(arg, sep*R_power_t)));
-    if(u&&arg)  a= rho*R_pow(u/scale_t, 2*R_power_t)*(-2*log(u/scale_t)+sep*log(arg))/(R_pow(arg,1+sep*R_power_t));
-   return(a);
-}
-
-// Derivatives with respect to spatial scale of the Gneiting  GC correlation model:
-double DGneiting_GC_sc_s(double h,double u,double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0,b=0.0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  rho=exp(-R_pow(u/scale_t, 2*R_power_t)/(R_pow(arg, sep*R_power_t)));
-  a=-(R_pow(u,2*R_power_t)*sep*R_power_t*R_power_s*R_pow(h/scale_s, R_power_s)*rho)/(scale_s*R_pow(arg,2+sep*R_power_t));
-  b=(R_power_s*R_pow(h/scale_s, R_power_s)*rho)/(scale_s*R_pow(arg,2));
-  return(a+b);
-}
-// Derivatives with respect to spatial R_power of the Gneiting correlation model:
-double DGneiting_GC_pw_s(double h,double u, double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
- {
-  double arg=0.0,rho=0.0,a=0.0,b=0.0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  rho=exp(-R_pow(u/scale_t, 2*R_power_t)/(R_pow(arg, sep*R_power_t)));
-  if(h) { a=(log(h/scale_s)*R_pow(u,2*R_power_t)*sep*R_power_t*R_pow(h/scale_s, R_power_s)*rho)/(R_pow(arg,2+sep*R_power_t));
-          b=(R_pow(h/scale_s, R_power_s)*(log(h/scale_s)*rho))/(R_pow(arg,2));}
-  return(a-b);
-}}
-
-// Derivatives with respect to the separable parameter of the Gneiting correlation model:
-double DGneiting_GC_sep(double h,double u, double R_power_s,double R_power_t,
-		     double scale_s,double scale_t,double sep)
-{
-  double a=0,arg=0,rho=0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  rho=exp(-R_pow(u/scale_t, 2*R_power_t)/(R_pow(arg, sep*R_power_t)));
-  if(arg) a=R_pow(u/scale_t, 2*R_power_t)*R_power_t*rho*log(arg)/R_pow(arg,1+sep*R_power_t);
-  return(a);
-}
-
-
-
-
-// Derivatives with respect to spatial scale of the Gneiting  GC2 correlation model:
-double DGneiting_GC2_sc_s(double h,double u,double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0,b=0.0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  rho=1+R_pow(u/scale_t, 2*R_power_t)/R_pow(arg,R_power_t*sep);
-
-  a=(R_pow(u/scale_t, 2*R_power_t)*R_power_t*sep*R_power_s*R_pow(h/scale_s, R_power_s))/(R_pow(rho*arg,2)*R_pow(arg,R_power_t*sep*0.5)*scale_s);
-  b=(2*R_power_s*R_pow(h/scale_s, R_power_s))/(scale_s*rho*R_pow(arg,3));
-  return(-a+b);
-}
-
-
-// Derivatives with respect to spatial scale of the Gneiting  GC2 correlation model:
-double DGneiting_GC2_sc_t(double h,double u,double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  rho=1+R_pow(u/scale_t, 2*R_power_t)/R_pow(arg,R_power_t*sep);
-  a=(2*R_power_t*R_pow(u/scale_t, 2*R_power_t))/(scale_t*R_pow(rho,2)*R_pow(arg,R_power_t*sep+2));
-  return(a);
-}
-
-
-// Derivatives with respect to spatial scale of the Gneiting  GC2 correlation model:
-double DGneiting_GC2_pw_s(double h,double u,double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0,b=0.0;
-  arg=1+R_pow(h/scale_s, 2*R_power_s);
-  rho=1+R_pow(u/scale_t, R_power_t)/R_pow(arg,R_power_t*sep);
-  if(h){
-  a=(R_pow(u/scale_t, 2*R_power_t)*R_power_t*sep*log(h/scale_s)*R_pow(h/scale_s, R_power_s))/(R_pow(rho*arg,2)*R_pow(arg,3+R_power_t*sep));
-  b=(2*log(h/scale_s)*R_pow(h/scale_s, R_power_s))/(rho*R_pow(arg,3));
-  }
-  return(a-b);
-}
-
-
-
-// Derivatives with respect to spatial scale of the Gneiting  GC2 correlation model:
-double DGneiting_GC2_pw_t(double h,double u,double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,a=0.0;
-  arg=1+R_pow(h/scale_s, R_power_s);
-  //rho=1+R_pow(u/scale_t, R_power_t)/R_pow(arg,R_power_t*sep*0.5);
-  if(u&&arg){
-  a=(R_pow(u/scale_t, 2*R_power_t)*R_pow(arg,R_power_t*sep-2)*(-2*log(u/scale_t)+sep*log(arg)))/R_pow((R_pow(arg,R_power_t*sep)+R_pow(u/scale_t, 2*R_power_t)),2);
-  }
-  return(a);
-}
-
-
-// Derivatives with respect to spatial scale of the Gneiting  GC2 correlation model:
-double DGneiting_GC2_sep(double h,double u,double R_power_s,double R_power_t,
-		      double scale_s,double scale_t,double sep)
-{
-  double arg=0.0,rho=0.0,a=0.0,b=0.0;
-  arg=1+R_pow(h/scale_s, 2*R_power_s);
-  rho=1+R_pow(u/scale_t, R_power_t)/R_pow(arg,R_power_t*sep);
-  if(arg){
-  a=(R_pow(u/scale_t, 2*R_power_t)*R_power_t*log(arg))/(R_pow(rho,2)*R_pow(arg,2+R_power_t*sep));
-  }
-  return(a-b);
-}
-
-
-
-
-
-
-
-
-
- double DIaco_sc_t(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double R_power2)
-{
-
-  double rho=0,arg=0;
-  arg=1+R_pow(h/scale_s, R_power_s)+R_pow(u/scale_t, R_power_t);
-  rho=R_pow(arg,-R_power2);
-  return (rho*R_power_t*R_power2*R_pow(u/scale_t, R_power_t))/(arg*scale_t);
-
- }
- double DIaco_pw_s(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double R_power2)
-{
-  double a=0,rho=0,arg=0;
-  arg=1+R_pow(h/scale_s, R_power_s)+R_pow(u/scale_t, R_power_t);
-  rho=R_pow(arg,-R_power2);
-  if(h) a=-R_power2*log(h/scale_s)*R_pow(h/scale_s, R_power_s)*rho/arg;
-  return a;
-
- }
- double DIaco_pw_t(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double R_power2)
-{
-  double a=0,rho=0,arg=0;
- arg=1+R_pow(h/scale_s, R_power_s)+R_pow(u/scale_t, R_power_t);
- rho=R_pow(arg,-R_power2);
- if(h) a=-R_power2*log(u/scale_t)*R_pow(u/scale_t, R_power_t)*rho/arg;
- return a;
- }
-
-  double DIaco_pw2(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double R_power2)
-{
- double a=0,rho=0,arg=0;
- arg=1+R_pow(h/scale_s, R_power_s)+R_pow(u/scale_t, R_power_t);
- rho=R_pow(arg,-R_power2);
- if(arg) a=-log(arg)*rho;
- return(a);
- }
 
 double DMat_Cauchy_sc_t(double h,double u,double R_power2,double scale_s,double scale_t,double smooth)
 {
@@ -3312,94 +2753,6 @@ double DMat_Exp_sm(double h,double u,double eps,double scale_s,double scale_t,do
   return arg2;
 }
 
-double DPorcu_sc_s(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-  double arg=0,arg1=0,arg2=0;
-  arg1=1+R_pow(h/scale_s, R_power_s);
-  arg2=1+R_pow(u/scale_t, R_power_t);
-  arg=0.5*R_pow(arg1, sep)+0.5*R_pow(arg2,sep);
-  if(!sep) return((R_pow(h/scale_s,R_power_s)*R_power_s)/(arg1*arg1*arg2*scale_s));
-  else    return((R_pow(arg,-(sep+1)/sep)*R_pow(arg1,sep-1)*R_pow(h/scale_s, R_power_s)*R_power_s)/(2*scale_s));
-}
-double DPorcu_sc_t(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-double arg=0,arg1=0,arg2=0;
-  arg1=1+R_pow(h/scale_s, R_power_s);
-  arg2=1+R_pow(u/scale_t, R_power_t);
-  arg=0.5*R_pow(arg1, sep)+0.5*R_pow(arg2,sep);
-  if(!sep) return((R_pow(u/scale_t, R_power_t)*R_power_t)/(arg1*arg2*arg2*scale_t));
-  else    return((R_pow(arg,-(sep+1)/sep)*R_pow(arg1,sep-1)*R_pow(u/scale_t, R_power_t)*R_power_t)/(2*scale_t));
-}
-double DPorcu_pw_s(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-  double a=0,arg=0,arg1=0,arg2=0,rho=0;
-  arg1=1+R_pow(h/scale_s, R_power_s);
-  arg2=1+R_pow(u/scale_t, R_power_t);
-  arg=R_pow(0.5*R_pow(arg1, sep)+0.5*R_pow(arg2,sep),-1/sep);
-  if(sep) rho=R_pow(arg,-1/sep);
-  else rho=R_pow(arg1*arg2,-1);
-  if(h) a=-(0.5*R_pow(h, R_power_s)*rho*arg1*log(h))/(arg*arg1*scale_s);
-  return a;
-}
-double DPorcu_pw_t(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-  double a=0,arg=0,arg1=0,arg2=0,rho=0;
-  arg1=1+R_pow(h/scale_s, R_power_s);
-  arg2=1+R_pow(u/scale_t, R_power_t);
-  arg=R_pow(0.5*R_pow(arg1, sep)+0.5*R_pow(arg2,sep),-1/sep);
-  if(sep) rho=R_pow(arg,-1/sep);
-  else rho=R_pow(arg1*arg2,-1);
-  if(h) a=-(0.5*R_pow(u, R_power_t)*rho*arg2*log(u))/(arg*arg2*scale_t);
-  return a;
-}
-
-double DPorcu_sep(double h,double u, double R_power_s,double R_power_t,double scale_s,double scale_t,double sep)
-{
-  double arg=0,arg1=0,arg2=0,rho=0,a=0;
-   arg1=1+R_pow(h/scale_s, R_power_s);
-  arg2=1+R_pow(u/scale_t, R_power_t);
-  arg=R_pow(0.5*R_pow(arg1, sep)+0.5*R_pow(arg2,sep),-1/sep);
-  if(sep) rho=R_pow(arg,-1/sep);
-  else rho=R_pow(arg1*arg2,-1);
-  if(arg1&&arg2)
-    a=rho*(log(arg)/R_pow(sep,2)-((0.5*log(arg1)*R_pow(arg1,sep)+0.5*log(arg2)*R_pow(arg2,sep))))/(sep*arg);
-  return a;
-}
-/*
-double DExp_Exp_sc_s(double h,double u,double scale_s,double scale_t)
-{
-  double rho=0;
-  rho=exp(-h/scale_s-u/scale_t);
-  return h*rho/R_pow(scale_s,2);
-}
-
-double DExp_Exp_sc_t(double h,double u,double scale_s,double scale_t)
-{
-  double rho=0;
-  rho=exp(-h/scale_s-u/scale_t);
-  return u*rho/R_pow(scale_t,2);
-}
-*/
-double DExp_Cauchy_sc_s(double h,double u,double R_power2,double scale_s,double scale_t)
-{
-  double rho=0;
-  rho=exp(-h/scale_s)*R_pow(1+R_pow(u/scale_t, 2), -R_power2);
-  return h*rho/R_pow(scale_s,2);
- }
- double DExp_Cauchy_sc_t(double h,double u,double R_power2,double scale_s,double scale_t)
-{
-  double rho=0;
-  rho=exp(-h/scale_s)*R_pow(1+R_pow(u/scale_t, 2), -R_power2);
-  return 2*rho*R_pow(u,2)*R_power2/(R_pow(scale_t,3)*(1+R_pow(u/scale_t,2)));
- }
-
-  double DExp_Cauchy_pw2(double h,double u,double R_power2,double scale_s,double scale_t)
-{
-  double a=0,rho=0;
-  rho=exp(-h/scale_s)*R_pow(1+R_pow(u/scale_t, 2), -R_power2);
-  if(1+R_pow(u/scale_t,2))   a=-log(1+R_pow(u/scale_t,2))*rho;
-  return a;
- }
 
 
 
@@ -3818,299 +3171,12 @@ double DLMC_contr_scale22(double h,double eps,double var11,double var22,double n
 
 
 
-
-// compute the gradient matrix (numcoord...) for the spatial field:
-void DCorrelationMat(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,int *nparcor,double *parcor,double *rho)
-{
-  int i=0,j=0,m=0,k=0,h=0,npa=0;
-  double *gradcor,*derho;
-  //Initializes gradients:
-   npa=0.5* ncoord[0] * (ncoord[0]-1);
-  gradcor=(double *) R_alloc(*nparcor, sizeof(double));
-     derho= (double *) Calloc(npa * *nparcor,double);
-  k=0;
-for(i=0; i<(ncoord[0]-1);i++){
-    for(j=(i+1); j<ncoord[0];j++){
-    GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,mlags[i][j],0,0,0,parcor);
-    for(m=0;m<*nparcor;m++){
-      derho[k]=gradcor[m];k++;}h++;}}
-  k=0;
-  for(i=0;i<*nparcor;i++){
-    for(m=0;m<npa;m++){
-      drho[k]=derho[i+m* *nparcor];k++;}}
-  return;
-    Free(derho);
-}
-
-void DCorrelationMat2(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,int *nparcor,double *parcor,double *rho)
-{
-  int i=0,j=0,m=0,k=0,h=0,npa=0;
-  double *gradcor,*derho,lags=0.0;
-  //Initializes gradients:
-   npa=0.5* ncoord[0] * (ncoord[0]-1);
-  gradcor=(double *) R_alloc(*nparcor, sizeof(double));
-   derho= (double *) Calloc(npa * *nparcor,double);
-
-  k=0;
-for(i=0; i<(ncoord[0]-1);i++){
-    for(j=(i+1); j<ncoord[0];j++){
-
-      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-    GradCorrFct(rho[h],cormod, eps[0],flagcor,gradcor,lags,0,0,0,parcor);
-    for(m=0;m<*nparcor;m++){
-      derho[k]=gradcor[m];k++;}h++;}}
-  k=0;
-  for(i=0;i<*nparcor;i++){
-    for(m=0;m<npa;m++){
-      drho[k]=derho[i+m* *nparcor];k++;}}
-    Free(derho);
-  return;
-}
-// compute the gradient matrix (numcoord...) for the spatial field:
-void DCorrelationMat_tap(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,int *nparcor,double *parcor,double *rho)
-{
-  int i=0,m=0,k=0;
-  double *gradcor,*derho;
-  //Initializes gradients:
-  gradcor=(double *) R_alloc(*nparcor, sizeof(double));
-       derho= (double *) Calloc(*npairs * *nparcor,double);
-  k=0;
-    for(i=0;i<*npairs;i++){
-    GradCorrFct(rho[i],cormod,eps[0],flagcor,gradcor,lags[i],0,0,0,parcor);
-    for(m=0;m<*nparcor;m++){derho[k]=gradcor[m];k++;}}
-  k=0;
-  for(i=0;i<*nparcor;i++){
-    for(m=0;m<*npairs;m++){
-      drho[k]=derho[i+m* *nparcor];k++;}}
-    Free(derho);
-  return;
-}
-
-
-
-// compute the gradient matrix (numcoord...) for the spatial field:
-void DCorrelationMat_biv_tap(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,int *nparcor,double *parcor,double *rho)
-{
-    int i=0,m=0,k=0;
-    double *gradcor,*derho;
-    //Initializes gradients:
-    gradcor=(double *) R_alloc(*nparcor, sizeof(double));
-     derho= (double *) Calloc(*npairs * *nparcor,double);
-    k=0;
-    for(i=0;i<*npairs;i++){
-        GradCorrFct(rho[i],cormod,eps[0],flagcor,gradcor,lags[i],0,first[i],second[i],parcor);
-        for(m=0;m<*nparcor;m++){derho[k]=gradcor[m];k++;}}
-    k=0;
-    for(i=0;i<*nparcor;i++){
-        for(m=0;m<*npairs;m++){
-            drho[k]=derho[i+m* *nparcor];k++;}}
-     Free(derho);
-    return;
-}
-
-
-
-// compute the gradient matrix (numcoord*numtime...) for the spatial-temporal field:
-void DCorrelationMat_st_tap(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
-			int *nparcor,double *parcor,double *rho)
-{
- int i=0,j=0,k=0,s=0;
- double *gradcor,*derho;
- gradcor=(double *) R_alloc(*nparcor, sizeof(double));
- derho= (double *) Calloc(*npairs * *nparcor,double);
-
-  for(i=0;i<*npairs;i++) {
-     GradCorrFct(rho[i],cormod,eps[0],flagcor,gradcor,lags[i],lagt[i],0,0,parcor);
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}
-     }
- k=0;
- for(i=0;i<*nparcor;i++)
-   for(j=0;j<*npairs;j++){
-     drho[k]=derho[i+j* *nparcor];
-     k++;}
-    Free(derho);
- return;
-}
-
-
-// compute the gradient matrix (numcoord*numtime...) for the spatial-temporal field:
-void DCorrelationMat_st(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
-			int *nparcor,double *parcor,double *rho)
-{
- int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
- double *gradcor,*derho;
-
- st=ncoord[0] * *ntime;
- npa=0.5*st*(st-1);
- gradcor=(double *) R_alloc(*nparcor, sizeof(double));
- derho= (double *) Calloc(npa * *nparcor,double);
-
-for(i=0;i<ncoord[0];i++){
-    for(t=0;t<*ntime;t++){
-      for(j=i;j<ncoord[0];j++){
-	if(i==j){
-	  for(v=t+1;v<*ntime;v++){
-	        GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,mlagt[t][v],0,0,parcor);
-	        h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}
-     else {
-          for(v=0;v<*ntime;v++){
-               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,mlags[i][j],mlagt[t][v],0,0,parcor);
-               h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}}}}
-
- k=0;
- for(i=0;i<*nparcor;i++)
-   for(j=0;j<npa;j++){
-     drho[k]=derho[i+j* *nparcor];
-     k++;}
-    Free(derho);
- return;
-}
-
-
-
-
-// compute the gradient matrix (numcoord*numtime...) for the spatial-temporal field:
-void DCorrelationMat_st2(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
-			int *nparcor,double *parcor,double *rho)
-{
- int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
- double *gradcor,*derho,lags=0.0,lagt=0.0;
-
- st=ncoord[0] * *ntime;
- npa=0.5*st*(st-1);
- gradcor=(double *) R_alloc(*nparcor, sizeof(double));
- derho= (double *) Calloc(npa * *nparcor,double);
-
-for(i=0;i<ncoord[0];i++){
-    for(t=0;t<*ntime;t++){
-      for(j=i;j<ncoord[0];j++){
-	if(i==j){
-	  for(v=t+1;v<*ntime;v++){
-	        lagt=fabs(coordt[t]-coordt[v]);
-	        GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,lagt,0,0,parcor);
-	        h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}
-     else {
-      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-          for(v=0;v<*ntime;v++){
-               lagt=fabs(coordt[t]-coordt[v]);
-               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,lags,lagt,0,0,parcor);
-               h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}}}}
-
- k=0;
- for(i=0;i<*nparcor;i++)
-   for(j=0;j<npa;j++){
-     drho[k]=derho[i+j* *nparcor];
-     k++;}
-    Free(derho);
- return;
-}
-
-
-// compute the gradient matrix (numcoord*numtime...) for the spatial-temporal field:
-void DCorrelationMat_biv(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
-			int *nparcor,double *parcor,double *rho)
-{
- int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
- double *gradcor,*derho;
-
- st=ncoord[0] * *ntime;
- npa=0.5*st*(st-1)+st;
- gradcor=(double *) R_alloc(*nparcor, sizeof(double));
- derho= (double *) Calloc(npa * *nparcor,double);
-
-for(i=0;i<ncoord[0];i++){
-    for(t=0;t<*ntime;t++){
-      for(j=i;j<ncoord[0];j++){
-	if(i==j){
-	  for(v=t;v<*ntime;v++){
-	        GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,0,t,v,parcor);
-	        h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}
-     else {
-          for(v=0;v<*ntime;v++){
-               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,mlags[i][j],0,t,v,parcor);
-               h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}}}}
-
- k=0;
- for(i=0;i<*nparcor;i++)
-   for(j=0;j<npa;j++){
-     drho[k]=derho[i+j* *nparcor];
-     k++;}
-    Free(derho);
- return;
-}
-
-
-
-
-void DCorrelationMat_biv2(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
-			int *nparcor,double *parcor,double *rho)
-{
- int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
- double *gradcor,*derho,lags=0.0;
-
- st=ncoord[0] * *ntime;
- npa=0.5*st*(st-1)+st;
- gradcor=(double *) R_alloc(*nparcor, sizeof(double));
- derho= (double *) Calloc(npa * *nparcor,double);
-
-for(i=0;i<ncoord[0];i++){
-    for(t=0;t<*ntime;t++){
-      for(j=i;j<ncoord[0];j++){
-	if(i==j){
-	  for(v=t;v<*ntime;v++){
-	        GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,0,t,v,parcor);
-	        h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}
-     else {
-          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-          for(v=0;v<*ntime;v++){
-               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,lags,0,t,v,parcor);
-               h++;
-   for(s=0;s<*nparcor;s++){
-     derho[k]=gradcor[s];
-     k++;}}}}}}
-
- k=0;
- for(i=0;i<*nparcor;i++)
-   for(j=0;j<npa;j++){
-     drho[k]=derho[i+j* *nparcor];
-     k++;}
-    Free(derho);
- return;
-}
-
-
-
-
-// list of the gradients. Derivatives with respect ot the correlations parameters:
 void GradCorrFct(double rho, int *cormod, double eps, int *flag,
-		 double *grad, double h, double u, int c11, int c22,double *par)
+     double *grad, double h, double u, int c11, int c22,double *par)
 {
   int i=0;
   double R_power=0.0, R_power1=0.0, R_power2=0.0, R_power_s=0, R_power_t=0;
-  double scale=0.0, scale_s=0, scale_t=0, smooth=0.0, smooth_s=0.0,smooth_t=0.0, sep=0;
+  double scale=0.0, scale_s=0, scale_t=0, smooth=0.0, smooth_s=0.0,smooth_t=0.0;
   double var11=0.0, var22=0.0, nug11=0.0, nug22=0.0,scale11=0.0,scale12=0.0,scale22=0.0,col=0.0,smoo11=0.0,smoo12=0.0,smoo22=0.0;
 
   switch(*cormod)// Correlation functions are in alphabetical order
@@ -4119,9 +3185,9 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       R_power2=par[0];
       scale=par[1];
       if(flag[0]==1){//R_power parameter
-	  grad[i]=DCauchyPow(R_power2,scale,rho);i++;}
+    grad[i]=DCauchyPow(R_power2,scale,rho);i++;}
       if(flag[1]==1)//scale parameter
-	grad[i]=DCauchySc(h, R_power2, scale, rho);
+  grad[i]=DCauchySc(h, R_power2, scale, rho);
       break;
     case 4:// Exponential correlation function
       scale=par[0];//scale parameter
@@ -4136,11 +3202,11 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       R_power2=par[1];
       scale=par[2];
       if(flag[0]==1){//R_power1 parameter
-	grad[i]=DGenCauP1(h,R_power1,R_power2,scale,rho);i++;}
+  grad[i]=DGenCauP1(h,R_power1,R_power2,scale,rho);i++;}
       if(flag[1]==1){//R_power2 parameter
-	grad[i]=DGenCauP2(h,R_power1,scale,rho);i++;}
+  grad[i]=DGenCauP2(h,R_power1,scale,rho);i++;}
       if(flag[2]==1)//scale parameter
-	grad[i]=DGenCauSc(h,R_power1,R_power2,scale,rho);
+  grad[i]=DGenCauSc(h,R_power1,R_power2,scale,rho);
       break;
     case 10:// Sferical correlation function
       scale=par[0];//scale parameter
@@ -4154,7 +3220,7 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       R_power=par[0];
       scale=par[1];
       if(flag[0]==1){//R_power parameter
-	grad[i]=DStabPow(h,R_power,scale,rho);i++;}
+  grad[i]=DStabPow(h,R_power,scale,rho);i++;}
       //scale parameter
       if(flag[1]==1) grad[i]=DStabSc(h,R_power,scale,rho);
       break;
@@ -4162,7 +3228,7 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       scale=par[0];
       smooth=par[1];
       if(flag[0]==1){//scale parameter
-	grad[i]=DWhMatSc(eps,h,scale,smooth);i++;}
+  grad[i]=DWhMatSc(eps,h,scale,smooth);i++;}
       //smooth parameter
       if(flag[1]==1) grad[i]=DWhMatSm(eps,h,scale,smooth);
       break;
@@ -4171,151 +3237,12 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       if(flag[0]==1) grad[i]=DWaveSc(h,scale);
       break;
       //spatio-temproal gradients of correlations:
-      //separable correlations
-    case 42://Gneiting spatio-temporal correlation
-     R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      sep=par[4];
-      if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=DGneiting_pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=DGneiting_pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[2]==1){//spatial-scale parameter
-	grad[i]=DGneiting_sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[3]==1){//temporal-scale parameter
-	grad[i]=DGneiting_sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[4]==1)  //separable parameter
-       grad[i]=DGneiting_sep(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);
-      break;
-    case 52://Gneiting GC spatio-temporal correlation
-      R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      sep=par[4];
-      if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=DGneiting_GC_pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=DGneiting_GC_pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[2]==1){//spatial-scale parameter
-	grad[i]=DGneiting_GC_sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[3]==1){//temporal-scale parameter
-	grad[i]=DGneiting_GC_sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      //separable parameter
-      if(flag[4]==1) grad[i]=DGneiting_GC_sep(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);
-      break;
-        case 62://Gneiting spatio-temporal correlation
-        R_power_s=par[0];
-        R_power_t=par[1];
-        scale_s=par[2];
-        scale_t=par[3];
-        sep=par[4];
-        if(flag[0]==1){//spatial-R_power parameter
-            grad[i]=DGneiting_32pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-        if(flag[1]==1){//temporal-R_power parameter
-            grad[i]=DGneiting_32pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-        if(flag[2]==1){//spatial-scale parameter
-            grad[i]=DGneiting_32sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-        if(flag[3]==1){//temporal-scale parameter
-            grad[i]=DGneiting_32sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-        if(flag[4]==1)  //separable parameter
-        grad[i]=DGneiting_32sep(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);
-        break;
 
-    case 54://Gneiting GC spatio-temporal correlation
-      R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      sep=par[4];
-      if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=DGneiting_GC2_pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=DGneiting_GC2_pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[2]==1){//spatial-scale parameter
-	grad[i]=DGneiting_GC2_sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[3]==1){//temporal-scale parameter
-	grad[i]=DGneiting_GC2_sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      //separable parameter
-      if(flag[4]==1) grad[i]=DGneiting_GC2_sep(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);
-      break;
-    case 44://Decesare-Iaco spatio-temporal correlation
-      R_power2=par[0];
-      R_power_s=par[1];
-      R_power_t=par[2];
-      scale_s=par[3];
-      scale_t=par[4];
-      if(flag[0]==1){//R_power2 parameter
-	grad[i]=DIaco_pw2(h,u,R_power_s,R_power_t,scale_s,scale_t,R_power2);i++;}
-      if(flag[1]==1){//spatial-R_power parameter
-	grad[i]=DIaco_pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,R_power2);i++;}
-      if(flag[2]==1){//temporal-R_power parameter
-	grad[i]=DIaco_pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,R_power2);i++;}
-      if(flag[3]==1){//spatial-scale parameter
-	grad[i]=DIaco_sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,R_power2);i++;}
-      //temporal-scale parameter
-      if(flag[4]==1) grad[i]=DIaco_sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,R_power2);
-      break;
-    case 46://Porcu spatio-temporal correlation
-      R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      sep=par[4];
-      if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=DPorcu_pw_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=DPorcu_pw_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[2]==1){//spatial-scale parameter
-	grad[i]=DPorcu_sc_s(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      if(flag[3]==1){//temporal-R_power parameter
-	grad[i]=DPorcu_sc_t(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);i++;}
-      //separable parameter
-      if(flag[4]==1) grad[i]=DPorcu_sep(h,u,R_power_s,R_power_t,scale_s,scale_t,sep);
-      break;
-    case 48://Stein spatio-temporal correlation???
-      R_power_t=par[0];
-      scale_s=par[1];
-      scale_t=par[2];
-      smooth=par[3];
-      /*      if(flag[0]==1)
-        {
-	  grad[i]=DStein_pw_t(h,u,R_power_t,scale_s,scale_t,smooth);
-	  i++;
-        }
-      if(flag[1]==1)
-        {
-	  grad[i]=DStein_sc_s(h,u,R_power_t,scale_s,scale_t,smooth);
-	  i++;
-        }
-      if(flag[2]==1)
-        {
-	  grad[i]=DStein_sc_t(h,u,R_power_t,scale_s,scale_t,smooth);
-	  i++;
-        }
-      if(flag[3]==1)
-      grad[i]=DStein_sm(h,u,R_power_t,scale_s,scale_t,smooth);*/
-
-      break;
-      //Separable correlations
-    case 82://Exponential-Cauchy
-      R_power2=par[0];
-      scale_s=par[1];
-      scale_t=par[2];
-      if(flag[0]==1){//R_power2 parameter
-	grad[i]=DExp_Cauchy_pw2(h,u,R_power2,scale_s,scale_t);i++;}
-      if(flag[1]==1){//spatial-scale parameter
-	grad[i]=DExp_Cauchy_sc_s(h,u,R_power2,scale_s,scale_t);i++;}
-      //temporal-scale parameter
-      if(flag[2]==1) grad[i]=DExp_Cauchy_sc_t(h,u,R_power2,scale_s,scale_t);
-      break;
     case 84://Double Exponential
       scale_s=par[0];
       scale_t=par[1];
       if(flag[0]==1){//spatial-scale parameter
-	grad[i]=DStabSc(h,1,scale_s,rho);i++;}
+  grad[i]=DStabSc(h,1,scale_s,rho);i++;}
       //temporal-scale parameter
       if(flag[1]==1) grad[i]=DStabSc(u,1,scale_t,rho);
       break;
@@ -4326,30 +3253,19 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       smooth_t=par[3];
       // to do..../
       break;
-   /* case 92://Matern-Exponential
-      scale_s=par[0];
-      scale_t=par[1];
-      smooth=par[2];
-      if(flag[0]==1){//spatial-scale parameter
-	grad[i]=DMat_Exp_sc_s(h, u, scale_s, scale_t, smooth);i++;}
-      if(flag[1]==1){//temporal-scale parameter
-	grad[i]=DMat_Exp_sc_t(h, u, scale_s, scale_t, smooth);i++;}
-      //smoothing parameter
-      if(flag[2]==1) grad[i]=DMat_Exp_sm(h, u, eps, scale_s, scale_t, smooth);
-      break;*/
     case 94://Stable-Stable
       R_power_s=par[0];
       R_power_t=par[1];
       scale_s=par[2];
       scale_t=par[3];
       if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=DStabPow(h,R_power_s,scale_s,rho);i++;}
+  grad[i]=DStabPow(h,R_power_s,scale_s,rho);i++;}
       if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=DStabPow(u,R_power_t,scale_t,rho);i++;}
+  grad[i]=DStabPow(u,R_power_t,scale_t,rho);i++;}
       if(flag[2]==1){//spatial-scale parameter///
-	grad[i]=DStabSc(h,R_power_s,scale_s,rho);i++;}
+  grad[i]=DStabSc(h,R_power_s,scale_s,rho);i++;}
       if(flag[3]==1){//temporal-scale parameter
-	grad[i]=DStabSc(u,R_power_t,scale_t,rho);}
+  grad[i]=DStabSc(u,R_power_t,scale_t,rho);}
      break;
     case 110:
         var11=par[0];
@@ -4483,33 +3399,7 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
             grad[i]=DLMC_contr_scale11(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,c11,c22);i++;}
         if(flag[6]==1){//scale2
             grad[i]=DLMC_contr_scale22(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,c11,c22);}
-      break;/*
-        case 126:    /// bi LMC full
-        var11=par[0];
-        col=par[1];
-        var22=par[2];
-        smooth=par[3];
-        nug11=par[4];
-        nug22=par[5];
-        scale11=par[6];
-        scale22=par[7];
-        if(flag[0]==1){//first variance
-            grad[i]=DLMC_var1(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[2]==1){//second varuance
-            grad[i]=DLMC_var2(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[1]==1){//colocated
-            grad[i]=DLMC_col12(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[3]==1){//colocated
-            grad[i]=DLMC_col21(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[4]==1){//first nugget
-            grad[i]=DLMC_nug1(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[5]==1){//second nugget
-            grad[i]=DLMC_nug2(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[6]==1){//scle1
-            grad[i]=DLMC_scale11(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);i++;}
-        if(flag[7]==1){//scale2
-            grad[i]=DLMC_scale22(h,eps,var11,var22,nug11,nug22,scale11,scale22,col,smooth,c11,c22);}
-        break;*/
+      break;
         case 118:   /// bi matern contr
         var11=par[0];
         var22=par[1];
@@ -4582,11 +3472,114 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
 
 
 
+// compute the gradient matrix (numcoord...) for the spatial field:
+void DCorrelationMat_biv_tap(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,int *nparcor,double *parcor,double *rho)
+{
+    int i=0,m=0,k=0;
+    double *gradcor,*derho;
+    //Initializes gradients:
+    gradcor=(double *) R_alloc(*nparcor, sizeof(double));
+     derho= (double *) Calloc(*npairs * *nparcor,double);
+    k=0;
+    for(i=0;i<*npairs;i++){
+        GradCorrFct(rho[i],cormod,eps[0],flagcor,gradcor,lags[i],0,first[i],second[i],parcor);
+        for(m=0;m<*nparcor;m++){derho[k]=gradcor[m];k++;}}
+    k=0;
+    for(i=0;i<*nparcor;i++){
+        for(m=0;m<*npairs;m++){
+            drho[k]=derho[i+m* *nparcor];k++;}}
+     Free(derho);
+    return;
+}
 
 
 
 
 
+
+
+
+
+
+void DCorrelationMat_biv(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
+      int *nparcor,double *parcor,double *rho)
+{
+ int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
+ double *gradcor,*derho;
+
+ st=ncoord[0] * *ntime;
+ npa=0.5*st*(st-1)+st;
+ gradcor=(double *) R_alloc(*nparcor, sizeof(double));
+ derho= (double *) Calloc(npa * *nparcor,double);
+
+for(i=0;i<ncoord[0];i++){
+    for(t=0;t<*ntime;t++){
+      for(j=i;j<ncoord[0];j++){
+  if(i==j){
+    for(v=t;v<*ntime;v++){
+          GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,0,t,v,parcor);
+          h++;
+   for(s=0;s<*nparcor;s++){
+     derho[k]=gradcor[s];
+     k++;}}}
+     else {
+          for(v=0;v<*ntime;v++){
+               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,mlags[i][j],0,t,v,parcor);
+               h++;
+   for(s=0;s<*nparcor;s++){
+     derho[k]=gradcor[s];
+     k++;}}}}}}
+
+ k=0;
+ for(i=0;i<*nparcor;i++)
+   for(j=0;j<npa;j++){
+     drho[k]=derho[i+j* *nparcor];
+     k++;}
+    Free(derho);
+ return;
+}
+
+
+
+
+void DCorrelationMat_biv2(int *cormod,double *coordx, double *coordy, double *coordt,double *drho,double *eps,int *flagcor,
+      int *nparcor,double *parcor,double *rho)
+{
+ int i=0,j=0,h=0,k=0,s=0,t=0,v=0,st=0,npa=0;
+ double *gradcor,*derho,lags=0.0;
+
+ st=ncoord[0] * *ntime;
+ npa=0.5*st*(st-1)+st;
+ gradcor=(double *) R_alloc(*nparcor, sizeof(double));
+ derho= (double *) Calloc(npa * *nparcor,double);
+
+for(i=0;i<ncoord[0];i++){
+    for(t=0;t<*ntime;t++){
+      for(j=i;j<ncoord[0];j++){
+  if(i==j){
+    for(v=t;v<*ntime;v++){
+          GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,0,0,t,v,parcor);
+          h++;
+   for(s=0;s<*nparcor;s++){
+     derho[k]=gradcor[s];
+     k++;}}}
+     else {
+          lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          for(v=0;v<*ntime;v++){
+               GradCorrFct(rho[h],cormod,eps[0],flagcor,gradcor,lags,0,t,v,parcor);
+               h++;
+   for(s=0;s<*nparcor;s++){
+     derho[k]=gradcor[s];
+     k++;}}}}}}
+
+ k=0;
+ for(i=0;i<*nparcor;i++)
+   for(j=0;j<npa;j++){
+     drho[k]=derho[i+j* *nparcor];
+     k++;}
+    Free(derho);
+ return;
+}
 
 
 
@@ -4599,119 +3592,8 @@ double Variogram(int *cormod, double h, double u, double nugget, double var, dou
   vario=nugget+var*(1-CorFct(cormod,h,u,par,0,0));
   return vario;
 }
-//***Define variograms for the Brown-Resnick process***
-double VarioFct(int *cormod, double h, double *par, double u)
-{
-  double R_power_s=0.0, R_power_t=0.0, R_power1=0, R_power2=0;
-  double scale_s=0.0, scale_t, vario=0.0;
 
-  switch(*cormod) // Variogram functions are in alphabetical order
-    {
-    case 1:// Cauchy correlation function
-      break;
-    case 4:// Exponential correlation function
-      scale_s=par[0];
-      vario=VarioDobStable(h,1,1,scale_s,1,u);
-      break;
-    case 6:// Gaussian correlation function
-      scale_s=par[0];
-      vario=VarioDobStable(h,2,1,scale_s,1,u);
-      break;
-    case 8: // Generalised Cuachy correlation function
-      R_power1=par[0];
-      R_power2=par[1];
-      scale_s=par[2];
-      vario=VarioGCauchy(h,R_power1,R_power2,scale_s);
-      break;
-    case 12:// Stable correlation function
-      R_power_s=par[0];
-      scale_s=par[1];
-      vario=VarioDobStable(h,R_power_s,1,scale_s,1,u);
-      break;
-    case 14://  Whittle-Matern correlation function
-      break;
-    case 94:
-      R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      vario=VarioDobStable(h,R_power_s,R_power_t,scale_s,scale_t,u);
-      break;
-    }
-  return vario;
-}
-// Variogram associated to the Stable class of correlation models:
-double VarioDobStable(double lag, double R_power_s, double R_power_t, double scale_s, double scale_t, double tsep)
-{
-  double vario=0.0;
-  // Computes the correlation:
-  vario=R_pow(lag/scale_s,R_power_s)+R_pow(tsep/scale_t,R_power_t);
-  return 2*vario;
-}
-// Variogram associated to the Stable class of correlation models:
-double VarioGCauchy(double lag, double R_power1, double R_power2, double scale)
-{
-  double vario=0.0;
-  // Computes the correlation:
-  vario=R_pow(sqrt(R_power2/R_power1)*lag/scale,R_power1);
-  return 2*vario;
-}
-// list of the gradients. Derivatives with respect ot the variograms parameters:
-void GradVarioFct(double vario, int *cormod, double *eps, int *flag,
-		  double *grad, double lag, double *par, double tsep)
-{
-  int i=0;
-  double R_power=0.0, R_power1=0, R_power2=0, R_power_s=0, R_power_t=0;
-  double scale=0.0, scale_s=0, scale_t=0;
 
-  switch(*cormod)// Variogram functions are in alphabetical order
-    {
-    case 1:// Cauchy variogram function
-      break;
-    case 4:// Exponential correlation function
-      scale=par[0];
-      if(flag[0] == 1)
-	grad[i]=-vario/scale;
-      break;
-    case 6:// Gaussian variogram function
-      scale=par[0];
-      if(flag[0]==1)
-	grad[i]=-2*vario/scale;
-      break;
-    case 8:// Generalised Cuachy variogram function
-      R_power1=par[0];
-      R_power2=par[1];
-      scale=par[2];
-      if(flag[0]==1)
-	grad[i]=-2*sqrt(R_power2/R_power1)*vario/scale;
-       break;
-    case 12:// Stable variogram function
-      R_power=par[0];
-      scale=par[1];
-      if(flag[0]==1){//R_power parameter
-	  grad[i]=vario*log(lag/scale);i++;}
-      //scale parameter
-      if(flag[1]==1) grad[i]=-vario*R_power/scale;
-      break;
-    case 14:// Whittle-Matern variogram function
-      break;
-    case 94:// Stable-Stable variogram function
-      R_power_s=par[0];
-      R_power_t=par[1];
-      scale_s=par[2];
-      scale_t=par[3];
-      if(flag[0]==1){//spatial-R_power parameter
-	grad[i]=R_pow(lag/scale_s,R_power_s)*log(lag/scale_s);i++;}
-      if(flag[1]==1){//temporal-R_power parameter
-	grad[i]=R_pow(tsep/scale_t,R_power_t)*log(lag/scale_t);i++;}
-      if(flag[2]==1){//spatial-scale parameter
-	grad[i]=-R_pow(lag/scale_s,R_power_s)*R_power_s/scale_s;i++;}
-      if(flag[3]==1){//temporal-scale parameter
-	grad[i]=-R_pow(tsep/scale_t,R_power_t)*R_power_t/scale_t;i++;}
-      break;
-    }
-  return;
-}
 // Vector of spatio-temporal correlations:
 void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
                      double *nuis,double *par, double *u)
@@ -4759,28 +3641,7 @@ void VectCorrelation_biv(double *rho, double *vario,int *cormod, double *h, int 
     return;
 }
 
-/*
-// Vector of spatial extremal coefficients:
-void ExtCoeff(int *cormod, double *extc, double *lag, int *model,
-	      int *nlags, double *nuis, double *par)
-{
-  int i;
-  double rho=0.0;
-  switch(*model){// Call to the extremal coefficients:
-  case 3:// Brown-Resnick process
-    for(i=0;i<*nlags;i++) extc[i]=2*pnorm(0.5*sqrt(VarioFct(cormod,lag[i],par,0)),0,1,1,0);//compute the extremal coeff.
-    break;
-  case 4:// Extremal Gaussian process
-    for(i=0;i<*nlags;i++) extc[i]=1+sqrt(0.5*(1-nuis[2]*CorFct(cormod,lag[i],0,par,0,0)));//compute the extremal-g coeff.
-    break;
-  case 5:// Extremal T process:
-    for(i=0;i<*nlags;i++){
-      rho=nuis[3]*CorFct(cormod,lag[i],0,par,0,0);//compute the correlation
-      extc[i]=2*pt(sqrt(nuis[0]*(1-rho)/(1+rho)),nuis[0],1,0);}//compute  the extremal-t coeff.
-    break;}
-  return;
-}
- */
+
 
 //  Bounds for the bivariate matern
 double bi_matern_bounds(double scale11,double scale22,double scale12,double nu11,double nu22,double nu12,double t,int c){

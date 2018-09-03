@@ -47,7 +47,7 @@ StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall,
     temporal lag considered in the composite-likelihood
     computation.} 
   \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
-   The default is 6378.88, the radius of the earth.}  
+   The default is 6371, the radius of the earth.}  
   \item{model}{String; the density associated to the likelihood
     objects. \code{Gaussian} is the default.}
    \item{n}{Numeric; number of trials for binomial random fields.}  

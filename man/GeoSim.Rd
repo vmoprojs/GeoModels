@@ -12,7 +12,7 @@
 \usage{
 GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      radius=6378.388, sparse=FALSE, X=NULL)
+      radius=6371, sparse=FALSE, X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -50,7 +50,7 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
   \item{param}{A list of parameter values required in the
     simulation procedure of RFs, see \bold{Examples}.}
     \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great 
-    circle distance. Default value is the radius of the earth in Km (i.e. 6378.88)}  
+    circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
   \item{sparse}{Logical; if \code{TRUE} then  cholesky decomposition is performed
   using sparse matrices algorithms (spam packake). It should be used
   with compactly supported covariance models.\code{FALSE} is the default.}
@@ -281,7 +281,7 @@ data[[3]]
 
 require(plot3D)
 require(sphereplot)
-distance="Geod";radius=6378.88
+distance="Geod";radius=6371
 
 NN=4500 ## total point on the sphere on lon/lat format
 set.seed(80)

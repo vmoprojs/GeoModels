@@ -13,7 +13,7 @@
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSim <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE, 
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6378.388, sparse=FALSE,X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6371, sparse=FALSE,X=NULL)
 {
 ####################################################################
 ############ internal function #####################################
@@ -183,6 +183,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("LogLogistic","Logistic")) k=4
     if(model %in% c("Binomial"))   k=round(n)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999; if(model %in% c("Geometric")) {model="BinomialNeg";n=1}} 
+    if(model %in% c("Poisson")) {k=99999;model="Gamma";param$shape=2}
     if(model %in% c("Gamma"))  k=round(param$shape)
     if(model %in% c("StudentT"))  k=round(1/param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
@@ -217,6 +218,7 @@ forGaussparam<-function(model,param,bivariate)
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
+    xx=double(dime)
     varcov<-ccov$covmat;  ######covariance matrix!!
 #########################################################    
   for(i in 1:k) {  
@@ -269,11 +271,30 @@ forGaussparam<-function(model,param,bivariate)
                  cumu=rbind(cumu,c(sim));
                  if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
                }
+     if(model %in% c("Poisson"))
+     {
+
+      xx=xx+c(sim)
+      cumu=rbind(cumu,xx<=1)
+      if(sum(apply(cumu,2,prod))==0) {break;}
+     }          
     }
  ####### end for #########################  
 ############################################
 ### using  gausssian random fields  in order to generate non gaussausan random fiels
 ###########################################
+if(model %in% c("poisson","Poisson"))   {
+        sim=colSums(cumu)
+             if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
+        }
+
  if(model %in% c("Tukey"))   { 
      t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
      tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
