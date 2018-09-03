@@ -1,7 +1,7 @@
 Package: GeoModels
 Version: 1.0.3-4
 Date: 2018-01-15
-Title: A Package for Geostatistical Gaussian and non Gaussian Data Analysis
+Title: An Package for Geostatistical Gaussian and non Gaussian Data Analysis
 Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
                      email = "moreno.bevilacqua@uv.cl"),
               person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl"))
