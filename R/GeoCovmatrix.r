@@ -580,7 +580,9 @@ if(model==22)  {  ## Log Gaussian
     if(is.null(param$mean_2)) param$mean_2<-0
     if(is.null(param$nugget_1)) param$nugget_1<-0 
     if(is.null(param$nugget_2)) param$nugget_2<-0 }
-
+    unname(coordt)
+    if(is.null(coordx_dyn)){
+    unname(coordx);unname(coordy)}
     #if the covariance is compact supported  and option sparse is used
     #then set the code as a tapering and an object spam is returned
     if(sparse) {

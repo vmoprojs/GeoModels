@@ -552,8 +552,9 @@ return(Kg)
 ############################################################################
 ############################################################################
 Prscores<-function(data,method="cholesky",matrix)   {
-
+if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
 varcov=matrix$covmatrix
+if(nrow(varcov)!=length(data)) stop("The dimension of the covariance  matrix and/or the vector data are not correct  \n")
 data=c(data)
 if(!matrix$sparse){
 decompvarcov <- MatDecomp(varcov,method)
@@ -579,10 +580,12 @@ zz=DD%*%temp
 RMSE=sqrt((1/dime)*(t(z)%*%z))
 LSCORE=(1/(2*dime))*(sum(log(2*pi/vv))+sum(zz^2))
 CRPS=(1/dime)*(sum((1/vv)^0.5*zz*(2*pnorm(zz)-1))+2*sum((1/vv)^0.5*pnorm(zz))+sum((1/vv)^0.5)/sqrt(pi))
+MAE=(1/dime)*(sum(abs(z)))
 ###########################
 scores <- list(RMSE = RMSE,
                LSCORE = LSCORE,
-               CRPS = CRPS)
+               CRPS = CRPS,
+               MAE=MAE)
 return(scores)
 }
 

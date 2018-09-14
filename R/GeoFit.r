@@ -19,7 +19,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=NULL,
                           maxtime=NULL, method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,optimizer='Nelder-Mead',
-                         radius=6371,  sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
+                         radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
                          winconst_t=NULL, winstp_t=NULL,X=NULL)
 {
@@ -40,6 +40,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     GeoFit <- NULL
     score <- sensmat <- varcov <- varimat <- parscale <- NULL
     ### Initialization parameters:
+    unname(coordt);
+    if(is.null(coordx_dyn)){
+    unname(coordx);unname(coordy)}
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist, maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
@@ -90,7 +93,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   initparam$X)
+                                   initparam$X,sensitivity)
    
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)

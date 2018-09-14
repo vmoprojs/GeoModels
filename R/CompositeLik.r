@@ -19,7 +19,7 @@
 CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
                            numparam, numparamcorr, optimizer, onlyvar, param, spacetime, type,
-                           upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns,X)
+                           upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns,X,sensitivity)
   {
     ### Define the object function:
     comploglik <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fun, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -122,7 +122,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}   
      if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-
+    if(sensitivity)hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
     fname <- paste(fname,"2",sep="")
@@ -327,8 +327,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
             else
               { 
                 penalty <- crossprod(CompLikelihood$varimat,isensmat)
-                CompLikelihood$claic <- -2 * (CompLikelihood$value - sum(diag(penalty)))
-                CompLikelihood$clbic <- -2 * CompLikelihood$value +log(dimat)*sum(diag(penalty))
+                CompLikelihood$claic <- -2 * CompLikelihood$value + 2*sum(diag(penalty))
+                CompLikelihood$clbic <- -2 * CompLikelihood$value + log(dimat)*sum(diag(penalty))
                 CompLikelihood$varcov <- crossprod(isensmat,penalty)
                 dimnames(CompLikelihood$varcov) <- list(namesparam, namesparam)
                 CompLikelihood$stderr <- diag(CompLikelihood$varcov)
@@ -340,6 +340,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         }
     setwd(path.parent)
       }
+      if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
     if(!is.null(GPU)) gc()
     return(CompLikelihood)
   }

@@ -13,7 +13,7 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
                  model, n, namescorr, namesnuis, namesparam,
                numparam, numparamcorr, optimizer, onlyvar, param,
                spacetime, type,upper, varest, vartype,
-               weigthed, winconst, winstp,winconst_t, winstp_t, ns, X)
+               weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity)
 }
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
@@ -95,6 +95,7 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
       overlapping in the temporal  sub-sampling procedure.}
    \item{ns}{Numeric; Number of (dynamical) temporal instants. }   
       \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
+         \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
 }
 
 \seealso{\code{\link{GeoFit}}}
