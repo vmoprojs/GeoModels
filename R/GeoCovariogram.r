@@ -62,6 +62,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                              as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
                              as.double(lagt), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
                              cc=c(p$corr,p$vario)   
+
                     }
         return(cc)
     }
@@ -124,7 +125,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     studentT <- model ==12
     loglogistic <- model==24
-    zero <- 0;slow=1e-3
+    zero <- 0;slow=1e-7
     # lags associated to empirical variogram estimation
     if(isvario){
     lags <- c(0,vario$centers);numlags <- length(lags)
@@ -267,7 +268,7 @@ if(!bivariate) {
                         else {
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
-                              print(vs)
+                              
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   }     
@@ -416,17 +417,21 @@ if(!bivariate) {
       if(bivariate&&!dyn){
           #par(mfrow=c(2,2))
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
+           xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram11, type='l',...)
        if(min(vario$variogramst)>0) {ll1=0;ll=max(vario$variogramst)}
        if(min(vario$variogramst)<0) {ll1=min(vario$variogramst);ll=-min(vario$variogramst)}
        plot(vario$centers,vario$variogramst, main="Cross semi-variogram",ylim=c(ll1,ll),
+         xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram12, type='l',...)
        plot(vario$centers,vario$variogramst, main="Cross semivariogram",ylim=c(ll1,ll),
+         xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram12, type='l',...)
        plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
+         xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram22, type='l',...)  }
  

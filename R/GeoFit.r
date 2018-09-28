@@ -70,22 +70,22 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
       uu[uu==Inf]=1e+12
       initparam$upper <- uu;initparam$lower <- ll
      }}
-
       #if(length(param)==1)  {initparam$upper=1000}
+   
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
          fitted <- Lik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn, initparam$corrmodel,
-                               initparam$data,initparam$fixed,initparam$flagcorr,
+                               unname(initparam$data),initparam$fixed,initparam$flagcorr,
                                initparam$flagnuis,grid,initparam$lower,method,initparam$model,initparam$namescorr,
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
                                initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
-                               initparam$upper,initparam$ns,initparam$X)
+                               initparam$upper,initparam$ns,unname(initparam$X))
 
     # Composite likelihood:
     if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')
-          fitted <- CompLik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,initparam$data, #6
+          fitted <- CompLik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
                                    initparam$namescorr,initparam$namesnuis,#19
@@ -93,7 +93,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   initparam$X,sensitivity)
+                                   unname(initparam$X),sensitivity)
    
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)

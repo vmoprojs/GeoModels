@@ -9,7 +9,7 @@
 }
 \usage{
 Lik(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
-           grid,lower,method,model,namescorr,namesnuis,namesparam,numcoord,
+           grid,lower,mdecomp,model,namescorr,namesnuis,namesparam,numcoord,
            numpairs,numparamcor,numtime,optimizer,onlyvar,param,radius,setup,
            spacetime,sparse,varest,taper,type,upper,ns,X)
 }
@@ -54,7 +54,7 @@ Lik(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagn
   \item{numpairs}{Numeric; the number of pairs.}
   \item{numparamcor}{Numeric; the number of the correlation parameters.}
   \item{numtime}{Numeric; the number of temporal observations.}
-   \item{method}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
+   \item{mdecomp}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
     The other possible choices is \code{svd} (Singular values decomposition).}     
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). 'Nelder-Mead' is the

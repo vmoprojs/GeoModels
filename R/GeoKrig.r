@@ -56,7 +56,10 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     logGausstemp=FALSE
     if(model=="LogGaussian") {model="Gaussian"    # we need a "Gaussian" covariance matrix
                              logGausstemp=TRUE}
-
+     if(model=="SinhAsinh") {model="Gaussian"    # we need a "Gaussian" covariance matrix
+                             vv=param['sill']; sk=param['skew']; tail=param['tail']
+                             param['skew']=NULL; param['tail']=NULL; param['sill']=1
+                             }
     if(model %in% c("Weibull","Gamma","LogLogistic"))          # we need a x covariane matrix with with mean=0   x=gamma,weibull,loglogistic
      {
      paramtemp=param 
@@ -128,7 +131,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
 ########################################################################################
 ########################################################################################
 
-if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
+if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20))
 {  
 ## gaussian=1 
 ## skew gaussian=10   
@@ -139,6 +142,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
 ## loggaussian=22 ojo
 ## twopieceStudentT=27
 ## twopieceGaussian=29
+## sihasin=20
     ################################
     ## standard kriging  ##############
     ################################    
@@ -153,10 +157,12 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29))
         as.integer(covmatrix$spacetime),
         as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
         as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-        if(covmatrix$model==1) { #gaussian
+        if(covmatrix$model==1) { #gaussian 
                          vv=as.numeric(covmatrix$param['sill'])
                          corri=cc$corri 
                           }
+        if(covmatrix$model==20) corri=cc$corri # sinh
+                         
         if(covmatrix$model==10) {    #skew gaussian
                         corr2=(as.numeric((1-covmatrix$param["nugget"])*cc$corri))^2
                         sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
@@ -226,7 +232,9 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
         cc <- matrix(corri,nrow=dimat,ncol=dimat2)
         if(!bivariate){
           #gaussian
-          if(covmatrix$model==1)  cc=cc* vv            
+          if(covmatrix$model==1)  cc=cc* vv 
+          #sinh
+          if(covmatrix$model==20)  cc=cc*1            
           #skewgaussian
           if(covmatrix$model==10) cc=cc* (vv+sk^2*(1-2/pi)) 
           #studentT
@@ -268,7 +276,13 @@ if(type_krig=='Simple'||type_krig=='simple')  {
       if(!bivariate) {  ## space and spacetime simple kringing
                ####gaussian, StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10))
-                     pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))       
+                     pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
+              ####sinh
+               if(covmatrix$model %in% c(20))
+               {
+                    kk=krig_weights %*% (c(dataT))
+                     pp <- c(muloc)      +  sqrt(vv)* sinh( (1/tail)*(asinh(kk)+sk))     
+                     }  
                ####gamma weibbull loglogistic simple kriging
                if(covmatrix$model %in% c(21,24,26))
                       {       ones=rep(1,length(c(dataT)))
@@ -554,12 +568,14 @@ return(Kg)
 Prscores<-function(data,method="cholesky",matrix)   {
 if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
 varcov=matrix$covmatrix
+rownames(varcov)=c();colnames(varcov)=c()
 if(nrow(varcov)!=length(data)) stop("The dimension of the covariance  matrix and/or the vector data are not correct  \n")
-data=c(data)
+data=c(unname(data))
 if(!matrix$sparse){
 decompvarcov <- MatDecomp(varcov,method)
 inv <- MatInv(decompvarcov,method)
 }
+
 if(matrix$sparse){ 
 decompvarcov <- chol(varcov)
 inv <- spam::solve.spam(decompvarcov)
@@ -571,6 +587,7 @@ ntime=1
 if(matrix$spacetime) ntime=length(matrix$coordt)
 if(matrix$bivariate) ntime=2
 dime <- nsites*ntime
+print(dime)
 ###########################
 D=diag(1/vv,dime,dime)
 DD=sqrt(D)

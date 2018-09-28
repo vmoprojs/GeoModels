@@ -1511,8 +1511,9 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
 {
     int i=0, j=0,  t=0, v=0;
     double det=0.0,u=0.0, w=0.0, rhott=0.0,rhovv=0.0,rhotv=0.0,lags=0.0,weights=1.0;
+      //if( fabs(eta)>1|| sill<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
     // Checks the validity of the nuisance and correlation parameters (nuggets, sills and corr):
-    //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
+    if(CheckCor(cormod,par)==-2){*res=LOW; return;}
     // Computes the log-likelihood:
       weights=1;
     for(t=0;t<ntime[0];t++){
@@ -1520,7 +1521,7 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);   
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -1536,6 +1537,7 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
             else {  
          for(j=0;j<ns[v];j++){
          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+     
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -1547,6 +1549,7 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
                                     if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
                                     *res+= -0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det)*weights;
                                 }}}}}}}
+                          //Rprintf("%f %f %f %f %f %f %f %f\n",*res,par[0],par[1],par[2],par[3],par[4],par[5],par[6]);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }

@@ -20,7 +20,7 @@ MatDecomp<-function(mtx,method)    {
             if (inherits(mat.decomp , "try-error")) return (FALSE)
         }
         if(method=="svd")      {
-            mat.decomp <- svd(scale(mtx),nv=0)
+            mat.decomp <- svd(mtx)
             cov.logdeth <- try(sum(log(sqrt(mat.decomp$d))), silent=TRUE)
             if (inherits(cov.logdeth, "try-error"))  return (FALSE)
         }
@@ -40,7 +40,7 @@ MatInv<-function(mat.decomp,method)    {
         { 
               tol = sqrt(.Machine$double.eps)
               e <- mat.decomp$d;e[e > tol] <- 1/e[e > tol] 
-              varcov.inv<-mat.decomp$u %*% diag(e,nrow=length(e)) %*% t(mat.decomp$u) 
+              varcov.inv<-mat.decomp$v %*% diag(e,nrow=length(e)) %*% t(mat.decomp$u) 
         } 
         return(varcov.inv)
     } 

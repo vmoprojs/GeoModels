@@ -1698,28 +1698,27 @@ double CorFunWave(double lag, double scale)
 double CorFunSmoke(double lag, double scale, double smooth)
 {
 
-  double rho=0.0,a=0.0,kk1=0.0,kk2=0.0,iscale=0.0,res=0.0;
+  double rho=0.0,a=0.0,kk1=0.0,iscale=0.0;
   iscale=1/scale;
-
+    a=0.5+smooth;
   // Computes the correlation:
   if(lag==0) {rho=1;}
   else  {
-    //{
-    a=0.5+smooth;
-       //Rprintf("%f %f %f %f\n",lag,scale,smooth,hypergeo(iscale,iscale+0.5,2/scale+a,cos(lag)));
-    //kk=(gammafn(iscale+a)*gammafn(iscale+smooth))/(gammafn(2/scale+a)*gammafn(smooth));
-    //rho=kk*hypergeo(iscale,iscale+0.5,2/scale+a,cos(lag));
-    //}
-    double *param;
+
+  kk1=(lgammafn(iscale+a)+lgammafn(iscale+smooth))-(lgammafn(2/scale+a)+lgammafn(smooth));
+  rho=exp(kk1)*  pow(1-cos(lag),smooth)*hypergeo(1/scale+a,1/scale+smooth,2/scale+a,cos(lag));
+    }
+    
+ /*   double *param;
     param=(double *) Calloc(3,double);
-    kk1=(gammafn(iscale+a)*gammafn(iscale+smooth))/(gammafn(2/scale+a)*gammafn(smooth));
+    kk1=(lgammafn(iscale+a)+lgammafn(iscale+smooth))-(lgammafn(2/scale+a)+lgammafn(smooth));
     param[0]= iscale;  // a
     param[1]= iscale+0.5; //b
     param[2]= 2/scale+a;  //c
-    kk2=gammafn(param[2])/(gammafn(param[1])*gammafn(param[2]-param[1]));
+    kk2=lgammafn(param[2])-(lgammafn(param[1])+lgammafn(param[2]-param[1]));
     res=HyperG_integral(cos(lag), param);
     Free(param);
-    rho=res*kk1*kk2;}
+    rho=res*exp(kk1+kk2);}*/
   return(rho);
 }
 

@@ -3382,7 +3382,7 @@ double biv_T(double rho,double zi,double zj,double nuu)
     B = lgamma(cc)+log(pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgamma(nu/2);
     return(exp(B)*exp(C));
     }
-    while( k<=5000 )
+    while( k<=6000 )
     {
         //pp1=log(hypergeo(cc+k,cc+k,0.5,aux));
         pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler

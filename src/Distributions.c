@@ -151,6 +151,8 @@ double xj=(zj-mj)/sqrt(vari);
   res=A*B;                     
   return(res);
  } 
+
+
 // pochammer factorial
 double ff(double a,int k) 
 {
@@ -1149,10 +1151,6 @@ double aprox1(double a) {
  }
 
 
-
-
-
-
 /**************** for bivaraite T distribution */////////////////////////
 double hyp2f1( double a,double b,double c,double x)
 {
@@ -1193,9 +1191,6 @@ double hyp2f1( double a,double b,double c,double x)
             goto hypdon;
         }
     }
-    
-    
-    
     if( c <= 0.0 )
     {
         ic = round(c);  /* nearest integer to c */
@@ -1254,9 +1249,7 @@ double hyp2f1( double a,double b,double c,double x)
         
         if( d <= -1.0 )
             goto hypdiv;
-        
     }
-    
     /* Conditionally make d > 0 by recurrence on c
      * AMS55 #15.2.27
      */
@@ -1289,16 +1282,13 @@ double hyp2f1( double a,double b,double c,double x)
         goto hypf; /* negative integer c-a or c-b */
     
 hypok:
-    y = hyt2f1( a, b, c, x, &err );
-    
-    
+    y = hyt2f1( a, b, c, x, &err ); 
 hypdon:
     if( err > ETHRESH )
     {
       //Rprintf( "hyp2f1, PLOSS\n");
        }
     return(y);
-    
     /* The transformation for c-a or c-b negative integer
      * AMS55 #15.3.3
      */
@@ -1321,20 +1311,16 @@ double hyt2f1( double a,double b,double c,double x,double *loss )
     double p, q, r, s, t, y, d, err, err1;
     double ax, id, d1, d2, e, y1;
     int i, aid;
-    
     err = 0.0;
     s = 1.0 - x;
     if( x < -0.5 )
     {
         if( b > a )
             y = pow( s, -a ) * hys2f1( a, c-b, c, -x/s, &err );
-        
         else
             y = pow( s, -b ) * hys2f1( c-a, b, c, -x/s, &err );
-        
         goto done;
     }
-    
     d = c - a - b;
     id = round(d);  /* nearest integer to d */
   
@@ -1359,7 +1345,6 @@ double hyt2f1( double a,double b,double c,double x,double *loss )
                 r *= gammafn(-d) /gammafn(a) * gammafn(b);
             else  r *= exp(lgammafn(-d) - (lgammafn(a) + lgammafn(b)));
             y = q + r;
-            //  Rprintf("\n %lf %lf %lf \n", y, q, r);
             q = fabs(q); /* estimate cancellation error */
             r = fabs(r);
             if( q > r )
@@ -1371,8 +1356,6 @@ double hyt2f1( double a,double b,double c,double x,double *loss )
         }
         else
         {
-            //  Rprintf("non-int case R2 %lf\n", x);
-            //  Rprintf("a = %lf, b=%lf, c=%lf\n ", a, b, c);
             /* Psi function expansion, AMS55 #15.3.10, #15.3.11, #15.3.12 */
             if( id >= 0.0 )
             {
@@ -1452,13 +1435,10 @@ double hyt2f1( double a,double b,double c,double x,double *loss )
             y += y1;
         psidon:
             goto done;
-        }
-        
+        }   
     }
-    
     /* Use defining power series if no special cases */
     y = hys2f1( a, b, c, x, &err );
-    
 done:
     *loss = err;
     return(y);
@@ -1509,10 +1489,6 @@ double hys2f1( double a,double b,double c,double x,double *loss )
     return(s);
 }
 
-
-
-
-
 double hypergeo(double a,double b,double c,double x)
 {
     double sol;
@@ -1520,15 +1496,12 @@ double hypergeo(double a,double b,double c,double x)
     return(sol);
 }
 
-
 void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 {
     *res = hypergeo(*a,*b,*c,*x);
 }
-
-
-/*********** bivariate T distribution*********************/
-
+/***********************************************************/
+/*********** bivariate T distribution********************/ 
 double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,double sill)
 {
   int k=0; 
@@ -1556,8 +1529,8 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
     B = lgammafn(cc)+log(R_pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
     return(exp(B)*exp(C));
   }
-  for (k=0;k<=5000;k=k+1)
-  {
+  while( k<=6000 )
+    {
    // pp1=hypergeo(cc+k,cc+k,0.5,aux);
     pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
     bb1=pp1+k*log(aux1)+2*(lgammafn(cc+k)-lgammafn(cc))-lgammafn(k+1)-lgammafn(nu2+k)+lgammafn(nu2);
@@ -1570,13 +1543,11 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
     if(!R_FINITE(RR)) return(res0);
     if((fabs(RR-res0)<1e-30)  ) {break;}
     else {res0=RR;}
-  }
+        k++;
+    }
 return(RR);
 }
-
-
-/*********** bivariate T distribution********************/ 
-
+/*********** Appell F4 function ********/
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
 double RR=0.0,bb=0.0,res0=0.0;int k=0;
@@ -1606,8 +1577,6 @@ pp2=M_PI*R_pow(gammafn(arg1),2)*R_pow(1-rho2,-arg);
 app=appellF4(arg,arg,0.5,arg1,rho2*xx*yy/(x2*y2), nu*nu*rho2/(x2*y2));
 return(4*pp1*app/pp2);
 }
-
-
 /*********** bivariate two piece-T distribution********************/ 
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,
              double p11,double mui,double muj)
@@ -1629,11 +1598,7 @@ if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho2,zistd/etamas,zjstd/etamas);}
 return(res/sill);
 }
-
-
-
-
-        
+/***** bivariate half gaussian ****/     
 double biv_half_Gauss(double rho,double zi,double zj)
 {
 double kk=0, dens=0,a=0,b=0,rho2=1-rho*rho;
@@ -1643,9 +1608,7 @@ double kk=0, dens=0,a=0,b=0,rho2=1-rho*rho;
   dens=(a+b)/kk;
   return(dens);
 }
-
-
-
+/***** bivariate two piece gaussian ****/ 
 double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,
              double p11,double mui,double muj)
 {
@@ -1664,9 +1627,7 @@ if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
 return(res/sill);
 }
-
-
-/**************/
+/********** bivariate logistic **********/
 double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill)
 {
     double a=0.0,A=0.0,res=0.0,B=0.0,C=0.0;
@@ -1682,7 +1643,6 @@ double biv_Logistic(double corr,double zi,double zj,double mui, double muj, doub
         (rho2*ki*kj)/((ki+1)*(kj+1)),
         rho2/((ki+1)*(kj+1)));
         res=A*B*C;
-         // Rprintf("%f %f %f %f %f\n",A,B,C,rho2,sill);
     }
     else
     {
@@ -1692,8 +1652,7 @@ double biv_Logistic(double corr,double zi,double zj,double mui, double muj, doub
     }
     return(res);
 }
-
-/**************/
+/********** bivariate log-logistic **********/
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
 {
     double c=gammafn(1+1/shape)*gammafn(1-1/shape);

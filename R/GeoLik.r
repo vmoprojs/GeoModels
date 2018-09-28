@@ -15,7 +15,7 @@
 
 ### Optim call for log-likelihood maximization 
 Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
-                       method,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
+                       mdecomp,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
                        optimizer,onlyvar,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X)
 {
  ######### computing upper trinagular of covariance matrix   
@@ -29,7 +29,7 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
     
     ### START Defining the objective functions
 ######### Restricted log-likelihood for multivariate normal density:
-    LogNormDenRestr <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenRestr <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -38,17 +38,17 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova
         #  decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)       
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
-        ivarcov <- MatInv(decompvarcov,method)
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+        ivarcov <- MatInv(decompvarcov,mdecomp)
         sumvarcov <- sum(ivarcov)
         p <- ivarcov-array(rowSums(ivarcov),c(dimat,1))%*%colSums(ivarcov)/sumvarcov
         llik <- 0.5*(const+logdetvarcov+log(sumvarcov)+crossprod(t(crossprod(stdata,p)),stdata))
         return(llik)
     }
 ######### Restricted log-likelihood for bivariate multivariate normal density:
-         LogNormDenRestr_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+         LogNormDenRestr_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -56,10 +56,10 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
         ident <- t(ident)
         ident[lower.tri(ident,diag=T)] <- cova
         #  decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(ident,method)
+        decompvarcov <- MatDecomp(ident,mdecomp)
         if(is.logical(decompvarcov)) return(llik)       
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
-        ivarcov <- MatInv(decompvarcov,method)
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+        ivarcov <- MatInv(decompvarcov,mdecomp)
         sumvarcov <- sum(ivarcov)
         p <- ivarcov-array(rowSums(ivarcov),c(dimat,1))%*%colSums(ivarcov)/sumvarcov
         llik <- 0.5*(const+ logdetvarcov +log(sumvarcov)+crossprod(t(crossprod(stdata,p)),stdata))
@@ -68,7 +68,7 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
     
     
 ######### Tapering 2 log-likelihood for multivariate normal density:
-    LogNormDenTap <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenTap <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         lliktap <- 1.0e8
         # Computes the vector of the correlations:
@@ -85,7 +85,7 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
     }
 
 ######### Tapering 1 log-likelihood for multivariate normal density:
-LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 {
     lliktap <- 1.0e8
     # Computes the vector of the correlations:
@@ -100,7 +100,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 }
 
 ######### Tapering 2 log-likelihood for bivariate multivariate normal density:
-    LogNormDenTap_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenTap_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         lliktap <- 1.0e8
         # Computes the vector of the correlations:
@@ -115,7 +115,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         return(lliktap)
     }
 ######### Tapering 1 log-likelihood for bivariate multivariate normal density:
-    LogNormDenTap1_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenTap1_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         lliktap <- 1.0e8
         # Computes the vector of the correlations:
@@ -130,7 +130,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
     }
 
 ######### Standard log-likelihood function for multivariate normal density with sparse alg matrices
-    LogNormDenStand_spam <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenStand_spam <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -145,7 +145,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         return(llik)
     }    
 ######### Standard log-likelihood function for multivariate normal density:
-    LogNormDenStand <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    LogNormDenStand <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -154,17 +154,17 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
-       # invarcov <- MatInv(decompvarcov,method)
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+       # invarcov <- MatInv(decompvarcov,mdecomp)
        # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
          llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
         return(llik)
     }
 
-    ######### CVV method:
-    CVV <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    ######### CVV mdecomp:
+    CVV <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -173,17 +173,17 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
-        invarcov <- MatInv(decompvarcov,method)
+        invarcov <- MatInv(decompvarcov,mdecomp)
         D=diag(1/diag(invarcov))
         M=crossprod(invarcov,D);C=tcrossprod(M,M)
         llik <- mean(crossprod(t(crossprod(stdata,C)),stdata))
         return(llik)
     }
 
-    ######### CVV method in the bivariate case
-CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+    ######### CVV mdecomp in the bivariate case
+CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -191,9 +191,9 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         ident <- t(ident)
         ident[lower.tri(ident,diag=T)] <- cova
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(ident,method)
+        decompvarcov <- MatDecomp(ident,mdecomp)
         if(is.logical(decompvarcov)) return(llik)
-        invarcov <- MatInv(decompvarcov,method)
+        invarcov <- MatInv(decompvarcov,mdecomp)
         D=diag(1/diag(invarcov))
         M=crossprod(invarcov,D);C=tcrossprod(M,M)
         llik <- mean(crossprod(t(crossprod(stdata,C)),stdata))
@@ -201,7 +201,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
     }
 
  ######## Standard log-likelihood function for log gaussian random fields       
-  LogNormDenStand_LG <- function(const,cova,ident,dimat,method,nuisance,det,sill,setup,stdata)
+  LogNormDenStand_LG <- function(const,cova,ident,dimat,mdecomp,nuisance,det,sill,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -210,17 +210,17 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
-       # invarcov <- MatInv(decompvarcov,method)
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+       # invarcov <- MatInv(decompvarcov,mdecomp)
        # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
          llik <- 0.5*(const+logdetvarcov+2*det+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
         return(llik)
     }
 
 ######## Standard log-likelihood function for SH random fields
-     LogNormDenStand_SH <- function(const,cova,ident,dimat,method,nuisance,sill,setup,stdata)
+    LogNormDenStand_SH <- function(const,cova,ident,dimat,mdecomp,nuisance,sill,setup,stdata)
     {
         llik <- 1.0e8
    # Computes the covariance matrix:
@@ -229,9 +229,9 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
 ################################################
         skew=nuisance["skew"]
         delta=nuisance["tail"]
@@ -244,8 +244,9 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         return(llik)
     }
        
+       
 ######### Standard log-likelihood function for multivariate bivariate normal density:
- LogNormDenStand_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+ LogNormDenStand_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -253,16 +254,18 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         ident <- t(ident)
         ident[lower.tri(ident,diag=T)] <- cova
         # decomposition of the covariance matrix:
-        decompvarcov <- MatDecomp(ident,method)
+        decompvarcov <- MatDecomp(ident,mdecomp)
         if(is.logical(decompvarcov)) return(llik)
-        logdetvarcov <- MatLogDet(decompvarcov,method) 
-        invarcov <- MatInv(decompvarcov,method)
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+        #invarcov <- MatInv(decompvarcov,mdecomp)
         #llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
         llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
         return(llik)
+
+        
     }
     ######### Standard log-likelihood function for multivariate bivariate normal density with sparse alg matrices
- LogNormDenStand_biv_spam <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
+ LogNormDenStand_biv_spam <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
@@ -284,7 +287,7 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
 ##################################################################################################################
         # Call to the objective functions:
          loglik_loggauss <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -304,12 +307,13 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         cova <- corr
         # Computes the log-likelihood
         loglik_u <- do.call(what="LogNormDenStand_LG",args=list(stdata=(log(data)-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
-            method=met,nuisance=nuisance,det=sum(1/data),sill=sill,setup=setup))
+            mdecomp=mdecomp,nuisance=nuisance,det=sum(1/data),sill=sill,setup=setup))
         return(loglik_u)
       }
 
-    loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+   
+loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -323,20 +327,20 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
-        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
         cova <- corr
         # Computes the log-likelihood
         loglik_u <- do.call(what="LogNormDenStand_SH",args=list(stdata=(data-c(X%*%mm))/sqrt(sill),const=const,cova=cova,dimat=dimat,ident=ident,
-            method=met,nuisance=nuisance,sill=sill,setup=setup))
+            mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
         return(loglik_u)
       }
 
 
     # Call to the objective functions:
     loglik <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
 
         llik <- 1.0e8
@@ -353,16 +357,16 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
         # Computes the correlation matrix:
         cova <- corr*nuisance['sill']
         # Computes the log-likelihood
-     
+        
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
-            method=met,nuisance=nuisance,setup=setup))
+            mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
       }
 
  
                           
    loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,met,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
       {
         # Set the parameter vector:
         names(param) <- namesparam
@@ -373,25 +377,21 @@ CVV_biv <- function(const,cova,ident,dimat,method,nuisance,setup,stdata)
          stdata <- data-c(
               rep(as.numeric(nuisance['mean_1']),ns[1]),
               rep(as.numeric(nuisance['mean_2']),ns[2]))
-        #stdata <- data-rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2)  
-        #print(head(as.numeric(rep(c(nuisance['mean_1'],nuisance['mean_2']),dimat/2) )))
-
-        #print(head(as.numeric(rep(nuisance['mean_1'],dimat/2),rep(nuisance['mean_2'],dimat/2))))
-        # Computes the vector of the correlations:
+      # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-        # if(corr[1]==-2||is.nan(corr[1])) return(loglik)
-        # Computes the log-likelihood
+      # Computes the log-likelihood
         #loglik <- sum(apply(stdata,1,fname,const=const,cova=corr,dimat=dimat,ident=ident,nuisance=nuisance,setup=setup))
-        loglik_b <- do.call(what=fname,args=list(stdata=stdata,const=const,cova=corr,dimat=dimat,ident=ident,
-            method=met,nuisance=nuisance,setup=setup))
+        loglik_b <- do.call(what=fname,args=list(const=const,cova=corr,ident=ident,dimat=dimat,
+            mdecomp=mdecomp,nuisance=nuisance,setup=setup,stdata=stdata))
         return(loglik_b)
       }
-#################################################################################################################################
-#################################################################################################################################
-#################################################################################################################################
-#################################################################################################################################
-#################################################################################################################################
 
+
+#################################################################################################################################
+#################################################################################################################################
+#################################################################################################################################
+#################################################################################################################################
+#################################################################################################################################
     ### START the main code of the function:
     spacetime_dyn=FALSE; NS=0
     if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
@@ -480,7 +480,7 @@ if(!onlyvar){   # performing optimization
          optimizer="optimize"         
   Likelihood <- optimize(f=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,
-                          fname=fname,grid=grid,ident=ident,lower=lower,maximum = FALSE,met=method,
+                          fname=fname,grid=grid,ident=ident,lower=lower,maximum = FALSE,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           upper=upper,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
         }
@@ -490,25 +490,45 @@ if(!onlyvar){   # performing optimization
                         Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
-                          fname=fname,grid=grid,ident=ident,lower=lower,met=method,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=hessian,
+                          fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
+                          model=model,namescorr=namescorr,hessian=FALSE,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-  if(optimizer=='Nelder-Mead'||optimizer=='BFGS')
-                       Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+  if(optimizer=='BFGS'){
+    ############## optim ########
+                      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
-                          pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
-                          fixed=fixed,fname=fname,grid=grid,ident=ident,met=method,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=hessian,
+                        pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
+                         fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
+                          model=model,namescorr=namescorr,hessian=FALSE,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+          }
+
+######################
+  if(optimizer=='Nelder-Mead'){
+                        #           Likelihood <- dfoptim::nmk(par=param,fn=eval(as.name(lname)),
+                        #            control=list(maxfeval=maxit),
+                        #            const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                        #  corrmodel=corrmodel,data=t(data),dimat=dimat,
+                        #  fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                        #  model=model,namescorr=namescorr,
+                        #  namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                                    Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
+                        pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
+                         fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
+                          model=model,namescorr=namescorr,hessian=FALSE,
+                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                    }
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,met=method,hessian=hessian,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=FALSE,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS)
     }
 #}
 
     if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS')
-                   {param <- Likelihood$par
+                   {names(Likelihood$par)=namesparam
+                    param <- Likelihood$par
                    maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun}
     if(optimizer=='nlm')
@@ -563,6 +583,13 @@ if(!onlyvar){   # performing optimization
     ### START Computing the asymptotic variance-covariance matrices:  
     if(varest){
           if(model==20||model==22||model==1&& !(type==5||type==6)) {
+        if(hessian) Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=param,method="Richardson",
+            const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,
+                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,
+                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+        rownames(Likelihood$hessian)=namesparam; colnames(Likelihood$hessian)=namesparam;
          Likelihood$varcov <-   solve(Likelihood$hessian)
          Likelihood$stderr <- sqrt(diag(( Likelihood$varcov)))
      }
@@ -608,9 +635,9 @@ if(!onlyvar){   # performing optimization
             varcov[lower.tri(varcov,diag=yesdiag)]<-varian
             varcov<-t(varcov)
             varcov[lower.tri(varcov,diag=yesdiag)]<-varian
-            decompvarcov <- MatDecomp(varcov,method)
+            decompvarcov <- MatDecomp(varcov,mdecomp)
             if(is.logical(decompvarcov)) {stop("Covariance Matrix is not positive definite")}
-            invar <- MatInv(decompvarcov,method)
+            invar <- MatInv(decompvarcov,mdecomp)
             fish<-double(numfish)
             # Restricted likelihood case
             if(type==3) P<-invar-array(rowSums(invar),c(dimat,1))%*%colSums(invar)/sum(invar)
@@ -824,5 +851,6 @@ if(!onlyvar){   # performing optimization
             names(Likelihood$stderr)<-namesparam}}
     }}}
     ### END the main code of the function:
+
     return(Likelihood)
   }

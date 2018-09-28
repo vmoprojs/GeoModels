@@ -158,7 +158,19 @@ forGaussparam<-function(model,param,bivariate)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
         }}
 #################################
-    if(model %in% c("Tukey","SinhAsinh"))  {
+  if(model %in% c("Tukey","SinhAsinh"))  {
+         if(!bivariate){
+          mm<-param$mean;param$mean=0
+          vv<-param$sill;param$sill=1
+          sk<-param$skew; tl<-param$tail}
+         else {
+            mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
+            vv1<-param$sill_1;param$sill_1=1;vv2<-param$sill_2;param$sill_2=1;vv=c(vv1,vv2)
+            sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
+            tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2)
+        }}
+
+    if(model %in% c("Tukey"))  {
          if(!bivariate){
           mm<-param$mean;param$mean=0
           vv<-param$sill;param$sill=1
@@ -320,7 +332,8 @@ if(model %in% c("poisson","Poisson"))   {
             }
         }
     #########################################
-    if (model %in% c("SinhAsinh","SinhAsinh")) 
+
+            if (model %in% c("SinhAsinh","SinhAsinh")) 
     { trans=sinh( (1/tl)*(asinh(sim)+sk))
       sim=mm+sqrt(vv)*trans
        if(!grid)  {
