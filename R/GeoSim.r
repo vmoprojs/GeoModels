@@ -334,7 +334,8 @@ if(model %in% c("poisson","Poisson"))   {
     #########################################
 
             if (model %in% c("SinhAsinh","SinhAsinh")) 
-    { trans=sinh( (1/tl)*(asinh(sim)+sk))
+    { 
+      trans=sinh( (1/tl)*(asinh(sim)+sk))
       sim=mm+sqrt(vv)*trans
        if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

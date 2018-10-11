@@ -1,9 +1,9 @@
 \name{GeoVarestbootstrap}  
 \alias{GeoVarestbootstrap}
 \encoding{UTF-8}
-\title{Computes stderr estimation using parametric bootstrap}
+\title{Update a \code{GeoFit} object   using parametric bootstrap for std error estimation}
 \description{
-  The procedure return stderr estimation for compositelikelihood estimation}
+  The procedure update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
 \usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1))}
 \arguments{
   \item{fit}{A fitted object obtained from the
@@ -17,10 +17,7 @@
 }
 
 \value{  
-  \item{stderr}{Stderr estimation with parametric bootstrap}
-  \item{varcov}{The matrix of the variance-covariance of the estimates;}
-  \item{claic}{The estimated composite information criterion}
-   \item{clbic}{The estimated bayesian composite information criterion}
+  Returns an object of class \code{GeoFit}.
 }
 
 

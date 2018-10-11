@@ -235,12 +235,11 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 ################################################
         skew=nuisance["skew"]
         delta=nuisance["tail"]
-        B=delta*cosh(delta*asinh(stdata)-skew)/sqrt(stdata^2+1)
         Z=sinh(delta * asinh(stdata)-skew)
-        llik <- 0.5*( const + 2*const*log(sqrt(sill))/log(2*pi)
-                      +logdetvarcov - 2*sum(log(B))
+        C=delta*sqrt((1+Z^2)/(stdata^2+1))
+        llik <- 0.5*( const + const*log(sill)/log(2*pi)
+                      +logdetvarcov - 2*sum(log(C))
                       +sum((backsolve(decompvarcov, Z, transpose = TRUE))^2))
-
         return(llik)
     }
        
@@ -317,6 +316,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     {
 
         llik <- 1.0e8
+
         names(param) <- namesparam
         # Set the parameter vector:
         pram <- c(param, fixed)
@@ -324,6 +324,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
+                if(nuisance['tail']<0||nuisance['sill']<0) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -332,8 +333,12 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         # Computes the correlation matrix:
         cova <- corr
         # Computes the log-likelihood
-        loglik_u <- do.call(what="LogNormDenStand_SH",args=list(stdata=(data-c(X%*%mm))/sqrt(sill),const=const,cova=cova,dimat=dimat,ident=ident,
+      
+        loglik_u <- do.call(what="LogNormDenStand_SH",
+            args=list(stdata=((data-c(X%*%mm))/sqrt(sill)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
+       # loglik_u <- do.call(what="LogNormDenStand_SH",args=list(stdata=(data-c(X%*%mm))/(sqrt(sill)/nuisance['tail']),const=const,cova=cova,dimat=dimat,ident=ident,
+       #     mdecomp=mdecomp,nuisance=nuisance,sill=sill/nuisance['tail']^2,setup=setup))
         return(loglik_u)
       }
 
@@ -461,15 +466,17 @@ hessian=FALSE
  if(model==20){   ## gaussian SH case
      lname <- 'loglik_sh'
     if(bivariate)  {lname <- 'loglik_biv_sh'}
-    hessian=TRUE
+    #hessian=TRUE
 }
 
  if(model==22){   ## loggaussian  case
      lname <- 'loglik_loggauss'
     if(bivariate)  {lname <- 'loglik_biv_loggauss'}
-    hessian=TRUE
+   # hessian=TRUE
 }
-if(model==1) hessian=TRUE
+
+if(varest) hessian=TRUE
+
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
 
 if(!onlyvar){   # performing optimization
@@ -491,7 +498,7 @@ if(!onlyvar){   # performing optimization
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=FALSE,
+                          model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
   if(optimizer=='BFGS'){
     ############## optim ########
@@ -499,7 +506,7 @@ if(!onlyvar){   # performing optimization
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
                         pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=FALSE,
+                          model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
           }
 
@@ -516,12 +523,12 @@ if(!onlyvar){   # performing optimization
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
                         pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=FALSE,
+                          model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
                     }
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=FALSE,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS)
     }
 #}
@@ -582,16 +589,26 @@ if(!onlyvar){   # performing optimization
 
     ### START Computing the asymptotic variance-covariance matrices:  
     if(varest){
-          if(model==20||model==22||model==1&& !(type==5||type==6)) {
-        if(hessian) Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=param,method="Richardson",
+
+
+    if(model==20||model==22||model==1&& !(type==5||type==6))      {
+        if(is.null(Likelihood$hessian)) {Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=param,method="Richardson",
             const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,
                           fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-        rownames(Likelihood$hessian)=namesparam; colnames(Likelihood$hessian)=namesparam;
-         Likelihood$varcov <-   solve(Likelihood$hessian)
+        rownames(Likelihood$hessian)=namesparam; colnames(Likelihood$hessian)=namesparam
+                     }
+         ii=try(solve(Likelihood$hessian),silent=T)
+         if(is.matrix(ii)) 
+         {Likelihood$varcov <-   ii
          Likelihood$stderr <- sqrt(diag(( Likelihood$varcov)))
+         }   
+         else {ii=diag(numparam)
+          #warning("Asymptotic information matrix is singular")  
+            Likelihood$varcov <- NULL
+         } 
      }
      else
      {

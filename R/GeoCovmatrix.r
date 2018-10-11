@@ -288,7 +288,7 @@ if(model==27)   ##  two piece student case case
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
           corr2=cr$corr^2;sk2=sk^2
-          a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr^2))
+          a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
           a2=cr$corr*asin(cr$corr) + (1-corr2)^(0.5)
           ll=qnorm((1-sk)/2)
           p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)

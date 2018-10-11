@@ -84,6 +84,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     if(bivariate) fitted$numtime=1
     ispatim <- fitted$spacetime
     dyn<- is.list(fitted$coordx_dyn)
+    
 par(mfrow=c(1,1))
 if(!ispatim && !bivariate){ if( (show.cov && show.vario) || (show.cov)) par(mfrow=c(1,2))}
 if(show.vario && ispatim) par(mfrow=c(1,2))
@@ -165,7 +166,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
         param <- c(fitted$fixed,fitted$param)[CorrelationPar(CkCorrModel(fitted$corrmodel))]
         nuisance <- c(fitted$fixed,fitted$param)[NuisParam(fitted$model,FALSE,num_betas)]
     }
-    
+
      #############################################
      # computing the spatio-temporal distances where to compute the fitted model
      #############################################

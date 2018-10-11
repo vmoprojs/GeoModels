@@ -4,7 +4,7 @@
 \title{Statistical Hypothesis Tests for Nested Models}
 \description{
   The function performs statistical hypothesis tests for nested models
-  based on composite likelihood versions of: Wald-type, score-type and
+  based on composite or standard likelihood versions of: Wald-type and
   Wilks-type (likelihood ratio) statistics.
 }
 
@@ -27,9 +27,8 @@ GeoTests(object1, object2, \dots, statistic)
   following statistics:
   \enumerate{
      \item Wald-type (\code{Wald});
-     \item Score-type, also known as Rao-type (\code{Rao});
-     \item Wilks-type; also known as the composite likelihood ratio
-     statistic. Available are variants of the basic version, in particular:
+     \item Likelihood ratio or Wilks-type (\code{Wilks} under standard likelihood); 
+     For composite likelihood available variants of the basic version are:
      \itemize{
        \item Rotnitzky and Jewell adjustment (\code{WilksRJ});
        \item Satterhwaite adjustment (\code{WilksS});
@@ -56,34 +55,20 @@ chi-square distribution with \eqn{q'} degree of freedom. The Wald-type statistic
 \deqn{W=(\hat{\psi}-\psi_0)^T (G^{\psi \psi})^{-1}(\hat{\theta})(\hat{\psi}-\psi_0),}{%
 W=(hat{psi}-psi_0)^T (G^{psi psi})^{-1} (hat{theta})(hat{psi}-psi_0),}
 where \eqn{G_{\psi \psi}}{G_{psi psi}} is the \eqn{q' \times q'}{q' x q'}
- submatrix of the Godambe information pertaining to \eqn{\psi}{psi} and
+ submatrix of the Godambe or Fisher information pertaining to \eqn{\psi}{psi} and
  \eqn{\hat{\theta}}{hat{theta}} is the maximum likelihood estimator from
- the full model. The score-type statistic (Rao-type) is
- \deqn{W=s_{\mathbf{\psi}}\{\mathbf{\psi}_0,
- \hat{\mathbf{\tau}}(\mathbf{\psi}_0)\}^T H^{\psi
-   \psi}(\hat{\theta}_\psi) \{G^{\psi \psi}(\hat{\theta}_\psi)\}^{-1}
- H^{\psi \psi}(\hat{\theta}_\psi)
- s_{\mathbf{\psi}}\{\mathbf{\psi}_0, \hat{\mathbf{\tau}}(\mathbf{\psi}_0)\},}{%
-   W=s_{psi}{psi_0, hat{tau}(psi_0)}^T H^{psi psi}(hat{theta}_psi)
-   \{G^{psi psi}(hat{theta}_psi)\}^{-1} H^{psi psi}(hat{theta}_psi)
-   s_{psi}{psi_0, hat{tau}(psi_0)},}
- where \eqn{H^{\psi \psi}}{H^{psi psi}} is the \eqn{q' \times q'}{q' x q'}
- submatrix of the inverse of \eqn{H(\theta)}{H(theta)} pertaining to
- \eqn{\psi}{psi} (the same for \eqn{G}) and
- \eqn{\hat{\theta}_\psi}{hat{theta}_psi} is the constrained maximum
- likelihood estimate of \eqn{\theta}{theta} for fixed \eqn{\psi}{psi}.
- These two statistics can be called from the
+ the full model. 
+ This statistic can be called from the
  routine \code{GeoTests} assigning at the argument \code{statistic}
- respectively the values: \code{Wald} and \code{Rao}.
+ the value: \code{Wald}.
 
-
- Alternatively to the Wald-type and score-type statistics one can use the
+ Alternatively to the Wald-type  statistic one can use the
  composite version of the Wilks-type or likelihood ratio statistic, given by
  \deqn{W=2[C \ell(\hat{\mathbf{\theta}};\mathbf{y}) - C \ell\{\mathbf{\psi}_0,
    \hat{\mathbf{\tau}}(\mathbf{\psi}_0);\mathbf{y}\}].}{%
  W=2[Cl(hat{theta};y) - Cl{psi_0, hat{tau}(psi_0);y}].}
- The asymptotic distribution of the composite likelihood ratio statistic
- is given by
+ In the composite likelihood case, the asymptotic distribution of the composite 
+ likelihood ratio statistic is given by
  \deqn{W \dot{\sim} \sum_{i} \lambda_i \chi^2,}{%
    W ~ sum_i lambda_i Chi^2_i,}
  for \eqn{i=1,\ldots,q'}{i=1,...,q'}, where \eqn{\chi^2_i}{Chi^2_i} are
@@ -153,61 +138,59 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}
   \command{\link{GeoFit}}.
 }
 \examples{
+
+
 library(GeoModels)
-set.seed(3451)
-# Define the spatial-coordinates of the points:
-x <- runif(700, 0, 1)
-y <- runif(700, 0, 1)
-coords=cbind(x,y)
 ################################################################
 ###
-### Example 1. Composite likelihood-based hypothesis testing.
-### Testing an exponential model vs Matern model
+### Example 1. Parametric test of Gaussianity
+### using SinhAsinh random fields using standard likelihood
 ###
 ###############################################################
+set.seed(314)
+model="SinhAsinh" 
+# Define the spatial-coordinates of the points:
+NN=500
+x <- runif(NN, 0, 1)
+y <- runif(NN, 0, 1)
+coords <- cbind(x,y)
+# Parameters
+mean=0; nugget=0; sill=1
+### skew and tail parameters
+skew=0;tail=1   ## H0 i.e Gaussianity
+# underlying model correlation 
+corrmodel="Wend0"
+power2=4;c_supp=0.2
 
-# Set the model's parameters:
-corrmodel <- "matern"
-mean <- 0
-sill <- 1
-nugget <- 0
-scale <- 0.2/3
-smooth <- 0.5
-
-# Simulation of the spatial Gaussian random field:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,
-              sill=sill,nugget=nugget,scale=scale,smooth=smooth))$data
-
-# Pairwise-likelihood fitting of the random field, full model:
-start=list(mean=mean,sill=sill,scale=scale,smooth=smooth)
-fixed=list(nugget=nugget)
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.1,
-                    varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start)
-
-# Pairwise-likelihood fitting of the random field, with a nested model:
-start=list(mean=mean,sill=sill,scale=scale)
-fixed=list(nugget=nugget,smooth=0.5)
-fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.1,
-                    varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start)
-
-# Hypothesis testing results:
-# composite Wald-type statistic:
-GeoTests(fit1, fit2 ,statistic='Wald')
-# composite score-type statistic:
-#GeoTests(fit1, fit2,statistic='Rao')
-# composite likelihood ratio statistic with RJ adjustment:
-#GeoTests(fit1, fit2, statistic='WilksRJ')
-# composite likelihood ratio statistic with S adjustment:
-#GeoTests(fit1, fit2, statistic='WilksS')
-# composite likelihood ratio statistic with CB adjustment:
-GeoTests(fit1, fit2, statistic='WilksCB')
-# composite likelihood ratio statistic with PSS adjustment:
-#GeoTests(fit1, fit2, statistic='WilksPSS')
+# simulation
+param=list(power2=power2,skew=skew,tail=tail,
+             mean=mean,sill=sill,scale=c_supp,nugget=nugget)
+data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
 
 
+##### H1
+fixed=list(power2=power2,nugget=nugget,mean=mean)
+start=list(scale=c_supp,skew=skew,tail=tail,sill=sill)
+# Maximum pairwise composite-likelihood fitting of the RF:
+fitH1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+                   likelihood="Full",type="Standard",varest=TRUE,
+                    start=start,fixed=fixed)
 
+fitH1$param
+
+##### H0: Gaussianity (i.e tail1=1, skew=0 fixed)
+fixed=list(power2=power2,nugget=nugget,mean=mean,tail=1,skew=0)
+start=list(scale=c_supp,sill=sill)
+# Maximum pairwise composite-likelihood fitting of the RF:
+fitH0 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+                    likelihood="Full",type="Standard",varest=TRUE,
+                    start=start,fixed=fixed)
+
+
+#  Wald statistic test
+GeoTests(fitH1, fitH0 ,statistic='Wald')
+# likelihood ratio statistic test
+GeoTests(fitH1, fitH0 , statistic='Wilks')
 
 ################################################################
 ###
@@ -215,24 +198,17 @@ GeoTests(fit1, fit2, statistic='WilksCB')
 ### Testing significance of a covariate parameter 
 ###
 ###############################################################
-set.seed(3451)
+set.seed(31)
 # Define the spatial-coordinates of the points:
-N=2000
+N=1500
 x <- runif(N, 0, 1)
 y <- runif(N, 0, 1)
 X=cbind(rep(1,N),runif(N))
 coords=cbind(x,y)
-################################################################
-###
-### Example 1. Composite likelihood-based hypothesis testing.
-### Simulation of a Gaussian spatial random field with
-### Matern correlation.
-###
-###############################################################
 
 # Set the model's parameters:
 corrmodel <- "Exp"
-mean <- 1; mean1=0
+mean <- 1;  mean1=0.3 ## H0: mean1=0
 sill <- 1
 nugget <- 0
 scale <- 0.15/3
@@ -244,31 +220,23 @@ data <- GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,mean1=me
 # Pairwise-likelihood fitting of the random field, full model:
 start=list(mean=mean,mean1=mean1,sill=sill,scale=scale)
 fixed=list(nugget=nugget)
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,
+fitH1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     fixed=fixed,start=start,X=X)
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
 start=list(mean=mean,sill=sill,scale=scale)
-fixed=list(nugget=nugget,mean1=0)
-fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,
+fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
+fitH0 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     fixed=fixed,start=start,X=X)
 
 
 # Hypothesis testing results:
-# composite Wald-type statistic:
-GeoTests(fit1, fit2 ,statistic='Wald')
-# composite score-type statistic:
-#GeoTests(fit1, fit2,statistic='Rao')
-# composite likelihood ratio statistic with RJ adjustment:
-#GeoTests(fit1, fit2, statistic='WilksRJ')
-# composite likelihood ratio statistic with S adjustment:
-#GeoTests(fit1, fit2, statistic='WilksS')
-# composite likelihood ratio statistic with CB adjustment:
-GeoTests(fit1, fit2, statistic='WilksCB')
-# composite likelihood ratio statistic with PSS adjustment:
-#GeoTests(fit1, fit2, statistic='WilksPSS')
+# composite  Wald statistic test:
+GeoTests(fitH1, fitH0 ,statistic='Wald')
+# composite likelihood ratio statistic test with PSS adjustment:
+GeoTests(fitH1, fitH0, statistic='WilksPSS')
 
 
 }

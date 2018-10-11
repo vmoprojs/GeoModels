@@ -125,7 +125,7 @@ void Sens_Pair(double *betas,double *coordx, double *coordy, double *coordt, int
   gradcor=(double *) Calloc(*nparc,double);// Correlation gradient  (double *) Calloc(*nparc,double);
   grad=(double *) Calloc(*npar,double);// ijth component of the gradient
   sens=(double *) Calloc(nsens,double);// One sensitive contribute
-Rprintf("%d %d \n ",ncoord[0],*model);
+//Rprintf("%d %d \n ",ncoord[0],*model);
       for(i=0; i<(ncoord[0]-1);i++){
     for(j=(i+1); j<ncoord[0];j++){
     /*****************************************************/    

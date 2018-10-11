@@ -47,18 +47,23 @@ stderr=sqrt(diag(invG))
 
 if((fit$likelihood=="Marginal"&&(fit$type=="Pairwise"))||fit$likelihood=="Conditional"&&(fit$type=="Pairwise"))
 {
-#HH=
-#penalty <- sum(diag(HH%*%invG))/K
-penalty <- sum(diag(fit$sensmat%*%invG))
+
+H=fit$sensmat
+
+penalty <- sum(diag(H%*%invG))
 claic <- -2 * fit$logCompLik + 2*sum(diag(penalty))
 clbic <- -2 * fit$logCompLik + log(dimat)*sum(diag(penalty))
+fit$varimat=H%*%invG %*%H
 }    
 if( fit$likelihood=="Full"&&fit$type=="Standard"){
 claic <- -2 * fit$logCompLik + 2*numparam
 clbic <- -2 * fit$logCompLik + log(dimat)*2*numparam
+
 }
-
-
-return(list(claic = claic,clbic =clbic,stderr=stderr,varcov=invG))
+fit$claic=claic
+fit$clbic=clbic
+fit$stderr=stderr
+fit$varcov=invG
+return(fit)
 
 }

@@ -478,7 +478,7 @@ void Comp_Pair_SinhGauss_st2(int *cormod, double *coordx, double *coordy, double
     
     int i=0,j=0,t=0,v=0;
     double corr,zi,zj,lags,lagt,weights=1.0;
-    // if(nuis[1]<0 || nuis[0]<0|| nuis[3]<0) {*res=LOW;  return;}
+       if(nuis[3]<0||nuis[1]<0) {*res=LOW;  return;}
 
           for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -1016,7 +1016,7 @@ void Comp_Pair_SinhGauss2(int *cormod, double *coordx, double *coordy, double *c
 {
     
     int i=0,j=0;double corr,zi,zj,lags,bb=0.0,weights=1.0;
-     //  if(nuis[1]<0 || nuis[0]<0|| nuis[3]<0) {*res=LOW;  return;}
+      if(nuis[3]<0||nuis[1]<0) {*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
             for(j=(i+1); j<ncoord[0];j++){
                 lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);

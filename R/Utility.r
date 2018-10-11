@@ -1003,6 +1003,7 @@ NuisParam <- function(model,bivariate,num_betas)
 
 
 
+
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                       likelihood,  maxdist, maxtime, model, n,  param, parscale,
                       paramrange, radius, start, taper, tapsep, type,

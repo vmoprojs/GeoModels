@@ -140,12 +140,12 @@ double d2lognorm(double x, double y, double sill,double nugget, double mux,doubl
 double biv_sinh(double corr,double zi,double zj,double mi,double mj,double skew,double tail,double vari)
 {
 double b1=0.0,b2=0.0,A=0.0,B=0.0,k=0.0,res=0.0,Z1,Z2;
-double xi=(zi-mi)/sqrt(vari);
-double xj=(zj-mj)/sqrt(vari);
+double xi=(zi-mi)/(sqrt(vari));
+double xj=(zj-mj)/(sqrt(vari));
   b1=tail * asinh(xi)-skew;
   b2=tail * asinh(xj)-skew;
   k=1-R_pow(corr,2);
-  A=R_pow(2 * M_PI * R_pow(k,0.5) * vari,-1) * cosh(b1) * cosh(b2) * R_pow(tail,2)/sqrt((R_pow(xi,2)+1) * (R_pow(xj,2)+1));
+  A=R_pow(2 * M_PI * R_pow(k,0.5) * (vari),-1) * cosh(b1) * cosh(b2) * R_pow(tail,2)/sqrt((R_pow(xi,2)+1) * (R_pow(xj,2)+1));
   Z1=sinh(b1);Z2=sinh(b2);
   B=exp(- (Z1*Z1 + Z2*Z2 - 2*corr*Z1*Z2)/(2*k)  );
   res=A*B;                     

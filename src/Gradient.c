@@ -780,19 +780,23 @@ b1=(double *) Calloc(nbetas,double);
     grad[i]=(log(biv_sinh(rho,u,v,ai,aj,skew,tail+delta,sill)) - ff)/delta; 
     i++; 
   }
-  /* Derivvativves with respect to the correlation parameters*/
-             h=0;
+
+              h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 
-      
   if(flagcor[h]==1){
        delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
-          grad[k+i]=(log(biv_sinh(rhod,u,v,ai,aj,skew,tail,sill)) - ff)/delta;
+       
+           grad[kk+i]=(log(biv_sinh(rhod,u,v,ai,aj,skew,tail,sill)) 
+            - ff)/delta;
     kk++;}
       h++;
     }
+
+
+
 
   return;
 }
