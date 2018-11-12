@@ -335,8 +335,8 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         # Computes the log-likelihood
       
         loglik_u <- do.call(what="LogNormDenStand_SH",
-            args=list(stdata=((data-c(X%*%mm))/sqrt(sill)),const=const,cova=cova,dimat=dimat,ident=ident,
-            mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
+            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=cova,dimat=dimat,ident=ident,
+            mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
        # loglik_u <- do.call(what="LogNormDenStand_SH",args=list(stdata=(data-c(X%*%mm))/(sqrt(sill)/nuisance['tail']),const=const,cova=cova,dimat=dimat,ident=ident,
        #     mdecomp=mdecomp,nuisance=nuisance,sill=sill/nuisance['tail']^2,setup=setup))
         return(loglik_u)

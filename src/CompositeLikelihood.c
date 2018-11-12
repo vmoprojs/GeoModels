@@ -927,7 +927,7 @@ void Comp_Cond_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
 
 
 
-/*
+
 void Comp_Diff_Gauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN,
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
@@ -950,10 +950,9 @@ void Comp_Diff_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
   if(!R_FINITE(*res))
     *res = LOW;
   return;
-}*/
+}
 
-
-
+/*  for maximum likelihood  in R^1
 void Comp_Diff_Gauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN,
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
@@ -975,7 +974,7 @@ weights=data[0]*data[0]/nuis[1];
   return;
 }
 
-
+*/
 
 // Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
 void Comp_Pair_WrapGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
@@ -1026,6 +1025,7 @@ void Comp_Pair_SinhGauss2(int *cormod, double *coordx, double *coordy, double *c
                     corr=CorFct(cormod,lags,0,par,0,0);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                     bb=log(biv_sinh(corr,zi,zj,mean[i],mean[j],nuis[2],nuis[3],nuis[1]));
+                   // Rprintf("%f\n",bb);
                     *res+= weights*bb;
                  }}}}
     // Checks the return values

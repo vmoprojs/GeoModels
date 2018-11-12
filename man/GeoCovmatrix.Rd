@@ -493,8 +493,7 @@ matrix2$nozero
 param=list(sill=1,scale=0.2,nugget=0,smooth=0,power2=4)
 
 
-matrix3 <- GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,
-                     ,sparse=TRUE,maxdist=0.1)
+matrix3 <- GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,sparse=TRUE)
 
 # Percentage of no zero values in the tapered matrix
 matrix3$nozero

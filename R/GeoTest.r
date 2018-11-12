@@ -115,7 +115,7 @@ GeoTests <- function(object1, object2, ..., statistic)
           return(list(score=model1$score, sensmat=model1$sensmat, varimat=model1$varimat))
       }
       # compute the statistic:
-      StatiTest <- function(df, model1, model2, statistic)
+StatiTest <- function(df, model1, model2, statistic)
       {
           namesparam <- names(model1$param)[!names(model1$param)%in%names(model2$param)]
   ### composite likelihood case 
@@ -126,11 +126,6 @@ GeoTests <- function(object1, object2, ..., statistic)
               theta <- model1$param[namesparam]-model2$fixed[namesparam]
               varcov <- model1$varcov[namesparam,namesparam]# Restricted variance-covariance matrix
               W <- t(theta)%*%solve(varcov)%*%theta
-              print(model1$param[namesparam])
-              print(model2$fixed[namesparam])
-              print(theta)
-              print(df)
-              print(varcov)
               nu <- df}
           if(statistic=="WilksCB"){
               W <- 2*(model1$logCompLik-model2$logCompLik)
@@ -194,7 +189,9 @@ GeoTests <- function(object1, object2, ..., statistic)
   }
           return(list(W=W,nu=nu))
       }
-      ### START THE MAIN BODY OF THE PROCEDURE
+###########################################################
+################# Start ###################################
+###########################################################
       # check fitted models:
       if(any(missing(object1), missing(object2)))
          stop("Models one and two must be specified\n")
@@ -243,7 +240,9 @@ GeoTests <- function(object1, object2, ..., statistic)
             pvalue[j] <- pchisq(W[j], df = nu[j], lower.tail = FALSE)
           }
       }
-      ### END THE MAIN BODY OF THE PROCEDURE
+###########################################################
+###########################################################
+###########################################################
       #print a table with the hypothesis testing:
       table <- data.frame(numparam, c(NA, df), c(NA, nu),c(NA, W), c(NA, pvalue))
       dimnames(table) <- list(models, c("Num.Par", "Diff.Par", "Df","Chisq", "Pr(>chisq)"))

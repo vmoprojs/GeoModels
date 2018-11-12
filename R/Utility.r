@@ -616,9 +616,9 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         biv<-CheckBiv(CkCorrModel(corrmodel))
         #print(length(param));
         #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
+             #print(param)
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
-
              {
     #                         print(length(param))
      #        print(NuisParam(model,biv,num_betas))
@@ -936,7 +936,7 @@ NuisParam <- function(model,bivariate,num_betas)
 
    if(!bivariate)     
    {
-  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg',
+  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg','Poisson',
       'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic')))
   {
     param <- c(mm, 'nugget', 'sill')
@@ -971,7 +971,7 @@ NuisParam <- function(model,bivariate,num_betas)
   #############################################################   
     if(bivariate)     
    {     
-   if( model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg','Geom','Geometric',
+   if( model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg','Geom','Geometric','Poisson',
         'Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss',"Logistic")){
     param <- c('mean_1', 'mean_2')
     return(param)} 
@@ -1149,13 +1149,13 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }}
-        if(model %in% c(11,14,15,16,19,17)){
+        if(model %in% c(11,14,15,16,19,17,30)){
     
             p <- mean(unlist(data)[!is.na(unlist(data))])
             if(model==2||model==11) mu <- qnorm(p/n)
             if(model==14||model==16||model==19) mu <- 0
             if(model==15) mu <- -1
-            if(model==17) mu <- 1
+            if(model==17||model==30) mu <- 1
             nuisance <- c(mu, 0, 1)
             #if(!is.null(start$nugget))
             #    if(length(start)>1) start<-start[!names(start)%in%"nugget"]
@@ -1185,7 +1185,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              }
             # else{}
          }
-     if(model %in% c(2,11,14,15,16,19,17)){
+     if(model %in% c(2,11,14,15,16,19,17,30)){
 
            # p <- mean(data[!is.na(data)])
            # if(model==2||model==11) mu <- threshold+qnorm(p/n)

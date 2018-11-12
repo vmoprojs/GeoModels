@@ -127,7 +127,7 @@ forGaussparam<-function(model,param,bivariate)
     k=1
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",
-                    "StudentT","SkewStudentT",
+                    "StudentT","SkewStudentT","Poisson","poisson",
                     "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss",
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
@@ -194,12 +194,14 @@ forGaussparam<-function(model,param,bivariate)
             mm2<-2*atan(param$mean_2)+pi;param$mean_2=0;
             mm=c(mm1,mm2)
         }} 
+     
+    npoi=1
 ################################# how many random fields ################
-    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2    
-    if(model %in% c("LogLogistic","Logistic")) k=4
+    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2 
+    if(model %in% c("LogLogistic","Logistic")) k=4 
     if(model %in% c("Binomial"))   k=round(n)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999; if(model %in% c("Geometric")) {model="BinomialNeg";n=1}} 
-    if(model %in% c("Poisson")) {k=99999;model="Gamma";param$shape=2}
+    if(model %in% c("Poisson")) {k=2;npoi=999999999}
     if(model %in% c("Gamma"))  k=round(param$shape)
     if(model %in% c("StudentT"))  k=round(1/param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
@@ -236,8 +238,11 @@ forGaussparam<-function(model,param,bivariate)
     dime<-numcoord*numtime
     xx=double(dime)
     varcov<-ccov$covmat;  ######covariance matrix!!
-#########################################################    
+######################################################### 
+KK=1;sel=NULL;ssp=double(dime)
+  while(KK<=npoi) { 
   for(i in 1:k) {  
+
     ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
    #### simulating with cholesky decomposition using GPU
     if(!is.null(GPU)&&sparse) sparse=FALSE   ### if gpu no sparse 
@@ -275,7 +280,7 @@ forGaussparam<-function(model,param,bivariate)
         dim(sim) <- simdim
         }
     ####################################    
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson",
                 "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) {
        if(!bivariate) dd[,,i]=t(sim)
@@ -287,20 +292,25 @@ forGaussparam<-function(model,param,bivariate)
                  cumu=rbind(cumu,c(sim));
                  if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
                }
-     if(model %in% c("Poisson"))
-     {
-
-      xx=xx+c(sim)
-      cumu=rbind(cumu,xx<=1)
-      if(sum(apply(cumu,2,prod))==0) {break;}
-     }          
     }
+  if(model %in% c("poisson","Poisson"))   {  
+  pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
+  ssp=ssp+c(pois1)
+  #print(ssp)
+  #print(exp(mm))
+  sel=rbind(sel,ssp<=c(exp(mm)))
+  if(sum(apply(sel,2,prod))==0) break   ## stopping rule
+ 
+}
+ KK=KK+1
+}
+
  ####### end for #########################  
 ############################################
 ### using  gausssian random fields  in order to generate non gaussausan random fiels
 ###########################################
 if(model %in% c("poisson","Poisson"))   {
-        sim=colSums(cumu)
+        sim=colSums(sel)
              if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
@@ -337,6 +347,7 @@ if(model %in% c("poisson","Poisson"))   {
     { 
       trans=sinh( (1/tl)*(asinh(sim)+sk))
       sim=mm+sqrt(vv)*trans
+       #sim=mm+(sqrt(vv)/tl)*trans
        if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
