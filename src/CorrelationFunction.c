@@ -1027,70 +1027,72 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
 
             
         case 112:       // multi wend(k=0)
-            var11=par[0];
-            var22=par[1];
-            nug11=par[2];
-            nug22=par[3];
-            col=par[4];
-            R_power11=par[5];
-            R_power12=par[6];
-            R_power22=par[7];
-            scale11=par[8];
-            scale12=par[9];
-            scale22=par[10];
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW0(h,scale11,R_power11);;
-                                  break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=sqrt(var11)*
-                                                         sqrt(var22)*CorFunW0(h,scale12,R_power12);;break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW0(h,scale22,R_power22);;
-                                  break;}
-        break;
-        case 114:       // multi wend(k=1)
-            var11=par[0];
-            var22=par[1];
-            nug11=par[2];
-            nug22=par[3];
-            col=par[4];
-            R_power11=par[5];
-            R_power12=par[6];
-            R_power22=par[7];
-            scale11=par[8];
-            scale12=par[9];
-            scale22=par[10];
-            if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-            else       rho=var11*CorFunW1(h,scale11,R_power11);;
-                break;}
-            if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=sqrt(var11)*sqrt(var22)*CorFunW1(h,scale12,R_power12);;break;}
-            if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW1(h,scale22,R_power22);;
-                break;}
-        break;
-        case 116:       // multi wend(k=2)
-        var11=par[0];
+                var11=par[0];
         var22=par[1];
         nug11=par[2];
         nug22=par[3];
-        col=par[4];  
+        col=par[4];
         R_power11=par[5];
         R_power12=par[6];
         R_power22=par[7];
         scale11=par[8];
-        scale12=par[9];
-        scale22=par[10];
-  
-            if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-            else       rho=var11*CorFunW2(h,scale11,R_power11);;
-                break;}
-            if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunW2(h,scale12,R_power12);;break;}
-            if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW2(h,scale22,R_power22);;
-                break;}
+        scale22=par[9];
+        scale12=par[10];
+       // Rprintf("%f %f %f\n",scale11,scale22,scale12);
+        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
+                                  else       rho=var11*CorFunW0(h,scale11,R_power11);
+                                  break;}
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale12,R_power12);break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
+                                  else      rho=var22*CorFunW0(h,scale22,R_power22);;
+                                  break;}
+        
+        break;
+        case 114:       // multi wend(k=1)
+            var11=par[0];
+        var22=par[1];
+        nug11=par[2];
+        nug22=par[3];
+        col=par[4];
+        R_power11=par[5];
+        R_power12=par[6];
+        R_power22=par[7];
+        scale11=par[8];
+        scale22=par[9];
+        scale12=par[10];
+       // Rprintf("%f %f %f\n",scale11,scale22,scale12);
+        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
+                                  else       rho=var11*CorFunW1(h,scale11,R_power11);
+                                  break;}
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW1(h,scale12,R_power12);break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
+                                  else      rho=var22*CorFunW1(h,scale22,R_power22);;
+                                  break;}
+        
+        break;
+        case 116:       // multi wend(k=2)
+       var11=par[0];
+        var22=par[1];
+        nug11=par[2];
+        nug22=par[3];
+        col=par[4];
+        R_power11=par[5];
+        R_power12=par[6];
+        R_power22=par[7];
+        scale11=par[8];
+        scale22=par[9];
+        scale12=par[10];
+       // Rprintf("%f %f %f\n",scale11,scale22,scale12);
+        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
+                                  else       rho=var11*CorFunW2(h,scale11,R_power11);
+                                  break;}
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
+                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW2(h,scale12,R_power12);break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
+                                  else      rho=var22*CorFunW2(h,scale22,R_power22);;
+                                  break;}
         break;
          case 129:       // multi wend(k=0) contr
           var11=par[0];
@@ -2100,6 +2102,7 @@ return;
 void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  
   double *nuis, double *par,double *radius, int *ns,int *NS)
 {
+
   int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -2115,7 +2118,8 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
        // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+        
 rho[h]=CorFct(cormod,lags,lagt,par,t,v);
               h++;
               }}

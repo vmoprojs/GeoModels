@@ -49,23 +49,23 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
     double sill=nuis[1];
     double nugget=nuis[0];
     // Computes the log-likelihood:
-    for(t=0;t<ntime[0];t++){
+  for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i+1;j<ns[t];j++){
+         for(j=i+1;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
            
                         if(lags<=maxdist[0]){
                             corr=CorFct(cormod,lags, 0,par,t,v);
                                 u=data[(i+NS[t])];      
-                                w=data[(j+NS[t])];   
+                                w=data[(j+NS[v])];   
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                 *res+= log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget)*weights;   
                                     }}}}
                else {
-         lagt=fabs(coordt[t]-coordt[v]);
+          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
             //  Rprintf("%f\n",lags);

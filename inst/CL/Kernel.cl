@@ -3283,7 +3283,7 @@ double biv_poisbinneg (int NN, int u, int v, double p01,double p10,double p11)
 }
 
 /**************/
-double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double beta)
+/*double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double beta)
 {
     double a=0.0,A=0.0,D=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);
     if(corr)   {
@@ -3304,10 +3304,34 @@ double biv_Logistic(double corr,double zi,double zj,double mui, double muj, doub
     //printf("%f\n",res);
     return(res);
     
+}*/
+/********** bivariate logistic **********/
+double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill)
+{
+    double a=0.0,A=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=mui;double cj=muj;
+    double ki=exp((zi-ci)/sqrt(sill));
+    double kj=exp((zj-cj)/sqrt(sill));
+    double rho2=pow(corr,2);
+    if(corr)   {
+        a=1-rho2;
+        A=(ki*kj)/(pow(a,-2)*sill);
+        B=pow((ki+1)*(kj+1),-2);
+        C=appellF4(2,2,1,1,
+                   (rho2*ki*kj)/((ki+1)*(kj+1)),
+                   rho2/((ki+1)*(kj+1)));
+        res=A*B*C;
+    }
+    else
+    {
+        B=ki*pow((ki+1),-2)/sqrt(sill);
+        C=kj*pow((kj+1),-2)/sqrt(sill);
+        res=B*C;
+    }
+    return(res);
 }
-
 /**************/
-double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
+/*double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
 {
     double a=0.0,A=0.0,D=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);
     if(corr)   {
@@ -3327,9 +3351,33 @@ double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, d
     }
     return(res);
     
+}*/
+
+double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
+{
+    double c=tgamma(1+1/shape)*tgamma(1-1/shape);
+    double A=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=exp(mui);double cj=exp(muj);
+    double ki=pow(c*zi/ci,shape)+1;
+    double kj=pow(c*zj/cj,shape)+1;
+    double rho2=pow(corr,2);
+    double kij=ki*kj;
+    if(corr)   {
+        A=(pow(c*shape,2)/(ci*cj))*pow((c*c*zi*zj)/(ci*cj),shape-1)*pow(1-rho2,2);
+        B=pow(kij,-2);
+        C=appellF4(2,2,1,1,
+                   (rho2*pow(c*c*zi*zj,shape))/(pow(ci*cj,shape)*kij),
+                   rho2/(kij));
+        res=A*B*C;
+    }
+    else
+    {
+        B=(c*shape/ci)*pow((c*zi/ci),shape-1)*pow(ki,-2);
+        C=(c*shape/cj)*pow((c*zj/cj),shape-1)*pow(kj,-2);
+        res=B*C;
+    }
+    return(res);
 }
-
-
 
 /*******************************Weibull**/
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
@@ -4562,7 +4610,6 @@ __kernel void Comp_Pair_TWOPIECEGauss2_OCL(__global const double *coordx,__globa
 
 __kernel void Comp_Pair_Gauss_st2_OCL(__global const double *coordt,__global const double *coordx,__global const double *coordy,__global const double *data,__global const double *mean,  __global double *res,__global const int *int_par,__global const double *dou_par,__global const int *ns,__global const int *NS)
 {
-    
     double maxdist = dou_par[6];
     double maxtime	=	dou_par[11];
     double nuis0 = dou_par[4];//nugget
@@ -4584,20 +4631,12 @@ __kernel void Comp_Pair_Gauss_st2_OCL(__global const double *coordt,__global con
     int weigthed    = int_par[2];
     int type        = int_par[3];
     
-    
-    
-    
     int l = get_global_id(0);
     int t = get_global_id(1);
-    
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
     
     int m=0,v =0;
     double  lags=0.0, lagt=0.0,weights=1.0,sum=0.0, corr=0.0;
     double u=0.0,  w=0.0;
-    
-    //int gid = (npts*t+l);
     
     int m1 = get_local_id(0);
     int v1 = get_local_id(1);
@@ -4612,15 +4651,7 @@ __kernel void Comp_Pair_Gauss_st2_OCL(__global const double *coordt,__global con
     int gidy = (wy*lsize_v+v1);
     
     int i = (ncoord*gidy+gidx);
-    //int j = (ntime*gidx+gidy);
-    
-    //for (j = 0; j < ncoord; j++) {
-    //    if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
-    
     bool isValid = true;
-    //printf("%d\t%d\n",l,t);
-    
-    //if(l >= ncoord) isValid = false;
     if(l >= ns[t]) isValid = false;
     
     if(t >= ntime) isValid = false;
@@ -4634,7 +4665,7 @@ __kernel void Comp_Pair_Gauss_st2_OCL(__global const double *coordt,__global con
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         corr=CorFct_st(cormod,lags,0,par0,par1,par2,par3,par4,par5,par6,t,v);
@@ -4651,7 +4682,7 @@ __kernel void Comp_Pair_Gauss_st2_OCL(__global const double *coordt,__global con
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         
@@ -4697,21 +4728,13 @@ __kernel void Comp_Pair_WrapGauss_st2_OCL(__global const double *coordt,__global
     int weigthed    = int_par[2];
     int type        = int_par[3];
     
-    
-    
-    
     int l = get_global_id(0);
     int t = get_global_id(1);
-    
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
     
     int m=0,v =0;
     double lags=0.0, lagt=0.0,weights=1.0,sum=0.0,corr=0.0;
     double u=0.0, u2=0.0, w=0.0;
     double wrap_gauss,alfa=2.0;
-    
-    //int gid = (npts*t+l);
     
     int m1 = get_local_id(0);
     int v1 = get_local_id(1);
@@ -4726,15 +4749,9 @@ __kernel void Comp_Pair_WrapGauss_st2_OCL(__global const double *coordt,__global
     int gidy = (wy*lsize_v+v1);
     
     int i = (ncoord*gidy+gidx);
-    //int j = (ntime*gidx+gidy);
-    
-    //for (j = 0; j < ncoord; j++) {
-    //    if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
     
     bool isValid = true;
-    //printf("%d\t%d\n",l,t);
-    
-    //if(l >= ncoord) isValid = false;
+
     if(l >= ns[t]) isValid = false;
     
     if(t >= ntime) isValid = false;
@@ -4747,7 +4764,7 @@ __kernel void Comp_Pair_WrapGauss_st2_OCL(__global const double *coordt,__global
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         u=data[(l+NS[t])];
@@ -4760,14 +4777,13 @@ __kernel void Comp_Pair_WrapGauss_st2_OCL(__global const double *coordt,__global
                             if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                             sum+= log(wrap_gauss)*weights;
                         }
-                        //printf("GPU: %d\t%d\t%d\t%d\t%f\n",l,t,v,m,sum);
                     }}}
             else
             {
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         u=data[(l+NS[t])];
@@ -4782,6 +4798,7 @@ __kernel void Comp_Pair_WrapGauss_st2_OCL(__global const double *coordt,__global
                         }
                     }
                 }}}
+        
         res[i] = sum;
     }
 }
@@ -4794,6 +4811,7 @@ __kernel void Comp_Pair_PoisbinGauss_st2_OCL(__global const double *coordt,__glo
     double maxtime	=	dou_par[11];
     double nuis0 = dou_par[4];
     double nuis1 = dou_par[5];
+    nuis1 = 1-nuis0;
     double nuis2 = dou_par[9];
     double nuis3 = dou_par[10];
     double par0 = dou_par[0];
@@ -4817,16 +4835,11 @@ __kernel void Comp_Pair_PoisbinGauss_st2_OCL(__global const double *coordt,__glo
     int l = get_global_id(0);
     int t = get_global_id(1);
     
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
-    
     int m=0,v =0;
     int uu=0,ww=0;
     double dens=0.0,lags=0.0,lagt=0.0,weights=1.0,u,w, sum=0.0;
     double p1=0.0,p2=0.0;//probability of marginal success
     double psj=0.0;//probability of joint success
-    
-    //int gid = (npts*t+l);
     
     int m1 = get_local_id(0);
     int v1 = get_local_id(1);
@@ -4841,15 +4854,9 @@ __kernel void Comp_Pair_PoisbinGauss_st2_OCL(__global const double *coordt,__glo
     int gidy = (wy*lsize_v+v1);
     
     int i = (ncoord*gidy+gidx);
-    //int j = (ntime*gidx+gidy);
-    
-    //for (j = 0; j < ncoord; j++) {
-    //    if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
-    
+
     bool isValid = true;
-    //printf("%d\t%d\n",l,t);
-    
-    //if(l >= ncoord) isValid = false;
+
     if(l >= ns[t]) isValid = false;
     
     if(t >= ntime) isValid = false;
@@ -4862,7 +4869,7 @@ __kernel void Comp_Pair_PoisbinGauss_st2_OCL(__global const double *coordt,__glo
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         psj=pbnorm_st(cormod,lags,0,mean[(l+NS[t])],mean[(m+NS[v])],nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
@@ -4878,14 +4885,14 @@ __kernel void Comp_Pair_PoisbinGauss_st2_OCL(__global const double *coordt,__glo
                             dens=biv_poisbin(NN,uu,ww,p1,p2,psj);
                             sum+= log(dens)*weights;
                         }
-                        //printf("GPU: %d\t%d\t%d\t%d\t%f\n",l,t,v,m,sum);
+                        
                     }}}
             else
             {
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         psj=pbnorm_st(cormod,lags,lagt,mean[(l+NS[t])],mean[(m+NS[v])],nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
@@ -4914,6 +4921,7 @@ __kernel void Comp_Pair_PoisbinnegGauss_st2_OCL(__global const double *coordt,__
     double maxtime	=	dou_par[11];
     double nuis0 = dou_par[4];
     double nuis1 = dou_par[5];
+    nuis1 = 1-nuis0;
     double nuis2 = dou_par[9];
     double nuis3 = dou_par[10];
     double par0 = dou_par[0];
@@ -4937,16 +4945,11 @@ __kernel void Comp_Pair_PoisbinnegGauss_st2_OCL(__global const double *coordt,__
     int l = get_global_id(0);
     int t = get_global_id(1);
     
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
-    
     int m=0,v =0;
     int uu=0,ww=0;
     double dens=0.0,lags=0.0,lagt=0.0,weights=1.0,u,w, sum=0.0;
     double p1=0.0,p2=0.0;//probability of marginal success
     double psj=0.0;//probability of joint success
-    
-    //int gid = (npts*t+l);
     
     int m1 = get_local_id(0);
     int v1 = get_local_id(1);
@@ -4961,15 +4964,9 @@ __kernel void Comp_Pair_PoisbinnegGauss_st2_OCL(__global const double *coordt,__
     int gidy = (wy*lsize_v+v1);
     
     int i = (ncoord*gidy+gidx);
-    //int j = (ntime*gidx+gidy);
-    
-    //for (j = 0; j < ncoord; j++) {
-    //    if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
-    
+
     bool isValid = true;
-    //printf("%d\t%d\n",l,t);
-    
-    //if(l >= ncoord) isValid = false;
+
     if(l >= ns[t]) isValid = false;
     
     if(t >= ntime) isValid = false;
@@ -4982,7 +4979,7 @@ __kernel void Comp_Pair_PoisbinnegGauss_st2_OCL(__global const double *coordt,__
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         psj=pbnorm_st(cormod,lags,0,mean[(l+NS[t])],mean[(m+NS[v])],nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
@@ -4998,14 +4995,14 @@ __kernel void Comp_Pair_PoisbinnegGauss_st2_OCL(__global const double *coordt,__
                             dens=biv_poisbinneg(NN,uu,ww,p1,p2,psj);
                             sum+= log(dens)*weights;
                         }
-                        //printf("GPU: %d\t%d\t%d\t%d\t%f\n",l,t,v,m,sum);
+                       
                     }}}
             else
             {
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         psj=pbnorm_st(cormod,lags,lagt,mean[(l+NS[t])],mean[(m+NS[v])],nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6,0);
@@ -5107,7 +5104,7 @@ __kernel void Comp_Cond_Gauss_st2_OCL(__global const double *coordt,__global con
                 for(m=l+1;m<ns[t];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         s12=nuis1*CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,t,v);
@@ -5129,7 +5126,7 @@ __kernel void Comp_Cond_Gauss_st2_OCL(__global const double *coordt,__global con
                 for(m=0;m<ns[v];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         
@@ -5186,9 +5183,6 @@ __kernel void Comp_Diff_Gauss_st2_OCL(__global const double *coordt,__global con
     int l = get_global_id(0);
     int t = get_global_id(1);
     
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
-    
     int m=0,v =0;
     double  lags=0.0, lagt=0.0,weights=1.0,sum=0.0;
     double vario=0.0,u=0.0, w=0.0;
@@ -5208,15 +5202,10 @@ __kernel void Comp_Diff_Gauss_st2_OCL(__global const double *coordt,__global con
     int gidy = (wy*lsize_v+v1);
     
     int i = (ncoord*gidy+gidx);
-    //int j = (ntime*gidx+gidy);
-    
-    //for (j = 0; j < ncoord; j++) {
-    //    if (   ((gid+j)!= j) && ((gid+j) < ncoord)   )
+
     
     bool isValid = true;
-    //printf("%d\t%d\n",l,t);
-    
-    //if(l >= ncoord) isValid = false;
+
     if(l >= ns[t]) isValid = false;
     
     if(t >= ntime) isValid = false;
@@ -5231,7 +5220,7 @@ __kernel void Comp_Diff_Gauss_st2_OCL(__global const double *coordt,__global con
                 for(m=l+1;m<ns[t];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         vario=Variogram_st(cormod,lags,0,nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6);
@@ -5251,7 +5240,7 @@ __kernel void Comp_Diff_Gauss_st2_OCL(__global const double *coordt,__global con
                 for(m=0;m<ns[v];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         vario=Variogram_st(cormod,lags,lagt,nuis0,nuis1,par0,par1,par2,par3,par4,par5,par6);
@@ -5303,9 +5292,6 @@ __kernel void Comp_Pair_SkewGauss_st2_OCL(__global const double *coordt,__global
     int l = get_global_id(0);
     int t = get_global_id(1);
     
-    //int ls = get_global_size(0);
-    //int ms = get_global_size(1);
-    
     int m=0,v =0;
     double corr=0.0,zi=0.0,zj=0.0,lags=0.0,lagt=0.0,weights=1.0, sum=0.0;
     
@@ -5340,7 +5326,7 @@ __kernel void Comp_Pair_SkewGauss_st2_OCL(__global const double *coordt,__global
                 for(m=l+1;m<ns[t];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         
@@ -5358,7 +5344,7 @@ __kernel void Comp_Pair_SkewGauss_st2_OCL(__global const double *coordt,__global
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -5437,7 +5423,7 @@ __kernel void Comp_Pair_SinhGauss_st2_OCL(__global const double *coordt,__global
                 for(m=l+1;m<ns[t];m++)
                 {
                     
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         
@@ -5455,7 +5441,7 @@ __kernel void Comp_Pair_SinhGauss_st2_OCL(__global const double *coordt,__global
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -5530,7 +5516,7 @@ __kernel void Comp_Pair_Gamma_st2_OCL(__global const double *coordt,__global con
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -5542,7 +5528,7 @@ __kernel void Comp_Pair_Gamma_st2_OCL(__global const double *coordt,__global con
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -5616,7 +5602,7 @@ __kernel void Comp_Pair_LogGauss_st2_OCL(__global const double *coordt,__global 
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -5629,7 +5615,7 @@ __kernel void Comp_Pair_LogGauss_st2_OCL(__global const double *coordt,__global 
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -5710,7 +5696,7 @@ __kernel void Comp_Pair_BinomGauss_st2_OCL(__global const double *coordt,__globa
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         a = mean[(l+NS[t])];
@@ -5736,7 +5722,7 @@ __kernel void Comp_Pair_BinomGauss_st2_OCL(__global const double *coordt,__globa
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         a = mean[(l+NS[t])];
@@ -5827,7 +5813,7 @@ __kernel void Comp_Pair_BinomnegGauss_st2_OCL(__global const double *coordt,__gl
             {
                 for(m=l+1;m<ns[t];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist)
                     {
                         a = mean[(l+NS[t])];
@@ -5853,7 +5839,7 @@ __kernel void Comp_Pair_BinomnegGauss_st2_OCL(__global const double *coordt,__gl
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++)
                 {
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         a = mean[(l+NS[t])];
@@ -5935,7 +5921,7 @@ __kernel void Comp_Pair_LogLogistic_st2_OCL(__global const double *coordt,__glob
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -5948,7 +5934,7 @@ __kernel void Comp_Pair_LogLogistic_st2_OCL(__global const double *coordt,__glob
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -6021,7 +6007,7 @@ __kernel void Comp_Pair_Logistic_st2_OCL(__global const double *coordt,__global 
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -6034,7 +6020,7 @@ __kernel void Comp_Pair_Logistic_st2_OCL(__global const double *coordt,__global 
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -6043,6 +6029,7 @@ __kernel void Comp_Pair_Logistic_st2_OCL(__global const double *coordt,__global 
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
                             sum+= weights*log(biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1));
+
                         }}}}}
         res[i] = sum;
     }
@@ -6108,7 +6095,7 @@ __kernel void Comp_Pair_Weibull_st2_OCL(__global const double *coordt,__global c
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -6120,7 +6107,7 @@ __kernel void Comp_Pair_Weibull_st2_OCL(__global const double *coordt,__global c
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -6195,22 +6182,20 @@ __kernel void Comp_Pair_T_st2_OCL(__global const double *coordt,__global const d
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
-                        //printf("a:%f b:%f i:%d j:%d\n",data[(l+NS[t])],data[(m+NS[v])],(l+NS[t]),(m+NS[v]));
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                            //printf("a:%f b:%f\n",(mean[(l+NS[t])]),(mean[(m+NS[v])]));
                             bl=biv_T(corr*(1-nuis1),(zi-mean[(l+NS[t])])/sqrt(nuis2), (zj-mean[(m+NS[v])])/sqrt(nuis2),nuis0)/nuis2;
                             sum+= weights*log(bl);
                         }}}}
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -6289,7 +6274,7 @@ __kernel void Comp_Pair_TWOPIECET_st2_OCL(__global const double *coordt,__global
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -6309,7 +6294,7 @@ __kernel void Comp_Pair_TWOPIECET_st2_OCL(__global const double *coordt,__global
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
@@ -6392,7 +6377,7 @@ __kernel void Comp_Pair_TWOPIECEGauss_st2_OCL(__global const double *coordt,__gl
         for(v = t;v<ntime;v++){
             if(t==v){
                 for(m=l+1;m<ns[t];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lags<=maxdist){
                         zi=data[(l+NS[t])];
                         zj=data[(m+NS[v])];
@@ -6412,7 +6397,7 @@ __kernel void Comp_Pair_TWOPIECEGauss_st2_OCL(__global const double *coordt,__gl
             else{
                 lagt=fabs(coordt[t]-coordt[v]);
                 for(m=0;m<ns[v];m++){
-                    lags=dist(type,coordx[l],coordx[m],coordy[l],coordy[m],REARTH);
+                    lags=dist(type,coordx[(l+NS[t])],coordx[(m+NS[v])],coordy[(l+NS[t])],coordy[(m+NS[v])],REARTH);
                     if(lagt<=maxtime && lags<=maxdist)
                     {
                         zi=data[(l+NS[t])];
