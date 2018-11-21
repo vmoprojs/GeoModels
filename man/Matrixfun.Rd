@@ -23,7 +23,7 @@ MatLogDet(mat.decomp,method)
 
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
 }
 
 \examples{
