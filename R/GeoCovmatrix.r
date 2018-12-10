@@ -86,6 +86,13 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
           as.integer(ns),as.integer(NS),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
+       # cr=.C64(fname,SIGNATURE = c("double","double","double","double","integer","double","double",
+        #                        "double","integer","integer"),
+         #    INTENT = c("w", "r", "r", "r", "r","w","w","r", "r", "r"),
+          #    corr=numeric_dc(numpairstot),  coordx=coordx,coordy=coordy,coordt=coordt,
+          #corrmodel=corrmodel, nuisance=nuisance, paramcorr=paramcorr,radius=radius, ns=ns,NS=NS,
+         #PACKAGE='GeoModels',NAOK=TRUE)
+
         corr=cr$corr
 
         if(!bivariate)                  {

@@ -1195,7 +1195,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo22=par[8];
         scale12=0.5*(scale11+scale22);
         smoo12=0.5*(smoo11+smoo22);
-      
+      // Rprintf("%f\n",col);
         if((c11==0)&&(c22==0))    {if(h==0)  rho=var11+nug11;
                                    else      rho=var11*CorFunSmoke(h, scale11,  smoo11);
                                    break;}
@@ -1806,6 +1806,15 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
     }
     /* case alpha>0*/
     if(smooth>0) {
+      
+      
+       /* x=lag/scale;    
+         if(x<=1)
+  rho= (gammafn(smooth)*gammafn(2*smooth+R_power1+1))/(gammafn(smooth+R_power1+1)*R_pow(2,R_power1+1)*gammafn(2*smooth)) * 
+                   R_pow(1-x*x,smooth+R_power1) * 
+                                 hypergeo(R_power1/2,(1+R_power1)/2,smooth+R_power1+1,1-x*x);
+                                 else rho=0;
+*/
         x=lag;
         double *param;
         param=(double *) Calloc(3,double);

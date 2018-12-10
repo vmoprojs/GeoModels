@@ -126,7 +126,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     studentT <- model ==12
     loglogistic <- model==24
-    zero <- 0;slow=1e-7
+    zero <- 0;slow=1e-2
     # lags associated to empirical variogram estimation
     if(isvario){
     lags <- c(0,vario$centers);numlags <- length(lags)

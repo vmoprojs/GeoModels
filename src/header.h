@@ -3,6 +3,7 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Applic.h>
+#include <stdint.h>
 #define LOW -1.0e15
 #define MAXERR 1e-6
 #define EPS DBL_EPSILON

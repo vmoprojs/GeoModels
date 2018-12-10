@@ -584,6 +584,17 @@ if(!onlyvar){   # performing optimization
            numparam<-length(param)
             }
    
+#####################################
+#if(varest) 
+#  {
+#Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
+#                          coordt=coordt,corr=corr,corrmat=corrmat,
+#                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+#                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+#rownames(Likelihood$hessian)=namesparam
+#colnames(Likelihood$hessian)=namesparam
+#  }
+#####################################  
    if(Likelihood$convergence == 'Successful' || Likelihood$convergence =='None')
    {   # if optimization has failed it does not compute stderr
 
