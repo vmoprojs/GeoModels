@@ -115,6 +115,7 @@ void integr_pt(double *x, int n, void *ex)
 
 
 
+
 // compute  bivariate normal standard pdf:
 double d2norm(double x, double y, double rho)
 {
@@ -1627,31 +1628,67 @@ if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
 return(res/sill);
 }
-/********** bivariate logistic **********/
-double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill)
+
+
+
+
+
+/***********************************************************************************/
+/************ functions for binomial or negative binomial  two piece *********/
+/***********************************************************************************/
+
+double pbnorm22(double lim1,double lim2,double corr,double nugget)
 {
-    double a=0.0,A=0.0,res=0.0,B=0.0,C=0.0;
-    double ci=mui;double cj=muj;
-    double ki=exp((zi-ci)/sqrt(sill));
-    double kj=exp((zj-cj)/sqrt(sill));
-    double rho2=R_pow(corr,2);
-    if(corr)   {
-        a=1-rho2;
-        A=(ki*kj)/(R_pow(a,-2)*sill);
-        B=R_pow((ki+1)*(kj+1),-2);
-        C=appellF4(2,2,1,1,
-        (rho2*ki*kj)/((ki+1)*(kj+1)),
-        rho2/((ki+1)*(kj+1)));
-        res=A*B*C;
-    }
-    else
-    {
-        B=ki*R_pow((ki+1),-2)/sqrt(sill);
-        C=kj*R_pow((kj+1),-2)/sqrt(sill);
-        res=B*C;
-    }
-    return(res);
+    double  lowe[2]  = {0,0}, uppe[2] = {lim1,lim2}, corre[1] = {(1-nugget)*corr};
+    double  value;
+    int     infin[2] = {0,0};
+    value            = F77_CALL(bvnmvn)(lowe,uppe,infin,corre); 
+    return(value);
 }
+
+// cdf bivariate half-normal distribution
+double pbhalf_gauss(double zi,double zj,double rho,double nugget)
+{
+  double dens = 0;
+  dens = pbnorm22(zi,zj,rho,nugget) + pbnorm22(-zi,-zj,rho,nugget) -
+              pbnorm22(-zi,zj,rho,nugget) - pbnorm22(zi,-zj,rho,nugget);
+  return(dens); 
+}
+/****** cdf univariate two-piece gaussian distribution *****/
+double pnorm_two_piece(double x, double eta)
+{
+    double cdf = 0;
+    if (x <  0) cdf = (1 + eta)*pnorm(x/(1 + eta),0,1,1,0);
+    if (x >= 0) cdf = eta + (1 - eta)*pnorm(x/(1 - eta),0,1,1,0);
+  return(cdf);
+}
+//***********************************************//
+// cdf bivariate two_piece gaussian distribution
+double pbnorm_two_piece(int *cormod, double h, double u, 
+    double xi, double xj, double nugget, double var,double eta,double *par)
+{
+    double p11,g_eta=0.0,q_g_eta=0.0,aux1=0.0,aux2=0.0,dens=0.0,corr=0.0;
+    double etamos,etamas;
+
+    g_eta   = (1 - eta)/2;
+    q_g_eta = qnorm(g_eta,0,1,1,0);
+    corr=CorFct(cormod,h,u,par,0,0);
+    p11     = pbnorm22(q_g_eta,q_g_eta,corr,nugget);
+
+    aux1    = p11 + eta;
+    aux2    = (1 - eta - 2*p11)/2;
+
+    etamas = 1+eta;
+    etamos = 1-eta;
+    if(xi  < 0 & xj <  0) dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - (2*pnorm(-xi/etamas,0,1,1,0)-1) - 
+      (2*pnorm(-xj/etamas,0,1,1,0)-1) )*( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );
+    if(xi >= 0 & xj <  0) dens = ( (2*pnorm(xi/etamos,0,1,1,0)-1)-pbhalf_gauss(xi/etamos,-xj/etamas,corr,nugget))*(pnorm(q_g_eta,0,1,1,0)-p11);
+    if(xi  < 0 & xj >= 0) dens = ( (2*pnorm(xj/etamos,0,1,1,0)-1)-pbhalf_gauss(-xi/etamas,xj/etamos,corr,nugget))*(pnorm(q_g_eta,0,1,1,0)-p11);
+    if(xi >= 0 & xj >= 0) dens = p11 * pbhalf_gauss(xi/etamos,xj/etamos,corr,nugget);
+    return(dens);
+}
+/***********************************************************************************/
+/***********************************************************************************/
 /********** bivariate log-logistic **********/
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape)
 {
@@ -1674,6 +1711,32 @@ double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, d
     {
         B=(c*shape/ci)*R_pow((c*zi/ci),shape-1)*R_pow(ki,-2);
         C=(c*shape/cj)*R_pow((c*zj/cj),shape-1)*R_pow(kj,-2);
+        res=B*C;
+    }
+    return(res);
+}
+
+/********** bivariate logistic **********/
+double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill)
+{
+    double a=0.0,A=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=mui;double cj=muj;
+    double ki=exp((zi-ci)/sqrt(sill));
+    double kj=exp((zj-cj)/sqrt(sill));
+    double rho2=R_pow(corr,2);
+    if(corr)   {
+        a=1-rho2;
+        A=(ki*kj)/(R_pow(a,-2)*sill);
+        B=R_pow((ki+1)*(kj+1),-2);
+        C=appellF4(2,2,1,1,
+        (rho2*ki*kj)/((ki+1)*(kj+1)),
+        rho2/((ki+1)*(kj+1)));
+        res=A*B*C;
+    }
+    else
+    {
+        B=ki*R_pow((ki+1),-2)/sqrt(sill);
+        C=kj*R_pow((kj+1),-2)/sqrt(sill);
         res=B*C;
     }
     return(res);

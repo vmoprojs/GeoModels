@@ -288,7 +288,6 @@ KK=1;sel=NULL;ssp=double(dime)
       }
      ####################################     
     if(model %in% c("BinomialNeg")){ 
-                # s=s+1 ;
                  cumu=rbind(cumu,c(sim));
                  if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
                }

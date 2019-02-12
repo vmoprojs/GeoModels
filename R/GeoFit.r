@@ -161,20 +161,22 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
   if(x$model=='Logistic') { process <- 'Logistic'; model <- 'Logistic'}
   if(x$model=='Gamma2'){ process <- 'Gamma2'; model <- 'Gamma2'}
-  if(x$model=='LogGauss'||x$model=='LogGaussian'){ process <- 'LogGaussian'; model <- 'LogGaussian'}
-  if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'SkewGaussian';model <- 'SkewGaussian'}
+  if(x$model=='LogGauss'||x$model=='LogGaussian'){ process <- 'Log Gaussian'; model <- 'LogGaussian'}
+  if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'Skew Gaussian';model <- 'SkewGaussian'}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
-  if(x$model=='TwoPieceStudentT'){ process <- 'TwoPieceStudentT';model <- 'TwoPieceStudentT'}
-  if(x$model=='TwoPieceGaussian'||x$model=='TwoPieceGauss'){ process <- 'TwoPieceGaussian';model <- 'TwoPieceGaussian'}
+  if(x$model=='TwoPieceStudentT'){ process <- 'TwoPiece StudentT';model <- 'TwoPieceStudentT'}
+  if(x$model=='TwoPieceGaussian'||x$model=='TwoPieceGauss'){ process <- 'TwoPiece Gaussian';model <- 'TwoPieceGaussian'}
   if(x$model=='SinhAsinh'){ process <- 'SinhAsinh'; model <- 'SinhAsinh'}    
   if(x$model=='Wrapped'){ process <- 'Wrapped'; model <- 'Wrapped'}
     if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}
   if(x$model=='Binomial'){ process <- 'Binomial';model <- 'Binomial'}
+  if(x$model=='Binomial_TwoPieceGaussian'||x$model=='Binomial_TwoPieceGauss'){ process <- 'Binomial TwoPiece Gaussian';model <- 'Binomial_TwoPieceGauss'}
+  if(x$model=='BinomialNeg_TwoPieceGaussian'||x$model=='BinomialNeg_TwoPieceGauss'){ process <- 'Negative Binomial TwoPiece Gaussian';model <- 'BinomialNeg_TwoPieceGauss'}
   if(x$model=='Binomial2'){ process <- 'Binomial';model <- 'Binomial2'}     
-  if(x$model=='BinomialNeg'){ process <- 'NegBinomial'; model <- 'NegBinomial'}
+  if(x$model=='BinomialNeg'){ process <- 'BinomialNeg'; model <- 'BinomialNeg'}
   if(x$model=='Geom'||x$model=='Geometric'){ process <- 'Geometric';model <- 'Geometric'}
-  if(x$model=='PoisBin'){ process <- 'Poisson Binomial';model <- 'Poisson Binomial'}
-  if(x$model=='PoisBinNeg'){ process <- 'Poisson NegBinomial';model <- 'Poisson NegBinomial'}    
+  if(x$model=='PoisBin'){ process <- 'Poisson Binomial';model <- 'PoisBin'}
+  if(x$model=='PoisBinNeg'){ process <- 'Poisson NegBinomial';model <- 'PoisBinNeg'}    
   if(x$bivariate){ biv <- 'bivariate';x$numtime=1}
   else { biv <- 'univariate'}                       
 

@@ -276,6 +276,7 @@ The associated parameters in the argument \code{param} are
      \item  \eqn{Bi}\code{_}\eqn{Wendx} (Bivariate  full Wendland model) 
        \item  \eqn{Bi}\code{_}\eqn{Wendx}\code{_}\eqn{contr} (Bivariate  Wendland model with contrainsts) 
           \item  \eqn{Bi}\code{_}\eqn{Wendx}\code{_}\eqn{sep} (Bivariate  separable Wendland model) 
+          \item  \eqn{Bi}\code{_}\eqn{Smoke} (Bivariate  full Smoke model on the unit sphere) 
     }
 
 

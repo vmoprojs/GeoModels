@@ -81,8 +81,15 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                  namesparam[i]==paste('mean',17,sep="")||
                  namesparam[i]==paste('mean',18,sep="")||
                  namesparam[i]==paste('mean',19,sep="")||
-                 namesparam[i]==paste('mean',20,sep="")
-                 ){
+                 namesparam[i]==paste('mean',20,sep="")||
+                 namesparam[i]==paste('mean',21,sep="")||
+                 namesparam[i]==paste('mean',22,sep="")||
+                 namesparam[i]==paste('mean',23,sep="")||
+                 namesparam[i]==paste('mean',24,sep="")||
+                 namesparam[i]==paste('mean',25,sep="")
+                 )
+
+              {
                 lower <- c(lower, -big)
                 upper <- c(upper, big)}   
             if(namesparam[i]=='skew'){
@@ -168,7 +175,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
 
 
 
-        if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','LogGaussian','LogGauss',
+        if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
           'Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT',"TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss")) & 
           (type %in% c('Standard','Pairwise','Tapering')))
         {

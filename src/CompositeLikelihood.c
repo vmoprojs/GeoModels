@@ -692,6 +692,62 @@ void Comp_Pair_BinomGauss_st2(int *cormod, double *coordx, double *coordy, doubl
 
 
 
+
+
+// Composite marginal pairwise log-likelihood for the binomial two piece  Gaussian model:
+void Comp_Pair_BinomTWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0, t=0,v=0,uu=0,ww=0;
+    double dens=0.0,lags=0.0,lagt=0.0,weights=1.0,u=0.0,w=0.0,a=0.0,b=0.0,ki=0.0,kj=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double psj=0.0;//probability of joint success
+    double eta=nuis[2];
+    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+    nuis[1]=1-nuis[0];
+    // Computes the log-likelihood:
+      for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                            a=mean[(i+NS[t])];b=mean[(j+NS[v])];
+                           
+                            ki=pnorm_two_piece(-a,eta); kj=pnorm_two_piece(-b,eta);
+                            p1=  1- ki; p2=  1- kj;
+                            psj=  1 + pbnorm_two_piece(cormod,lags,0,-a,-b,nuis[0],nuis[1],eta,par) - ki - kj;
+                            
+                            u=data[(i+NS[t])];w=data[(j+NS[v])];
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                     uu=(int) u;  ww=(int) w;
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                                    dens=biv_binom (NN[0],uu,ww,p1,p2,psj);
+                                 *res+=log(dens)*weights;}}}}
+                 else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lagt<=maxtime[0] && lags<=maxdist[0]){
+                              a=mean[(i+NS[t])];b=mean[(j+NS[v])];
+
+                               ki=pnorm_two_piece(-a,eta); kj=pnorm_two_piece(-b,eta);
+                               p1=  1- ki; p2=  1- kj;
+                               psj=  1 + pbnorm_two_piece(cormod,lags,lagt,-a,-b,nuis[0],nuis[1],eta,par) - ki - kj;
+                              
+                              u=data[(i+NS[t])];w=data[(j+NS[v])];
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                     uu=(int) u; ww=(int) w;
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
+                                    dens=biv_binom (NN[0],uu,ww,p1,p2,psj);
+                                   *res+=log(dens)*weights;;
+                                }}}}
+            }}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 void Comp_Pair_Binom2Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
     double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
@@ -729,7 +785,7 @@ void Comp_Pair_Binom2Gauss_st2(int *cormod, double *coordx, double *coordy, doub
                            psj=pbnorm(cormod,lags,lagt,a,b,nuis[0],nuis[1],par,0);
                             p1=pnorm(a,0,1,1,0);p2=pnorm(b,0,1,1,0);
                             u=data[(i+NS[t])];w=data[(j+NS[v])];
-                                if(!ISNAN(u)&&!ISNAN(w) ){
+                               if(!ISNAN(u)&&!ISNAN(w) ){
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
                                     dens=biv_binom2 (NN[i],NN[j],kk,uu,ww,p1,p2,psj);
@@ -791,6 +847,61 @@ void Comp_Pair_BinomnegGauss_st2(int *cormod, double *coordx, double *coordy, do
     return;
 }
 
+void Comp_Pair_BinomnegTWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0, t=0,v=0,uu=0,ww=0;
+    double dens=0.0,lags=0.0,lagt=0.0,weights=1.0,u=0.0,w=0.0,a=0.0,b=0.0,ki=0.0,kj=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double psj=0.0;//probability of joint success
+      double eta=nuis[2];
+    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+    nuis[1]=1-nuis[0];
+    // Computes the log-likelihood:
+      for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+              a=mean[(i+NS[t])];b=mean[(j+NS[v])];
+
+               ki=pnorm_two_piece(-a,eta); kj=pnorm_two_piece(-b,eta);
+               p1=  1- ki; p2=  1- kj;
+               psj=  1 + pbnorm_two_piece(cormod,lags,0,-a,-b,nuis[0],nuis[1],eta,par) - ki - kj;
+                       
+          u=data[(i+NS[t])]; w=data[(j+NS[v])];
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                     uu=(int) u; ww=(int) w;
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                                    dens=biv_binomneg (NN[0],uu,ww,p1,p2,psj);
+                                                 if(R_FINITE(dens))  {
+                                     *res+=log(dens)*weights;}
+                                }}}}
+                 else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lagt<=maxtime[0] && lags<=maxdist[0]){
+                              a=mean[(i+NS[t])];b=mean[(j+NS[v])];
+
+                               ki=pnorm_two_piece(-a,eta); kj=pnorm_two_piece(-b,eta);
+                               p1=  1- ki; p2=  1- kj;
+                               psj=  1 + pbnorm_two_piece(cormod,lags,lagt,-a,-b,nuis[0],nuis[1],eta,par) - ki - kj;
+                      
+                                u=data[(i+NS[t])];w=data[(j+NS[v])];
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                     uu=(int) u; ww=(int) w;
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
+                                    dens=biv_binomneg (NN[0],uu,ww,p1,p2,psj);
+                                 if(R_FINITE(dens))  {
+                                     *res+=log(dens)*weights;}
+                                }}}}
+            }}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 
 
@@ -1314,6 +1425,72 @@ void Comp_Pair_BinomGauss2(int *cormod, double *coordx, double *coordy, double *
 }
 
 
+
+// Composite marginal pairwise log-likelihood for the binomial two piece spatial Gaussian model:
+void Comp_Pair_BinomTWOPIECEGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0, uu=0,vv=0;
+    double u,v,dens=0.0,lags=0.0,weights=1.0,ai=0.0,aj=0.0,ki=0.0,kj=0.0;
+    double pi=0.0,pj=0.0;//probability of marginal success
+    double psj=0.0;//probability of joint success
+    double eta=nuis[2];
+        ///Rprintf("%f %f %f %f %f \n",nuis[0],nuis[1],nuis[2],mean[3],mean[15]);
+    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+    nuis[1]=1-nuis[0]; // nuis[0] is the nugget
+    //compute the composite log-likelihood:
+    for(i=0; i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                 ai=mean[i];aj=mean[j];
+  ki=pnorm_two_piece(-ai,eta); kj=pnorm_two_piece(-aj,eta);
+  pi=  1- ki; pj=  1- kj;
+  psj=  1 + pbnorm_two_piece(cormod,lags,0,-ai,-aj,nuis[0],nuis[1],eta,par) - ki - kj;
+  //Rprintf("%f %f %f  \n",pi,pj,psj);
+  u=data[i];v=data[j];
+                if(!ISNAN(u)&&!ISNAN(v) ){
+                        if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                          uu=(int) u; vv=(int) v; 
+                        dens=biv_binom (NN[0],uu,vv,pi,pj,psj);  
+                         *res+=log(dens)*weights;
+                }}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
+
+
+// Composite marginal pairwise log-likelihood for the binomial spatial Gaussian model:
+void Comp_Pair_BinomnegTWOPIECEGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+    double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0, uu=0,vv=0;
+    double u,v,dens=0.0,lags=0.0,weights=1.0,ai=0.0,aj=0.0,ki=0.0,kj=0.0;
+    double pi=0.0,pj=0.0,psj=0.0;//probability of marginal success
+    double eta=nuis[2];
+    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+    nuis[1]=1-nuis[0];
+    //compute the composite log-likelihood:
+    for(i=0; i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  ai=mean[i];aj=mean[j];
+  ki=pnorm_two_piece(-ai,eta); kj=pnorm_two_piece(-aj,eta);
+  pi=  1- ki; pj=  1- kj;
+  psj=  1 + pbnorm_two_piece(cormod,lags,0,-ai,-aj,nuis[0],nuis[1],eta,par) - ki - kj;
+                    u=data[i];v=data[j];
+                    if(!ISNAN(u)&&!ISNAN(v) ){
+                         if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                          uu=(int) u; 
+                         vv=(int) v; 
+                        dens=biv_binomneg (NN[0],uu,vv,pi,pj,psj);
+                         *res+=log(dens)*weights;
+                }}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 // Composite marginal pairwise log-likelihood for the binomial spatial Gaussian model:
 void Comp_Pair_Binom2Gauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 

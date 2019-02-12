@@ -3,7 +3,6 @@
 \encoding{UTF-8}
 \title{Lists the Parameters of a Correlation Model}
 \description{
-  Subroutine called by InitParam and other procedures.
   The procedure returns a list with the parameters of a given
   correlation model.
 }

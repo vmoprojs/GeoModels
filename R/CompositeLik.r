@@ -115,8 +115,12 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==27,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECET'
                                               if(varest & vartype==2) hessian <- TRUE} 
-     if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
+    if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
                                               if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==31,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomTWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==32,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
      if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
                                               if(varest & vartype==2) hessian <- TRUE}   
      if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
@@ -133,7 +137,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
       fname <- paste(fname,"_OCL",sep="")
       .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
-
+   
     if(grid)    {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
     else {      if((spacetime||bivariate)&&(!spacetime_dyn)){
                                   data=c(t(data))

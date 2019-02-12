@@ -68,6 +68,8 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
      param=param[!sel];param$mean=0;        ## mean must be =0 when calling covariance matrix
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
+     
+     ### here to modify
     covmatrix <- GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param, 
       radius, sparse, taper, tapsep, type, X) 
     ###########
@@ -565,9 +567,7 @@ return(Kg)
 
 ############################################################################
 ############################################################################
-############################################################################
-############################################################################
-############################################################################
+
 Prscores<-function(data,method="cholesky",matrix)   {
 if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
 varcov=matrix$covmatrix
@@ -608,4 +608,77 @@ scores <- list(RMSE = RMSE,
                MAE=MAE)
 return(scores)
 }
+
+###################################################################################################
+###################################################################################################
+
+GeoNeighborhood <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, distance="Eucl", grid=FALSE, 
+                  loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+{
+  XX=NULL
+  sel_ss=1
+  sel_tt=1
+  if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
+  if(!is.matrix(loc))   stop("loc parameter must be a matrix")
+    #if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")
+  spacetime=FALSE
+  corrmodel="Exponential"
+  
+  if(!is.null(coordt)) {spacetime=TRUE;corrmodel="Exp_Exp"}
+  checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
+                             NULL, grid, 'Marginal', maxdist, maxtime, 'Gaussian', 1,
+                              'Nelder-Mead', NULL, radius, NULL, NULL, NULL, 
+                          'Pairwise', FALSE, 'SubSamp', FALSE, X)
+  if(!is.null(checkinput$error)) stop(checkinput$error)
+  spacetime_dyn=FALSE
+  if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
+    
+## handling spatial coordinates
+    if(is.null(coordy)) coords=as.matrix(coordx)
+    else{
+    if(grid) coords=as.matrix(expand.grid(coordx,coordy))
+    else     coords=cbind(coordx,coordy)  
+    }
+
+############### total dimension #####
+NN=nrow(coords);TT=length(coordt);dimat2=NN*TT
+#####################################
+sel_tt=NULL
+colnames(loc)=NULL;colnames(coords)=NULL;
+a_s=rbind(loc,coords)
+## type of dist
+if(distance=="Eucl") dd_s=as.matrix(dist(a_s))
+if(distance=="Geod") dd_s=fields::rdist.earth(a_s,miles=F,R=radius)
+if(distance=="Chor") dd_s=2*sin(fields::rdist.earth(a_s,miles=F,R=radius)/2)
+
+ss=c((dd_s<maxdist)[,1])[-1]
+sel_ss=coords[ss,]
+## spatial
+if(!spacetime){ data_sel=data[ss]
+                if(!is.null(X)) XX=X[ss,]
+ #if(dim(as.matrix(sel_ss,nrow=dimat2))[1]==0) stop("spatial distance for local kringing is too small")
+            }
+## space-time
+if(spacetime)
+{
+  a_t=c(time,coordt);
+  dd_t=dist(a_t)
+  tt=c((as.matrix(dd_t)<maxtime)[,1])[-1]
+  sel_tt=coordt[tt]
+  data_sel=data[tt,ss]
+# if(dim(as.matrix(sel_ss,nrow=dimat2))[1]==0) stop("spatial distance for local kringing is too small")
+if(!is.null(X)){
+  XX=list()
+  for(i in 0:(TT-1)) XX[[i+1]]=(X[(i*NN+1):((i*NN)+NN),])[ss,]
+  RR=as.numeric(!tt)*seq(1:TT)
+  RR=RR[RR>0]
+  XX=XX[-(RR)]
+  XX=do.call(rbind,args=c(XX))
+  }}
+return(list(data=data_sel,coordx=sel_ss,coordt=sel_tt,distance=distance,
+      numcoord=nrow(sel_ss),numtime=length(sel_tt),radius=radius,spacetime=spacetime,X=XX))
+} 
+
+
+
 

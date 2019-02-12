@@ -1729,8 +1729,11 @@ double CorFunWitMat(double lag, double scale, double smooth)
 {
   double rho=0.0;
   // Computes the correlation:
-  if(lag==0) rho=1;
-  else  rho=(R_pow(lag/scale,smooth)*bessel_k(lag/scale,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
+  if(lag==0) {rho=1;return rho;}
+  if(smooth==0.5) {rho=exp(-lag/scale);return rho;}
+  if(smooth==1.5) {rho=exp(-lag/scale)*(1+lag/scale);return rho;}
+  if(smooth==2.5) {rho=exp(-lag/scale)*(1+lag/scale+ pow(lag/scale,2)/3);return rho;}
+  rho=(R_pow(lag/scale,smooth)*bessel_k(lag/scale,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
   return rho;
 }
 
@@ -1797,17 +1800,24 @@ double CorFunW2(double lag,double scale,double smoo)
 double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu alpha beta
 {
     double rho=0.0,x=0;
-  
-  /* case alpha=0--Askey funcyion*/
     if(smooth==0) {
           x=lag/scale;
-        if(x<=1) rho=R_pow(1-x,R_power1);
-        else rho=0;
+         if(x<=1) rho=R_pow(1-x,R_power1);
+         else rho=0;
+         return(rho);
     }
-    /* case alpha>0*/
-    if(smooth>0) {
-      
-      
+    if(smooth==1) {
+          x=lag/scale;
+         if(x<=1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+         else rho=0;
+         return(rho);
+    }
+    if(smooth==2) {
+          x=lag/scale;
+         if(x<=1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+         else rho=0;
+         return(rho);
+    }      
        /* x=lag/scale;    
          if(x<=1)
   rho= (gammafn(smooth)*gammafn(2*smooth+R_power1+1))/(gammafn(smooth+R_power1+1)*R_pow(2,R_power1+1)*gammafn(2*smooth)) * 
@@ -1821,8 +1831,7 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
         param[0]=R_power1;param[1]=smooth;param[2]=scale;  //mu,alpha //beta
         rho=wendintegral(x,param);
         Free(param);
-    }
-    return rho;
+    return(rho);
 }
 
 double CorFunWend0_tap(double lag,double scale,double smoo)
