@@ -536,7 +536,7 @@ double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double da
 double  wendintegral(double x, double *param);
 
 double pbnorm(int *cormod, double h, double u, double lim1, double lim2, double nugget, double var,double *par, double thr);
-
+double phalf_gauss (double z);
 double pbnorm22(double lim1,double lim2,double corr,double nugget);
 double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, double u1,double u2, 
                  double *nuis, double *par, double thr);
@@ -546,6 +546,7 @@ double pbnorm_two_piece( int *cormod, double h, double u,
     double xi, double xj, double nugget, double var,double eta,double *par);
 void vpbnorm(int *cormod, double *h, double *u, int *nlags, int *nlagt,
 	     double *nuis, double *par, double *rho, double *thr);
+
 
 /*----------------------------------------------------------------
 File name: Distributions.c
@@ -890,7 +891,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

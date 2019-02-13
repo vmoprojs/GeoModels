@@ -1663,28 +1663,32 @@ double pnorm_two_piece(double x, double eta)
   return(cdf);
 }
 //***********************************************//
+// cdf univariate half-gaussian distribution
+double phalf_gauss (double z){
+  double dens = 0;
+  dens = 2 * pnorm(z,0,1,1,0) - 1;
+  return(dens);
+}
+
 // cdf bivariate two_piece gaussian distribution
 double pbnorm_two_piece(int *cormod, double h, double u, 
     double xi, double xj, double nugget, double var,double eta,double *par)
 {
     double p11,g_eta=0.0,q_g_eta=0.0,aux1=0.0,aux2=0.0,dens=0.0,corr=0.0;
     double etamos,etamas;
-
     g_eta   = (1 - eta)/2;
     q_g_eta = qnorm(g_eta,0,1,1,0);
-    corr=CorFct(cormod,h,u,par,0,0);
+    corr    = CorFct(cormod,h,u,par,0,0);
     p11     = pbnorm22(q_g_eta,q_g_eta,corr,nugget);
-
-    aux1    = p11 + eta;
-    aux2    = (1 - eta - 2*p11)/2;
-
     etamas = 1+eta;
     etamos = 1-eta;
-    if(xi  < 0 & xj <  0) dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - (2*pnorm(-xi/etamas,0,1,1,0)-1) - 
-      (2*pnorm(-xj/etamas,0,1,1,0)-1) )*( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );
-    if(xi >= 0 & xj <  0) dens = ( (2*pnorm(xi/etamos,0,1,1,0)-1)-pbhalf_gauss(xi/etamos,-xj/etamas,corr,nugget))*(pnorm(q_g_eta,0,1,1,0)-p11);
-    if(xi  < 0 & xj >= 0) dens = ( (2*pnorm(xj/etamos,0,1,1,0)-1)-pbhalf_gauss(-xi/etamas,xj/etamos,corr,nugget))*(pnorm(q_g_eta,0,1,1,0)-p11);
-    if(xi >= 0 & xj >= 0) dens = p11 * pbhalf_gauss(xi/etamos,xj/etamos,corr,nugget);
+    if(xi  <= 0 & xj <=  0) dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );
+    if(xi  > 0  & xj <=  0) dens = (1 + pbhalf_gauss(0,-xj/etamas,corr,nugget) - phalf_gauss(0) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
+      (phalf_gauss(xi/etamos) - pbhalf_gauss(xi /etamos,-xj/etamas,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
+    if(xi  <= 0 & xj >= 0) dens =  (1 + pbhalf_gauss(-xi/etamas,0,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(0)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
+      (phalf_gauss(xj/etamos) - pbhalf_gauss(-xi /etamas,xj/etamos,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
+    if(xi  >= 0 & xj >= 0) dens =  ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + (phalf_gauss(xi/etamos) - pbhalf_gauss(xi/etamos,0,corr,nugget))* (pnorm(q_g_eta,0,1,1,0)-p11) + 
+     (phalf_gauss(xj/etamos) - pbhalf_gauss(0,xj/etamos,corr,nugget))* (pnorm(q_g_eta,0,1,1,0)-p11) + pbhalf_gauss(xi/etamos,xj/etamos,corr,nugget) * p11;
     return(dens);
 }
 /***********************************************************************************/
