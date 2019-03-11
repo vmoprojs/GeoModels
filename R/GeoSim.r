@@ -47,6 +47,10 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
    }  
+     if(model %in% c("Beta",'Kumaraswamy'))  {
+     if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
+     if(bivariate)  {}
+   }  
      if(model %in% c("StudentT"))  {
      if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
@@ -126,7 +130,7 @@ forGaussparam<-function(model,param,bivariate)
     {}
     k=1
 #################################
-    if(model %in% c("SkewGaussian","SkewGauss","Beta",
+    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy',
                     "StudentT","SkewStudentT","Poisson","poisson",
                     "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss",
                     "Gamma","Gamma2","Weibull",
@@ -203,6 +207,8 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999; if(model %in% c("Geometric")) {model="BinomialNeg";n=1}} 
     if(model %in% c("Poisson")) {k=2;npoi=999999999}
     if(model %in% c("Gamma"))  k=round(param$shape)
+    if(model %in% c("Beta"))  {k=round(param$shape1)+round(param$shape2);}
+    if(model %in% c("Kumaraswamy"))  k=4
     if(model %in% c("StudentT"))  k=round(1/param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
 #################################
@@ -233,6 +239,7 @@ forGaussparam<-function(model,param,bivariate)
 #print(forGaussparam(model,param,bivariate)) #pay attention to the parameter
     ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
+    
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
@@ -280,7 +287,7 @@ KK=1;sel=NULL;ssp=double(dime)
         dim(sim) <- simdim
         }
     ####################################    
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy",
                 "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) {
        if(!bivariate) dd[,,i]=t(sim)
@@ -295,8 +302,6 @@ KK=1;sel=NULL;ssp=double(dime)
   if(model %in% c("poisson","Poisson"))   {  
   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
   ssp=ssp+c(pois1)
-  #print(ssp)
-  #print(exp(mm))
   sel=rbind(sel,ssp<=c(exp(mm)))
   if(sum(apply(sel,2,prod))==0) break   ## stopping rule
  
@@ -505,6 +510,34 @@ if(model %in% c("SkewStudentT"))   {
                sim=sim+rgamma(length(sim),shape=param$shape2/2)   ##gamma2
       }
      
+         if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
+        }
+    ######################################################
+    if(model %in% c("Beta","Kumaraswamy"))   { 
+     sim1=NULL;sim2=NULL
+      i=1
+    if(model=="Beta")
+    {
+    while(i<=round(param$shape1))  {sim1=cbind(sim1,dd[,,i]^2);i=i+1}
+    while(i<=(round(param$shape2)+round(param$shape2)))  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
+    aa=rowSums(sim1)
+    sim=aa/(aa+rowSums(sim2))  
+    }
+     if(model=="Kumaraswamy")
+    {
+    while(i<=2)  {sim1=cbind(sim1,dd[,,i]^2);i=i+1}
+    while(i<=4)  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
+    aa=rowSums(sim1)
+    sim=aa/(aa+rowSums(sim2))  
+    sim=(1-sim^(1/param$shape1))^(1/param$shape2)
+    }   
          if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)

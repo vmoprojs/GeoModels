@@ -93,7 +93,7 @@ double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, doubl
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
-
+double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2);
 
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -378,6 +378,8 @@ File name: CompositeLikelihood.c
 Description: functions for composite log-likelihood evaluation
 Start
  ---------------------------------------------------------------*/
+void Comp_Pair_Kumaraswamy2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
+void Comp_Pair_Kumaraswamy_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_SinhGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
 void Comp_Pair_2Gamma2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
@@ -891,6 +893,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

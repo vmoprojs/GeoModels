@@ -7,7 +7,7 @@
 ### Description:
 ### This file contains a set of procedures
 ### for the set up of all the package routines.
-### Last change: 28/03/2017.
+### Last change: 28/03/2019.
 ####################################################
 
 # Check if the correlation is bivariate
@@ -614,14 +614,16 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert the parameters as a list\n'
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
-      #  print(length(param));
-       # print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
-            # print(param)
+       #print(length(param));
+       #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
+           # print(param)
+         #   print(model)
+          #  print(NuisParam(model,biv,num_betas))
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
              {
-    #                         print(length(param))
-             #print(NuisParam(model,biv,num_betas))
+  #                           print(length(param))
+            
 #print(CorrelationPar(CkCorrModel(corrmodel)))
 #print(unique(c(NuisParam("Gaussian",biv,num_betas))))
             error <- "some parameters are missing or does not match with the declared model\n"
@@ -717,7 +719,8 @@ CkModel <- function(model)
                          Binomial_TwoPieceGaussian=31,
                          Binomial_TwoPieceGauss=31,
                          BinomialNeg_TwoPieceGaussian=32,
-                         BinomialNeg_TwoPieceGauss=32)
+                         BinomialNeg_TwoPieceGauss=32,
+                         Kumaraswamy=33)
     return(CkModel)
   }
 
@@ -950,7 +953,7 @@ NuisParam <- function(model,bivariate,num_betas)
       param <- c(mm, 'nugget', 'sill','shape')
       return(param)} 
    
-      if((model %in% c('Gamma2','gamma2','Beta'))) {
+      if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
       param <- c(mm, 'nugget', 'sill','shape1','shape2')
       return(param)}     
   # Skew Gaussian univariate random field:
@@ -1129,7 +1132,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      {
       
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
-          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32)) {# Gaussian  or skewgauss or wrapped  gamma type random field:
+          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33)) {# Gaussian  or skewgauss or wrapped  gamma type random field:
            if(!bivariate) {mu <- mean(unlist(data))
                            if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
@@ -1139,7 +1142,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(model %in% c(10,29,31,32))         nuisance <- c(nuisance,0)
                            if(model %in% c(18,20,27))      nuisance <- c(0,nuisance,0)
                            if(model %in% c(21,24,12,26))   nuisance <- c(0,nuisance)
-                           if(model %in% c(23,28))  nuisance <- c(0,0,0,nuisance)
+                           if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
                        }
             else {
                            
@@ -1174,7 +1177,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
       }
  if(num_betas>1)
      {
-        if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32)) {
+        if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33)) {
         if(!bivariate) {
          if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
             if(is.list(fixed)) {
@@ -1187,7 +1190,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              if(model %in% c(10,29,31,32))        nuisance=c(nuisance,1)  
              if(model %in% c(21,24,12,26))  nuisance=c(nuisance,1) 
              if(model %in% c(18,20,27))     nuisance=c(1,nuisance,1) 
-            if(model %in% c(23,28))         nuisance=c(nuisance,1,1,1)  
+            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
              }
             # else{}
          }
@@ -1243,11 +1246,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             namesstart <- names(start)
             if(any(type == c(1, 3, 7))){
                 if(!bivariate) {   # univariate case
-              if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32)))
+              if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33)))
                     if(any(namesstart == 'mean'))  start <- start[!namesstart == 'mean']
                     if(num_betas>1)
                     for(i in 1:(num_betas-1)) {  if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
-                            if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32)))
+                            if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33)))
                                                  start <- start[!namesstart == paste("mean",i,sep="")]
                                                  }}
 

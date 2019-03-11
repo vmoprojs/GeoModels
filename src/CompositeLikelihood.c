@@ -160,6 +160,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
    bl=biv_T((1-nugget)*corr,(zi-mean[(i+NS[t])])/sqrt(sill),
                             (zj-mean[(j+NS[v])])/sqrt(sill),0,0,df,1)/sill;
+     if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
  
                          }}}}
@@ -177,6 +178,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
    bl=biv_T((1-nugget)*corr,(zi-mean[(i+NS[t])])/sqrt(sill),
                             (zj-mean[(j+NS[v])])/sqrt(sill),0,0,df,1)/sill;
+            if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -559,6 +561,57 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
     return;
 }
 /******************************************************************************************/
+
+
+
+void Comp_Pair_Kumaraswamy_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
+                        int *ns,int *NS, int *GPU,int *local)
+{
+    
+    
+    int i=0,j=0,t=0,v=0;
+    double corr,zi,zj,lags,lagt,weights=1.0,bl;
+    double sill=nuis[1];
+    double nugget=nuis[0];
+  if(nuis[2]<0||nuis[3]<0) {*res=LOW;  return;}
+
+      for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                                zi=data[(i+NS[t])];zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,0,par,0,0);      
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                                    bl= weights*biv_Kumara((1-nugget)*corr,zi,zj,mean[i],mean[j],nuis[2],nuis[3]);
+                if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                                    
+                             *res+= weights*log(bl);
+                                    //printf("CPU: A. res: %f\n",*res);
+ 
+                         }}}}
+                    else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lagt<=maxtime[0] && lags<=maxdist[0]){
+                               zi=data[(i+NS[t])];zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,lagt,par,0,0);
+                                           if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
+                                    bl= weights*biv_Kumara((1-nugget)*corr,zi,zj,mean[i],mean[j],nuis[2],nuis[3]);
+             if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                             *res+= weights*log(bl);
+                                    //printf("CPU: B. res: %f\n",*res);
+                                }}}}
+                }}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 /******************************************************************************************/
 void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
@@ -1221,6 +1274,77 @@ void Comp_Pair_Gamma2(int *cormod, double *coordx, double *coordy, double *coord
     return;
 }
 
+void Comp_Cond_Gamma2(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+  double lags=0.0,a1,a2;int k=0;   int nn=ncoord[0];
+  double PP1=0.0,PP2=0.0,MM=0.0,sum=0.0,cc=0.0,second=0.0,first=0.0;
+
+  double m=nuis[2];
+      if(m<0||par[0]<0){*res=LOW;  return;}
+
+  double x1 = data[0]/exp(mean[0]);
+  double xn = data[nn-1]/exp(mean[nn-1]);
+  double lags01=fabs(coordx[0]-coordx[1]);
+  double lagsn1n=fabs(coordx[nn-2]-coordx[nn-1]);
+  /********************************/
+  for(k=1; k<(nn-1);k++){
+              lags=fabs(coordx[k-1]-coordx[k]); a1=exp(-lags/par[0]);
+              lags=fabs(coordx[k]-coordx[k+1]); a2=exp(-lags/par[0]);
+      sum= sum+ (data[k]/exp(mean[k]))*(1-R_pow(a1*a2,2))/((1-a1*a1)*(1-a2*a2));
+    }
+    second=-(m/2)*( x1/(1-R_pow(exp(-lags01 /par[0]),2))  
+                   +xn/(1-R_pow(exp(-lagsn1n/par[0]),2))
+                         +sum);
+/********************************/
+
+  for(k=0; k<nn;k++) MM=MM-mean[k];
+/*******+********************************************/
+  for(k=0; k<(nn-1);k++){
+        lags=fabs(coordx[k]-coordx[k+1]);
+           cc=exp(-lags/par[0]);
+            PP1=PP1 + log((1-cc*cc)*R_pow(fabs(cc),m/2-1));
+            PP2=PP2 + log(bessel_i( m*fabs(cc)*sqrt(
+                                 (data[k]/exp(mean[k]))*
+                                 (data[k+1]/exp(mean[k+1])))/(1-cc*cc) , m/2-1 ,1));
+    }
+  first= (m/2-1+nn)*log(m/2) + (m/4-1/2)*log(x1*xn) - ( log(gammafn(m/2)) + PP1);
+
+
+  //Rprintf(" %f %f %f %f %f %f \n", MM,first,second,PP2,lags01,lagsn1n);
+
+  *res=MM+first+second+ PP2;
+    if(!R_FINITE(*res)) *res = LOW;
+  return;
+}
+
+
+/*********************************************************/
+void Comp_Pair_Kumaraswamy2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+             int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    
+    int i,j;double corr,zi,zj,lags,weights=1.0,bl;
+    double sill=1-nuis[0]; 
+     if(nuis[2]<0||nuis[3]<0||CheckCor(cormod,par)==-2) {*res=LOW;  return;}
+    for(i=0;i<(ncoord[0]-1);i++){
+            for(j=(i+1); j<ncoord[0];j++){
+                lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                 if(lags<=maxdist[0]){
+                    zi=(data[i]); zj=(data[j]);
+                      if(!ISNAN(zi)&&!ISNAN(zj) ){
+                    corr=CorFct(cormod,lags,0,par,0,0);
+                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);             
+                  bl=biv_Kumara(sill*corr,zi,zj,mean[i],mean[j],nuis[2],nuis[3]);
+                    if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+        *res+= weights*log(bl);
+                  }}}}
+    // Checks the return values
+    if(!R_FINITE(*res)) *res = LOW;
+    return;
+}
+
+
 /*********************************************************/
 void Comp_Pair_Weibull2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                          int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
@@ -1243,6 +1367,53 @@ void Comp_Pair_Weibull2(int *cormod, double *coordx, double *coordy, double *coo
     // Checks the return values
     if(!R_FINITE(*res)) *res = LOW;
     return;
+}
+
+
+
+void Comp_Cond_Weibull2(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+  double lags=0.0,a1,a2;int k=0;   int nn=ncoord[0];
+  double PP0=0.0, PP1=0.0,PP2=0.0,MM=0.0,sum=0.0,cc=0.0,second=0.0,first=0.0;
+
+  double m=nuis[2]; 
+  if(m<0||par[0]<0){*res=LOW;  return;}
+  double nu=1/gammafn(1+1/m);
+
+
+  double x1 = data[0]/exp(mean[0]);
+  double xn = data[nn-1]/exp(mean[nn-1]);
+  double lags01=fabs(coordx[0]-coordx[1]);
+  double lagsn1n=fabs(coordx[nn-2]-coordx[nn-1]);
+
+  /********************************/
+  for(k=1; k<(nn-1);k++){
+              lags=fabs(coordx[k-1]-coordx[k]); a1=exp(-lags/par[0]);
+              lags=fabs(coordx[k]-coordx[k+1]); a2=exp(-lags/par[0]);
+      sum= sum+ R_pow(data[k]/exp(mean[k]),m)*(1-R_pow(a1*a2,2))/((1-a1*a1)*(1-a2*a2));
+    }
+    second=-R_pow(nu,-m)*( R_pow(x1,m)/(1-R_pow(exp(-lags01 /par[0]),2))  
+                          +R_pow(xn,m)/(1-R_pow(exp(-lagsn1n/par[0]),2))
+                          +sum);
+/********************************/
+  for(k=0; k<nn;k++) {MM=MM-mean[k];PP0=PP0+ (m-1)*log(data[k]/exp(mean[k]));}
+/*******+********************************************/
+  for(k=0; k<(nn-1);k++){
+        lags=fabs(coordx[k]-coordx[k+1]);
+           cc=exp(-lags/par[0]);
+            PP1=PP1 + log(1-cc*cc);
+            PP2=PP2 + log(bessel_i( 2*fabs(cc)*R_pow(
+                                 (data[k]/exp(mean[k]))*
+                                 (data[k+1]/exp(mean[k+1])),m/2)/((1-cc*cc)*R_pow(nu,m)) , 0 ,1));
+    }
+  first= nn*log(m) + PP0 - ( nn*m*log(nu) + PP1);
+
+  //Rprintf(" %f %f %f %f \n", MM,first,second,PP2);
+
+  *res=MM+first+second+ PP2;
+    if(!R_FINITE(*res)) *res = LOW;
+  return;
 }
 
 
@@ -1598,6 +1769,7 @@ void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,do
                    bl=biv_T((1-nugget)*corr,(zi-mean[i])/sqrt(sill),
                                             (zj-mean[j])/sqrt(sill),0,0,df,1)/sill;
                      //if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
+                      if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
                 }}}}
 

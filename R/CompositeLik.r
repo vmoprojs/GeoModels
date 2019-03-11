@@ -31,13 +31,21 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
- #print(coordx)
-  #      print(coordy)
-          result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
+
+        result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), 
+                    as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
                    res=double(1),as.double(c(X%*%mm)),as.double(0),as.double(other_nuis),
                     as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                     PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res   
+
+        #result <- dotCall64::.C64(as.character(fan), 
+         #            SIGNATURE = c("integer",rep("double",4),"integer","double","integer",
+          #                          rep("double",4),rep("integer",4)), 
+           #          INTENT = c("r","r","r","r","r","r","r","r","w","r","r","r","r","r","r","r"), 
+            #         NAOK = TRUE,PACKAGE='GeoModels',
+             #        corrmodel,coordx,coordy,coordt,data, n,paramcorr, weigthed, 
+              #                    res = vector_dc("numeric",1),c(X%*%mm),0,other_nuis,ns,NS,local,GPU)$res
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -75,6 +83,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     }
     num_betas=ncol(X)   
     fname <- NULL; hessian <- FALSE
+
     if(all(model==1,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss'
     if(all(model==1,likelihood==3,type==1)) fname <- 'Comp_Diff_Gauss'
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
@@ -101,8 +110,14 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}
      if(all(model==21,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gamma'
                                               if(varest & vartype==2) hessian <- TRUE}
+      if(all(model==21,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gamma'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==33,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy'
+                                              if(varest & vartype==2) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}                                         
+                                              if(varest & vartype==2) hessian <- TRUE}    
+   if(all(model==26,likelihood==1,type==2)){ fname <- 'Comp_Cond_Weibull'
+                                              if(varest & vartype==2) hessian <- TRUE}                                       
     if(all(model==24,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogLogistic'
                                               if(varest & vartype==2) hessian <- TRUE}     
     if(all(model==25,likelihood==3,type==2)){ fname <- 'Comp_Pair_Logistic'
@@ -125,16 +140,28 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}   
      if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
+                                              #print(fname)
     if(sensitivity)hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
     fname <- paste(fname,"2",sep="")
     path.parent <- getwd()
-    if(!is.null(GPU)) 
+    # if(!is.null(GPU)) 
+    # {
+    #   path <- system.file("CL", "Kernel.cl", package = "GeoModels")
+    #   path <- gsub("/Kernel.cl","/",path);setwd(path)
+    #   fname <- paste(fname,"_OCL",sep="")
+    #   .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+    # }
+    if(!is.null(GPU))
     {
-      path <- system.file("CL", "Kernel.cl", package = "GeoModels")
-      path <- gsub("/Kernel.cl","/",path);setwd(path)
       fname <- paste(fname,"_OCL",sep="")
+      # cat("fname de Composit.r: ",fname,"\n")
+      
+      path <- system.file("CL", paste(fname,".cl",sep = ""), package = "GeoModels")
+      path <- gsub(paste("/",paste(fname,".cl",sep = ""),sep = ""),"/",path)
+      # .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+      setwd(path)
       .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
    
