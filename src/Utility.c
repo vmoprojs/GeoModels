@@ -771,11 +771,10 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
                    double xmin, double ymax, double ymin,double **sX,double **X,int *ns,int *NS, int *NS_sub, double *res_sub, double *coordt,int *ns_sub)
 {
     int i=0, j=0, f=0,k=0;
-    if(cdyn[0]==0)
-    {
-        for(i=0;i<ncoord[0]*ntime[0];i++)
+    int NTOT=(NS[ntime[0]-1]+ns[ntime[0]-1]);
+   // if(cdyn[0]==0){
+        for(i=0;i<NTOT;i++)
         {
-            
             if((xmin<coordx[i]||is_equal(xmin,coordx[i]))&&
                (xmax>coordx[i]||is_equal(xmax,coordx[i]))&&
                (ymin<coordy[i]||is_equal(ymin,coordy[i]))&&
@@ -789,72 +788,15 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
                 {
                     // count space locations per time in a space sub window
                     //Rprintf("res_sub[i]:%f  coordt[f]:%f\n",res_sub[i],coordt[f]);
-                    if(res_sub[i]==coordt[f])
-                    {
-                        ns_sub[f]++;
-                        //Rprintf("****ns_sub[f]:%d\n",ns_sub[f]);
-                    }
+                    if(res_sub[i]==coordt[f]){ns_sub[f]++;}
                 }
-                
-                for(k=0;k<nbetas;k++)
-                {
-                    sX[j][k]=X[i][k];
-                }
+          for(k=0;k<nbetas;k++) {sX[j][k]=X[i][k];}
                 //Rprintf("x:%f y:%f sdata:%f i:%d j:%d \n",scoordx[j],scoordy[j],sdata[j],i,j);
-                j++;
-                
+                j++;   
             }
-            
         }
         cumvec(ns_sub,NS_sub,ntime[0]);
-        
         *npts = j;
-
-    }
-    else
-    {
-        for(i=0;i<ncoord[0];i++)
-        {
-            
-            if((xmin<coordx[i]||is_equal(xmin,coordx[i]))&&
-               (xmax>coordx[i]||is_equal(xmax,coordx[i]))&&
-               (ymin<coordy[i]||is_equal(ymin,coordy[i]))&&
-               (ymax>coordy[i]||is_equal(ymax,coordy[i])))
-            {
-                scoordx[j]=coordx[i];
-                scoordy[j]=coordy[i];
-                sdata[j] = data[i];
-                
-                for(f=0;f<ntime[0];f++)
-                {
-                    // count space locations per time in a space sub window
-                    //Rprintf("res_sub[i]:%f  coordt[f]:%f\n",res_sub[i],coordt[f]);
-                    if(res_sub[i]==coordt[f])
-                    {
-                        ns_sub[f]++;
-                        //Rprintf("****ns_sub[f]:%d\n",ns_sub[f]);
-                    }
-                }
-                
-                for(k=0;k<nbetas;k++)
-                {
-                    sX[j][k]=X[i][k];
-                }
-                //Rprintf("x:%f y:%f sdata:%f i:%d j:%d \n",scoordx[j],scoordy[j],sdata[j],i,j);
-                j++;
-                
-            }
-            
-        }
-        cumvec(ns_sub,NS_sub,ntime[0]);
-        
-        *npts = j;
-
-    }
-    
-    //cumvec(ns_sub,NS_sub,ntime[0]);
-    
-    //*npts = j;
     return;
 }
 
@@ -886,13 +828,10 @@ void SetSampling_t(double *data,double *sdata, int nbetas,int npts,
             sdata[p]=data[i];
             s2cx[p] = scoordx[i];
             s2cy[p] = scoordy[i];
-            
-            //Rprintf("sdata[p]:%f i:%d j:%d k:%d,f:%d,p:%d\n",sdata[p],i,j,k,f,p);
             for(f=0;f<nbetas;f++) {sX[p][f]=X[i][f];}
             p++;
         }
     }
-    //Rprintf("**p:%d",p);
     *ntimeS = p;
     return;
 }
@@ -1162,18 +1101,12 @@ void DeleteGlobalVar()
 
 
 void Rep(double *coordt,int *ns, double *res)
-{// Glob var: ncoord, ntime
+{
     int i, j,ppb=0;
     for(i =0;i<ntime[0];i++)
-    {
-        for(j =0;j<ns[i];j++)
-        {
+    {for(j =0;j<ns[i];j++){
             res[ppb] = coordt[i];
-            //Rprintf("res[ppb]:%f\t",res[ppb]);
-            ppb++;
-        }
-        
-    }
+            ppb++;}}
 }
 
 

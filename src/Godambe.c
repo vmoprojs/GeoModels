@@ -1023,6 +1023,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     int *npts, numintx=0, numinty=0,nstime=0,*ntimeS,nnc=0;
     int n_win=0,nwpair=0,qq=0,t=0,v=0,h=0,i=0,l=0,m=0,o=0,nsub,nsub_t=0,j=0,f=0,p=0,q=0;
     int nvari=*npar * (*npar+1)/2;
+
+    int NTOT=(NS[ntime[0]-1]+ns[ntime[0]-1]);
     //==========================================/
     
     //==========================================/
@@ -1049,9 +1051,9 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
     winsty=*winstp * dimwiny;     // y step is a  proportion of sub-window y length (deafult is 0.5)
     
-    //int nnc= cumvec(ns,NS,ntime[0]); //number of coordinates
     
     
+    // what is this ??
     
     // Start conditions for valid space subwindows
     if(cdyn[0] ==0) // no dym coords
@@ -1111,49 +1113,22 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     Xm=(double *) Calloc(*nbetas,double);
     
     
-    if(cdyn[0] ==0)
-    {
-        X= (double **) Calloc(ncoord[0]*ntime[0],double *);
-        sX= (double **) Calloc(ncoord[0]*ntime[0],double *);
-        
-        for(i=0;i<(ncoord[0]*ntime[0]);i++){
+        X= (double **) Calloc(NTOT,double *);
+        sX= (double **) Calloc(NTOT,double *);
+        for(i=0;i<(NTOT);i++){
             X[i]=(double *) Calloc(nbetas[0],double);
             sX[i]=(double *) Calloc(nbetas[0],double);
-        }
-        
-        ///  covariates matrix //////
+         }
+
         qq=0;
-        
-        for(i=0;i<(ncoord[0]*ntime[0]);i++){
+        for(i=0;i<(NTOT);i++){
             for(j=0;j<nbetas[0];j++){
                 X[i][j]=Z[qq];
                 qq++;
             }}
-    }
-    if(cdyn[0] ==1)
-    {
-        X= (double **) Calloc(ncoord[0],double *);
-        sX= (double **) Calloc(ncoord[0],double *);
-        for(i=0;i<(ncoord[0]);i++){
-            X[i]=(double *) Calloc(nbetas[0],double);
-            sX[i]=(double *) Calloc(nbetas[0],double);
-        }
-        
-        ///  covariates matrix //////
-        qq=0;
-        
-        for(i=0;i<(ncoord[0]);i++){
-            for(j=0;j<nbetas[0];j++){
-                X[i][j]=Z[qq];
-                qq++;
-            }}
-    }
-    
-    
-    
+
     //set the temporal distances for the sub-sample:
     for(i=0;i<wint;i++){sublagt[i+1]=sublagt[i]+step;nstime++;}
-    
     
     // Start conditions for valid time subwindows
     float Ctime = (ntime[0]-wint); //condition for time subsampling
@@ -1177,9 +1152,9 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     int nsub1 =0;
     
     double *res_sub;
-    if(cdyn[0] ==0) {res_sub=(double *) Calloc(ncoord[0]*ntime[0],double);} else {res_sub=(double *) Calloc(ncoord[0],double);}
+    res_sub=(double *) Calloc(NTOT,double);
+
     Rep(coordt,ns, res_sub);
-    
     gradcor=(double *) Calloc(*nparc,double);
     gradient=(double *) Calloc(*npar,double);
     subvari=(double *) Calloc(nvari,double);
@@ -1189,19 +1164,10 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
             *npts=0;   // number of points in the block
             ns_sub=(int *) Calloc(ntime[0],int);
             NS_sub=(int *) Calloc(ntime[0],int);
-            
-            
-            if(cdyn[0]==0)
-            {
-                scoordx=(double *) Calloc(ncoord[0]*ntime[0],double);
-                scoordy=(double *) Calloc(ncoord[0]*ntime[0],double);
-                sdata=(double *) Calloc(ncoord[0]*ntime[0] ,double);
-            }
-            else{
-                scoordx=(double *) Calloc(ncoord[0],double);
-                scoordy=(double *) Calloc(ncoord[0],double);
-                sdata=(double *) Calloc(ncoord[0],double);
-            }
+          
+                scoordx=(double *) Calloc(NTOT,double);
+                scoordy=(double *) Calloc(NTOT,double);
+                sdata=(double *) Calloc(NTOT ,double);
             
             SetSampling_s(coordx,coordy,data,npts,nbetas[0],scoordx,scoordy,
                           sdata,xgrid[i]+dimwinx,xgrid[i],ygrid[j]+dimwiny,ygrid[j],
@@ -1218,7 +1184,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                     s2cy=(double *) Calloc(npts[0] ,double);
                     s2X= (double **) Calloc(npts[0] ,double *);
                     int iii = 0;
-                    for(iii=0;iii<(npts[0] );iii++) {s2X[iii]=(double *) Calloc(nbetas[0],double);}
+                    for(iii=0;iii<npts[0];iii++) 
+                       {s2X[iii]=(double *) Calloc(nbetas[0],double);}
                     // set the sub-sample of the data:
                     
                     *ntimeS=0;// number of spatial points for each time in the block
@@ -1234,7 +1201,9 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                 for(v=t;v<nstime;v++){
                                     if(t==v){
                                         for(m=l+1;m<ns_sub[t+f*nstime];m++){      // what is ns_sub[t]
-                                            lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
+              lags=dist(type[0],s2cx[(l+NS_sub[t])],s2cx[(m+NS_sub[v])],s2cy[(l+NS_sub[t])],s2cy[(m+NS_sub[v])],*REARTH);
+              // lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
+
                                             if(lags<=maxdist[0]){
                                                 meanl=0.0;meanm=0.0;
                                                 for(o=0;o<nbetas[0];o++) {
@@ -1244,7 +1213,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                     meanm=meanm+Xm[o]*betas[o];
                                                 }
                                                 
-                                                if(!ISNAN(s2data[l]-meanl)&&!ISNAN(s2data[m]-meanm) ){
+                                                if(!ISNAN(s2data[(l+NS_sub[t])])&&!ISNAN(s2data[(m+NS_sub[v])]) ){
                                                     nwpair++;
                                                     rho=CorFct(cormod,lags,0,parcor,0,0); //
                                                     
@@ -1313,6 +1282,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
                                                                           betas);
+                                                         //Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                           //             s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
                                                         break;
                                                     }
                                                     //==============   end cases ============/
@@ -1326,8 +1297,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                         lagt=fabs(sublagt[t]-sublagt[v]);
                                         for(m=0;m<ns_sub[t+f*nstime];m++){
                                             
-                                            lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
-                                            
+                                            //lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
+                                             lags=dist(type[0],s2cx[(l+NS_sub[t])],s2cx[(m+NS_sub[v])],s2cy[(l+NS_sub[t])],s2cy[(m+NS_sub[v])],*REARTH);
                                             if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                                 
                                                 meanl=0.0;meanm=0.0;
@@ -1338,7 +1309,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                     meanm=meanm+Xm[o]*betas[o];
                                                 }
                                                 
-                                                if(!ISNAN(s2data[l]-meanl)&&!ISNAN(s2data[m]-meanm) ){
+                                                if(!ISNAN(s2data[(l+NS_sub[t])])&&!ISNAN(s2data[(m+NS_sub[v])]) ){
                                                     nwpair++;
                                                     rho=CorFct(cormod,lags,lagt,parcor,0,0);
                                                     
@@ -1395,7 +1366,9 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         break;
                                                         case 26:
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                         //Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                          ///              s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
                                                         break;
                                                     }
                                                     //==============   end cases ============/

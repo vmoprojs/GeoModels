@@ -47,7 +47,7 @@ __kernel void Comp_Pair_Weibull_st2_OCL(__global const double *coordt,__global c
     int gidx = (wx*lsize_m+m1);
     int gidy = (wy*lsize_v+v1);
     
-    int i = (ncoord*gidy+gidx);
+    int i = (ncoord*gidy+gidx);     // a que sirve i???
     
     bool isValid = true;
     
