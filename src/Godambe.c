@@ -366,7 +366,9 @@ for(t=0;t<ntime[0];t++){
                  if(*weigthed) weigths=CorFunBohman(lags,maxdist[0]);
                  else          weigths=1;
 		         //for(l=0;l<nsens;l++) sensmat[l]=sensmat[l]-sens[l]*weigths;
-                 for(d=0;d<*npar;d++) score[d]=score[d]+grad[d]*weigths;
+                 for(d=0;d<*npar;d++) {
+                     if(R_FINITE(grad[d]))
+                  score[d]=score[d]+grad[d]*weigths;}
 	             b++;}}}}
 
 else {
@@ -458,7 +460,11 @@ else {
               if(*weigthed) weigths=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
               else          weigths=1;
 		 // for(l=0;l<nsens;l++) sensmat[l]=sensmat[l]-sens[l]*weigths;
-              for(d=0;d<*npar;d++) score[d]=score[d]+grad[d]*weigths;
+              //for(d=0;d<*npar;d++) score[d]=score[d]+grad[d]*weigths;
+
+                    for(d=0;d<*npar;d++) {
+                     if(R_FINITE(grad[d]))
+                  score[d]=score[d]+grad[d]*weigths;}
 		b++;
 		}}}}}}}
           *np=b;
@@ -975,6 +981,7 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                     if(*weigthed) weigths=CorFunBohman(lag,maxdist[0]);
                                         else          weigths=1;
                                         for(h=0;h<*npar;h++) {
+                                          if(R_FINITE(gradient[h]))
                                         sumgrad[h]=sumgrad[h]+gradient[h]*weigths;}// sum the gradient in the subwindow
                 }}}}
                     h=0;
@@ -1202,17 +1209,19 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                     if(t==v){
                                         for(m=l+1;m<ns_sub[t+f*nstime];m++){      // what is ns_sub[t]
               lags=dist(type[0],s2cx[(l+NS_sub[t])],s2cx[(m+NS_sub[v])],s2cy[(l+NS_sub[t])],s2cy[(m+NS_sub[v])],*REARTH);
+            
               // lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
 
                                             if(lags<=maxdist[0]){
                                                 meanl=0.0;meanm=0.0;
                                                 for(o=0;o<nbetas[0];o++) {
-                                                    Xl[o]=s2X[l][o];   // what is ns_sub[t].
-                                                    Xm[o]=s2X[m][o];   // what is ns_sub[t]
+                                                    Xl[o]=s2X[l+NS_sub[t]][o];   // what is ns_sub[t].
+                                                    Xm[o]=s2X[m+NS_sub[v]][o];   // what is ns_sub[t]
+                                                   // Rprintf("%f, %f\n",Xl[o],Xm[o]);
                                                     meanl=meanl+Xl[o]*betas[o];
                                                     meanm=meanm+Xm[o]*betas[o];
                                                 }
-                                                
+                           // Rprintf("%d --%f %f %f \n",f,lags,s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])]);
                                                 if(!ISNAN(s2data[(l+NS_sub[t])])&&!ISNAN(s2data[(m+NS_sub[v])]) ){
                                                     nwpair++;
                                                     rho=CorFct(cormod,lags,0,parcor,0,0); //
@@ -1233,50 +1242,52 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         case 2:     //binomial  gaussian case
                                                         case 11:
                                                         Grad_Pair_Binom(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                        betas);
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 12:
                                                         Grad_Pair_StudenT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                        betas);
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 13:
-                                                        Grad_Pair_Wrapped(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                       Grad_Pair_Wrapped(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
                                                                           betas);
                                                         break;
                                                         case 14:
                                                         case 16:
-                                                        Grad_Pair_Binomneg(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                           betas);
+                                                   Grad_Pair_Binomneg(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 20:
                                                         Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                       s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                       betas);
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 21:
-                                                        //Rprintf("A. rho:%f lags:%f lagt:%f l:%d  m:%d\n",rho,lags,lagt,l,m);
-                                                        Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
-                                                                        betas);
+                                                      //  Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                        //                s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
+                                                          //              betas);
+                                                         Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 22:
-                                                        Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                           betas);
+                                                       Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 24:
-                                                        Grad_Pair_LogLogistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                              s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                              betas);
+                                                       Grad_Pair_LogLogistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 25:
                                                         Grad_Pair_Logistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
-                                                                           betas);
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
                                                         break;
                                                         case 26:
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
@@ -1290,7 +1301,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                     if(*weigthed) weigths=CorFunBohman(lagt,maxtime[0]);
                                                     else          weigths=1;
                                                     for(h=0;h<*npar;h++) {
-                                                        
+                                                        if(R_FINITE(gradient[h]))
                                                         sumgrad[h]=sumgrad[h]+gradient[h]*weigths;}}}}
                                     }  //================================================/
                                     else{
@@ -1299,12 +1310,13 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                             
                                             //lags=dist(type[0],s2cx[l],s2cx[m],s2cy[l],s2cy[m],*REARTH);
                                              lags=dist(type[0],s2cx[(l+NS_sub[t])],s2cx[(m+NS_sub[v])],s2cy[(l+NS_sub[t])],s2cy[(m+NS_sub[v])],*REARTH);
+                                           //    Rprintf("%d--%f %f  %f %f \n",f,lags,lagt,s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])]);
                                             if(lagt<=maxtime[0] && lags<=maxdist[0]){
                                                 
                                                 meanl=0.0;meanm=0.0;
                                                 for(o=0;o<nbetas[0];o++) {
-                                                    Xl[o]=s2X[l][o];
-                                                    Xm[o]=s2X[m][o];
+                                                    Xl[o]=s2X[l+NS_sub[t]][o];   
+                                                    Xm[o]=s2X[m+NS_sub[v]][o];   
                                                     meanl=meanl+Xl[o]*betas[o];
                                                     meanm=meanm+Xm[o]*betas[o];
                                                 }
@@ -1326,43 +1338,43 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         case 2:     //binomial  gaussian case
                                                         case 11:
                                                         Grad_Pair_Binom(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                              case 12:
-                                                         Grad_Pair_StudenT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                        Grad_Pair_StudenT(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                           break;
                                                         case 13:
                                                         Grad_Pair_Wrapped(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 14:
                                                         case 16:
                                                         Grad_Pair_Binomneg(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 20:
                                                         Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                       s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 21:
-                                                        
-                                                        //Rprintf("B: rho:%f lags:%f lagt:%f l:%d  m:%d\n",rho,lags,lagt,l,m);
-                                                        
-                                                        Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                        s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
+                                                            //  Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                        //                s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
+                                                          //              betas);
+                                                             Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 22:
                                                         Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 24:
                                                         Grad_Pair_LogLogistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                              s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 25:
                                                         Grad_Pair_Logistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 26:
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
@@ -1375,7 +1387,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                     if(*weigthed) weigths=CorFunBohman(lagt,maxtime[0]);
                                                     else          weigths=1;
                                                     for(h=0;h<*npar;h++) {
-                                                        
+                                                           if(R_FINITE(gradient[h]))
                                                         sumgrad[h]=sumgrad[h]+gradient[h]*weigths;
                                                         
                                                     }}}}}
@@ -1405,24 +1417,11 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     Free(gradcor);
     Free(gradient);
     Free(subvari);
-    
     Free(Xl);
     Free(Xm);
-    
-    //free(xgrid);free(ygrid);
-    if(cdyn[0] ==0)
-    {
-      for(i=0;i<(ncoord[0]*ntime[0]);i++) { Free(X[i]); Free(sX[i]);}
-    }
-    else
-    {
-      for(i=0;i<(ncoord[0]);i++) { Free(X[i]); Free(sX[i]);}
-    }
-    
-    
+    for(i=0;i<NTOT;i++) { Free(X[i]); Free(sX[i]);}
     Free(X);Free(sX);
-    
-    
+  
     return;
 }
 

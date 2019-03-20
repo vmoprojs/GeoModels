@@ -772,7 +772,6 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
 {
     int i=0, j=0, f=0,k=0;
     int NTOT=(NS[ntime[0]-1]+ns[ntime[0]-1]);
-   // if(cdyn[0]==0){
         for(i=0;i<NTOT;i++)
         {
             if((xmin<coordx[i]||is_equal(xmin,coordx[i]))&&

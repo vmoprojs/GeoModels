@@ -362,6 +362,7 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
   double shape=nuis[nbetas+2];
   double rhosill=(1-nugget)*rho;
   double ff=log(biv_Weibull(rhosill,u,v,ai,aj,shape));
+  //Rprintf("----ff---%f\n",ff);
   for(kk=0;kk<nbetas;kk++){
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
@@ -370,6 +371,7 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
    grad[i]=(log(biv_Weibull(rhosill,u,v,ai_d,aj_d,shape)) - ff)/delta; 
+  //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
  }}
   // Derivvativve of the difference respect with the nugget*/
@@ -377,6 +379,7 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
     delta=sqrt(EPS)*nugget;
       grad[i]=(log(biv_Weibull((1-(nugget+delta))*rho,u,v,ai,aj,shape)) - 
               ff)/delta; 
+     /// Rprintf("----grad2---%f\n",grad[i]);
     i++; 
   }
   /* Derivvativve of the difference respect with the sill*/
@@ -388,10 +391,11 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // }
    /* Derivvativve of the difference respect with the shape*/   
    if(flag[nbetas+2]==1) { 
-    delta=R_pow(EPS,1/2)*shape;
+    delta=sqrt(EPS)*shape;
      //delta=R_pow(EPS,1/3);
     grad[i]=(log(biv_Weibull(rhosill,u,v,ai,aj,shape+delta)) -
                  ff)/(delta); 
+    //Rprintf("%f %f ----grad3---%f\n",u,v,grad[i]);
     i++; 
   }
     h=0;
@@ -425,44 +429,52 @@ void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
+
   double shape=nuis[nbetas+2];
   double rhosill=(1-nugget)*rho;
   double ff=log(biv_gamma(rhosill,u,v,ai,aj,shape));
+  //Rprintf("----ff---%f\n",ff);
   for(kk=0;kk<nbetas;kk++){
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
    grad[i]=(log(biv_gamma(rhosill,u,v,ai_d,aj_d,shape)) - ff)/delta; 
+  //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
  }}
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { delta=sqrt(EPS)*nugget;
+  if(flag[nbetas]==1) { 
+    delta=sqrt(EPS)*nugget;
       grad[i]=(log(biv_gamma((1-(nugget+delta))*rho,u,v,ai,aj,shape)) - 
               ff)/delta; 
+     /// Rprintf("----grad2---%f\n",grad[i]);
     i++; 
   }
   /* Derivvativve of the difference respect with the sill*/
- /* if(flag[nbetas+1]==1) { 
-    delta=sqrt(EPS)*sill;
-      grad[i]=(log(biv_gamma((sill+delta)*rho,u,v,ai,aj,shape)) - 
-              ff)/delta; 
-    i++; 
-  }*/
+ // if(flag[nbetas+1]==1) { 
+ //   delta=sqrt(EPS)*sill;
+ //     grad[i]=(log(biv_Weibull((sill+delta)*rho,u,v,ai,aj,shape)) - 
+ //             ff)/delta; 
+ //   i++; 
+ // }
    /* Derivvativve of the difference respect with the shape*/   
    if(flag[nbetas+2]==1) { 
-    delta=sqrt(EPS)*shape;
-    grad[i]=(log(biv_gamma(rhosill,u,v,ai,aj,shape+delta)) - ff)/delta; 
+    delta=R_pow(EPS,1/2)*shape;
+     //delta=R_pow(EPS,1/3);
+    grad[i]=(log(biv_gamma(rhosill,u,v,ai,aj,shape+delta)) -
+                 ff)/(delta); 
+    ///Rprintf("----grad3---%f\n",grad[i]);
     i++; 
   }
-     h=0;
+    h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 
       
   if(flagcor[h]==1){
-       delta=sqrt(EPS)*par[h];  
+       delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
  grad[kk+i]=(log(biv_gamma((1-nugget)*rhod,u,v,ai,aj,shape)) - ff)/delta;
@@ -472,6 +484,7 @@ void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
 //Rprintf("%f %f %f %f %f %f %f \n",grad[0],grad[1],grad[2],grad[3],grad[4],grad[5],grad[6]);
   return;
 }
+
 
 void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
@@ -522,7 +535,7 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
        delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
-        grad[kk+i]=(log(d2lognorm(u,v,sill,nugget, ai, aj,rhod)) - log(d2lognorm(u,v,sill,nugget, ai, aj,rho)))/delta;
+        grad[kk+i]=(log(d2lognorm(u,v,sill,nugget, ai, aj,rhod)) - ff)/delta;
     kk++;}
       h++;
     }
@@ -800,44 +813,61 @@ b1=(double *) Calloc(nbetas,double);
 
   return;
 }
-
-
 void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
-  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+  double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
+ // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-b1=(double *) Calloc(nbetas,double);
+    b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
-  //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
-  double shape=nuis[nbetas+2];//double nugget=nuis[nbetas];
-double ff=log(biv_LogLogistic(rho,u,v,ai,aj,shape));
-  // Derivativve of the difference respect with the mean*/
+  double nugget=nuis[nbetas];
+
+  double shape=nuis[nbetas+2];
+  double rhosill=(1-nugget)*rho;
+  double ff=log(biv_LogLogistic(rhosill,u,v,ai,aj,shape));
+  //Rprintf("----ff---%f\n",ff);
   for(kk=0;kk<nbetas;kk++){
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_LogLogistic(rho,u,v,ai_d,aj_d,shape)) - ff)/delta; 
-   i++; }
-}
+   grad[i]=(log(biv_LogLogistic(rhosill,u,v,ai_d,aj_d,shape)) - ff)/delta; 
+  //   Rprintf("----grad1---%f\n",grad[i]);
+   i++; 
+ }}
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
-  /* Derivvativve of the difference respect with the sill*/  
-  if(flag[nbetas+1]==1) { 
-    delta=sqrt(EPS)*shape;
-    grad[i]=(log(biv_LogLogistic(rho,u,v,ai,aj,shape+delta)) - ff)/delta; 
+  if(flag[nbetas]==1) { 
+    delta=sqrt(EPS)*nugget;
+      grad[i]=(log(biv_LogLogistic((1-(nugget+delta))*rho,u,v,ai,aj,shape)) - 
+              ff)/delta; 
+     /// Rprintf("----grad2---%f\n",grad[i]);
     i++; 
   }
-  /* Derivvativves with respect to the correlation parameters*/
-             h=0;
+  /* Derivvativve of the difference respect with the sill*/
+ // if(flag[nbetas+1]==1) { 
+ //   delta=sqrt(EPS)*sill;
+ //     grad[i]=(log(biv_Weibull((sill+delta)*rho,u,v,ai,aj,shape)) - 
+ //             ff)/delta; 
+ //   i++; 
+ // }
+   /* Derivvativve of the difference respect with the shape*/   
+   if(flag[nbetas+2]==1) { 
+    delta=R_pow(EPS,1/2)*shape;
+     //delta=R_pow(EPS,1/3);
+    grad[i]=(log(biv_LogLogistic(rhosill,u,v,ai,aj,shape+delta)) -
+                 ff)/(delta); 
+    ///Rprintf("----grad3---%f\n",grad[i]);
+    i++; 
+  }
+    h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 
       
@@ -845,14 +875,13 @@ double ff=log(biv_LogLogistic(rho,u,v,ai,aj,shape));
        delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
-       
-         grad[kk+i]=(log(biv_LogLogistic(rhod,u,v,ai,aj,shape)) - ff)/delta;
+ grad[kk+i]=(log(biv_LogLogistic((1-nugget)*rhod,u,v,ai,aj,shape)) - ff)/delta;
     kk++;}
       h++;
     }
+//Rprintf("%f %f %f %f %f %f %f \n",grad[0],grad[1],grad[2],grad[3],grad[4],grad[5],grad[6]);
   return;
 }
-
 
 
 void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
