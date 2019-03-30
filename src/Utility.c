@@ -625,6 +625,21 @@ int is_equal(double val1, double val2)
   return fabs(val1-val2)<MAXERR;
 }
 
+
+double Maxima_i(int *x, int size)
+{
+  int res=0;
+  int i=0;
+
+  res = x[0];
+
+  for(i = 1; i < size; i++)
+    res = imax2(res, x[i]);
+
+  return res;
+}
+
+
 double Maxima(double *x, int *size)
 {
   double res=0.0;
@@ -633,7 +648,7 @@ double Maxima(double *x, int *size)
   res = x[0];
 
   for(i = 1; i < *size; i++)
-    res = fmax(res, x[i]);
+    res = fmax2(res, x[i]);
 
   return res;
 }
@@ -646,7 +661,7 @@ double Minima(double *x, int *size)
   res = x[0];
 
   for(i = 1; i < *size; i++)
-    res = fmin(res, x[i]);
+    res = fmin2(res, x[i]);
 
   return res;
 }

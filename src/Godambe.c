@@ -869,14 +869,16 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
     // and scaling factor (lambda_n)
     deltax=rangex[1]-rangex[0];// R_n = lambda_n * R_0
     deltay=rangey[1]-rangey[0];
-    if(!winc[0]){
-        delta=fmin(deltax,deltay);
-       // winc[0]=(delta/sqrt(delta))/2;
-      winc[0]=sqrt(delta)/2;
-    }
+   if(!winc[0]){ 
+        delta=fmin(deltax,deltay);  // I set this rule if no constant
+        winc[0]=sqrt(delta)/4;
+        winc[1]=sqrt(delta)/4; }
+    else{ 
+      if(!winc[1]) winc[1]=winc[0];
+    } 
     if(!winstp[0]) winstp[0]=0.5;
     dimwinx=winc[0] * sqrt(deltax);// sub-window x length depends on a constant: deafault??
-    dimwiny=winc[0] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
+    dimwiny=winc[1] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
     winsty=*winstp * dimwiny;     // y step is a  proportion of sub-window y length (deafult is 0.5)
     numintx=floor((deltax-dimwinx)/winstx+1);   //number of overlapping sub-windows
@@ -1048,13 +1050,17 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     deltay=rangey[1]-rangey[0];//  y window length
     
     if(!winc[0]){  delta=fmin(deltax,deltay);  // I set this rule if no constant
-        winc[0]=sqrt(delta)/4; }
+        winc[0]=sqrt(delta)/4;
+        winc[1]=sqrt(delta)/4; }
+    else{ 
+      if(!winc[1]) winc[1]=winc[0];
+    } 
     
     if(!winstp[0]) winstp[0]=1.0;   //proportion of the overlapping  0< winstp <=1  OJO!!!
     
     dimwinx=winc[0] * sqrt(deltax);// sub-window x length depends on a constant: deafault??
-    dimwiny=winc[0] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
-    
+    dimwiny=winc[1] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
+ 
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
     winsty=*winstp * dimwiny;     // y step is a  proportion of sub-window y length (deafult is 0.5)
     
@@ -1106,12 +1112,13 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
         if(*winc_t>=*ntime) *winc_t=*ntime-step;
         
     } // if the length is too big
+     // Rprintf("%f %f\n",winc[0],*winc_t);
     //set the spatial-temporal windows:
     //double wint = (double) *winc_t; // OJO!!!
     int wint = (int) *winc_t; // OJO!!!
     if(!winstp_t) *winstp_t=wint; //defualt for the forward step:the minimum distance
     //else *winstp=*winstp*wint;   //otherwise a proportion of the temporal window
-    
+      // Rprintf(" %f %f %f %f %f %f %d--\n",deltax,deltay, dimwinx, dimwiny,winc[0],winc[1],wint);
     sublagt=(double *) R_alloc(wint, sizeof(double));
     sublagt[0]=step;
     //==========================================/

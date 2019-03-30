@@ -841,6 +841,7 @@ double Dist_chordal(double loni, double lati, double lonj, double latj,double ra
 int is_equal(double val1, double val2);
 
 double Maxima(double *x, int *size);
+double Maxima_i(int *x, int size);
 
 double Minima(double *x, int *size);
 

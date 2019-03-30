@@ -525,7 +525,7 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
 {
     
     int i=0,j=0,t=0,v=0;
-    double corr,zi,zj,lags,lagt,weights=1.0;
+    double corr,zi,zj,lags,lagt,weights=1.0,bl=1.0;
    // if(  CheckCor(cormod,par)==-2)  {*res=LOW;  return;}
  double sill=1-nuis[0];
      if(nuis[2]<1||sill<0||sill>1) {*res=LOW;  return;}
@@ -542,7 +542,8 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                *res+= weights*log(biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]));
+                                    bl=biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                *res+= weights*log(bl);
                          }}}}
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
@@ -554,7 +555,8 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                *res+= weights*log(biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]));
+                                           bl=biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                *res+= weights*log(bl);
                                 }}}}
                 }}}
     if(!R_FINITE(*res))*res = LOW;
@@ -572,7 +574,7 @@ void Comp_Pair_Kumaraswamy_st2(int *cormod, double *coordx, double *coordy, doub
     
     int i=0,j=0,t=0,v=0;
     double corr,zi,zj,lags,lagt,weights=1.0,bl;
-    double sill=nuis[1];
+    //double sill=nuis[1];
     double nugget=nuis[0];
   if(nuis[2]<0||nuis[3]<0) {*res=LOW;  return;}
 
@@ -618,8 +620,8 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
 {
     
     int i=0,j=0,t=0,v=0;
-    double corr,zi,zj,lags,lagt,weights=1.0;
-    //if(  CheckCor(cormod,par)==-2)  {*res=LOW;  return;}
+    double corr,zi,zj,lags,lagt,weights=1.0,bl=1.0;
+   // if(  CheckCor(cormod,par)==-2)  {*res=LOW;  return;}
   double sill=1-nuis[0];
      if(nuis[2]<=0||sill<0||sill>1) {*res=LOW;  return;}
 
@@ -635,7 +637,11 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                *res+= weights*log(biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]));
+                                    bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                                    //if(bl<=0||bl>9999999999999999)  bl=1;
+                                        // if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                                     // if(R_FINITE(log(bl)))
+                                      *res+= weights*log(bl);
                          }}}}
                      else {  
          lagt=fabs(coordt[t]-coordt[v]);
@@ -647,7 +653,11 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                *res+= weights*log(biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]));
+                                         bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                                   //  if(bl<=0||bl>9999999999999999999)  bl=1;
+                                     // if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                                    //if(R_FINITE(log(bl)))
+                                      *res+= weights*log(bl);
                                 }}}}
                 }}}
     if(!R_FINITE(*res))*res = LOW;

@@ -45,7 +45,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
             #         NAOK = TRUE,PACKAGE='GeoModels',
              #        corrmodel,coordx,coordy,coordt,data, n,paramcorr, weigthed, 
               #                    res = vector_dc("numeric",1),c(X%*%mm),0,other_nuis,ns,NS,local,GPU)$res
-              print(result)
+              #print(result)
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -164,7 +164,6 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
       setwd(path)
       .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
-   
     if(grid)    {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
     else {      if((spacetime||bivariate)&&(!spacetime_dyn)){
                                   data=c(t(data))
@@ -294,7 +293,10 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
           CompLikelihood$par <- param
           CompLikelihood$claic <- NULL;CompLikelihood$clbic <- NULL;
           CompLikelihood$convergence <- 'Successful'
-          CompLikelihood$value=0
+          if(!bivariate)CompLikelihood$value = - comploglik(param=CompLikelihood$par ,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                             n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+          else CompLikelihood$value = -comploglik_biv(param=CompLikelihood$par ,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                             n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
           if(hessian) 
           {
                if(!bivariate)  
@@ -308,12 +310,13 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                              weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
                rownames(CompLikelihood$hessian)=namesparam
                colnames(CompLikelihood$hessian)=namesparam
-               print(CompLikelihood$hessian)
+               #print(CompLikelihood$hessian)
           }
   }
 
 
-
+#print(CompLikelihood$par)
+#print(CompLikelihood$hessian)
 #####################################
 if(!is.matrix(CompLikelihood$hessian)||!is.numeric(sum(CompLikelihood$hessian)))
   {
@@ -330,6 +333,7 @@ CompLikelihood$hessian=numDeriv::hessian(func=comploglik_biv,x=CompLikelihood$pa
 rownames(CompLikelihood$hessian)=namesparam
 colnames(CompLikelihood$hessian)=namesparam
   }
+
 
 ####################################
         if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15) { print("Optimization failed: try with other starting values ")}
@@ -351,7 +355,7 @@ colnames(CompLikelihood$hessian)=namesparam
             nuisance=c(mm,other_nuis)
             sensmat <- double(dmat);varimat <- double(dmat)
             # Set the window parameter:
-
+           if(length(winconst)==1) winconst=c(winconst,0)
             GD=.C('GodambeMat',as.double(mm),as.integer(bivariate),as.double(coordx),as.double(coordy),
               as.double(coordt),as.integer(corrmodel), as.double(data),as.integer(distance),as.double(eps),
               as.integer(flagcorr), as.integer(flagnuis),as.integer(grid),as.integer(likelihood),
@@ -361,7 +365,7 @@ colnames(CompLikelihood$hessian)=namesparam
               varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
               as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
 
-            #if(!sum(GD$varimat)) print("Std error estimation failed")
+            if(!sum(GD$varimat)) print("Std error estimation failed")
             # Set score vectore:
 
             CompLikelihood$winconst<-winconst
@@ -389,8 +393,8 @@ colnames(CompLikelihood$hessian)=namesparam
                   CompLikelihood$varimat[1,1] <- varimat}
             if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
 
-            print(CompLikelihood$sensmat)
-            print(CompLikelihood$varimat)
+            #print(CompLikelihood$sensmat)
+            #print(CompLikelihood$varimat)
       
             icholsensmat <- try(chol(CompLikelihood$sensmat), silent = TRUE)
             isensmat <- try(chol2inv(icholsensmat), silent = TRUE)

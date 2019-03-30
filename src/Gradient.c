@@ -494,17 +494,18 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-     b1=(double *) Calloc(nbetas,double);
+       b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];}
+  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
  double sill=1-nugget;
  double ff=log(d2lognorm(u,v,sill,nugget, ai, aj,rho));
 
 /*
   // Derivativve of the difference respect with the mean*/
-    for(kk=0;kk<nbetas;kk++){
+   
+     for(kk=0;kk<nbetas;kk++){
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
@@ -527,7 +528,7 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
   }
   /* Derivvativves with respect to the correlation parameters*/
 
-                    h=0;
+                   h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 
       

@@ -104,7 +104,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
   \item{weighted}{Logical; if \code{TRUE} the likelihood objects are
     weighted, see the Section \bold{Details}. If \code{FALSE} (the
     default) the composite likelihood is not weighted.}
-  \item{winconst}{Numeric; a positive value for computing the spatial  sub-window
+  \item{winconst}{Numeric; a bivariate positive vector for computing the spatial  sub-window
       in the sub-sampling procedure. See \bold{Details} for more information.}
  \item{winstp}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
       overlapping in the spatial  sub-sampling procedure. The case \eqn{1} 
@@ -345,9 +345,8 @@ Rf with marginal counts data
   sub-window side \eqn{b}{b} is given by \eqn{b=winconst \times
   \sqrt(B)}{b=winconst x sqrt(B)} (similar is of \eqn{h}{h}).
   For a complete description see Lee and Lahiri (2002).
-  By default \code{winconst} is set \eqn{B / (4 \times \sqrt(B))}{B / (2
-  x sqrt(B))}. This way we ensure to have at least eight spatial blocks.
-  The \code{winstp} parameter is used to determine the sub-window step. The latter is given by the
+  By default \code{winconst} is set \eqn{B / (4 \times \sqrt(B))}{B / (4
+  x sqrt(B))}.  The \code{winstp} parameter is used to determine the sub-window step. The latter is given by the
   proportion of the sub-window size, so that when \code{winstp=1} there
   is not overlapping between contiguous sub-windows.
   In the spatial case by default \code{winstp=0.5}.
@@ -357,8 +356,7 @@ Rf with marginal counts data
   Observations, that fall in disjoint or overlapping windows
   are considered indipendent samples.
 
-  In the spatio-temporal case the subsampling is meant only in time as
-  described by Li et al. (2007). Thus, \code{winconst_t} represents
+  In the spatio-temporal case  \code{winconst_t} represents
   the lenght of the temporal sub-window. By default the size of the
   sub-window is computed following the rule established in Li et al. (2007).
   By default \code{winstp} is the time step.
