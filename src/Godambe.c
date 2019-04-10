@@ -1020,8 +1020,6 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                       int *ns, int *NS)
 
 {
-    //Rprintf("A. winc: %f winstp:%f\n",*winc,*winstp);
-    //Rprintf("DYN!!! :%d ncoord[0]:%d ntime[0]:%d\n",cdyn[0], ncoord[0],ntime[0]);
     double meanl,meanm,beta,rho=0,lags=0.0,lagt=0.0,weigths=1.0, *rangex, *rangey,*gradient;
     double *sdata,*s2data,*xgrid,*ygrid,*scoordx,*scoordy,*sublagt,*subvari, *s2cx,*s2cy;
     double *sumgrad,*gradcor;
