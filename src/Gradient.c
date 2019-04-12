@@ -391,11 +391,11 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // }
    /* Derivvativve of the difference respect with the shape*/   
    if(flag[nbetas+2]==1) { 
-    delta=sqrt(EPS)*shape;
+    delta=R_pow(EPS,1/2)*shape;
      //delta=R_pow(EPS,1/3);
     grad[i]=(log(biv_Weibull(rhosill,u,v,ai,aj,shape+delta)) -
                  ff)/(delta); 
-    //Rprintf("%f %f ----grad3---%f\n",u,v,grad[i]);
+    ///Rprintf("----grad3---%f\n",grad[i]);
     i++; 
   }
     h=0;
@@ -413,6 +413,7 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
 //Rprintf("%f %f %f %f %f %f %f \n",grad[0],grad[1],grad[2],grad[3],grad[4],grad[5],grad[6]);
   return;
 }
+
 
 
 void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,

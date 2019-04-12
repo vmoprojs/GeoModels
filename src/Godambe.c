@@ -282,6 +282,8 @@ for(t=0;t<ntime[0];t++){
          if(!ISNAN(data[i+NS[t]]-mean[i+NS[t]])&&!ISNAN(data[j+NS[v]]-mean[j+NS[v]]) ){
                    lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
 	             if(lags<=maxdist[0]){
+
+                b++;
                                         for(o=0;o<*nbetas;o++) {
                                             Xi[o]=X[i+NS[t]][o];
                                             Xj[o]=X[j+NS[v]][o];
@@ -369,14 +371,15 @@ for(t=0;t<ntime[0];t++){
                  for(d=0;d<*npar;d++) {
                      if(R_FINITE(grad[d]))
                   score[d]=score[d]+grad[d]*weigths;}
-	             b++;}}}}
+	             }}}}
 
 else {
-           lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ns[v];j++){  
+             lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
           if(!ISNAN(data[i+NS[t]]-mean[i+NS[t]])&&!ISNAN(data[j+NS[v]]-mean[j+NS[v]])){
             lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+                           b++;
                                    for(o=0;o<*nbetas;o++) {
                                             Xi[o]=X[i+NS[t]][o];
                                             Xj[o]=X[j+NS[v]][o];
@@ -465,7 +468,6 @@ else {
                     for(d=0;d<*npar;d++) {
                      if(R_FINITE(grad[d]))
                   score[d]=score[d]+grad[d]*weigths;}
-		b++;
 		}}}}}}}
           *np=b;
     Free(gradcor);// Correlation gradient  (double *) Calloc(*nparc,double);
@@ -1188,6 +1190,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
             if(       //Anche le finestre che hanno "pochi" punti(griglia irregolare)
                (npts[0]>5))   {//OJO
                 nsub1++;
+                          nwpair=0;//initialize the number of pairs in the window
                 for(f=0;f<nsub_t;f++){//loop for the number of tmporal sub-sampling:
                     
                     sumgrad=(double *) Calloc(npar[0],double);
@@ -1206,6 +1209,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                     //======================================/
                     //computing gradient in the window/
                     //======================================/
+
+
                     if(ntimeS[0]>5)
                     {
                         for(t=0;t<nstime;t++){

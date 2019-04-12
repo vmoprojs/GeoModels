@@ -16,7 +16,7 @@ GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1))
 {
 
 k=1;res=NULL;#H=list();
-if(fit$coordt==0) fit$coordt=NULL
+if(length(fit$coordt)==1) fit$coordt=NULL
 print("Parametric bootstrap can be time consuming ...")
 while(k<=K){
 data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
@@ -38,11 +38,13 @@ estimation=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fi
 
 if(estimation$convergence=="Successful"){
 res=rbind(res,estimation$param)
+print(k)
 k=k+1
+
 }}
 
 dimat=fit$numtime*fit$numcoord; numparam=length(fit$param)
-invG=var(res); G=solve(invG)
+invG=var(res); G=try(solve(invG),silent=TRUE);if(!is.matrix(G)) print("Bootstrap estimated Godambe matrix is singular")
 stderr=sqrt(diag(invG))
 
 if((fit$likelihood=="Marginal"&&(fit$type=="Pairwise"))||fit$likelihood=="Conditional"&&(fit$type=="Pairwise"))
