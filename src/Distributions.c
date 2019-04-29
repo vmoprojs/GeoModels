@@ -181,7 +181,7 @@ return(dens);
 /*********************************/
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
 {
-    double ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0,C=0.0;double ci=exp(mui);double cj=exp(muj);;
+    double ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
     k=pow(gammafn(1+1/shape),-1);
     ui=zi/ci;uj=zj/cj;
    // if(corr)   {
@@ -790,6 +790,7 @@ double cdf_norm2(double lim1,double lim2,double a11,double a12, double a22)
 
 
 // compute the bivariate normal cdf for the bernoulli RF:
+// compute the bivariate normal cdf for the bernoulli RF:
 double pbnorm(int *cormod, double h, double u, double mean1, double mean2, 
   double nugget, double var,double *par, double thr)
 {
@@ -801,7 +802,6 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
   res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
   return(res);
 }
-
 
 
 
@@ -1686,7 +1686,7 @@ double phalf_gauss (double z){
 double pbnorm_two_piece(int *cormod, double h, double u, 
     double xi, double xj, double nugget, double var,double eta,double *par)
 {
-    double p11,g_eta=0.0,q_g_eta=0.0,aux1=0.0,aux2=0.0,dens=0.0,corr=0.0;
+    double p11,g_eta=0.0,q_g_eta=0.0,dens=0.0,corr=0.0;
     double etamos,etamas;
     g_eta   = (1 - eta)/2;
     q_g_eta = qnorm(g_eta,0,1,1,0);

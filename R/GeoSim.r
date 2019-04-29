@@ -39,10 +39,14 @@ forGaussparam<-function(model,param,bivariate)
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2","skew_1","skew_2"))] <- NULL
    }
 
-    if(model %in% c("Tukey","SinhAsinh")){
+    if(model %in% c("Tukeygh","SinhAsinh")){
      if(!bivariate) param[which(names(param) %in% c("skew","tail"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("skew_1","skew_2","tail_1","tail_2"))] <- NULL
    }
+      if(model %in% c("Tukeyh"))  {
+     if(!bivariate) param[which(names(param) %in% c("tail"))] <- NULL
+     if(bivariate)  param[which(names(param) %in% c("tail_1","tail_2"))] <- NULL
+   } 
     if(model %in% c("Gamma","LogLogistic","Weibull"))  {
      if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
@@ -55,6 +59,7 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    }  
+   
     if(model %in% c("Gamma2"))  {
      if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
     # if(bivariate)  param[which(names(param) %in% c("shape1_1","shape1_2","shape2_1","shape2_2"))] <- NULL
@@ -145,7 +150,7 @@ forGaussparam<-function(model,param,bivariate)
            if(num_betas==1)  mm<-param$mean
            if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
-        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss",
+        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
         {
           vv<-param$sill;
@@ -162,7 +167,7 @@ forGaussparam<-function(model,param,bivariate)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
         }}
 #################################
-  if(model %in% c("Tukey","SinhAsinh"))  {
+  if(model %in% c("Tukeygh","SinhAsinh"))  {
          if(!bivariate){
           mm<-param$mean;param$mean=0
           vv<-param$sill;param$sill=1
@@ -174,15 +179,14 @@ forGaussparam<-function(model,param,bivariate)
             tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2)
         }}
 
-    if(model %in% c("Tukey"))  {
+    if(model %in% c("Tukeyh"))  {
          if(!bivariate){
           mm<-param$mean;param$mean=0
           vv<-param$sill;param$sill=1
-          sk<-param$skew; tl<-param$tail}
+          tl<-param$tail}
          else {
             mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
             vv1<-param$sill_1;param$sill_1=1;vv2<-param$sill_2;param$sill_2=1;vv=c(vv1,vv2)
-            sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
             tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2)
         }}
 #################################
@@ -325,17 +329,36 @@ if(model %in% c("poisson","Poisson"))   {
             }
         }
 
- if(model %in% c("Tukey"))   { 
-     t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
-     tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
-     if(sk) {   vvar=((exp(sk2 * 2/(1-2*tl)) - 2* exp( (sk2 *0.5)/(t1-tl^2))    +1))/(sk2*t1 - tl^2) - tm^2
-                trans=(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk
-                sim=mm+sqrt(vv/vvar)*trans }
-     else {
-             vvar=(1-2*tl)^(-1.5)
-             if(tl)   { trans=sim*exp(0.5*tl*sim^2); sim=mm+sqrt(vv/vvar)*trans }
-             else  { sim=mm+sqrt(vv)*sim }
+ if(model %in% c("Tukeygh"))   { 
+    # t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
+     #tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
+     if(!sk && !tl) {sim= mm+sqrt(vv)*sim}
+     if(!sk && tl) {sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)}
+     if(!tl && sk) {sim= mm+sqrt(vv)* (exp(sk*sim)-1)/sk}
+     if(tl&&sk) {
+                #vvar=((exp(sk2 * 2/(1-2*tl)) - 2* exp( (sk2 *0.5)/(t1-tl^2))    +1))/(sk2*t1 - tl^2) - tm^2
+                #sim=mm+sqrt(vv/vvar)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk
+                sim=mm+sqrt(vv)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk
+              }
+
+    ##############################################################################        
+      if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
             }
+        }
+   ############################################################################## 
+  if(model %in% c("Tukeyh"))   { 
+    # t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
+     #tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
+     if(!tl) {sim= mm+sqrt(vv)*sim}
+     if(tl) {sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)}
+ 
+    ##############################################################################        
       if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)

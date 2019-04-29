@@ -528,8 +528,7 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
-
-                   h=0;
+      h=0;
      kk=0;
   for(j=i;j<(i+*nparcT);j++) { 
       
@@ -537,10 +536,12 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
        delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
-        grad[kk+i]=(log(d2lognorm(u,v,sill,nugget, ai, aj,rhod)) - ff)/delta;
+       
+ grad[kk+i]=(log(d2lognorm(u,v,sill,nugget, ai, aj,rhod)) - ff)/delta;
     kk++;}
       h++;
     }
+
   return;
 }
 

@@ -234,29 +234,79 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             #}
         }
 ###############################################################
-            if(model==9)  {  ## tukey  Gaussian
-            fname <-"CorrelationMat_tukey2"
-            #if(spacetime) fname <- "CorrelationMat_st_tukey2"
-            if(spacetime) fname <- "CorrelationMat_st_dyn_tukey2"
-           # if(bivariate) fname <- "CorrelationMat_biv_tukey_dyn2"
-            if(bivariate) fname <- "CorrelationMat_biv_tukey_dyn2"
-            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
-             as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns), as.integer(NS),
-             PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+            if(model==9)  {  ## Tukeygh  Gaussian
+           # fname <-"CorrelationMat_tukeygh2"
+            #if(spacetime) fname <- "CorrelationMat_st_Tukeygh2"
+           # if(spacetime) fname <- "CorrelationMat_st_dyn_tukeygh2"
+           # if(bivariate) fname <- "CorrelationMat_biv_Tukeygh_dyn2"
+            #if(bivariate) fname <- "CorrelationMat_biv_tukeygh_dyn2"
+            #cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
+            # as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns), as.integer(NS),
+            # PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+ h=nuisance['tail']
+ g=nuisance['skew']
+              fname <-"CorrelationMat2"
+     #  if(spacetime) fname <- "CorrelationMat_st2"
+      if(spacetime) fname <- "CorrelationMat_st_dyn2"
+      #  if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+        cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
+          as.integer(ns),as.integer(NS),
+          PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
             corr=cr$corr
-            if(!bivariate)                  {
-              varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
-              corr <- corr * nuisance['sill']
+            if(!bivariate)                
+
+  if(!g&&!h){     #ok
+              vv=1 # variance
+              varcov <-  diag(dime)
+               varcov[lower.tri(varcov)] <- corr
+              varcov <- t(varcov)
+              varcov[lower.tri(varcov)] <- corr 
+              varcov=varcov*vv*as.numeric(nuisance['sill']) } 
+
+  if(g&&!h){  #  ok
+              vv=( -exp(g^2)+exp(g^2*2))*g^(-2)
+              varcov <-  diag(dime)
+              corr <- (( -exp(g^2)+exp(g^2*(1+corr)))*g^(-2))/vv
+              varcov[lower.tri(varcov)] <- corr
+              varcov <- t(varcov)
+              varcov[lower.tri(varcov)] <- corr 
+              varcov=varcov*vv*as.numeric(nuisance['sill']) } ## cov matrix
+   if(!g&&h){ ##ok
+              vv=(1-2*h)^(-1.5) # variance
+              varcov <-  diag(dime)
+              corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/vv
+              varcov[lower.tri(varcov)] <- corr
+              varcov <- t(varcov)
+              varcov[lower.tri(varcov)] <- corr 
+              varcov=varcov*vv*as.numeric(nuisance['sill']) } ## cov matrix
+
+  if(h&&g){ # no ok
+              varcov <-  diag(dime)
+              vv=(exp(g^2*(2)/(1-h*2))-2*exp(1/((1-h)^2-h^2)*(g^2/2))+1)/(g^2*((1-h)^2-h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2
+              corr <-((exp(g^2*(1+corr)/(1-h*(1+corr)))-2*exp((1-h*(1-corr^2))/((1-h)^2-h^2*corr^2)*(g^2/2))+1)/(g^2*((1-h)^2-corr^2*h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2) /vv
               varcov[lower.tri(varcov)] <- corr
               varcov <- t(varcov)
               varcov[lower.tri(varcov)] <- corr  
-              } ## correlation matrix
+              varcov=varcov*vv*as.numeric(nuisance['sill']) } ## cov matrix## correlation matrix
+                
+              #if(nuisance['tail']&&!uisance['skew']){
+              #varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
+              #corr <- corr * nuisance['sill']
+              #varcov[lower.tri(varcov)] <- corr
+              #varcov <- t(varcov)
+              #varcov[lower.tri(varcov)] <- corr  } ## correlation matrix
+
             #   if(bivariate)      {
             #    varcov<-diag(dime)
             #    varcov[lower.tri(varcov,diag=T)] <- corr
             #    varcov <- t(varcov)
             #    varcov[lower.tri(varcov,diag=T)] <- corr
             #}
+        
         } 
 ######################################################################        
 if(model==12)   ##  student case 

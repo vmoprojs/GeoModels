@@ -879,6 +879,7 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
       if(!winc[1]) winc[1]=winc[0];
     } 
     if(!winstp[0]) winstp[0]=0.5;
+    Rprintf("%f %f %f %f \n",deltax,deltay,winc[0],winc[1]);
     dimwinx=winc[0] * sqrt(deltax);// sub-window x length depends on a constant: deafault??
     dimwiny=winc[1] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
@@ -906,11 +907,7 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                             sdata,xgrid[i]+dimwinx,xgrid[i],ygrid[j]+dimwiny,ygrid[j],sX,X);//  create data and coordinates of the sub-windows
                 if(*npts>4){
                     nsub++;
-
                     nwpair=0;//initialize the number of pairs in the window
-
-
-
                      for(l=0;l<(*npts-1);l++){
                                 for(m=(l+1);m<*npts;m++){
                             if(!ISNAN(sdata[l])&&!ISNAN(sdata[m]) ){
@@ -979,8 +976,6 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                                       Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
                         break;
-                       
-                       
                     }
                     if(*weigthed) weigths=CorFunBohman(lag,maxdist[0]);
                                         else          weigths=1;
@@ -1339,9 +1334,6 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                     //if(*model==1)   GradCorrFct(rho,cormod,eps[0],flagcor,gradcor,lags,lagt,0,0,parcor);
                                                     switch(*model){
                                                         case 1:   // gaussian case
-                                                        //Grad_Pair_Gauss(rho,flagnuis,flagcor,gradcor,gradient,npar,nparc,nbetas[0],nuis,
-                                                          //              s2data[l]-meanl,
-                                                            //            s2data[m]-meanm,Xl,Xm);
                                                          Grad_Pair_Gauss2(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
@@ -1368,16 +1360,14 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 21:
-                                                            //  Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                        //                s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
-                                                          //              betas);
                                                              Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 22:
                                                         Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
-                                                        break;
+                                                  
+                                                           break;
                                                         case 24:
                                                         Grad_Pair_LogLogistic(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
@@ -1389,8 +1379,6 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         case 26:
                                                         Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
-                                                         //Grad_Pair_Weibull(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                          ///              s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,betas);
                                                         break;
                                                     }
                                                     //==============   end cases ============/
@@ -1402,10 +1390,9 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         
                                                     }}}}}
                                 }}}//END t loop
-                        
-                        h=0;
-                        for(p=0;p<*npar;p++){//update the sub-variance in the subwindow
-                            for(q=p;q<*npar;q++){subvari[h]=subvari[h]+sumgrad[p]*sumgrad[q]/nwpair;h++;}}
+                        h=0;//update the sub-variance in the subwindow
+                        for(p=0;p<*npar;p++){
+                               for(q=p;q<*npar;q++){subvari[h]=subvari[h]+sumgrad[p]*sumgrad[q]/nwpair;h++;}}
                         
                         Free(sumgrad); Free(s2data);Free(s2cx);Free(s2cy);
                         int sss =0;
@@ -1419,10 +1406,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     }//END i loop
     
     Free(ns_sub);Free(NS_sub);Free(res_sub);
-    for(h=0;h<nvari;h++)
-    {
-        varimat[h]= np[0]*subvari[h]/(nsub);
-    }//update variability matrix
+    for(h=0;h<nvari;h++)  varimat[h]= np[0]*subvari[h]/(nsub); //update variability matrix
+    
     
     Free(gradcor);
     Free(gradient);

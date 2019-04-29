@@ -2034,7 +2034,7 @@ void CorrelationMat_geom2(double *rho,double *coordx, double *coordy, double *co
 }
 
 // Computation of the upper (lower) triangular spatial tukey cov matrix
-void CorrelationMat_tukey2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
+void CorrelationMat_tukeygh2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
  double *nuis, double *par,double *radius,int *ns, int *NS)
 {
   int i=0,j=0,h=0;// check the paramaters range:
@@ -2220,7 +2220,7 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
 
 
 
-void CorrelationMat_st_dyn_tukey2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
+void CorrelationMat_st_dyn_tukeygh2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
   int *ns, int *NS)
 {
   int i=0,j=0,t=0,v=0,h=0; 
@@ -2461,7 +2461,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
 
 
 
-void Corr_c_tukey(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
+void Corr_c_tukeygh(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
       int *model,int *tloc,int *n, int *ns,int *ntime, double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
     int i,j,h=0;

@@ -485,30 +485,54 @@ if(covmatrix$model %in% c(2,11,14,19))
 ########################################################################################
 ######################  to do!!!!!##################################################################
 ########################################################################################
-if(covmatrix$model==9) {   ### ### optimal linear  tukey gaussian case 
+if(covmatrix$model==9) {   ### ### optimal linear  Tukeygh gaussian case 
          if(type=="Standard"||type=="standard") {
           me=as.numeric(param$mean)
-          nug=as.numeric(covmatrix$param["nugget"]); v=as.numeric(covmatrix$param["sill"])
-          sk=as.numeric(covmatrix$param["skew"]); tl= as.numeric(covmatrix$param["tail"])
-          vvar=2 #####
-        nuis<-c(me,nug,v,sk,tl)
-    ## Computing covariance between the locations to predict and the locations observed
-    cc=.C('Corr_c_tukey',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-    as.integer(corrmodel),as.integer(covmatrix$grid),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-    as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-    as.integer(n),as.integer(covmatrix$ns),as.integer(covmatrix$numtime),as.double(nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
-    as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-    as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+          nug=as.numeric(covmatrix$param["nugget"]); 
+          v=as.numeric(covmatrix$param["sill"])
+          g=as.numeric(covmatrix$param["skew"]); 
+          h= as.numeric(covmatrix$param["tail"])
 
-     t1=1-tl;t2=t1^2-tl^2;sk2=sk^2
-     if(sk==0) tm=0                         ###means
-     else      tm=(exp(sk2/(2*t1))-1)/(sk*sqrt(t1))
+
+  #        vvar=2 #####
+  #      nuis<-c(me,nug,v,sk,tl)
+  #  ## Computing covariance between the locations to predict and the locations observed
+  #  cc=.C('Corr_c_tukeygh',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
+  #  as.integer(corrmodel),as.integer(covmatrix$grid),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
+  #  as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
+  #  as.integer(n),as.integer(covmatrix$ns),as.integer(covmatrix$numtime),as.double(nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
+  #  as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
+  #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+
+
+
+   corri=cc$corri
+
+     if(g&&!h){  vv=( -exp(g^2)+exp(g^2*2))*g^(-2);
+                 corri <- (( -exp(g^2)+exp(g^2*(1+corri)))*g^(-2))/vv}
+     if(!g&&h){ 
+              vv=(1-2*h)^(-1.5) 
+              corri <- (-corri/((1+h*(corri-1))*(-1+h+h*corri)*(1+h*(-2+h-h*corri^2))^0.5))/vv
+            }
+      if(h&&g){ 
+      vv=(exp(g^2*(2)/(1-h*2))-2*exp(1/((1-h)^2-h^2)*(g^2/2))+1)/(g^2*((1-h)^2-h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2
+      corri <-((exp(g^2*(1+corri)/(1-h*(1+corri)))-2*exp((1-h*(1-corri^2))/((1-h)^2-h^2*corri^2)*(g^2/2))+1)/(g^2*((1-h)^2-corri^2*h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2) /vv
+    }
+              
+
+   #    t1=1-h;t2=t1^2-h^2;sk2=g^2
+   #  if(sk==0) tm=0                         ###means
+   #else      tm=(exp(sk2/(2*t1))-1)/(sk*sqrt(t1))
+
+
      mm=me + sqrt(v) * tm
        ###inverse of cov matrix
-    
-       if(!bivariate) cc <- matrix(cc$corri*v,nrow=dimat,ncol=dimat2)
-
+       if(!bivariate) cc <- matrix(corri*v,nrow=dimat,ncol=dimat2)
        krig_weights <- t(getInv(covmatrix,cc))
+
+
+
+
        
        if(type_krig=='Simple'||type_krig=='simple')  {
             if(!bivariate)  pp <- mm+ krig_weights %*% (c(dataT)-mm)   ## simple kriging predictor for skew data
@@ -523,7 +547,7 @@ if(covmatrix$model==9) {   ### ### optimal linear  tukey gaussian case
             varpred=matrix(c(vv),nrow=tloc,ncol=numloc);
             } 
           else{pred=c(pp);varpred=c(vv)}
-    }}  ##end  tukey case
+    }}  ##end  Tukeygh case
 ########################################################################################
 ########################################################################################
 ########################################################################################
