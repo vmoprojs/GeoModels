@@ -33,7 +33,7 @@ __kernel void Comp_Pair_Logistic_st2_OCL(__global const double *coordt,__global 
     
     
     int m=0,v =0;
-    double corr=0.0,zi=0.0,zj=0.0,lags=0.0,lagt=0.0,weights=1.0, sum=0.0,bl=0.0;
+    double corr=0.0,zi=0.0,zj=0.0,lags=0.0,lagt=0.0,weights=1.0, sum=0.0;
     
     int m1 = get_local_id(0);
     int v1 = get_local_id(1);
@@ -68,9 +68,7 @@ __kernel void Comp_Pair_Logistic_st2_OCL(__global const double *coordt,__global 
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
                            // if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-bl=biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1);
-                                 if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
-                            sum+= weights*log(bl);
+                            sum+= weights*log(biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1));
                             
                         }}}}
             else{
@@ -84,11 +82,7 @@ bl=biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1);
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
                             //if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
-
-                            bl=biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1);
-                              if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
-
-                            sum+= weights*log(bl);
+                            sum+= weights*log(biv_Logistic(corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis1));
 
                         }}}}}
         res[i] = sum;

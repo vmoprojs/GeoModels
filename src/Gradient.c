@@ -700,7 +700,7 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  double nugget=nuis[nbetas+1];
  double sill=nuis[nbetas+2];
  double rho1=(1-nugget)*rho;
- double ff=log(biv_T(rho1,u,v,ai,aj,df,sill));
+ double ff=log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill );
 /*
   // Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
@@ -710,22 +710,22 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_T(rho1,u,v,ai_d,aj_d,df,sill)) - ff)/delta; 
+   grad[i]=(log(biv_T(rho1,(u-ai_d)/sill,(v-aj_d)/sill,df)/sill) - ff)/delta; 
    i++; }
 }
   if(flag[nbetas]==1) { 
     delta=sqrt(EPS)*df; 
-    grad[i]=(log(biv_T(rho1,u,v,ai,aj,df+delta,sill))- ff)/delta;
+    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df+delta)/sill)- ff)/delta;
     i++; 
   }
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas+1]==1) { delta=sqrt(EPS)*nugget; 
-      grad[i]=(log(biv_T((1-(nugget+delta))*rho,u,v,ai,aj,df,sill)) - ff)/delta;
+      grad[i]=(log(biv_T((1-(nugget+delta))*rho,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill) - ff)/delta;
     i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*sill; 
-    grad[i]=(log(biv_T(rho1,u,v,ai,aj,df,sill+delta)) -ff )/delta;
+    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill+delta),(v-aj)/sqrt(sill+delta),df)/(sill+delta)) -ff )/delta;
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
@@ -738,7 +738,7 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
        
-           grad[kk+i]=(log(biv_T((1-nugget)*rhod,u,v,ai,aj,df,sill)) 
+           grad[kk+i]=(log(biv_T((1-nugget)*rhod,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill) 
             - ff)/delta;
     kk++;}
       h++;

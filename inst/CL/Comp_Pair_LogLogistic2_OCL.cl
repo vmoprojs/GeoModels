@@ -4,7 +4,7 @@ __kernel void Comp_Pair_LogLogistic2_OCL(__global const double *coordx,__global 
 {
     
     int j, gid = get_global_id(0);
-    double corr,zi,zj,lags,weights=1.0,sum=0.0,bl=0.0;
+    double corr,zi,zj,lags,weights=1.0,sum=0.0;
     
     double maxdist = dou_par[6];
     double nuis0 = dou_par[4];
@@ -36,13 +36,8 @@ __kernel void Comp_Pair_LogLogistic2_OCL(__global const double *coordx,__global 
                     corr=CorFct(cormod,lags,0,par0,par1,par2,par3,0,0);
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-                    bl=biv_LogLogistic(corr,zi,zj,mean[j],mean[gid+j],nuis2);
-
-                      if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
-                            sum+= weights*log(bl);
-
-
-                    
+                    sum+=  weights*log(biv_LogLogistic(corr,zi,zj,mean[j],mean[gid+j],nuis2));
+                    //sum+=  weights*0.5;
                 }
                 
             }

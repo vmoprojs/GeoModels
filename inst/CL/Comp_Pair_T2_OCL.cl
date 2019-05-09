@@ -51,7 +51,7 @@ __kernel void Comp_Pair_T2_OCL(__global const double *coordx,__global const doub
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                     bl=biv_T(corr*(1-nuis1),(zi-mean[j])/sqrt(nuis2),(zj-mean[gid+j])/sqrt(nuis2),nuis0)/nuis2;
-                                  if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
+                               if(bl<0||bl>9999999999999999)  bl=1;
                     sum+= weights*log(bl);
            
                     

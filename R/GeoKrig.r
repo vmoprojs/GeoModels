@@ -314,26 +314,24 @@ if(type_krig=='Simple'||type_krig=='simple')  {
       if(mse) {
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
 if(covmatrix$model %in% c(1,12,27,29,10))  
-
-vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc))  ## simple variance  kriging predictor variance
+        {vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc)) } ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) 
-
-vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)- krig_weights%*%cc))
+       { vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)- krig_weights%*%cc))}
 #weibull
 if(covmatrix$model %in% c(26)) 
-vv=emuloc^2*diag(as.matrix(diag( gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1,dimat2)   
-                                                - krig_weights%*%cc))
+           {vv=emuloc^2*diag(as.matrix(diag( gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1,dimat2)   
+                                                - krig_weights%*%cc))}
 #loglogistic          
 if(covmatrix$model %in% c(24)) 
-vv=emuloc^2*diag(as.matrix(diag((2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/
-                       (pi*sin(2*pi/covmatrix$param['shape']))-1),dimat2) - krig_weights%*%cc))
+           {vv=emuloc^2*diag(as.matrix(diag((2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/
+                       (pi*sin(2*pi/covmatrix$param['shape']))-1),dimat2) - krig_weights%*%cc))}
 
 if(covmatrix$model==1&&logGausstemp)
-       vv <-    exp(muloc+covmatrix$param['nugget']+covmatrix$param['sill']/2)^2 *  
-                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%cc))) 
-               }        
-            }               
+       {vv <-    exp(muloc+covmatrix$param['nugget']+covmatrix$param['sill']/2)^2 *  
+                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%cc))) }
+               }     # end if(mse)   
+}               
 ##################################################################
 ################# ordinary kriging ###############################
 ################################################################## 
@@ -405,6 +403,7 @@ if(type=="Tapering"||type=="tapering")  {
            if(spacetime||bivariate) pred=matrix(t(pp),nrow=tloc,ncol=numloc)
            else pred=c(pp)
     }     ##### end tapering
+
 } #### 
 ####################################################################################################################################
 ###################### binomial and geometric case (only simple kriging) #####################################

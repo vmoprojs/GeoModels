@@ -159,6 +159,8 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Gaussian'||x$model=='Gauss'){ process <- 'Gaussian';model <- 'Gaussian'}
   if(x$model=='Gamma') { process <- 'Gamma'; model <- 'Gamma'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
+    if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian '}
+  if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian '}
   if(x$model=='Logistic') { process <- 'Logistic'; model <- 'Logistic'}
   if(x$model=='Gamma2'){ process <- 'Gamma2'; model <- 'Gamma2'}
   if(x$model=='LogGauss'||x$model=='LogGaussian'){ process <- 'Log Gaussian'; model <- 'LogGaussian'}

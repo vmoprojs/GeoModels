@@ -164,7 +164,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
                                     
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
    bl=biv_T((1-nugget)*corr,(zi-mean[(i+NS[t])])/sqrt(sill),
-                            (zj-mean[(j+NS[v])])/sqrt(sill),0,0,df,1)/sill;
+                            (zj-mean[(j+NS[v])])/sqrt(sill),df)/sill;
      if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
  
@@ -182,7 +182,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
                                      
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
    bl=biv_T((1-nugget)*corr,(zi-mean[(i+NS[t])])/sqrt(sill),
-                            (zj-mean[(j+NS[v])])/sqrt(sill),0,0,df,1)/sill;
+                            (zj-mean[(j+NS[v])])/sqrt(sill),df)/sill;
             if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
                                 }}}}
@@ -1813,6 +1813,85 @@ void Comp_Pair_Logistic2(int *cormod, double *coordx, double *coordy, double *co
 
 
 
+
+// Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
+void Comp_Pair_Gauss_misp_Pois2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0,N=2;
+    double lags=0.0, weights=1.0,nugget,corr,corr1,corr2,mui,muj,bl,z;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+double **M;
+        M= (double **) Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    
+    double *dat;
+    dat=(double *) Calloc(N,double);
+    nugget=nuis[0];
+       //Rprintf("%f %f %f\n",df,sill,nugget);
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+              
+             
+                    mui=exp(mean[i]);muj=exp(mean[j]);
+                     corr=CorFct(cormod,lags,0,par,0,0);
+                     corr2=corr*corr;
+                     z=4*mui*muj/(1-corr2);
+        corr1=corr2*(1-exp(-z/2)*(bessel_i(z/2,0,1)+bessel_i(z/2,1,1)));
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+
+                        M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
+                        dat[0]=data[i]-mui;dat[1]=data[j]-muj;
+                      bl=dNnorm(N,M,dat);
+                    //  if(!R_FINITE(bl)) { bl=0;}
+                        *res+= log(bl)*weights;
+                    }}}}            
+    // Checks the return values
+    if(!R_FINITE(*res)|| !*res)  *res = LOW;
+    //printf("CPU res: \t%f\n",res[0]);
+    return;
+}
+
+// Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
+void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0;
+    double lags=0.0, weights=1.0,sill,nugget,corr,corr1,df,bl;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0|| CheckCor(cormod,par)==-2){*res=LOW; return;}
+   //   if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+    // Set nuisance parameters:
+
+    df=1/nuis[0];
+    sill=nuis[2]*(df/( df-2));
+    nugget=nuis[1];
+       //Rprintf("%f %f %f\n",df,sill,nugget);
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+                     corr=CorFct(cormod,lags,0,par,0,0);
+        corr1=(df-2)*R_pow(gammafn((df-1)/2),2)/(2*R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nugget);
+                      if(!R_FINITE(bl)) { bl=0;}
+                        *res+= bl*weights;
+                    }}}}            
+    // Checks the return values
+    if(!R_FINITE(*res)|| !*res)  *res = LOW;
+    //printf("CPU res: \t%f\n",res[0]);
+    return;
+}
+
+
 /*********************************************************/
 void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                          int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
@@ -1831,7 +1910,7 @@ void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,do
                     corr=CorFct(cormod,lags,0,par,0,0);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                    bl=biv_T((1-nugget)*corr,(zi-mean[i])/sqrt(sill),
-                                            (zj-mean[j])/sqrt(sill),0,0,df,1)/sill;
+                                            (zj-mean[j])/sqrt(sill),df)/sill;
                      //if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
                       if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);

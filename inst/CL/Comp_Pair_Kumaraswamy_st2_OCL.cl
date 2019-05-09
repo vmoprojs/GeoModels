@@ -68,12 +68,10 @@ __kernel void Comp_Pair_Kumaraswamy_st2_OCL(__global const double *coordt,__glob
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-
-
-                          bl= weights*biv_Kumara((1-nugget)*corr,zi,zj,mean[l+NS[t]],mean[m+NS[v]],nuis2,nuis3);
+                            bl= weights*biv_Kumara((1-nugget)*corr,zi,zj,mean[l+NS[t]],mean[m+NS[v]],nuis2,nuis3);
                             
-                            if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
-                     
+                            if(bl<0||bl>9999999999999999||!isfinite(bl)) { bl=1;}
+                            //printf("A. bl: %f\n",bl);
                             sum+= weights*log(bl);
                             //printf("GPU: A. res: %f\n",sum);
                         }}}}
@@ -89,7 +87,7 @@ __kernel void Comp_Pair_Kumaraswamy_st2_OCL(__global const double *coordt,__glob
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
                             if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
                             bl=weights*biv_Kumara((1-nugget)*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis2,nuis3);
-                      if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
+                            if(bl<0||bl>9999999999999999||!isfinite(bl)) { bl=1;}
                             //printf("B. bl: %f\n",bl);
                             sum+= weights*log(bl);
                             //printf("GPU: B. res: %f\n",sum);

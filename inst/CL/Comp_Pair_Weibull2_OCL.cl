@@ -40,8 +40,7 @@ __kernel void Comp_Pair_Weibull2_OCL(__global const double *coordx,__global cons
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
 
                        bl=biv_Weibull(sill*corr,zi,zj,mean[gid+j],mean[j],nuis2);
-                         
-                                 if(bl<0||bl>9999999999999999||!isfinite(bl)||isnan(bl)||isinf(bl)) bl=1;
+                           if(bl<0||bl>9999999999999999)  bl=1;
                             sum+= weights*log(bl);
                     
                     sum+=  weights*log(bl);

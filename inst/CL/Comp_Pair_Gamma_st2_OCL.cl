@@ -67,9 +67,8 @@ __kernel void Comp_Pair_Gamma_st2_OCL(__global const double *coordt,__global con
                         if(!isnan(zi)&&!isnan(zj) ){
                             corr =CorFct_st(cormod,lags, 0,par0,par1,par2,par3,par4,par5,par6,0,0);
                            // if(weigthed) {weights=CorFunBohman(lags,maxdist);}
-
-                          bl=biv_gamma(sill*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis2);
-                                 if(bl<0||bl>9999999999999999||!isfinite(bl)||isnan(bl)||isinf(bl)) bl=1;
+                         bl=biv_gamma(sill*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis2);
+                           if(bl<0||bl>9999999999999999)  bl=1;
                             sum+= weights*log(bl);
                         }}}}
             else{
@@ -84,10 +83,9 @@ __kernel void Comp_Pair_Gamma_st2_OCL(__global const double *coordt,__global con
                             corr =CorFct_st(cormod,lags, lagt,par0,par1,par2,par3,par4,par5,par6,0,0);
                            // if(weigthed) {weights=CorFunBohman(lags,maxdist)*CorFunBohman(lagt,maxtime);}
                               bl=biv_gamma(sill*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis2);
-                        
-                                      if(bl<0||bl>9999999999999999||!isfinite(bl)||isnan(bl)||isinf(bl)) bl=1;
+                           if(bl<0||bl>9999999999999999)  bl=1;
                             sum+= weights*log(bl);
-                        }
+                            sum+= weights*log(biv_gamma(sill*corr,zi,zj,mean[(l+NS[t])],mean[(m+NS[v])],nuis2));}
                     }}}}
         res[i] = sum;
     }

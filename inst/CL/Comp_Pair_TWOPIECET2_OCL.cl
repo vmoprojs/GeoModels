@@ -53,7 +53,6 @@ __kernel void Comp_Pair_TWOPIECET2_OCL(__global const double *coordx,__global co
                     p11=pbnorm(cormod,lags,0,qq,qq,0,1,par0,par1,par2,par3,0);
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                     bl=biv_two_pieceT(corr,zi,zj,nuis2,nuis0,nuis3,p11,mean[j],mean[gid+j]);
-                          if(bl<0||bl>9999999999999999||!isfinite(bl)||isnan(bl)||isinf(bl)) bl=1;
                     //printf("corr:%f bl:%f\n",corr,bl);
                     sum+= weights*log(bl);
                     //printf("corr:%f bl:%f sum:%f\n",corr,bl,sum);

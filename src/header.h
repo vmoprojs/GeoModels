@@ -819,7 +819,7 @@ double logfac(int n);
 
 /*for bivariate t distributions*/
 double Poch(double q,double n);
-double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,double sill);
+double biv_T(double rho,double zi,double zj,double nuu);
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,double p11,
   double mui,double muj);
 /**********************************************/

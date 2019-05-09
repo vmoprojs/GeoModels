@@ -1498,11 +1498,9 @@ void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 }
 /***********************************************************/
 /*********** bivariate T distribution********************/ 
-double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,double sill)
+double biv_T(double rho,double zi,double zj,double nuu)
 {
   int k=0; 
-  zi=(zi-ai)/sqrt(sill);
-  zj=(zj-aj)/sqrt(sill);
   double nu=1/nuu;
   double res0=0.0,RR=0.0,pp1=0.0,pp2=0.0;
   double bb1,bb2;
@@ -1537,8 +1535,8 @@ double biv_T(double rho,double zi,double zj,double ai,double aj,double nuu,doubl
     bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
     RR=(b1/c1)*a1+(b2/c2)*a2;
-    if(!R_FINITE(RR)) return(res0);
-    if((fabs(RR-res0)<EPS)  ) {break;}
+   if(!R_FINITE(RR)) return(res0);
+    if((fabs(RR-res0)<1e-90)  ) {break;}
     else {res0=RR;}
         k++;
     }

@@ -171,12 +171,14 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     if(is.null(start)) start <- NA else start <- unlist(start)
     if(is.null(fixed)) fixed <- NA else fixed <- unlist(fixed)
     ### Checks if all the starting values have been passed by the user:
+
     if(initparam$numstart==initparam$numparam) {
 
 
 
         if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','Beta','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
-          'Tukeygh','Tukeyh','Kumaraswamy','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT',"TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss")) & 
+          'Tukeygh','Tukeyh','Kumaraswamy','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT',"Gaussian_misp_StudentT","Gaussian_misp_Poisson",
+          "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss")) & 
           (type %in% c('Standard','Pairwise','Tapering')))
         {
 ##########################################################        
@@ -236,7 +238,6 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
               else {initparam$fixed['mean_2'] <- fixed["mean_2"]}
               }
             }
-
         paramrange=TRUE
         if(paramrange) paramrange <- SetRangeParam(names(initparam$param), length(initparam$param))
         else  paramrange <- list(lower=NULL, upper=NULL)

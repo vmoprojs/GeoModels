@@ -44,7 +44,7 @@ __kernel void Comp_Pair_Kumaraswamy2_OCL(__global const double *coordx,__global 
                     
                     if(weigthed) {weights=CorFunBohman(lags,maxdist);}
                     bl=biv_Kumara(sill*corr,zi,zj,mean[gid+j],mean[j],nuis2,nuis3);
-                      if(bl<0||bl>9999999999999999||!isfinite(bl))  bl=1;
+                    if(bl<0||bl>9999999999999999||!isfinite(bl)) { bl=1;}
                     sum+= weights*log(bl);
                 }
             }
