@@ -331,6 +331,38 @@ if(model==12)   ##  student case
         varcov=varcov*vv*as.numeric(nuisance['sill'])
         }
         }
+############################################################### 
+  if(model==18)   ##  skew student case 
+    {
+        fname <-"CorrelationMat2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+        cc=cr$corr
+
+        nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
+
+        sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
+        CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
+        corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
+        
+        corr=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
+
+
+  if(!bivariate) {
+        # Builds the covariance matrix:
+        varcov <-  diag(dime)
+        varcov[lower.tri(varcov)] <- corr
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- corr   
+        vv=(nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2
+        varcov=varcov*vv*as.numeric(nuisance['sill'])
+        }
+        }
 ###############################################################           
  
 if(model==27)   ##  two piece student case case

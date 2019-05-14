@@ -1837,19 +1837,75 @@ double **M;
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
               
-             
+             //***********/
                     mui=exp(mean[i]);muj=exp(mean[j]);
                      corr=CorFct(cormod,lags,0,par,0,0);
                      corr2=corr*corr;
-                     z=4*mui*muj/(1-corr2);
-        corr1=corr2*(1-exp(-z/2)*(bessel_i(z/2,0,1)+bessel_i(z/2,1,1)));
+                     z=4*sqrt(mui*muj)/(1-corr2);
+                      corr1=corr2*(1-exp(-z/2)*(bessel_i(z/2,0,1)+bessel_i(z/2,1,1)));
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-
                         M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
                         dat[0]=data[i]-mui;dat[1]=data[j]-muj;
+            //***********/
                       bl=dNnorm(N,M,dat);
+                       //
+                       // bl=log_biv_Norm(corr1,data[i]-mui,data[j]-muj,mui,muj,sqrt(mui*muj),nugget);
                     //  if(!R_FINITE(bl)) { bl=0;}
                         *res+= log(bl)*weights;
+                    }}}}   
+   for(i=0;i<N;i++)  {Free(M[i]);}
+    Free(M);         
+    // Checks the return values
+    if(!R_FINITE(*res)|| !*res)  *res = LOW;
+    //printf("CPU res: \t%f\n",res[0]);
+    return;
+}
+
+// Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
+void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0;
+    double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr1,corr2,df,bl;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1 ||CheckCor(cormod,par)==-2){*res=LOW; return;}
+   //   if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+    // Set nuisance parameters:
+
+    df=1/nuis[0];
+    nugget=nuis[1];
+    sill=nuis[2];
+    skew=nuis[3];
+    //auxuliary variables
+    double D1=(df-1)/2;
+    double D2=df/2;
+    double skew2=R_pow(skew,2);
+    
+    double MM=sqrt(df)*skew*gammafn(D1)/(sqrt(M_PI)*gammafn(D2));
+    double FF=df/(df-2) -  (df*skew2/M_PI)*R_pow(gammafn(D1)/gammafn(D2),2);
+
+    
+    double CC=(M_PI*(df-2)*R_pow(gammafn(D1),2)) /(2*( M_PI*R_pow(gammafn(D2),2) *(1+skew2) - skew2*(df-2)*R_pow(gammafn(D1),2)) );
+    double KK=2*skew2/M_PI;
+
+
+       //Rprintf("%f %f %f\n",df,sill,nugget);
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+                     corr=CorFct(cormod,lags,0,par,0,0);
+        corr2= (1/(-1+1/KK))*(  sqrt(1-R_pow(corr,2)) + corr*asinh(corr) - 1 )+(1-skew2)*corr/(1-KK);
+        corr1=CC* ( hypergeo(0.5,0.5,df/2,R_pow(corr,2)) * 
+                  ((1+skew2*(1-2/M_PI))*corr2 + KK)  -
+                            KK );
+
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      bl=log_biv_Norm(corr1,data[i],data[j],mean[i]+MM*sqrt(sill),mean[j]+MM*sqrt(sill),sill*FF,nugget);
+                      if(!R_FINITE(bl)) { bl=0;}
+                        *res+= bl*weights;
                     }}}}            
     // Checks the return values
     if(!R_FINITE(*res)|| !*res)  *res = LOW;

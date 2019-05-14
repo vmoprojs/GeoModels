@@ -180,6 +180,18 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20))
                         nu=1/as.numeric(covmatrix$param['df'])
                         corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2))*cc)/(2*gamma(nu/2)^2)
                       }
+           if(covmatrix$model==18) # skew student T
+                         {
+                        cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
+                        vv=as.numeric(covmatrix$param['sill']) 
+                        nu=1/as.numeric(covmatrix$param['df'])
+                        sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
+                        KK=2*sk2/pi
+                        D1=(nu-1)/2;D2=nu/2;
+                        CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
+                        corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
+                        corri=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
+                      }
         if(covmatrix$model==26) {  # weibull 
                         sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
@@ -241,6 +253,8 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
           if(covmatrix$model==10) cc=cc* (vv+sk^2*(1-2/pi)) 
           #studentT
           if(covmatrix$model==12) cc=cc* vv *(nu/(nu-2)) 
+          #skewstudendT
+          if(covmatrix$model==18) cc=cc* vv *(nu/(nu-2) -  (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
           ##two piece studentT
           if(covmatrix$model==27)   
                           cc=cc* vv *(nu*(3*sk2+1)/(nu-2)-(4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) )       

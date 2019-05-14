@@ -142,6 +142,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==35,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_T'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==37,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_SkewT'
+                                              if(varest & vartype==2) hessian <- TRUE}
      if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
                                               #print(fname)
