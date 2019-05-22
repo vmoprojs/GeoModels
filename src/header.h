@@ -119,6 +119,11 @@ double biv_skew2(double corr,double zi,double zj,double vari1,double vari2,doubl
 double triv_skew(double x,double c_0i,double c_0j, double rho,double data_i,double data_j,double *nuis);
 
 
+double LambertW(double z);
+double inverse_lamb(double x,double tail);
+double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,double corr);
+double biv_tukey_h(double data_i, double data_j, double mean_i, double mean_j, double tail, double sill, double corr);
+
 
 double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double data_j,double *nuis);
 double cond_exp_bin(int *cormod,double data_i,double data_j,double lags_i,double lags_j,double lags,double *nuis,double *par,double psm);
@@ -894,7 +899,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

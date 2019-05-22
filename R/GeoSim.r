@@ -135,7 +135,7 @@ forGaussparam<-function(model,param,bivariate)
     {}
     k=1
 #################################
-    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy',
+    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson",
                     "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss",
                     "Gamma","Gamma2","Weibull",
@@ -151,6 +151,7 @@ forGaussparam<-function(model,param,bivariate)
            if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
+          'LogGaussian',
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
         {
           vv<-param$sill;
@@ -205,6 +206,7 @@ forGaussparam<-function(model,param,bivariate)
      
     npoi=1
 ################################# how many random fields ################
+    if(model %in% c("LogGaussian")) k=1 
     if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2 
     if(model %in% c("LogLogistic","Logistic")) k=4 
     if(model %in% c("Binomial"))   k=round(n)
@@ -244,6 +246,7 @@ forGaussparam<-function(model,param,bivariate)
     ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
     
+
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
@@ -291,7 +294,8 @@ KK=1;sel=NULL;ssp=double(dime)
         dim(sim) <- simdim
         }
     ####################################    
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy"
+              ,"LogGaussian",
                 "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) {
        if(!bivariate) dd[,,i]=t(sim)
@@ -576,8 +580,24 @@ if(model %in% c("SkewStudentT"))   {
         sim=(sim+mm)%%(2*pi)
       }
     #######################################   
-     if(model %in% c("LogGaussian","LogGauss"))   {
-        sim=exp(sim)}      ### 
+     if(model %in% c("LogGaussian","LogGauss"))   {     
+    # print(mm);print(sim);print(vv)        
+    #print(mm)
+        sim=exp(mm) *  (exp(sqrt(vv)*c(t(sim)))/(exp( vv/2)))
+
+           if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
+
+        }      ### 
+
+        #exp(mm) * (exp(sqrt(vv) * sim)/(exp(vv/2))) :
+
     ###########. formatting data for space time dynamic case. #########
     if(spacetime_dyn) {
                     sim_temp=list()

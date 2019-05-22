@@ -279,6 +279,11 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                                     emu=exp(mu)
                                     cc=cc*(2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/(pi*sin(2*pi/covmatrix$param['shape']))-1)
                                   }
+           if(covmatrix$model==30)  { 
+                                    emuloc=exp(muloc)
+                                    emu=exp(mu)
+                                  
+                                  }
          }
          else{}
 ##################################################################
@@ -308,8 +313,8 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                ####log gaussian   simple kriging
                if(covmatrix$model==1&&logGausstemp)   {
                  pp <- c(muloc)      +  krig_weights %*% (c(log(dataT))-c(mu)) 
-                QQ=diag(as.matrix(diag(covmatrix$param['nugget']+covmatrix$param['sill'],dimat2) - krig_weights%*%cc))
-                pp=exp(pp+QQ/2)
+                QQ=diag(as.matrix(diag(covmatrix$param['sill'],dimat2) - krig_weights%*%cc))
+                pp=exp(pp+QQ/2) #/exp(covmatrix$param['sill']/2)
               } 
                #pp <- (c(emuloc)+covmatrix$param['sill']/2) + 
                 #                          krig_weights %*% (c(dataT)-exp(c(mu)+covmatrix$param['sill']/2)) 
@@ -342,7 +347,7 @@ if(covmatrix$model %in% c(24))
                        (pi*sin(2*pi/covmatrix$param['shape']))-1),dimat2) - krig_weights%*%cc))}
 
 if(covmatrix$model==1&&logGausstemp)
-       {vv <-    exp(muloc+covmatrix$param['nugget']+covmatrix$param['sill']/2)^2 *  
+       {vv <-    exp(muloc + covmatrix$param['sill']/2)^2 *  
                                diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%cc))) }
                }     # end if(mse)   
 }               

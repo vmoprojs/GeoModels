@@ -135,6 +135,64 @@ void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double
     return;
 } 
 
+
+
+
+
+/*tukey h space time */
+void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
+                        int *ns,int *NS, int *GPU,int *local)
+{
+    
+    
+    int i=0,j=0,t=0,v=0;
+    double corr,zi,zj,lags,lagt,weights=1.0,bl;
+    double sill=nuis[1];
+    double nugget=nuis[0];
+    double tail=nuis[2];
+      if( sill<0||tail<0||nugget>=1||nugget<0|| CheckCor(cormod,par)==-2){*res=LOW; return;}
+
+      for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                                zi=data[(i+NS[t])];
+                                zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,0,par,0,0);
+                                    
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+
+ bl=biv_tukey_h(zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill,(1-nugget)*corr);
+                             *res+= weights*log(bl);
+ 
+                         }}}}
+                    else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lagt<=maxtime[0] && lags<=maxdist[0]){
+                               
+                               zi=data[(i+NS[t])];
+                                zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,lagt,par,0,0);
+                                     
+                                           if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
+ bl=biv_tukey_h(zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill,(1-nugget)*corr);
+                             *res+= weights*log(bl);
+                                }}}}
+                }}}
+    if(!R_FINITE(*res)|| !*res)*res = LOW;
+    return;
+}
+
+
+
 /*studen two piece t space time */
 void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
@@ -701,9 +759,9 @@ void Comp_Pair_LogGauss_st2(int *cormod, double *coordx, double *coordy, double 
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                               bl=d2lognorm(zi,zj,nuis[1],nuis[0], mean[(i+NS[t])], mean[(j+NS[v])],corr);
+                  bl=d2lognorm(zi,zj,nuis[1],nuis[0], mean[(i+NS[t])], mean[(j+NS[v])],corr);
 
-                       if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                     ///  if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
                          }}}}
                      else {  
@@ -716,9 +774,9 @@ void Comp_Pair_LogGauss_st2(int *cormod, double *coordx, double *coordy, double 
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                  bl=d2lognorm(zi,zj,nuis[1],nuis[0], mean[(i+NS[t])], mean[(j+NS[v])],corr);
+   bl=d2lognorm(zi,zj,nuis[1],nuis[0], mean[(i+NS[t])], mean[(j+NS[v])],corr);
 
-                       if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                      // if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -1484,7 +1542,7 @@ void Comp_Pair_LogGauss2(int *cormod, double *coordx, double *coordy, double *co
                     corr=CorFct(cormod,lags,0,par,0,0);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                     bl=d2lognorm(zi,zj,nuis[1],nuis[0], mean[i], mean[j],corr);
-                      if(bl<0||bl>9999999999999999||!R_FINITE(bl))  bl=1;  
+                     /// if(bl<0||bl>9999999999999999||!R_FINITE(bl))  bl=1;  
                     *res+= weights*log(bl);
                     }}}}
     // Checks the return values
@@ -1947,6 +2005,34 @@ void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double
     return;
 }
 
+
+/* bivariate spatial tukey */
+void Comp_Pair_Tukeyh2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i,j;double bl,corr,zi,zj,lags,weights=1.0;
+    double sill=nuis[1];
+    double nugget=nuis[0];
+    double tail=nuis[2];
+      if( sill<0||tail<0||nugget>=1||nugget<0|| CheckCor(cormod,par)==-2){*res=LOW; return;}
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+            lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                zi=data[i];zj=data[j];
+                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                    corr=CorFct(cormod,lags,0,par,0,0);
+                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                   bl=biv_tukey_h(zi,zj,mean[i],mean[j],tail,sill,(1-nugget)*corr);
+                     //if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
+                      //if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                             *res+= weights*log(bl);
+                }}}}
+
+    // Checks the return values
+    if(!R_FINITE(*res)|| !*res) *res = LOW;
+    return;
+}
 
 /*********************************************************/
 void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,

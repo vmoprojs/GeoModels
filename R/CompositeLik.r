@@ -31,6 +31,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
+        #print(head(X))
+        #print(mm)
         result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), 
                     as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
@@ -137,7 +139,10 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     if(all(model==32,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
      if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
-                                              if(varest & vartype==2) hessian <- TRUE}   
+                                              if(varest & vartype==2) hessian <- TRUE}  
+        if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
+                                              if(varest & vartype==2) hessian <- TRUE} 
+
         if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==35,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_T'

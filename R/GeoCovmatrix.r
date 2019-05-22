@@ -69,7 +69,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, NS, nuisance, numpairs,
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
     {
- 
+   
 #####################################################f
     if(model %in% c(1,20))   ## gaussian case  or sinhgaussian case (sinh no implementerd)
     {
@@ -115,7 +115,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
        if(bivariate) fname <- "CorrelationMat_biv_tap"
         #if(bivariate) fname <- "CorrelationMat_biv_tap_dyn2"
 
-
+     
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
            as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
@@ -129,6 +129,8 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2))) }              
          }
        }  
+
+
 ###############################################################
    if(model %in% c(2,11,19)){ #  binomial Gaussian type 1  and 2
             sel=substr(names(nuisance),1,4)=="mean"
@@ -480,6 +482,7 @@ if(model==21)   ##  gamma case
 ###############################################################
 if(model==30)   ##  poisson case
     {
+
          sel=substr(names(nuisance),1,4)=="mean"
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm
@@ -492,19 +495,23 @@ if(model==30)   ##  poisson case
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
-  
-corr=cr$corr^2   ### gamma correlation
-z=4*exp(mu)/(1-corr)
-corr2=(corr)*(1-exp(-z/2)*(besselI(z/2,0)+besselI(z/2,1)))
+
+corr=cr$corr*(1-nuisance['nugget'])         
+corr2=corr^2   ### gamma correlation
+corriinv=1/(1-corr2)
   if(!bivariate) {
         # Builds the covariance matrix:
-        varcov <-  diag(1,dime)
-        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
+        varcov <-  diag(1,dime);  varcov1 <-  diag(1,dime);
+        varcov[lower.tri(varcov)] <- corr2
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <-corr*(1-nuisance['nugget'])  
-        vv=exp(mu)
-        V=vv%*%t(vv)
-        varcov=varcov*sqrt(V)
+        varcov[lower.tri(varcov)] <-corr2 
+        varcov1[lower.tri(varcov1)] <- corriinv
+        varcov1 <- t(varcov1)
+        varcov1[lower.tri(varcov1)] <-corriinv
+        vv=exp(mu);V=sqrt(vv%*%t(vv)); z=2*V*varcov1
+        varcov=varcov*(1-exp(-z)*(besselI(z,0)+besselI(z,1))) ## correlation matrix 
+        varcov=varcov*V     ## covarianvce matrix 
+        diag(varcov)=diag(V) ## fixing diagonal
         }
     ## todo
     #if(bivariate)      {
@@ -600,18 +607,23 @@ if(model==22)  {  ## Log Gaussian
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
-            corr=(exp(vvar*cr$corr)-1)/(exp(vvar)-1)
+            corr=cr$corr*(1-nuisance['nugget'])
+            corr=exp(vvar*corr)
+            #print(corr[1:10])
        if(!bivariate)                  {
            ### cov matrix of the GRF
-          varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
-          corr <- corr * nuisance['sill']
+          varcov <- 1 * diag(dime)
           varcov[lower.tri(varcov)] <- corr
           varcov <- t(varcov)
           varcov[lower.tri(varcov)] <- corr
-          M=exp(mu)%*%t(exp(mu))
-          VV=as.numeric(rep(nuisance['nugget'] + nuisance['sill'],dime))
-          V=exp(VV/2)%*%t(exp(VV/2))
-          varcov=M*V*(exp(varcov)-1)
+          diag(varcov)=rep(exp(vvar),dime)
+          ones=rep(1,dime)
+          varcov=varcov- ones%*%t(ones)
+          M=exp(mu)%*%t(exp(mu))   #exp(2*mu)*(exp(sill*corr)-1) 
+          varcov=M*varcov        #ok
+          #print(M[1:5,1:5])
+         # print( (exp(varcov)-diag(dime))[1:3,1:3])
+         # print(varcov[1:5,1:5])
              }
             #   if(bivariate)      {
             #    varcov<-diag(dime)

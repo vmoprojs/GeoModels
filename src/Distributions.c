@@ -127,13 +127,16 @@ double d2norm(double x, double y, double rho)
 
 double d2lognorm(double x, double y, double sill,double nugget, double mux,double muy,double rho)
 {
-  double res=0.0, q=0.0, b2=sill+R_pow(nugget,1), omr=R_pow(b2,2)-R_pow(rho*sill,2);
+  rho=(1-nugget)*rho;
+  double KK=exp(sill/2);
+  x=x*KK; y=y*KK;
+  double res=0.0, q=0.0, omr=R_pow(sill,2)-R_pow(rho*sill,2);
 
-  q=(b2*R_pow((log(x)-mux),2)+
-     b2*R_pow((log(y)-muy),2)
+  q=(sill*R_pow((log(x)-mux),2)+
+     sill*R_pow((log(y)-muy),2)
     -2*rho*sill*(log(x)-mux)*(log(y)-muy))/omr;
   res=exp(-q/2)/(2*x*y*M_PI*sqrt(omr));
-  return(res);
+  return(res*R_pow(KK,2));
 }
 
 
@@ -1747,4 +1750,100 @@ double biv_Logistic(double corr,double zi,double zj,double mui, double muj, doub
         res=A*B*C;
     //} else{ B=ki*R_pow((ki+1),-2)/sqrt(sill);C=kj*R_pow((kj+1),-2)/sqrt(sill);res=B*C;}
     return(res);
+}
+
+
+
+
+//********** functions for bivariate tukey h *******************//
+
+// compute lambert w function
+double LambertW(double z) {
+  int i; 
+  const double eps=4.0e-16, em1=0.3678794411714423215955237701614608; 
+  double p,e,t,w;
+  //if (dbgW) fprintf(stderr,"LambertW: z=%g\n",z);
+  if (z<-em1 || isinf(z) || isnan(z)) { 
+    fprintf(stderr,"LambertW: bad argument %g, exiting.\n",z); exit(1); 
+  }
+  if (0.0==z) return 0.0;
+  if (z<-em1+1e-4) { // series near -em1 in sqrt(q)
+    double q=z+em1,r=sqrt(q),q2=q*q,q3=q2*q;
+    return 
+     -1.0
+     +2.331643981597124203363536062168*r
+     -1.812187885639363490240191647568*q
+     +1.936631114492359755363277457668*r*q
+     -2.353551201881614516821543561516*q2
+     +3.066858901050631912893148922704*r*q2
+     -4.175335600258177138854984177460*q3
+     +5.858023729874774148815053846119*r*q3
+     -8.401032217523977370984161688514*q3*q;  // error approx 1e-16
+  }
+  /* initial approx for iteration... */
+  if (z<1.0) { /* series near 0 */
+    p=sqrt(2.0*(2.7182818284590452353602874713526625*z+1.0));
+    w=-1.0+p*(1.0+p*(-0.333333333333333333333+p*0.152777777777777777777777)); 
+  } else 
+    w=log(z); /* asymptotic */
+  if (z>3.0) w-=log(w); /* useful? */
+  for (i=0; i<10; i++) { /* Halley iteration */
+    e=exp(w); 
+    t=w*e-z;
+    p=w+1.0;
+    t/=e*p-0.5*(p+1.0)*t/p; 
+    w-=t;
+    if (fabs(t)<eps*(1.0+fabs(w))) return w; /* rel-abs error */
+  }
+  /* should never get here */
+  fprintf(stderr,"LambertW: No convergence at z=%g, exiting.\n",z); 
+  exit(1);
+}
+
+// compute the inverse lambert w transformation
+double inverse_lamb(double x,double tail)
+{
+  double value;
+  value = sqrt(LambertW(tail*x*x)/tail);
+  //value = sqrt(gsl_sf_lambert_W0(tail*x*x)/tail);
+  if(x < 0){value = -value;} // to compute the "sgn(x)" according to expression (9) in the lambert w distribution paper
+  return(value);
+}
+
+
+// pdf bivariate gaussian distribution
+double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,double corr)
+{
+    double  fraq = 1.0,dens = 0.0,aux1 = 1.0,z1 = 1.0,z2 = 1.0,z3 = 1.0,z = 1.0;
+    fraq = 2*M_PI*sill*sqrt(1-corr*corr);
+    z1   = (x_i - mean_i)*(x_i - mean_i);
+    z2   = (x_j - mean_j)*(x_j - mean_j);
+    z3   = 2*corr*(x_i - mean_i)*(x_j - mean_j);
+    z    = (z1 + z2 - z3)/sill;
+    aux1 = 2*(1-corr*corr); 
+    dens = (1/fraq)*exp(-z/aux1);
+    return(dens);
+}
+
+// pdf bivariate tukey h random field 
+double biv_tukey_h(double data_i, double data_j, double mean_i, double mean_j, double tail, double sill, double corr)
+{
+	double dens = 0.0,x_i = 0.0,x_j = 0.0,est_mean_i = 0.0,est_mean_j = 0.0;
+  double w_tail_ij = 1.0,est_mean_ij = 1.0,extra = 1.0;
+
+  est_mean_i = (data_i - mean_i)/sqrt(sill);
+  est_mean_j = (data_j - mean_j)/sqrt(sill);
+  
+  x_i = inverse_lamb(est_mean_i,tail);
+  x_j = inverse_lamb(est_mean_j,tail);
+
+  //compute components of the bivariate tukey h distribution
+  w_tail_ij   = x_i*x_j;
+  est_mean_ij = 1/(est_mean_i*est_mean_j);
+  //extra       = 1/( (1 + gsl_sf_lambert_W0(tail*est_mean_i*est_mean_i))*(1 + gsl_sf_lambert_W0(tail*est_mean_j*est_mean_j)));
+  extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
+  // final expression to the bivariate distribution
+  dens = dbnorm(x_i*sqrt(sill) + mean_i,x_j*sqrt(sill) + mean_j,mean_i,mean_j,sill,corr)*w_tail_ij*est_mean_ij*extra;
+ // printf(" p11=%f  \t p1_i=%f \t dens=%f \t dat_i=%f \t dat_j=%f \n",p11,p1_i,dens,data_i,data_j);
+  return(dens);
 }

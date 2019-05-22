@@ -500,7 +500,8 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
- double sill=1-nugget;
+double sill=nuis[nbetas+1];
+ //double sill=1-nugget;
  double ff=log(d2lognorm(u,v,sill,nugget, ai, aj,rho));
 
 /*
@@ -516,6 +517,7 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
    grad[i]=(log(d2lognorm(u,v,sill,nugget, ai_d, aj_d,rho)) - ff)/delta; 
    i++; }
 }
+
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas]==1) {  delta=sqrt(EPS)*nugget;
     grad[i]=(log(d2lognorm(u,v,sill,nugget+delta, ai, aj,rho)) - ff)/delta; 

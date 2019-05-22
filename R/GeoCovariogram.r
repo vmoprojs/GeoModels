@@ -126,7 +126,9 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     studentT <- model ==12
     loglogistic <- model==24
-    zero <- 0;slow=1e-2
+    zero <- 0;slow=1e-2;
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom) slow=1e-10
+    else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
     lags <- c(0,vario$centers);numlags <- length(lags)
@@ -219,6 +221,7 @@ if(!bivariate) {
         else { 
         covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
         variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
+        
         }
     }
 ##########################################
@@ -299,16 +302,26 @@ if(!bivariate) {
                       covariance=vs*cc;variogram=vs*(1-cc)   }
                     }
 ##########################################
+ # if(loggauss)    { if(bivariate) {}  
+  #                    else {    
+   #                 correlation=(1-nuisance['nugget'] )*correlation
+    #                vvar=as.numeric(nuisance["sill"])
+     #               yy=nuisance["sill"]*correlation
+      #              cc<-(exp(yy-1))
+       #             vs<-(exp(vvar)-1)*exp(2*mm)   # ok
+        #            covariance=vs*cc;variogram=vs*(1-cc/((exp(vvar)-1)*exp(2*vvar) ))   
+         #            }
+          #        }
   if(loggauss)    { if(bivariate) {}  
                       else {    
-                    vvar=as.numeric(nuisance["sill"]+nuisance["nugget"])
-                    yy=nuisance["sill"]*correlation
-                    cc<-(exp(nuisance["sill"]*correlation)-1)/(exp(vvar)-1)
-                    vs<-(exp(vvar)-1)*exp(2*mm+vvar)
+                    vvar=as.numeric(nuisance["sill"])
+                    yy=vvar*correlation*(1-as.numeric(nuisance["nugget"]))
+                    cc<-(exp(yy)-1)/(exp(vvar)-1)
+                    vs<-(exp(vvar)-1)#*exp(2*mm+vvar)
+                    #print(vs)
                     covariance=vs*cc;variogram=vs*(1-cc)   
                      }
                   }
-
    #                   
    if(binary||binomial||binomial2||geom) {
                     if(bivariate) {}
@@ -484,7 +497,7 @@ if(!bivariate) {
             if(weibull)  vvv=exp(mm["mean"])^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
             if(loglogistic)  vvv=exp(mm["mean"])^2*
                                (2*nuisance['shape']*sin(pi/nuisance['shape'])^2/(pi*sin(2*pi/nuisance['shape']))-1)
-            if(loggauss) vvv=(exp(nuisance["sill"])-1)*(exp(mm['mean']+0.5*nuisance["sill"]))^2
+            if(loggauss) vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
             if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
@@ -493,13 +506,13 @@ if(!bivariate) {
             if(plagt){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lagt_m, variogram[fix.lags,], xlab="Time",cex.axis=.8,cex.lab=.8,
-                     ylab=vario.ylab, type="l", ylim=c(min(0,min(variogram)),max(vvv,tup)), main=paste(vario.ylab,": temporal profile",
+                     ylab=vario.ylab, type="l", ylim=c(0,max(vvv,tup)), main=paste(vario.ylab,": temporal profile",
                      sep=""),...)
                 if(isvario) points(lagt, evario[fix.lags,],...)}
             if(plags){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lags_m, variogram[,fix.lagt], xlab="Distance",cex.axis=.8,cex.lab=.8,
-                     ylab=vario.ylab, type="l", ylim=c(min(0,min(variogram)),max(vvv,sup)), main=paste(vario.ylab,": spatial profile",
+                     ylab=vario.ylab, type="l", ylim=c(0,max(vvv,sup)), main=paste(vario.ylab,": spatial profile",
                      sep=""),...)
                 if(isvario) points(lags, evario[,fix.lagt],...)}}
         if(!ispatim && !bivariate){# spatial case:
