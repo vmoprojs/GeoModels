@@ -602,7 +602,7 @@ if(model==22)  {  ## Log Gaussian
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-        vvar=nuisance['sill']+nuisance['nugget']
+        vvar=nuisance['sill']
         nuisance['sill']=1
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
@@ -619,7 +619,7 @@ if(model==22)  {  ## Log Gaussian
           diag(varcov)=rep(exp(vvar),dime)
           ones=rep(1,dime)
           varcov=varcov- ones%*%t(ones)
-          M=exp(mu)%*%t(exp(mu))   #exp(2*mu)*(exp(sill*corr)-1) 
+          M=exp(mu-vvar*0.5)%*%t(exp(mu-vvar*0.5))   #exp(2*mu)*(exp(sill*corr)-1) 
           varcov=M*varcov        #ok
           #print(M[1:5,1:5])
          # print( (exp(varcov)-diag(dime))[1:3,1:3])

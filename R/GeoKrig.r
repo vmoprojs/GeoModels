@@ -312,7 +312,10 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                       }
                ####log gaussian   simple kriging
                if(covmatrix$model==1&&logGausstemp)   {
-                 pp <- c(muloc)      +  krig_weights %*% (c(log(dataT))-c(mu)) 
+                rp=as.numeric(covmatrix$param['sill'])
+
+                 pp <- c(muloc-0.5*rp)      +  krig_weights %*% (c(log(dataT))-c(mu-0.5*rp)) 
+
                 QQ=diag(as.matrix(diag(covmatrix$param['sill'],dimat2) - krig_weights%*%cc))
                 pp=exp(pp+QQ/2) #/exp(covmatrix$param['sill']/2)
               } 

@@ -325,17 +325,20 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
         sill=nuisance['sill']
-        if(sill<0) return(llik)
+        #if(sill<0) return(llik)
         nuisance['sill']=1
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
-        cova <- corr
-        KK=exp(sill)/2
+        cova <- corr*(1-nuisance['sill'])
+        #KK=exp(sill)/2
         # Computes the log-likelihood
-        loglik_u <- do.call(what="LogNormDenStand_LG",args=list(stdata=(log(KK*data)-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
-            mdecomp=mdecomp,nuisance=nuisance,det=sum(1/(KK*data)),sill=sill,setup=setup))
-        return(loglik_u * KK^dimat)
+        #print(mm)
+
+        loglik_u <- do.call(what="LogNormDenStand_LG",
+            args=list(stdata=(log(data)-(c(X%*%mm-sill*0.5))),const=const,cova=cova,dimat=dimat,ident=ident,
+            mdecomp=mdecomp,nuisance=nuisance,det=sum(1/(data)),sill=sill,setup=setup))
+        return(loglik_u)
       }
 
    
