@@ -721,7 +721,7 @@ CkModel <- function(model)
                          BinomialNeg_TwoPieceGaussian=32,
                          BinomialNeg_TwoPieceGauss=32,
                          Kumaraswamy=33,
-                         Tukeyh=34,
+                         Tukeyh=34,tukeyh=34,
                          Gaussian_misp_StudentT=35,
                          Gaussian_misp_Poisson=36,
                          Gaussian_misp_SkewStudentT=37
@@ -975,7 +975,7 @@ NuisParam <- function(model,bivariate,num_betas)
   if((model %in% c('StudentT','Gaussian_misp_StudentT')) ){
       param <- c(mm, 'df','nugget', 'sill')
       return(param)}  
-     if( (model %in% c('Tukeyh'))){
+     if( (model %in% c('Tukeyh','tukeyh'))){
       param <- c(mm, 'nugget', 'sill','tail')
       return(param)}
    # Tukeygh  or SinhAsinhGaussian univariate random field: 

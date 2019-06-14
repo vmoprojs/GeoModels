@@ -167,7 +167,7 @@ void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *c
                                     
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
 
- bl=biv_tukey_h(zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill,(1-nugget)*corr);
+ bl=biv_tukey_h((1-nugget)*corr,zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill);
                              *res+= weights*log(bl);
  
                          }}}}
@@ -176,14 +176,12 @@ void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *c
          for(j=0;j<ns[v];j++){
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
-                               
                                zi=data[(i+NS[t])];
                                 zj=data[(j+NS[v])];
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
-                                     
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
- bl=biv_tukey_h(zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill,(1-nugget)*corr);
+ bl=biv_tukey_h((1-nugget)*corr,zi,zj,mean[(i+NS[t])],zj-mean[(j+NS[v])],tail,sill);
                              *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -714,7 +712,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                                       bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
                                 
-                              if(bl<0||bl>9999999999999999||!R_FINITE(bl)) bl=1;
+                             // if(bl<0||bl>9999999999999999||!R_FINITE(bl)) bl=1;
                                       *res+= weights*log(bl);
                          }}}}
                      else {  
@@ -728,7 +726,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
                                          bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
-                                        if(bl<0||bl>9999999999999999||!R_FINITE(bl)) bl=1;
+                                      ///  if(bl<0||bl>9999999999999999||!R_FINITE(bl)) bl=1;
                                       *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -1468,7 +1466,7 @@ void Comp_Pair_Weibull2(int *cormod, double *coordx, double *coordy, double *coo
                     corr=CorFct(cormod,lags,0,par,0,0);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                     bl=biv_Weibull(sill*corr,zi,zj,mean[i],mean[j],nuis[2]);
-                     if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
+                     //if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                      *res+= weights*log(bl);
                 
                 }}}}
@@ -2023,7 +2021,7 @@ void Comp_Pair_Tukeyh2(int *cormod, double *coordx, double *coordy, double *coor
                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=CorFct(cormod,lags,0,par,0,0);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                   bl=biv_tukey_h(zi,zj,mean[i],mean[j],tail,sill,(1-nugget)*corr);
+                   bl=biv_tukey_h((1-nugget)*corr,zi,zj,mean[i],mean[j],tail,sill);
                      //if(!R_FINITE( log(bl))) Rprintf("------- %f %f \n",corr,log(bl));
                       //if(bl<0||bl>9999999999999999||!R_FINITE(bl)) { bl=1;}
                              *res+= weights*log(bl);

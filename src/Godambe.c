@@ -77,6 +77,7 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
     case 25: // logistic
     case 26: //Weibull
     case 27: //twopieceT
+    case 34: //tukeyh
     // more........
 
         if( (!*spt) && (!*biv)) 
@@ -180,6 +181,11 @@ if(lags<maxdist[0]){
        Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
        break;
+            case 34: //
+       Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
+       break;
+
 
        case 21: // gamma
            Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
@@ -335,6 +341,11 @@ for(t=0;t<ntime[0];t++){
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
+            case 34:
+       Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
         case 21:
        Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
@@ -428,6 +439,11 @@ else {
       break;
         case 20:
        Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
+           case 34:
+       Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
@@ -879,7 +895,7 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
       if(!winc[1]) winc[1]=winc[0];
     } 
     if(!winstp[0]) winstp[0]=0.5;
-    Rprintf("%f %f %f %f \n",deltax,deltay,winc[0],winc[1]);
+    ///Rprintf("%f %f %f %f \n",deltax,deltay,winc[0],winc[1]);
     dimwinx=winc[0] * sqrt(deltax);// sub-window x length depends on a constant: deafault??
     dimwiny=winc[1] * sqrt(deltay);// sub-window y length depends on a constant: deafault??
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
@@ -952,8 +968,12 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                                   Grad_Pair_Wrapped(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
                         break;
-                         case 20: // gamma
+                         case 20: // sinh
                                       Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
+                                       nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
+                        break;
+                           case 34: // sinh
+                                      Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
                         break;
                         case 21: // gamma
@@ -1271,6 +1291,11 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
                                                                           betas);
                                                         break;
+                                                          case 34:
+                                                        Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
+                                                        break;
                                                         case 21:
                                                       //  Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                         //                s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
@@ -1357,6 +1382,10 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         break;
                                                         case 20:
                                                         Grad_Pair_Sinh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                        break;
+                                                         case 34:
+                                                        Grad_Pair_Tukeyh(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 21:

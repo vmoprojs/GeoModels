@@ -125,9 +125,10 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     binomial2 <- model==19
     geom <- model==14
     studentT <- model ==12
+    tukeyh<- model ==34
     loglogistic <- model==24
     zero <- 0;slow=1e-2;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom) slow=1e-10
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-10
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -207,7 +208,6 @@ if(!bivariate) {
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param)
-
     # Gaussian random field:
     if(gaussian){
     
@@ -275,6 +275,16 @@ if(!bivariate) {
                               
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
                               covariance=vs*cc;variogram=vs*(1-cc)  }
+                  } 
+##########################################
+  if(tukeyh)        { if(bivariate) {}
+                        else {
+                              h=as.numeric(nuisance['tail'])
+                              sill=as.numeric(nuisance['sill'])
+                              vs=  (1-2*h)^(-1.5)     ## variance
+                 cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
+                              covariance=vs*cc;variogram=vs*(1-cc)  
+                             } 
                   }     
 ##########################################
  if(gamma)        { if(bivariate) {}
@@ -502,6 +512,7 @@ if(!bivariate) {
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
+            if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)
             ########
             if(plagt){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))

@@ -56,8 +56,12 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     logGausstemp=FALSE
     if(model=="LogGaussian") {model="Gaussian"    # we need a "Gaussian" covariance matrix
                              logGausstemp=TRUE}
-     if(model=="SinhAsinh") {model="Gaussian"    # we need a "Gaussian" covariance matrix
+     if(model=="SinhAsinh"||model=="Tukeygh") {model="Gaussian"    # we need a "Gaussian" covariance matrix
                              vv=param['sill']; sk=param['skew']; tail=param['tail']
+                             param['skew']=NULL; param['tail']=NULL; param['sill']=1
+                             }
+    if(model=="Tukeyh") {model="Gaussian"    # we need a "Gaussian" covariance matrix
+                             vv=param['sill']; tail=param['tail']
                              param['skew']=NULL; param['tail']=NULL; param['sill']=1
                              }
     if(model %in% c("Weibull","Gamma","LogLogistic"))          # we need a x covariane matrix with with mean=0   x=gamma,weibull,loglogistic
@@ -133,7 +137,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
 ########################################################################################
 ########################################################################################
 
-if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20))
+if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
 {  
 ## gaussian=1 
 ## skew gaussian=10   
@@ -163,7 +167,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20))
                          vv=as.numeric(covmatrix$param['sill'])
                          corri=cc$corri 
                           }
-        if(covmatrix$model==20) corri=cc$corri # sinh
+        if(covmatrix$model==20||covmatrix$model==34) corri=cc$corri # sinh tukeyh
                          
         if(covmatrix$model==10) {    #skew gaussian
                         corr2=(as.numeric((1-covmatrix$param["nugget"])*cc$corri))^2
@@ -196,7 +200,11 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20))
                         sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
-                        corri=bcorr*((1-cc1^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc1^2)) -1) #ojo es una tranformada de la 1F2             
+                       # if(cc1<0.999)
+                        corri=bcorr*((1-cc1^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc1^2)) -1)
+                       # else 
+                       # corri=bcorr*((1-cc1^2)^(1+2/sh)* gamma(1)*gamma(1-2*(1+1/sh))/(gamma(-1/sh)^2) -1)
+                               
          }
           if(covmatrix$model==24) {  # loglogistic
                         sh=as.numeric(covmatrix$param['shape'])
@@ -248,7 +256,7 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
           #gaussian
           if(covmatrix$model==1)  cc=cc* vv 
           #sinh
-          if(covmatrix$model==20)  cc=cc*1            
+          if(covmatrix$model==20||covmatrix$model==34)  cc=cc*1            
           #skewgaussian
           if(covmatrix$model==10) cc=cc* (vv+sk^2*(1-2/pi)) 
           #studentT
@@ -303,12 +311,18 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                {
                     kk=krig_weights %*% (c(dataT))
                      pp <- c(muloc)      +  sqrt(vv)* sinh( (1/tail)*(asinh(kk)+sk))     
-                     }  
+               } 
+                 if(covmatrix$model %in% c(34))
+               {
+                    kk=krig_weights %*% (c(dataT))
+                     pp <- c(muloc)      +  sqrt(vv)* kk*exp(tail*kk^2/2)    
+               } 
+
                ####gamma weibbull loglogistic simple kriging
                if(covmatrix$model %in% c(21,24,26))
                       {       ones=rep(1,length(c(dataT)))
                               one=rep(1,length(c(muloc)))
-                              pp <- c(emuloc) * ( one+krig_weights %*% (c(dataT)/emu-ones) )    
+                              pp <- c(emuloc) * ( one + krig_weights %*% (c(dataT)/emu-ones) )    
                       }
                ####log gaussian   simple kriging
                if(covmatrix$model==1&&logGausstemp)   {
@@ -503,72 +517,7 @@ if(covmatrix$model %in% c(2,11,14,19))
           else{pred=c(pp);varpred=c(vv)}
 
     }}  ##end  binary or binomial or geometric kriging 
-########################################################################################
-######################  to do!!!!!##################################################################
-########################################################################################
-if(covmatrix$model==9) {   ### ### optimal linear  Tukeygh gaussian case 
-         if(type=="Standard"||type=="standard") {
-          me=as.numeric(param$mean)
-          nug=as.numeric(covmatrix$param["nugget"]); 
-          v=as.numeric(covmatrix$param["sill"])
-          g=as.numeric(covmatrix$param["skew"]); 
-          h= as.numeric(covmatrix$param["tail"])
 
-
-  #        vvar=2 #####
-  #      nuis<-c(me,nug,v,sk,tl)
-  #  ## Computing covariance between the locations to predict and the locations observed
-  #  cc=.C('Corr_c_tukeygh',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-  #  as.integer(corrmodel),as.integer(covmatrix$grid),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-  #  as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-  #  as.integer(n),as.integer(covmatrix$ns),as.integer(covmatrix$numtime),as.double(nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
-  #  as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-  #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-
-
-
-   corri=cc$corri
-
-     if(g&&!h){  vv=( -exp(g^2)+exp(g^2*2))*g^(-2);
-                 corri <- (( -exp(g^2)+exp(g^2*(1+corri)))*g^(-2))/vv}
-     if(!g&&h){ 
-              vv=(1-2*h)^(-1.5) 
-              corri <- (-corri/((1+h*(corri-1))*(-1+h+h*corri)*(1+h*(-2+h-h*corri^2))^0.5))/vv
-            }
-      if(h&&g){ 
-      vv=(exp(g^2*(2)/(1-h*2))-2*exp(1/((1-h)^2-h^2)*(g^2/2))+1)/(g^2*((1-h)^2-h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2
-      corri <-((exp(g^2*(1+corri)/(1-h*(1+corri)))-2*exp((1-h*(1-corri^2))/((1-h)^2-h^2*corri^2)*(g^2/2))+1)/(g^2*((1-h)^2-corri^2*h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2) /vv
-    }
-              
-
-   #    t1=1-h;t2=t1^2-h^2;sk2=g^2
-   #  if(sk==0) tm=0                         ###means
-   #else      tm=(exp(sk2/(2*t1))-1)/(sk*sqrt(t1))
-
-
-     mm=me + sqrt(v) * tm
-       ###inverse of cov matrix
-       if(!bivariate) cc <- matrix(corri*v,nrow=dimat,ncol=dimat2)
-       krig_weights <- t(getInv(covmatrix,cc))
-
-
-
-
-       
-       if(type_krig=='Simple'||type_krig=='simple')  {
-            if(!bivariate)  pp <- mm+ krig_weights %*% (c(dataT)-mm)   ## simple kriging predictor for skew data
-            else {} ## todo
-         }
-       if(mse) vv <- diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc))  ## simple mse  kriging predictor variance for skew data           
-        
-       #if(type_krig=='Ordinary'||type_krig=='ordinary')  {}    
-
-          if(spacetime||bivariate) {
-            pred=matrix(t(pp),nrow=tloc,ncol=numloc);
-            varpred=matrix(c(vv),nrow=tloc,ncol=numloc);
-            } 
-          else{pred=c(pp);varpred=c(vv)}
-    }}  ##end  Tukeygh case
 ########################################################################################
 ########################################################################################
 ########################################################################################

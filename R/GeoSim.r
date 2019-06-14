@@ -137,7 +137,7 @@ forGaussparam<-function(model,param,bivariate)
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson",
-                    "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss",
+                    "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeygh","SinhAsinh",
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
        {
@@ -149,6 +149,7 @@ forGaussparam<-function(model,param,bivariate)
         if(!bivariate){
            if(num_betas==1)  mm<-param$mean
            if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
+
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
           'LogGaussian',
@@ -170,7 +171,8 @@ forGaussparam<-function(model,param,bivariate)
 #################################
   if(model %in% c("Tukeygh","SinhAsinh"))  {
          if(!bivariate){
-          mm<-param$mean;param$mean=0
+          #mm<-param$mean;
+          param$mean=0
           vv<-param$sill;param$sill=1
           sk<-param$skew; tl<-param$tail}
          else {
@@ -182,7 +184,8 @@ forGaussparam<-function(model,param,bivariate)
 
     if(model %in% c("Tukeyh"))  {
          if(!bivariate){
-          mm<-param$mean;param$mean=0
+          #mm<-param$mean;
+          param$mean=0
           vv<-param$sill;param$sill=1
           tl<-param$tail}
          else {
@@ -310,7 +313,7 @@ KK=1;sel=NULL;ssp=double(dime)
   if(model %in% c("poisson","Poisson"))   {  
   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
   ssp=ssp+c(pois1)
-  sel=rbind(sel,ssp<=c(exp(mm)))
+  sel=rbind(sel,ssp<=exp(mm))
   if(sum(apply(sel,2,prod))==0) break   ## stopping rule
  
 }
@@ -357,8 +360,6 @@ if(model %in% c("poisson","Poisson"))   {
         }
    ############################################################################## 
   if(model %in% c("Tukeyh"))   { 
-    # t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
-     #tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
      if(!tl) {sim= mm+sqrt(vv)*sim}
      if(tl) {sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)}
  
@@ -562,8 +563,8 @@ if(model %in% c("SkewStudentT"))   {
     while(i<=2)  {sim1=cbind(sim1,dd[,,i]^2);i=i+1}
     while(i<=4)  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
     aa=rowSums(sim1)
-    sim=aa/(aa+rowSums(sim2))  
-    sim=(1-sim^(1/param$shape1))^(1/param$shape2)
+    sim=aa/(aa+rowSums(sim2)) 
+    sim=(1-(1-sim)^(1/param$shape1))^(1/param$shape2)
     }   
          if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

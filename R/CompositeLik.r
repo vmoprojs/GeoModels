@@ -31,8 +31,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
-        #print(head(X))
-        #print(mm)
+
         result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), 
                     as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
@@ -138,18 +137,17 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==32,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-     if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
+    if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
                                               if(varest & vartype==2) hessian <- TRUE}  
-        if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
+    if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
-
-        if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
+    if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==35,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_T'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==37,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_SkewT'
                                               if(varest & vartype==2) hessian <- TRUE}
-     if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
+    if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
                                               #print(fname)
 
@@ -366,6 +364,8 @@ colnames(CompLikelihood$hessian)=namesparam
             other_nuis=as.numeric(nuisance[!sel]) 
             nuisance=c(mm,other_nuis)
             sensmat <- double(dmat);varimat <- double(dmat)
+
+
             # Set the window parameter:
            if(length(winconst)==1) winconst=c(winconst,0)
             GD=.C('GodambeMat',as.double(mm),as.integer(bivariate),as.double(coordx),as.double(coordy),
@@ -376,10 +376,9 @@ colnames(CompLikelihood$hessian)=namesparam
               score=score,sensmat=sensmat,as.integer(spacetime),as.integer(type),
               varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
               as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-
             if(!sum(GD$varimat)) print("Std error estimation failed")
             # Set score vectore:
-
+            #print(CompLikelihood$hessian)
             CompLikelihood$winconst<-winconst
             CompLikelihood$winstp<-winstp
             CompLikelihood$score <- GD$score

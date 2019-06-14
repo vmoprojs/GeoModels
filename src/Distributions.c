@@ -181,7 +181,36 @@ c=bessel_i(2*fabs(rho12)*R_pow(a1*zi/mui,shape1/2)*R_pow(a2*zj/muj,shape2/2)/k,0
 dens=a*b*c;
 return(dens);
 }
-/*********************************/
+
+double asy_log_besselI(double z,double nu)
+{
+     double val;
+     double K=4*pow(nu,2);
+     val =  (z-0.5*log(2*M_PI*z))+
+           log((1-(K-1)/(8*z)*(1-(K-9)/(2*8*z)*(1-(K-25)/(3*8*z)))));
+     return(val);
+}
+
+
+double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
+{
+    double res1=0.0,ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
+    k=pow(gammafn(1+1/shape),-1);
+    ui=zi/ci;uj=zj/cj;
+        a=1-R_pow(corr,2);
+        z=2*fabs(corr)*pow(ui*uj,shape/2)*pow(k,-shape)/a;
+        A=pow(shape,2)*pow(k,-2*shape)*pow(ui*uj,shape-1)/a;
+        B= exp(-pow(k,-shape)*(pow(ui,shape)+pow(uj,shape))/a);
+        if(z<700) 
+               res=A*B*bessel_i(z,0,1)/(ci*cj);
+        else{
+               B=-pow(k,-shape)*(pow(ui,shape)+pow(uj,shape))/a;
+               res1=(log(A)+B-(log(ci)+log(cj))) + asy_log_besselI(z,0);
+               res=exp(res1);
+             }
+    return(res);
+}
+/*
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
 {
     double ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
@@ -189,30 +218,42 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
     ui=zi/ci;uj=zj/cj;
    // if(corr)   {
         a=1-R_pow(corr,2);
-        z=2*fabs(corr)*pow(ui*uj,shape/2)*pow(k,-shape)/a;
-        A=pow(shape,2)*pow(k,-2*shape)*pow(ui*uj,shape-1)/a;
-        B= exp(-pow(k,-shape)*(pow(ui,shape)+pow(uj,shape))/a);
-        res=A*B*bessel_i(z,0,1)/(ci*cj);
-  // Rprintf(" %f %f %f %f \n",corr, A,B,bessel_i(z,0,1));
-        /*a=1-R_pow(corr,2);
-        z=2*fabs(corr)*pow(zi*zj,shape/2)*pow(k,shape)/(a);
-        A=pow(shape,2)*pow(k,2*shape)*pow(zi*zj,shape-1);
-        B= exp(-pow(k,shape)*(pow(zi/ci,shape)+pow(zj/cj,shape))/a);
-        C=a*pow(ci*cj,shape); 
-        res=A*B*bessel_i(z,0,2)/(exp(-z)*C);*/
-//}else{  
-  //      B=shape*pow(k,shape)*pow(zi,shape-1)* exp(-pow(k,shape)*pow(zi/ci,shape))/pow(ci,shape);
-    //    C=shape*pow(k,shape)*pow(zj,shape-1)* exp(-pow(k,shape)*pow(zj/cj,shape))/pow(cj,shape);
-      //  res=B*C;}
-    return(res);
+        z=2*fabs(corr)*pow(ui*uj,shape/2)/(pow(k,shape)*a);
+        A=pow(shape,2)*pow(ui*uj,shape-1)/(a*pow(k,2*shape));
+        B= exp(-(pow(ui,shape)+pow(uj,shape))/(a*pow(k,shape)));
+        res=A*B*bessel_i(z,0,1);
+    return(res/(ci*cj));
     
+}*/
+
+
+double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
+{
+    double res1=0.0,a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=zi/exp(mui);double cj=zj/exp(muj);
+    double gam = gammafn(shape/2);
+        a=1-R_pow(corr,2);  
+
+        z=shape*fabs(corr)*sqrt((ci)*(cj))/a;
+
+        A=R_pow((ci)*(cj),shape/2-1) * R_pow(z/2,1-shape/2) ; ///ok
+        C= exp(-shape*((ci)+(cj))/(2*a));//ok
+        B=gam*R_pow(a,shape/2)*R_pow(2,shape)*R_pow(shape,-shape);  
+        D=bessel_i(z,shape/2-1,1); //ok
+        if(z<700) 
+             res=(A*C*D)/(exp(muj)*exp(muj)*B);
+        else{
+            C=-shape*((ci)+(cj))/(2*a);
+            res1=log(A)+C-(mui-muj-log(B))+asy_log_besselI(z,shape/2-1);
+            res=exp(res1);
+        }
+        return(res);
 }
-/*********************************/
+/*******************************
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
 {
     double a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;
     double ci=zi/exp(mui);double cj=zj/exp(muj);
-
     double gam = gammafn(shape/2);
     //if(corr)   {
         a=1-R_pow(corr,2);  
@@ -222,14 +263,10 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
         B=gam*R_pow(a,shape/2)*R_pow(2,shape)*R_pow(shape,-shape);  
         D=bessel_i(z,shape/2-1,1); //ok
         res=(A*C*D)/(exp(muj)*exp(muj)*B);
-   // }else{
-     //  B=(R_pow((shape/(2*exp(mui))),shape/2)*R_pow(zi,shape/2-1)*exp(-(shape*zi/(2*exp(mui)))) )/gam;
-      //  C=(R_pow((shape/(2*exp(muj))),shape/2)*R_pow(zj,shape/2-1)*exp(-(shape*zj/(2*exp(muj)))) )/gam;
-      //  res=B*C;
-    //}
-    //Rprintf("%f %f\n",corr,shape);
         return(res);
-}
+}*/
+
+
 void biv_gamma_call(double *corr,double *zi,double *zj,double *mui, double *muj, double *shape, double *res)
 {
     *res = biv_gamma(*corr,*zi,*zj,*mui,*muj,*shape);
@@ -1649,6 +1686,9 @@ return(res);
 /***********************************************************************************/
 /************ functions for binomial or negative binomial  two piece *********/
 /***********************************************************************************/
+/***********************************************************************************/
+/************ functions for binomial or negative binomial  two piece *********/
+/***********************************************************************************/
 
 double pbnorm22(double lim1,double lim2,double corr,double nugget)
 {
@@ -1671,8 +1711,8 @@ double pbhalf_gauss(double zi,double zj,double rho,double nugget)
 double pnorm_two_piece(double x, double eta)
 {
     double cdf = 0;
-    if (x <  0) cdf = (1 + eta)*pnorm(x/(1 + eta),0,1,1,0);
-    if (x >= 0) cdf = eta + (1 - eta)*pnorm(x/(1 - eta),0,1,1,0);
+    if (x <=  0) cdf = (1 + eta)*pnorm(x/(1 + eta),0,1,1,0);
+    if (x > 0)   cdf = eta + (1 - eta)*pnorm(x/(1 - eta),0,1,1,0);
   return(cdf);
 }
 //***********************************************//
@@ -1695,17 +1735,13 @@ double pbnorm_two_piece(int *cormod, double h, double u,
     p11     = pbnorm22(q_g_eta,q_g_eta,corr,nugget);
     etamas = 1+eta;
     etamos = 1-eta;
-    if(xi  <= 0 & xj <=  0) 
-      dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );
-    if(xi  > 0  & xj <=  0) 
-      dens = (1 + pbhalf_gauss(0,-xj/etamas,corr,nugget) - phalf_gauss(0) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
-      (phalf_gauss(xi/etamos) - pbhalf_gauss(xi /etamos,-xj/etamas,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
-    if(xi  <= 0 & xj >= 0) 
-      dens =  (1 + pbhalf_gauss(-xi/etamas,0,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(0)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
-      (phalf_gauss(xj/etamos) - pbhalf_gauss(-xi /etamas,xj/etamos,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
-    if(xi  >= 0 & xj >= 0) 
-      dens =  ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + (phalf_gauss(xi/etamos) - pbhalf_gauss(xi/etamos,0,corr,nugget))* (pnorm(q_g_eta,0,1,1,0)-p11) + 
-     (phalf_gauss(xj/etamos) - pbhalf_gauss(0,xj/etamos,corr,nugget))* (pnorm(q_g_eta,0,1,1,0)-p11) + pbhalf_gauss(xi/etamos,xj/etamos,corr,nugget) * p11;
+    if(xi  <= 0 & xj <= 0) dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );
+    if(xi  > 0  & xj <= 0) dens = (1 + pbhalf_gauss(0,-xj/etamas,corr,nugget) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
+      (phalf_gauss(xi/etamos) - pbhalf_gauss(xi/etamos,-xj/etamas,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
+    if(xi  <= 0 & xj >  0) dens =  (1 + pbhalf_gauss(-xi/etamas,0,corr,nugget) - phalf_gauss(-xi/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + 
+      (phalf_gauss(xj/etamos) - pbhalf_gauss(-xi/etamas,xj/etamos,corr,nugget)) * (pnorm(q_g_eta,0,1,1,0) - p11);
+    if(xi  > 0  & xj >  0) dens =  ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) ) + (phalf_gauss(xi/etamos) - pbhalf_gauss(xi/etamos,0,corr,nugget))*(pnorm(q_g_eta,0,1,1,0)-p11) + 
+     (phalf_gauss(xj/etamos) - pbhalf_gauss(0,xj/etamos,corr,nugget))* (pnorm(q_g_eta,0,1,1,0)-p11) + pbhalf_gauss(xi/etamos,xj/etamos,corr,nugget)* p11;
     return(dens);
 }
 /***********************************************************************************/
@@ -1800,16 +1836,6 @@ double LambertW(double z) {
   exit(1);
 }
 
-// compute the inverse lambert w transformation
-double inverse_lamb(double x,double tail)
-{
-  double value;
-  value = sqrt(LambertW(tail*x*x)/tail);
-  //value = sqrt(gsl_sf_lambert_W0(tail*x*x)/tail);
-  if(x < 0){value = -value;} // to compute the "sgn(x)" according to expression (9) in the lambert w distribution paper
-  return(value);
-}
-
 
 // pdf bivariate gaussian distribution
 double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,double corr)
@@ -1825,11 +1851,23 @@ double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,doub
     return(dens);
 }
 
-// pdf bivariate tukey h random field 
-double biv_tukey_h(double data_i, double data_j, double mean_i, double mean_j, double tail, double sill, double corr)
+
+// compute the inverse lambert w transformation
+double inverse_lamb(double x,double tail)
 {
-	double dens = 0.0,x_i = 0.0,x_j = 0.0,est_mean_i = 0.0,est_mean_j = 0.0;
-  double w_tail_ij = 1.0,est_mean_ij = 1.0,extra = 1.0;
+  double sign,value;
+  value = sqrt(LambertW(tail*x*x)/tail);
+  if (x > 0) sign= 1;
+  if (x < 0) sign= -1;
+   return(sign*value);
+}
+
+
+// pdf bivariate tukey h random field 
+double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, double mean_j, double tail, double sill)
+{
+  double dens = 0.0,x_i = 0.0,x_j = 0.0,est_mean_i = 0.0,est_mean_j = 0.0;
+  double est_mean_ij = 1.0,extra = 1.0;
 
   est_mean_i = (data_i - mean_i)/sqrt(sill);
   est_mean_j = (data_j - mean_j)/sqrt(sill);
@@ -1837,13 +1875,10 @@ double biv_tukey_h(double data_i, double data_j, double mean_i, double mean_j, d
   x_i = inverse_lamb(est_mean_i,tail);
   x_j = inverse_lamb(est_mean_j,tail);
 
-  //compute components of the bivariate tukey h distribution
-  w_tail_ij   = x_i*x_j;
   est_mean_ij = 1/(est_mean_i*est_mean_j);
-  //extra       = 1/( (1 + gsl_sf_lambert_W0(tail*est_mean_i*est_mean_i))*(1 + gsl_sf_lambert_W0(tail*est_mean_j*est_mean_j)));
-  extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
-  // final expression to the bivariate distribution
-  dens = dbnorm(x_i*sqrt(sill) + mean_i,x_j*sqrt(sill) + mean_j,mean_i,mean_j,sill,corr)*w_tail_ij*est_mean_ij*extra;
- // printf(" p11=%f  \t p1_i=%f \t dens=%f \t dat_i=%f \t dat_j=%f \n",p11,p1_i,dens,data_i,data_j);
+    extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
+  dens = dbnorm(x_i,x_j,0,0,1,corr)*
+              x_i*x_j*est_mean_ij*extra/sill;
   return(dens);
 }
+
