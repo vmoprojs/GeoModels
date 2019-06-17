@@ -8,13 +8,13 @@
   random field model.
 }
 \usage{
-NuisParam(model, bivariate,num_betas)
+NuisParam(model, bivariate=FALSE,num_betas=1)
 }
 \arguments{
   \item{model}{String; the name of a random field.}
   \item{bivariate}{Logical; if \code{FALSE} (the default) the correlation  model is univariate spatial or spatial-temporal.  
        Otherwise is bivariate.}
-  \item{num_betas}{Numerical; the nunber of mean parameters in the linear specification.     }
+  \item{num_betas}{Numerical; the nunber of mean parameters in the linear specification (default is 1)     }
 }
 
 \seealso{\code{\link{GeoFit}}}
@@ -28,16 +28,19 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 \examples{
 library(GeoModels)
 
-NuisParam("Gaussian", FALSE,1)
+NuisParam("Gaussian")
+
+NuisParam("Binomial")
+
+NuisParam("Weibull",num_betas=2)
+
+NuisParam("SkewGaussian", num_betas=3)
+
+NuisParam("SinhAsinh")
+
+NuisParam("StudentT")
 ## note that in the bivariate case sill and nugget are considered as correlation parameteres
-NuisParam("Gaussian", TRUE,1)
+NuisParam("Gaussian", bivariate=TRUE)
 
-NuisParam("BinomialGaussian", FALSE,1)
-
-NuisParam("Chisq", FALSE,2)
-
-NuisParam("SkewGaussian", FALSE,3)
-
-NuisParam("SinhAsinhGaussian",FALSE,1)
 }
 \keyword{Composite}

@@ -18,7 +18,8 @@
 GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=NULL,
-                          maxtime=NULL, method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,optimizer='Nelder-Mead',
+                          maxtime=NULL, method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+                          optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
                          winconst_t=NULL, winstp_t=NULL,X=NULL)
@@ -79,7 +80,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                unname(initparam$data),initparam$fixed,initparam$flagcorr,
                                initparam$flagnuis,grid,initparam$lower,method,initparam$model,initparam$namescorr,
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
-                               initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,
+                               initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,parallel,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
                                initparam$upper,initparam$ns,unname(initparam$X))
 
@@ -89,7 +90,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
                                    initparam$namescorr,initparam$namesnuis,#19
-                                   initparam$namesparam,initparam$numparam,initparam$numparamcorr,optimizer,onlyvar,#24
+                                   initparam$namesparam,initparam$numparam,initparam$numparamcorr,optimizer,onlyvar,parallel,
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
@@ -169,6 +170,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'Skew Gaussian';model <- 'SkewGaussian'}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
   if(x$model=='TwoPieceStudentT'){ process <- 'TwoPiece StudentT';model <- 'TwoPieceStudentT'}
+  if(x$model=='TwoPieceTukeyh'){ process <- 'TwoPiece Tukeyh';model <- 'TwoPieceTukeyh'}
   if(x$model=='TwoPieceGaussian'||x$model=='TwoPieceGauss'){ process <- 'TwoPiece Gaussian';model <- 'TwoPieceGaussian'}
   if(x$model=='SinhAsinh'){ process <- 'SinhAsinh'; model <- 'SinhAsinh'}    
   if(x$model=='Wrapped'){ process <- 'Wrapped'; model <- 'Wrapped'}

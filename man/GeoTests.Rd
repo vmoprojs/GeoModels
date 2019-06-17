@@ -4,7 +4,7 @@
 \title{Statistical Hypothesis Tests for Nested Models}
 \description{
   The function performs statistical hypothesis tests for nested models
-  based on composite or standard likelihood versions of: Wald-type and
+  based on composite or standard likelihood versions of Wald-type and
   Wilks-type (likelihood ratio) statistics.
 }
 
@@ -151,13 +151,13 @@ set.seed(314)
 model="SinhAsinh" 
 # Define the spatial-coordinates of the points:
 NN=500
-x <- runif(NN, 0, 1)
-y <- runif(NN, 0, 1)
-coords <- cbind(x,y)
+x = runif(NN, 0, 1)
+y = runif(NN, 0, 1)
+coords = cbind(x,y)
 # Parameters
 mean=0; nugget=0; sill=1
 ### skew and tail parameters
-skew=0;tail=1   ## H0 i.e Gaussianity
+skew=0;tail=1   ## H0 is Gaussianity
 # underlying model correlation 
 corrmodel="Wend0"
 power2=4;c_supp=0.2
@@ -165,14 +165,14 @@ power2=4;c_supp=0.2
 # simulation
 param=list(power2=power2,skew=skew,tail=tail,
              mean=mean,sill=sill,scale=c_supp,nugget=nugget)
-data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
 
 
 ##### H1
 fixed=list(power2=power2,nugget=nugget,mean=mean)
 start=list(scale=c_supp,skew=skew,tail=tail,sill=sill)
 # Maximum pairwise composite-likelihood fitting of the RF:
-fitH1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                    likelihood="Full",type="Standard",varest=TRUE,
                     start=start,fixed=fixed)
 
@@ -182,7 +182,7 @@ fitH1$param
 fixed=list(power2=power2,nugget=nugget,mean=mean,tail=1,skew=0)
 start=list(scale=c_supp,sill=sill)
 # Maximum pairwise composite-likelihood fitting of the RF:
-fitH0 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     likelihood="Full",type="Standard",varest=TRUE,
                     start=start,fixed=fixed)
 
@@ -195,39 +195,39 @@ GeoTests(fitH1, fitH0 , statistic='Wilks')
 ################################################################
 ###
 ### Example 2. Composite likelihood-based hypothesis testing.
-### Testing significance of a covariate parameter 
+### Testing significance of a regression parameter 
 ###
 ###############################################################
 set.seed(31)
 # Define the spatial-coordinates of the points:
 N=1500
-x <- runif(N, 0, 1)
-y <- runif(N, 0, 1)
+x = runif(N, 0, 1)
+y = runif(N, 0, 1)
 X=cbind(rep(1,N),runif(N))
 coords=cbind(x,y)
 
 # Set the model's parameters:
-corrmodel <- "Exp"
-mean <- 1;  mean1=0.3 ## H0: mean1=0
-sill <- 1
-nugget <- 0
-scale <- 0.15/3
+corrmodel = "Exp"
+mean = 1;  mean1=0.3 ## H0: mean1=0
+sill = 1
+nugget = 0
+scale = 0.15/3
 
 # Simulation of the spatial Gaussian random field:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,mean1=mean1,
+data = GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,mean1=mean1,
               sill=sill,nugget=nugget,scale=scale),X=X)$data
 
 # Pairwise-likelihood fitting of the random field, full model:
 start=list(mean=mean,mean1=mean1,sill=sill,scale=scale)
 fixed=list(nugget=nugget)
-fitH1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
+fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     fixed=fixed,start=start,X=X)
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
 start=list(mean=mean,sill=sill,scale=scale)
 fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
-fitH0 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
+fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     fixed=fixed,start=start,X=X)
 

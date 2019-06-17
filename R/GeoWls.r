@@ -180,7 +180,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
           'Tukeygh','Tukeyh','Kumaraswamy','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
           "Gaussian_misp_StudentT","Gaussian_misp_Poisson",
           "Gaussian_misp_SkewStudentT",
-          "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss")) & 
+          "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh")) & 
           (type %in% c('Standard','Pairwise','Tapering')))
         {
 ##########################################################        

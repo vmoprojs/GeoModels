@@ -7,7 +7,7 @@
 ### This file contains a set of procedures
 ### for the simulation of Gaussian random fields and
 ### related functions.
-### Last change: 28/03/2018.
+### Last change: 28/03/2019.
 ####################################################
  
 
@@ -39,7 +39,7 @@ forGaussparam<-function(model,param,bivariate)
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2","skew_1","skew_2"))] <- NULL
    }
 
-    if(model %in% c("Tukeygh","SinhAsinh")){
+    if(model %in% c("Tukeygh","SinhAsinh","TwoPieceTukeyh")){
      if(!bivariate) param[which(names(param) %in% c("skew","tail"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("skew_1","skew_2","tail_1","tail_2"))] <- NULL
    }
@@ -101,6 +101,7 @@ forGaussparam<-function(model,param,bivariate)
                     else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
                                      rep(as.numeric(nuisance['mean_2']),ns[2])) + simd 
                           }
+
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
           } 
@@ -136,7 +137,7 @@ forGaussparam<-function(model,param,bivariate)
     k=1
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
-                    "StudentT","SkewStudentT","Poisson","poisson",
+                    "StudentT","SkewStudentT","Poisson","poisson","TwoPieceTukeyh","Poisson",
                     "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeygh","SinhAsinh",
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
@@ -152,14 +153,17 @@ forGaussparam<-function(model,param,bivariate)
 
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
-          'LogGaussian',
+          'LogGaussian',"TwoPieceTukeyh",
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
         {
           vv<-param$sill;
           param$sill=1-param$nugget
         }
-        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT",
-               "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) sk<-param$skew
+        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT","TwoPieceTukeyh",
+               "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
+               { sk<-param$skew
+               if(model%in% c("TwoPieceTukeyh")) tl<-param$tail
+               }
         }
         else {
             mm1<-param$mean_1;param$mean_1=0; 
@@ -210,7 +214,7 @@ forGaussparam<-function(model,param,bivariate)
     npoi=1
 ################################# how many random fields ################
     if(model %in% c("LogGaussian")) k=1 
-    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss")) k=2 
+    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh")) k=2 
     if(model %in% c("LogLogistic","Logistic")) k=4 
     if(model %in% c("Binomial"))   k=round(n)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999; if(model %in% c("Geometric")) {model="BinomialNeg";n=1}} 
@@ -298,7 +302,7 @@ KK=1;sel=NULL;ssp=double(dime)
         }
     ####################################    
     if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy"
-              ,"LogGaussian",
+              ,"LogGaussian","TwoPieceTukeyh",
                 "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) {
        if(!bivariate) dd[,,i]=t(sim)
@@ -336,59 +340,6 @@ if(model %in% c("poisson","Poisson"))   {
             }
         }
 
- if(model %in% c("Tukeygh"))   { 
-    # t1=1-tl;   t2=t1^2-tl^2;   sk2=sk^2;   
-     #tm=(exp(sk^2/(2*t1))-1)/(sk*sqrt(t1))
-     if(!sk && !tl) {sim= mm+sqrt(vv)*sim}
-     if(!sk && tl) {sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)}
-     if(!tl && sk) {sim= mm+sqrt(vv)* (exp(sk*sim)-1)/sk}
-     if(tl&&sk) {
-                #vvar=((exp(sk2 * 2/(1-2*tl)) - 2* exp( (sk2 *0.5)/(t1-tl^2))    +1))/(sk2*t1 - tl^2) - tm^2
-                #sim=mm+sqrt(vv/vvar)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk
-                sim=mm+sqrt(vv)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk
-              }
-
-    ##############################################################################        
-      if(!grid)  {
-                if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
-        }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
-            }
-        }
-   ############################################################################## 
-  if(model %in% c("Tukeyh"))   { 
-     if(!tl) {sim= mm+sqrt(vv)*sim}
-     if(tl) {sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)}
- 
-    ##############################################################################        
-      if(!grid)  {
-                if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
-        }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
-            }
-        }
-    #########################################
-
-            if (model %in% c("SinhAsinh","SinhAsinh")) 
-    { 
-      trans=sinh( (1/tl)*(asinh(sim)+sk))
-      sim=mm+sqrt(vv)*trans
-       #sim=mm+(sqrt(vv)/tl)*trans
-       if(!grid)  {
-                if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
-        }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
-            }
-    }
     #######################################
     if(model %in% c("SkewGaussian","SkewGauss"))   {
         sim=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2]
@@ -451,6 +402,22 @@ if(model %in% c("StudentT"))   {
 ################################################
 if(model %in% c("TwoPieceGaussian","TwoPieceGauss"))   { 
         sim=dd[,,1]
+        discrete=dd[,,2] 
+        pp=qnorm((1-sk)/2)
+        sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
+        aa=mm+sqrt(vv)*(abs(sim)*discrete)
+            if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(aa)
+                else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
+        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+            }
+        }
+if(model %in% c("TwoPieceTukeyh"))   { 
+        sim=dd[,,1]
+        sim=sim*exp(tl*sim^2/2)
         discrete=dd[,,2] 
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
@@ -580,26 +547,50 @@ if(model %in% c("SkewStudentT"))   {
         if(spacetime) mm=matrix(mm,nrow=nrow(sim),ncol=ncol(sim),byrow=TRUE)
         sim=(sim+mm)%%(2*pi)
       }
-    #######################################   
-     if(model %in% c("LogGaussian","LogGauss"))   {     
-    # print(mm);print(sim);print(vv)        
-    #print(mm)
-        sim=exp(mm) *  (exp(sqrt(vv)*c(t(sim)))/(exp( vv/2)))
 
-           if(!grid)  {
+ ###########################################################
+ #### simulation based on a transformation of ONE standard GRF ######
+ ###########################################################
+
+if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","SinhAsinh"))
+{
+  sim=c(sim)
+#######################################
+     if(model %in% c("LogGaussian","LogGauss"))   {     
+        sim=exp(mm) *  (exp(sqrt(vv)*sim)/(exp( vv/2))) ## note the parametrization
+        }      
+#################################################################################
+ if(model %in% c("Tukeygh"))   { 
+     if(!sk && !tl) sim= mm+sqrt(vv)*sim
+     if(!sk && tl)  sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)
+     if(!tl && sk)  sim= mm+sqrt(vv)* (exp(sk*sim)-1)/sk
+     if(tl&&sk)     sim=mm+sqrt(vv)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk        
+    }
+############################################################################## 
+  if(model %in% c("Tukeyh"))   { 
+     if(!tl) sim= mm+sqrt(vv)*sim
+     if(tl)  sim= mm+sqrt(vv)*sim*exp(tl*sim^2/2)
+   }  
+#########################################
+  if (model %in% c("SinhAsinh")) 
+    { 
+      trans=sinh( (1/tl)*(asinh(sim)+sk))
+      sim=mm+sqrt(vv)*trans
+    }
+ ### formatting data
+  if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
         }
          else{numcoordx=length(coordx);numcoordy=length(coordy);
         if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
         else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
             }
+  }
 
-        }      ### 
 
-        #exp(mm) * (exp(sqrt(vv) * sim)/(exp(vv/2))) :
-
-    ###########. formatting data for space time dynamic case. #########
+##################################################################
+###########. formatting data for space time dynamic case. #########
     if(spacetime_dyn) {
                     sim_temp=list()
                     for(k in 1:length(coordt))
@@ -608,6 +599,7 @@ if(model %in% c("SkewStudentT"))   {
                          sim_temp[[k]]=c(sim)[indx] }
     sim=sim_temp     
     }
+##################################################################
     #######################################
     if(ccov$bivariate)   ccov$numtime=1
 

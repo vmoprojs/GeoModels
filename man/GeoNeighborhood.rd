@@ -87,7 +87,7 @@ data_all = GeoSim(coordx=coords, corrmodel="GenWend",
                          param=param)$data
 
 ##location to predict
-loc_to_pred<-matrix(c(0.5,0.5),1,2)
+loc_to_pred=matrix(c(0.5,0.5),1,2)
 
 loc_kri=GeoNeighborhood(data_all, coordx=coords,  
                   loc=loc_to_pred,maxdist=0.15)
@@ -116,7 +116,7 @@ param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.5/3,sill=1)
 data_all = GeoSim(coordx=coords, coordt=coordt,corrmodel="Exp_Exp", 
                          param=param)$data
 ##location to predict
-loc_to_pred<-matrix(c(0.5,0.5),1,2)
+loc_to_pred=matrix(c(0.5,0.5),1,2)
 time=2
 
 loc_kri=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,

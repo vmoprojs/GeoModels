@@ -29,34 +29,42 @@ library(GeoModels)
 set.seed(211)
 
 model="Weibull";shape=4
+N=700 # number of location sites
 # Set the coordinates of the points:
-x <- runif(700, 0, 1)
-y <- runif(700, 0, 1)
+x = runif(N, 0, 1)
+y = runif(N, 0, 1)
 coords=cbind(x,y)
 
-# Set the model's parameters:
-corrmodel <- "Wend0"
-mean <- 5
-sill <- 1
-nugget <- 0
-scale <- 0.3
+
+# regression parameters
+mean = 5
+mean1=0.8
+
+X=cbind(rep(1,N),runif(N))
+# correlation parameters:
+corrmodel = "Wend0"
+sill = 1
+nugget = 0
+scale = 0.3
 power2=4
 
 
-param=list(mean=mean,sill=sill, nugget=nugget, scale=scale,shape=shape,power2=power2)
+param=list(mean=mean,mean1=mean1, sill=sill, nugget=nugget, 
+	           scale=scale,shape=shape,power2=power2)
 # Simulation of the Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel, X=X,model=model,param=param)$data
 
-start=list(mean=mean,scale=scale,shape=shape)
+start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 fixed=list(nugget=nugget,sill=sill,power2=power2)
-# Maximum composite-likelihood fitting of the BinomGaussian random field:
-fit <- GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
+# Maximum composite-likelihood fitting 
+fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,X=X,
                     likelihood="Marginal",type='Pairwise',start=start,
                     fixed=fixed,maxdist=0.1)
 
 res=GeoResiduals(fit)
+mean(res$data) # should be 1
 # Empirical estimation of the variogram for the residuals:
-vario <- GeoVariogram(res$data,coordx=coords,maxdist=0.5)
+vario = GeoVariogram(res$data,coordx=coords,maxdist=0.5)
 
 # Plot of covariance and variogram functions:
 GeoCovariogram(res, show.vario=TRUE, vario=vario,pch=20)

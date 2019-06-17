@@ -13,7 +13,7 @@
 GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distance="Eucl",
             fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',  local=c(1,1),lower=NULL, 
             maxdist=NULL, maxtime=NULL, method="cholesky", model='Gaussian',
-            n=1, onlyvar=FALSE ,optimizer='Nelder-Mead',radius=6371, sensitivity=FALSE,
+            n=1, onlyvar=FALSE ,optimizer='Nelder-Mead', parallel=FALSE, radius=6371, sensitivity=FALSE,
             sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL,type='Pairwise',
             upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL,
             winstp=NULL,winconst_t=NULL, winstp_t=NULL,X=NULL)
@@ -68,13 +68,14 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
     objects. \code{Gaussian} is the default, see the Section
     \bold{Details}.}
     \item{n}{Numeric; number of trials in a binomial RF; number of successes in a negative binomial RF }  
+  \item{onlyvar}{Logical; if \code{TRUE}  (and varest is  \code{TRUE}) only the variance covariance matrix is computed
+  without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{nlm} and \code{L-BFGS-B}. In this last case
+    default. Other possible choices are \code{nlm}, \code{BFGS} and \code{L-BFGS-B}. In this last case
     upper and lower bounds can be passed by the user. In the case
-    of one-dimensional optimization, the function \code{optimize} is used.}
-  \item{onlyvar}{Logical; if \code{TRUE}  (and varest is  \code{TRUE}) only the variance covariance matrix is computed
-  without optimizing. \code{FALSE} is the default.}  
+    of one-dimensional optimization, the function \code{optimize} is used.}  
+  \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is \code{BFGS} or \code{L-BFGS-B}.\code{FALSE} is the default.}  
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
    The default is 6371, the radius of the earth.}
    \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}

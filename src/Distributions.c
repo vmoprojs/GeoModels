@@ -131,15 +131,11 @@ double d2lognorm(double x, double y, double sill,double nugget, double mux,doubl
   double KK=exp(sill/2);
   x=x*KK; y=y*KK;
   double res=0.0, q=0.0, omr=R_pow(sill,2)-R_pow(rho*sill,2);
-
-  q=(sill*R_pow((log(x)-mux),2)+
-     sill*R_pow((log(y)-muy),2)
+  q=(sill*R_pow((log(x)-mux),2) + sill*R_pow((log(y)-muy),2)
     -2*rho*sill*(log(x)-mux)*(log(y)-muy))/omr;
   res=exp(-q/2)/(2*x*y*M_PI*sqrt(omr));
   return(res*R_pow(KK,2));
 }
-
-
 
 double biv_sinh(double corr,double zi,double zj,double mi,double mj,double skew,double tail,double vari)
 {
@@ -1881,4 +1877,43 @@ double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, doub
               x_i*x_j*est_mean_ij*extra/sill;
   return(dens);
 }
+
+
+
+
+
+
+
+
+/***** bivariate half tukey h ****/     
+double biv_half_Tukeyh(double rho,double ti,double tj,double tail)
+{
+  double dens = 0.0;
+  dens = biv_tukey_h(rho,ti,tj,0,0,tail,1) + biv_tukey_h(rho,-ti,-tj,0,0,tail,1) + biv_tukey_h(rho,-ti,tj,0,0,tail,1) + biv_tukey_h(rho,ti,-tj,0,0,tail,1);
+  return(dens);
+}
+ 
+
+/***** bivariate two piece tukey h ****/ 
+double biv_two_pieceTukeyh(double rho,double zi,double zj,double sill,double eta,double tail,
+             double p11,double mui,double muj)
+{
+double res;  
+double etamas=1+eta;
+double etamos=1-eta;
+double zistd=(zi-mui)/sqrt(sill);
+double zjstd=(zj-muj)/sqrt(sill);
+
+if(zi>=mui&&zj>=muj)
+{res=          (p11/R_pow(etamos,2))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamos,tail);}
+if(zi>=mui&&zj<muj)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamas,tail);}
+if(zi<mui&&zj>=muj)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamos,tail);}
+if(zi<mui&&zj<muj)
+{res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamas,tail);}
+
+return(res/sill);
+}
+
 

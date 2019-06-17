@@ -40,6 +40,8 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     if(!is.null(Xloc)) Xloc=as.matrix(Xloc)
     if(is.matrix(X) &&is.null(Xloc))  stop("Covariates for locations to predict are missing ")
     if(is.null(X) &&is.matrix(Xloc))  stop("Covariates  are missing ")
+    if(CheckST(CkCorrModel(corrmodel))) if(is.null(time)) 
+              stop("At least one temporal instants is needed for space-time kriging ")
 ###################################### 
 ###################################### 
     #### number of points to predict
@@ -179,6 +181,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         corri=((1-as.numeric(covmatrix$param["nugget"]))*cc$corri)^2
         if(covmatrix$model==12) # student T
                          {
+                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
                         vv=as.numeric(covmatrix$param['sill']) 
                         nu=1/as.numeric(covmatrix$param['df'])
@@ -186,6 +189,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                       }
            if(covmatrix$model==18) # skew student T
                          {
+                        cc$corri[cc$corri>0.99999999999]= 0.9999999999  
                         cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
                         vv=as.numeric(covmatrix$param['sill']) 
                         nu=1/as.numeric(covmatrix$param['df'])
@@ -197,16 +201,15 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         corri=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
                       }
         if(covmatrix$model==26) {  # weibull 
+                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
-                       # if(cc1<0.999)
                         corri=bcorr*((1-cc1^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc1^2)) -1)
-                       # else 
-                       # corri=bcorr*((1-cc1^2)^(1+2/sh)* gamma(1)*gamma(1-2*(1+1/sh))/(gamma(-1/sh)^2) -1)
                                
          }
           if(covmatrix$model==24) {  # loglogistic
+                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         sh=as.numeric(covmatrix$param['shape'])
                         cc1=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
 corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
@@ -214,6 +217,7 @@ corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                          Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
+                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
                         vv=as.numeric(covmatrix$param['sill'])
                         corr2=cc$corri^2;sk2=sk^2
@@ -584,7 +588,6 @@ ntime=1
 if(matrix$spacetime) ntime=length(matrix$coordt)
 if(matrix$bivariate) ntime=2
 dime <- nsites*ntime
-print(dime)
 ###########################
 D=diag(1/vv,dime,dime)
 DD=sqrt(D)

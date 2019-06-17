@@ -177,35 +177,33 @@ library(fields)
 
 # Define the spatial-coordinates of the points:
 set.seed(79)
-x <- runif(200, 0, 1)
-y <- runif(200, 0, 1)
-coords<-cbind(x,y)
+x = runif(200, 0, 1)
+y = runif(200, 0, 1)
+coords=cbind(x,y)
 # Set the exponential cov parameters:
-corrmodel_1 <- "exponential"
-mean<-0
-sill<-1
-nugget<-0
-scale<-0.3/3
-param<-list(mean=mean,sill=sill,nugget=nugget,scale=scale)
+corrmodel_1 = "exponential"
+mean=0
+sill=1
+nugget=0
+scale=0.3/3
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale)
 
 # Set the wendland parameters (two compatible correlations):
-corrmodel_2 <- "Wend0"
-mean<-0
-sill<-1
-nugget<-0
+corrmodel_2 = "Wend0"
+mean=0
+sill=1
+nugget=0
 power2=3
-c_supp<-0.3
-param_wen<-list(mean=mean,sill=sill,nugget=nugget,scale=c_supp,power2=power2)
-
-
+c_supp=0.3
+param_wen=list(mean=mean,sill=sill,nugget=nugget,scale=c_supp,power2=power2)
 
 # Simulation of the spatial Gaussian random field:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel_1,
+data = GeoSim(coordx=coords, corrmodel=corrmodel_1,
               param=param)$data
 
 # locations to predict
-xx<-seq(0,1,0.03)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.03)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 ################################################################
 ###
@@ -213,7 +211,7 @@ loc_to_pred<-as.matrix(expand.grid(xx,xx))
 ### Gaussian random fields with exponential correlation.
 ### 
 ###############################################################
-pr<-GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,
+pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,
        param= param, data=data,mse=TRUE)
 
 ################################################################
@@ -224,19 +222,17 @@ pr<-GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,
 ###############################################################
 pr_tap=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,data=data,
        param= param,type="Tapering",maxdist=0.2,taper="Wendland1",mse=TRUE)
-
-
 ################################################################
 ###
 ### Example 3. Spatial  simple kriging of n sites of a
 ### Gaussian random fields using a compatible Wendland model
 ###
 ###############################################################
-param<-list(mean=mean,sill=sill,nugget=nugget,scale=scale,power2=power2)
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,power2=power2)
 pr_wen=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_2,data=data,
        param=param_wen,sparse=TRUE,mse=TRUE)
 
-colour <- rainbow(100)
+colour = rainbow(100)
 par(mfrow=c(3,2))
 zlim=c(-2.6,2.6)
 # simple kriging map prediction
@@ -277,18 +273,18 @@ set.seed(312)
 model="Binomial";n=6
 
 # Define the spatial-coordinates of the points:
-x <- runif(800)
-y <- runif(800)
+x = runif(800)
+y = runif(800)
 coords=cbind(x,y)
 #### mean and covariance parameters ###
-mean<-0
-sill<-1
-nugget<-0
-scale<-0.2
+mean=0
+sill=1
+nugget=0
+scale=0.2
 #################
-param<-list(mean=mean,sill=sill,nugget=nugget,scale=scale,power2=4)
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,power2=4)
 # Simulation of the Binomial Gaussian random field:
-data <- GeoSim(coordx=coords, corrmodel="Wend0",model=model,n=n,
+data = GeoSim(coordx=coords, corrmodel="Wend0",model=model,n=n,
               sparse=TRUE,param=param)$data
 
 
@@ -301,16 +297,16 @@ quilt.plot(x, y, data,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n), main="Data")
 fixed=list(nugget=nugget,power2=4,sill=1)
 start=list(mean=0,scale=scale)
 # Maximum pairwise likelihood fitting :
-fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
+fit = GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
                     likelihood='Marginal', type='Pairwise',maxdist=0.03,
                     start=start,fixed=fixed)
                     
 # locations to predict
-xx<-seq(0,1,0.03)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.03)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 ## simple kriging 
-pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,n=n,
+pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,n=n,
        sparse=TRUE,param= as.list(c(fit$param,fixed)))
 
 #standard   binomial kriging
@@ -319,65 +315,74 @@ image.plot(xx, xx, map_binom,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n),
            xlab="",ylab="",main="Simple Kriging ")
 
 
-
-
 ################################################################
 ###
-### Example 5. Spatial  simple kriging of a Weibull
-###            random field 
+### Example 5. Spatial  simple kriging of the residuals of a 
+###            Weibull random field 
 ###
 ###############################################################
 set.seed(312)
-model="Weibull";
 
+model="Weibull"
+
+corrmodel = "GenWend"  
 # Define the spatial-coordinates of the points:
-x <- runif(800)
-y <- runif(800)
-coords=cbind(x,y)
-#### mean and covariance parameters ###
-mean<-0
-sill<-1
-nugget<-0
-scale<-0.2
-shape=0.8
+NN=800
+coords=cbind(runif(NN),runif(NN))
+## matrix covariates
+a0=rep(1,NN)
+a1=runif(NN,-1,1)
+X=cbind(a0,a1)
+# Set model parameters
+shape=2
+## regression parameters
+mean = 1
+mean1= -0.2
+# correlation parameters
+sill = 1
+nugget = 0
+power2=4
+scale = 0.3
+smooth=0    
 
-#################
-param<-list(mean=mean,sill=sill,shape=shape,nugget=nugget,scale=scale,power2=4)
-# Simulation of the Weibull random field:
-data <- GeoSim(coordx=coords, corrmodel="Wend0",model=model,
-              sparse=TRUE,param=param)$data
+## simulation
+param=list(shape=shape,nugget=nugget,mean=mean,mean1=mean1, 
+  scale=scale,sill=sill,power2=power2,smooth=smooth)
 
+data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
+                model=model,sparse=TRUE,X=X)$data
 
-par(mfrow=c(1,2))
-
-#### map of simulated data
-quilt.plot(x, y, data, main="Data")
+#####starting and fixed parameters
+fixed=list(nugget=nugget,power2=power2,smooth=smooth,sill=sill)
+start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 
 ## estimation with pairwise likelihood
-fixed=list(nugget=nugget,power2=4,sill=1)
-start=list(mean=0,scale=scale,shape=shape)
-# Maximum pairwise likelihood fitting :
-fit <- GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,
-                    likelihood='Marginal', type='Pairwise',maxdist=0.03,
-                    start=start,fixed=fixed)
-                    
+maxdist=0.1
+fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
+              maxdist=maxdist,likelihood="Marginal",type="Pairwise",
+            start=start,fixed=fixed, model = model)
+## obtaining residuals              
+res=GeoResiduals(fit2)
+
 # locations to predict
-xx<-seq(0,1,0.04)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.015)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 
-#optimal linear  kriging
-pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
-       sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
+#optimal linear  kriging for residuals
+pr=GeoKrig(data=res$data, coordx=coords,loc=loc_to_pred,corrmodel=corrmodel,model=model,mse=TRUE,
+       sparse=TRUE,param=as.list(c(res$param,res$fixed)))
 
+## map of residuals
+par(mfrow=c(1,3))
+quilt.plot(coords,res$data,main="Residuals")
+map=matrix(pr$pred,ncol=length(xx))
+mapmse=matrix(pr$mse,ncol=length(xx))
+image.plot(xx, xx, map,
+           xlab="",ylab="",main="Residuals Kriging ")
 
-map_weibull=matrix(pr$pred,ncol=length(xx))
-image.plot(xx, xx, map_weibull,
+image.plot(xx, xx, mapmse,
            xlab="",ylab="",main="Simple Kriging ")
-
-
-
-
-
+ 
 
 ################################################################
 ###
@@ -387,36 +392,36 @@ image.plot(xx, xx, map_weibull,
 ###############################################################
 model="StudentT"
 df=6 
-corrmodel <- "Wend0"  
+corrmodel = "Wend0"  
 nsel=800
 coords=cbind(runif(nsel),runif(nsel))
 
-mean <- 0
-sill <- 1.9       
-nugget <- 0
+mean = 0
+sill = 1.9       
+nugget = 0
 power2=4
-scale <- 0.2
+scale = 0.2
  
 # Starting value for the estimated parameters
 set.seed(3132)
 param=list(nugget=nugget,mean=mean, scale=scale,sill=sill,df=1/df,power2=power2)
-data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
+data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
      model=model,sparse=TRUE)$data
 
-fixed<-list(nugget=nugget,power2=4,df=1/df)
-start<-list(mean=mean, scale=scale,sill=sill)
+fixed=list(nugget=nugget,power2=4,df=1/df)
+start=list(mean=mean, scale=scale,sill=sill)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
-fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
+fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
                     maxdist=0.02,likelihood="Marginal",type="Pairwise",
                     start=start,fixed=fixed, model = model)
                     
 # locations to predict
-xx<-seq(0,1,0.04)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.04)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
-pr<-GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
+pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
        sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
 
 par(mfrow=c(1,2))
@@ -431,24 +436,24 @@ image.plot(xx, xx, map_t,
 ################################################################
 
 # Define the spatial-coordinates of the points:
-x <- runif(80, 0, 1)
-y <- runif(80, 0, 1)
-coords<-cbind(x,y)
-times<-1:8
+x = runif(80, 0, 1)
+y = runif(80, 0, 1)
+coords=cbind(x,y)
+times=1:8
 
 # Define model correlation and associated parameters
-corrmodel<-"exp_exp"
-param<-list(nugget=0,mean=0,scale_s=0.2/3,scale_t=1,sill=1)
+corrmodel="exp_exp"
+param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=1,sill=1)
 
 # Simulation of the space time Gaussian random field:
 set.seed(31)
-data<-GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,
+data=GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,
            param=param)$data
 
 # Maximum pairwise likelihood fitting of the space time random field:
-start <- list(scale_s=0.2/3,scale_t=1,sill=1,mean=0)
-fixed <- list(nugget=0)
-fit <- GeoFit(data, coordx=coords, coordt=times,
+start = list(scale_s=0.2/3,scale_t=1,sill=1,mean=0)
+fixed = list(nugget=0)
+fit = GeoFit(data, coordx=coords, coordt=times,
                     corrmodel=corrmodel, likelihood='Marginal',
                     type='Pairwise',start=start,fixed=fixed,
                     maxdist=0.1,maxtime=1)
@@ -461,20 +466,20 @@ fit <- GeoFit(data, coordx=coords, coordt=times,
 ###
 ###############################################################
 set.seed(3)
-param<-as.list(c(fit$param,fit$fixed))
+param=as.list(c(fit$param,fit$fixed))
 
 # locations to predict
-xx<-seq(0,1,0.04)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.04)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
-times_to_pred<-1:2
+times_to_pred=1:2
 
-pr<-GeoKrig(loc=loc_to_pred,time=times_to_pred,coordx=coords,coordt=times,
+pr=GeoKrig(loc=loc_to_pred,time=times_to_pred,coordx=coords,coordt=times,
        corrmodel=corrmodel, param=param,data=data,mse=TRUE)
 
 par(mfrow=c(2,2))
 zlim=c(-2.5,2.5)
-colour <- rainbow(100)
+colour = rainbow(100)
 
 for(i in 1:2) {
 image.plot(xx, xx, matrix(pr$pred[i,],ncol=length(xx)),col=colour,
@@ -494,9 +499,9 @@ image.plot(xx, xx, matrix(pr$mse[i,],ncol=length(xx)),col=colour,
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
-x <- runif(80, 0, 1)
-y <- runif(80, 0, 1)
-coords<-cbind(x,y)
+x = runif(80, 0, 1)
+y = runif(80, 0, 1)
+coords=cbind(x,y)
 
 # Simulation of a spatial bivariate Gaussian random field
 # with Matern separable covariance model
@@ -505,27 +510,27 @@ set.seed(12)
 param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
           nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
           
-data <- GeoSim(coordx=coords, corrmodel="Bi_matern_sep", param=param)$data
+data = GeoSim(coordx=coords, corrmodel="Bi_matern_sep", param=param)$data
 
 fixed=list(nugget_1=0,nugget_2=0,smooth=0.5,mean_1=0,mean_2=0)
 start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
       pcol=cor(data[1,],data[2,]))
 
 # Maximum Composite likelihood fitting of the random field:
-fitcl<- GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
+fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
         likelihood="Marginal",type="Pairwise",maxdist=0.1,
         start=start,fixed=fixed)
 
 
 # locations to predict
-xx<-seq(0,1,0.04)
-loc_to_pred<-as.matrix(expand.grid(xx,xx))
+xx=seq(0,1,0.04)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 
-pr1<-GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
+pr1=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
        param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
 
-pr2<-GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
+pr2=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
        param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=2,mse=TRUE)
 
 par(mfrow=c(2,2))

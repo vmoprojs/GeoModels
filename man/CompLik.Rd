@@ -11,7 +11,7 @@
 CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance,  
                flagcorr, flagnuis, fixed, GPU, grid,likelihood,local,lower, 
                  model, n, namescorr, namesnuis, namesparam,
-               numparam, numparamcorr, optimizer, onlyvar, param,
+               numparam, numparamcorr, optimizer, onlyvar, parallel, param,
                spacetime, type,upper, varest, vartype,
                weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity)
 }
@@ -68,7 +68,10 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
     default.}
   \item{onlyvar}{Logical; if \code{TRUE}  (and varest is  \code{TRUE}) only
    the variance covariance matrix is computed
-  without optimizing. \code{FALSE} is the default.}   
+  without optimizing. \code{FALSE} is the default.}  
+   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel 
+   using the maximum number of cores,  when optimizer is \code{BFGS} or 
+          \code{L-BFGS-B}.\code{FALSE} is the default.}  
   \item{param}{A numeric vector of parameters' values.}
   \item{spacetime}{Logical; if \code{TRUE} the random field is
     spatial-temporal otherwise is a spatial field.}

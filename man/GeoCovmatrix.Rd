@@ -452,9 +452,9 @@ library(spam)
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- runif(500, 0, 1)
-y <- runif(500, 0, 1)
-coords <- cbind(x,y)
+x = runif(500, 0, 1)
+y = runif(500, 0, 1)
+coords = cbind(x,y)
 
 
 # Correlation Parameters for Matern model 
@@ -463,7 +463,7 @@ CorrParam("Matern")
 # Matern Parameters 
 param=list(smooth=0.5,sill=1,scale=0.2,nugget=0)
 
-matrix1 <- GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param)
+matrix1 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param)
 dim(matrix1$covmatrix)
 
 ################################################################
@@ -474,7 +474,7 @@ dim(matrix1$covmatrix)
 ###############################################################
 
 
-matrix2 <- GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param,
+matrix2 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param,
                      maxdist=0.2,taper="Wendland1",type="Tapering")
 # Tapered covariance matrix
 as.matrix(matrix2$covmatrix)[1:15,1:15]
@@ -494,7 +494,7 @@ matrix2$nozero
 param=list(sill=1,scale=0.2,nugget=0,smooth=0,power2=4)
 
 
-matrix3 <- GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,sparse=TRUE)
+matrix3 = GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,sparse=TRUE)
 
 # Percentage of no zero values in the tapered matrix
 matrix3$nozero
@@ -513,7 +513,7 @@ param=list(sill=1,scale=0.2,nugget=0,power1=1,power2=1)
 # Correlation Parameters for Gen Cauchy model
 CorrParam("GenCauchy")
 
-matrix4 <- GeoCovmatrix(coordx=coords, corrmodel="GenCauchy", param=param)
+matrix4 = GeoCovmatrix(coordx=coords, corrmodel="GenCauchy", param=param)
 
 matrix4$covmatrix[1:4,1:4]
 
@@ -526,7 +526,7 @@ matrix4$covmatrix[1:4,1:4]
 ###############################################################
 
 # Define the temporal-coordinates:
-times <- seq(1, 4, 1)
+times = seq(1, 4, 1)
 
 # Define covariance parameters
 param=list(scale_s=0.3,scale_t=0.5,sill=1)
@@ -535,7 +535,7 @@ param=list(scale_s=0.3,scale_t=0.5,sill=1)
 CorrParam("Exp_Exp")
 
 # Simulation of a spatial Gaussian random field:
-matrix5 <- GeoCovmatrix(coordx=coords, coordt=times, corrmodel="Exp_Exp",
+matrix5 = GeoCovmatrix(coordx=coords, coordt=times, corrmodel="Exp_Exp",
                      param=param)
 
 dim(matrix5$covmatrix)
@@ -547,15 +547,13 @@ dim(matrix5$covmatrix)
 ###
 ###############################################################
 
-
 param=list(sill=1,scale=0.3/3,nugget=0,skew=4)
 # Simulation of a spatial Gaussian random field:
-matrix6 <- GeoCovmatrix(coordx=coords,  corrmodel="Exp", param=param, 
+matrix6 = GeoCovmatrix(coordx=coords,  corrmodel="Exp", param=param, 
                      model="SkewGaussian")
 
 # covariance matrix
 matrix6$covmatrix[1:10,1:10]
-
 
 ################################################################
 ###
@@ -564,10 +562,9 @@ matrix6$covmatrix[1:10,1:10]
 ###
 ###############################################################
 
-
 param=list(sill=1,scale=0.3,nugget=0,shape=4,mean=0,smooth=1,power2=5)
 # Simulation of a spatial Gaussian random field:
-matrix7 <- GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
+matrix7 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
                      sparse=TRUE,model="Weibull")
 
 # covariance matrix
@@ -581,10 +578,9 @@ matrix7$nozero
 ###
 ###############################################################
 
-
 param=list(sill=1,scale=0.2,nugget=0,power2=4)
 # Simulation of a spatial Gaussian random field:
-matrix8 <- GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
+matrix8 = GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
                      model="Binomial")
 
 # covariance matrix
@@ -601,16 +597,16 @@ matrix8$covmatrix[1:10,1:10]
 
 set.seed(8)
 # Define the spatial-coordinates of the points:
-x <- runif(10, -1, 1)
-y <- runif(10, -1, 1)
-coords <- cbind(x,y)
+x = runif(10, -1, 1)
+y = runif(10, -1, 1)
+coords = cbind(x,y)
 
 # Parameters 
 param=list(scale=0.3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
              nugget_1=0,nugget_2=0,smooth=0.5,pcol=-0.25)
 
 # Covariance matrix 
-matrix9 <- GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
+matrix9 = GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
 
 head(matrix8)
 

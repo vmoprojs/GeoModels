@@ -95,32 +95,32 @@ library(scatterplot3d)
 ###############################################################
 set.seed(21)
 # Set the coordinates of the points:
-x <- runif(300, 0, 1)
-y <- runif(300, 0, 1)
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
 coords=cbind(x,y)
 
 # Set the model's parameters:
-corrmodel <- "Matern"
-model <- "Gaussian"
-mean <- 0
-sill <- 1
-nugget <- 0
-scale <- 0.2/3
+corrmodel = "Matern"
+model = "Gaussian"
+mean = 0
+sill = 1
+nugget = 0
+scale = 0.2/3
 smooth=0.5
 
 param=list(mean=mean,sill=sill, nugget=nugget, scale=scale, smooth=smooth)
 # Simulation of the Gaussian random field:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param)$data
 
 start=list(mean=0,scale=scale,sill=sill)
 fixed=list(nugget=nugget,smooth=smooth)
 # Maximum composite-likelihood fitting of the Gaussian random field:
-fit <- GeoFit(data=data,coordx=coords, corrmodel=corrmodel,model=model,
+fit = GeoFit(data=data,coordx=coords, corrmodel=corrmodel,model=model,
                     likelihood="Marginal",type='Pairwise',start=start,
                     fixed=fixed,maxdist=0.05)
 
 # Empirical estimation of the variogram:
-vario <- GeoVariogram(data=data,coordx=coords,maxdist=0.5)
+vario = GeoVariogram(data=data,coordx=coords,maxdist=0.5)
 
 # Plot of covariance and variogram functions:
 GeoCovariogram(fit, show.cov=TRUE,show.vario=TRUE, vario=vario,pch=20)
@@ -136,30 +136,30 @@ set.seed(2111)
 
 model="Binomial";n=20
 # Set the coordinates of the points:
-x <- runif(500, 0, 1)
-y <- runif(500, 0, 1)
+x = runif(500, 0, 1)
+y = runif(500, 0, 1)
 coords=cbind(x,y)
 
 # Set the model's parameters:
-corrmodel <- "exponential"
-mean <- 0
-sill <- 1
-nugget <- 0
-scale <- 0.2/3
+corrmodel = "exponential"
+mean = 0
+sill = 1
+nugget = 0
+scale = 0.2/3
 
 param=list(mean=mean,sill=sill, nugget=nugget, scale=scale)
 # Simulation of the Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param,n=n)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param,n=n)$data
 
 start=list(mean=0,scale=scale,sill=sill)
 fixed=list(nugget=nugget)
 # Maximum composite-likelihood fitting of the BinomGaussian random field:
-fit <- GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
+fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
                     likelihood="Marginal",type='Pairwise',start=start,n=n,
                     fixed=fixed,maxdist=0.03)
 
 # Empirical estimation of the variogram:
-vario <- GeoVariogram(data,coordx=coords,maxdist=0.5)
+vario = GeoVariogram(data,coordx=coords,maxdist=0.5)
 
 # Plot of covariance and variogram functions:
 GeoCovariogram(fit, show.cov=TRUE,show.vario=TRUE, vario=vario,pch=20)
@@ -176,32 +176,32 @@ set.seed(211)
 
 model="Gamma";shape=4
 # Set the coordinates of the points:
-x <- runif(700, 0, 1)
-y <- runif(700, 0, 1)
+x = runif(700, 0, 1)
+y = runif(700, 0, 1)
 coords=cbind(x,y)
 
 # Set the model's parameters:
-corrmodel <- "Wend0"
-mean <- 0
-sill <- 1
-nugget <- 0
-scale <- 0.3
+corrmodel = "Wend0"
+mean = 0
+sill = 1
+nugget = 0
+scale = 0.3
 power2=4
 
 
 param=list(mean=mean,sill=sill, nugget=nugget, scale=scale,shape=shape,power2=power2)
 # Simulation of the Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,param=param)$data
 
 start=list(mean=0,scale=scale,shape=shape)
 fixed=list(nugget=nugget,sill=sill,power2=power2)
 # Maximum composite-likelihood fitting of the BinomGaussian random field:
-fit <- GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
+fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
                     likelihood="Marginal",type='Pairwise',start=start,
                     fixed=fixed,maxdist=0.03)
 
 # Empirical estimation of the variogram:
-vario <- GeoVariogram(data,coordx=coords,maxdist=0.5)
+vario = GeoVariogram(data,coordx=coords,maxdist=0.5)
 
 # Plot of covariance and variogram functions:
 GeoCovariogram(fit, show.cov=TRUE,show.vario=TRUE, vario=vario,pch=20)
@@ -215,26 +215,26 @@ GeoCovariogram(fit, show.cov=TRUE,show.vario=TRUE, vario=vario,pch=20)
 ###############################################################
 set.seed(92)
 # Define the spatial-coordinates of the points:
-x <- runif(50, 0, 1)
-y <- runif(50, 0, 1)
+x = runif(50, 0, 1)
+y = runif(50, 0, 1)
 coords=cbind(x,y)
 # Define the temporal sequence:
-time <- seq(0, 15, 1)
+time = seq(0, 15, 1)
 
 
 # Simulation of the spatio-temporal Gaussian random field:
-data <- GeoSim(coordx=coords, coordt=time, corrmodel="Exp_Exp",param=list(mean=mean,
+data = GeoSim(coordx=coords, coordt=time, corrmodel="Exp_Exp",param=list(mean=mean,
               nugget=nugget,scale_s=0.5/3,scale_t=2/2,sill=sill))$data
 
 fixed=list(nugget=0, mean=0)
 start=list(scale_s=0.2, scale_t=0.5, sill=1)
 # Maximum composite-likelihood fitting of the space-time Gaussian random field:
-fit <- GeoFit(data, coordx=coords, coordt=time, corrmodel="Exp_Exp", maxtime=2,
+fit = GeoFit(data, coordx=coords, coordt=time, corrmodel="Exp_Exp", maxtime=2,
                     maxdist=0.1, likelihood="Marginal", type="Pairwise", 
                     fixed=fixed, start=start)
 
 # Empirical estimation of spatio-temporal covariance:
-vario <- GeoVariogram(data,coordx=coords, coordt=time, maxtime=5,maxdist=0.5)
+vario = GeoVariogram(data,coordx=coords, coordt=time, maxtime=5,maxdist=0.5)
 
 # Plot of the fitted space-time variogram
 GeoCovariogram(fit,vario=vario,show.vario=TRUE)
@@ -256,8 +256,8 @@ GeoCovariogram(fit,vario=vario,fix.lagt=1,fix.lags=1,show.vario=TRUE,pch=20)
 # Simulation of a bivariate spatial Gaussian random field:
 set.seed(892)
 # Define the spatial-coordinates of the points:
-x <- runif(200, -1, 1)
-y <- runif(200, -1, 1)
+x = runif(200, -1, 1)
+y = runif(200, -1, 1)
 coords=cbind(x,y)
 
 # Simulation of a bivariate Gaussian Random field 
@@ -272,7 +272,7 @@ pcol=0.3
 param=list(mean_1=0,mean_2=0,scale_1=scale_1,scale_2=scale_2,scale_12=scale_12,
            sill_1=sill_1,sill_2=sill_2,nugget_1=0,nugget_2=0,
            smooth_1=smooth,smooth_12=smooth,smooth_2=smooth,pcol=pcol)  
-data <- GeoSim(coordx=coords, corrmodel="Bi_Matern", param=param)$data
+data = GeoSim(coordx=coords, corrmodel="Bi_Matern", param=param)$data
 
 # Empirical bivariate variogram estimation:
 biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=c(1,1,1)) 
@@ -285,7 +285,7 @@ start=list(sill_1=var(data[1,]),sill_2=var(data[2,]),
           pcol=cor(data[1,],data[2,]))
 
 # Maximum likelihood fitting of the bivariate random field:
-fit<- GeoFit(data, coordx=coords, corrmodel="Bi_Matern",likelihood="Marginal",
+fit= GeoFit(data, coordx=coords, corrmodel="Bi_Matern",likelihood="Marginal",
               type="Pairwise",start=start,fixed=fixed,maxdist=c(0.1,0.1,0.1))
             
 GeoCovariogram(fit, vario=biv_vario,show.vario=TRUE,pch=20)

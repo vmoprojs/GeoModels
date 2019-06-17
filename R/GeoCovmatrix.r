@@ -8,7 +8,7 @@
 ### This file contains a set of procedures
 ### for computing a covariance (tapered) matrix for a given
 ### space(time) covariance model.
-### Last change: 28/03/2018.
+### Last change: 28/03/2019.
 ####################################################
 
 
