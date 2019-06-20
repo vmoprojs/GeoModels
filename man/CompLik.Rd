@@ -70,7 +70,7 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
    the variance covariance matrix is computed
   without optimizing. \code{FALSE} is the default.}  
    \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel 
-   using the maximum number of cores,  when optimizer is \code{BFGS} or 
+   using the maximum number of cores,  when optimizer is 
           \code{L-BFGS-B}.\code{FALSE} is the default.}  
   \item{param}{A numeric vector of parameters' values.}
   \item{spacetime}{Logical; if \code{TRUE} the random field is

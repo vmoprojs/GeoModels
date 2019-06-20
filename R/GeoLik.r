@@ -614,8 +614,8 @@ if(!onlyvar){   # performing optimization
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) }
   if(optimizer=='L-BFGS-B'&&parallel){
-     ncores=parallel::detectCores()
-       cl <- parallel::makeCluster(ncores)
+     ncores=parallel::detectCores()-1
+        cl <- parallel::makeCluster(ncores,type = "FORK")
        parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
@@ -623,9 +623,11 @@ if(!onlyvar){   # performing optimization
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+        
+       parallel::setDefaultCluster(cl=NULL)
        parallel::stopCluster(cl)
   }
-  if(optimizer=='BFGS'&&!parallel){
+  if(optimizer=='BFGS'){
     ############## optim ########
      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1,factr=1,
@@ -635,19 +637,6 @@ if(!onlyvar){   # performing optimization
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
  }
 
-     if(optimizer=='BFGS'&&parallel){
-             ncores=parallel::detectCores()
-       cl <- parallel::makeCluster(ncores)
-       parallel::setDefaultCluster(cl = cl)
-    ############## optim ########
-     Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
-                        pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
-                         fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-      parallel::stopCluster(cl)
- }
 
         
 

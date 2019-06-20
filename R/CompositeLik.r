@@ -46,7 +46,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
             #         NAOK = TRUE,PACKAGE='GeoModels',
              #        corrmodel,coordx,coordy,coordt,data, n,paramcorr, weigthed, 
               #                    res = vector_dc("numeric",1),c(X%*%mm),0,other_nuis,ns,NS,local,GPU)$res
-            # print(result)
+           #  print(result)
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -204,33 +204,28 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
       if(optimizer=='L-BFGS-B'&&parallel){
         ncores=parallel::detectCores()-1
-        cl <- parallel::makeCluster(ncores)
+        cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
-        CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
-                              factr=1, pgtol=1e-14, maxit=100000), data=data, fixed=fixed,
-                              fan=fname, hessian=hessian, lower=lower, method=optimizer,n=n,
+        CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik, gr=NULL,
+                              coordx=coordx, coordy=coordy, coordt=coordt,
+                              corrmodel=corrmodel, data=data, fixed=fixed,
+                              fan=fname,  n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
-                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+                              weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,
+                              lower=lower,upper=upper,
+                              control=list(fnscale=1,
+                              factr=1, pgtol=1e-14, maxit=100000),
+                              hessian=hessian 
+                               )
+         parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
          }
 
-    if(optimizer=='BFGS'&&!parallel)
+    if(optimizer=='BFGS')
         CompLikelihood <- optim(par=param, fn=comploglik,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
                              reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=hessian, method=optimizer,n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-
-    if(optimizer=='BFGS'&&parallel){
-      print("dd")
-        ncores=parallel::detectCores()-1
-        cl <- parallel::makeCluster(ncores)
-        parallel::setDefaultCluster(cl = cl)
-        CompLikelihood <- optimParallel::optimParallel(par=param, fn=comploglik,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
-                             reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
-                              hessian=hessian, method=optimizer,n=n,namescorr=namescorr,
-                                  namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-         parallel::stopCluster(cl)
-         }
 
 
       if(optimizer=='Nelder-Mead')

@@ -75,7 +75,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
     default. Other possible choices are \code{nlm}, \code{BFGS} and \code{L-BFGS-B}. In this last case
     upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.}  
-  \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is \code{BFGS} or \code{L-BFGS-B}.\code{FALSE} is the default.}  
+  \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
    The default is 6371, the radius of the earth.}
    \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
