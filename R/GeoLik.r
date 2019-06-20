@@ -614,11 +614,11 @@ if(!onlyvar){   # performing optimization
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) }
   if(optimizer=='L-BFGS-B'&&parallel){
-     ncores=parallel::detectCores()-1
+        ncores=parallel::detectCores()-1
         cl <- parallel::makeCluster(ncores,type = "FORK")
        parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
+                          corrmodel=corrmodel,control=list(fnscale=1, factr=1e7,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
