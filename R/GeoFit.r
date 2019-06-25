@@ -51,7 +51,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     if(!is.null(initparam$error))   stop(initparam$error)
 
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
-    if(optimizer=='L-BFGS-B'||length(initparam$param)==1){
+    if(optimizer=='L-BFGS-B'|| optimizer=='nlminb' || length(initparam$param)==1){
 
     if(!is.null(lower)||!is.null(upper)){
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")
@@ -126,6 +126,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          numbetas=initparam$num_betas,
                          numcoord=initparam$numcoord,
                          numtime=initparam$numtime,
+                         optimizer=optimizer,
                          param = fitted$par,
                          nozero = initparam$setup$nozero,
                          score = fitted$score,
@@ -193,7 +194,8 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
     cat('\nModel associated to the likelihood objects:', model, '\n')
     cat('\nType of the likelihood objects:', x$type, x$method,'\n')
     cat('\nCovariance model:', x$corrmodel, '\n')
-    cat('Number of spatial coordinates:', x$numcoord, '\n')
+    cat('\nOptimizer:', x$optimizer, '\n')
+    cat('\nNumber of spatial coordinates:', x$numcoord, '\n')
     cat('Number of dependent temporal realisations:', x$numtime, '\n')
     cat('Type of the random field:', biv, '\n')
     cat('Number of estimated parameters:', length(x$param), '\n')
@@ -218,12 +220,12 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
                       quote = FALSE)
       }
 
-    if(!is.null(x$varcov))
-      {
-        cat('\nVariance-covariance matrix of the estimates:\n')
-        print.default(x$varcov, digits = digits, print.gap = 3,
-                      quote = FALSE)
-      }
+    #if(!is.null(x$varcov))
+      #{
+      #  cat('\nVariance-covariance matrix of the estimates:\n')
+      #  print.default(x$varcov, digits = digits, print.gap = 3,
+      #                quote = FALSE)
+     # }
 
     cat('\n##################################################################\n')
     invisible(x)

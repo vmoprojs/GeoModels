@@ -261,6 +261,8 @@ forGaussparam<-function(model,param,bivariate)
     varcov<-ccov$covmat;  ######covariance matrix!!
 ######################################################### 
 KK=1;sel=NULL;ssp=double(dime)
+
+
   while(KK<=npoi) { 
   for(i in 1:k) {  
 
@@ -314,11 +316,11 @@ KK=1;sel=NULL;ssp=double(dime)
                  if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
                }
     }
-  if(model %in% c("poisson","Poisson"))   {  
+  if(model %in% c("poisson","Poisson"))   { 
   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
-  ssp=ssp+c(pois1)
-  sel=rbind(sel,ssp<=exp(mm))
-  if(sum(apply(sel,2,prod))==0) break   ## stopping rule
+   ssp=ssp+c(pois1)
+  sel=rbind(sel,ssp<=c(exp(mm)))
+  if(sum(apply(sel,2,prod))==0) break  ## stopping rule
  
 }
  KK=KK+1

@@ -1796,7 +1796,8 @@ double LambertW(double z) {
   double p,e,t,w;
   //if (dbgW) fprintf(stderr,"LambertW: z=%g\n",z);
   if (z<-em1 || isinf(z) || isnan(z)) { 
-    fprintf(stderr,"LambertW: bad argument %g, exiting.\n",z); exit(1); 
+    //fprintf(stderr,"LambertW: bad argument %g, exiting.\n",z); exit(1);
+      return 0.0;
   }
   if (0.0==z) return 0.0;
   if (z<-em1+1e-4) { // series near -em1 in sqrt(q)
@@ -1828,8 +1829,9 @@ double LambertW(double z) {
     if (fabs(t)<eps*(1.0+fabs(w))) return w; /* rel-abs error */
   }
   /* should never get here */
-  fprintf(stderr,"LambertW: No convergence at z=%g, exiting.\n",z); 
-  exit(1);
+  //fprintf(stderr,"LambertW: No convergence at z=%g, exiting.\n",z);
+    return 0.0;
+  //exit(1);
 }
 
 

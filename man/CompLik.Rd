@@ -54,7 +54,9 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
     compositelikelihood, see \code{\link{GeoFit}}.}
 
  \item{local}{Numeric; number of local work-items of the GPU}
-  \item{lower}{A numeric vector with the lower bounds of the parameters' ranges.}
+   \item{lower}{An optional named list giving the values  for the lower bound of the space parameter
+    when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}. The 
+    names of the list must be the same of the names in the   \code{start} list.}
   \item{model}{Numeric; the id value of the density associated to the likelihood
     objects.}
    \item{n}{Numeric; number of trials in a binomial random fields.}  
@@ -63,9 +65,11 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
   \item{namesparam}{String; the names of the parameters to be maximised.}
   \item{numparam}{Numeric; the number of parameters to be maximised.}
   \item{numparamcorr}{Numeric; the number of correlation parameters.}
-  \item{optimizer}{String; the optimization algorithm
-    (see \code{\link{optim}} for details). 'Nelder-Mead' is the
-    default.}
+    \item{optimizer}{String; the optimization algorithm
+    (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
+    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
+    In these last two cases upper and lower bounds can be passed by the user. In the case
+    of one-dimensional optimization, the function \code{optimize} is used.}  
   \item{onlyvar}{Logical; if \code{TRUE}  (and varest is  \code{TRUE}) only
    the variance covariance matrix is computed
   without optimizing. \code{FALSE} is the default.}  
@@ -78,8 +82,9 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
   \item{type}{String; the type of the likelihood objects. If \code{Pairwise} (the
     default) then the marginal composite likelihood is formed by
     pairwise marginal likelihoods.}
-  \item{upper}{A numeric vector with the upper bounds of the parameters'
-    ranges.}
+   \item{upper}{An optional named list giving the values  for the upper bound 
+      of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
+       The names of the list must be the same of the names in the   \code{start} list.}
   \item{varest}{Logical; if \code{TRUE} the estimate' variances and
     standard errors are returned.
     \code{FALSE} is the default.}

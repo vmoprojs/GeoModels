@@ -54,8 +54,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
     likelihood. \code{Marginal} is the default, see the Section \bold{Details}.}
     \item{local}{Numeric; number of local work-items of the OpenCL setup}
    \item{lower}{An optional named list giving the values  for the lower bound of the space parameter
-    when the optimizer is  \code{L-BFGS-B} or \code{optimize}. T
-    he names of the list must be the same of the names in the   \code{start} list.}
+    when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}. The 
+    names of the list must be the same of the names in the   \code{start} list.}
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite or tapered likelihood
     computation. See the Section \bold{Details} for more information.}
@@ -72,8 +72,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{nlm}, \code{BFGS} and \code{L-BFGS-B}. In this last case
-    upper and lower bounds can be passed by the user. In the case
+    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
+    In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.}  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
@@ -94,7 +94,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
     default) then the marginal composite likelihood is formed by
     pairwise marginal likelihoods (see \bold{Details}).}
   \item{upper}{An optional named list giving the values  for the upper bound 
-      of the space parameter when the optimizer is or \code{L-BFGS-B} or \code{optimize}. 
+      of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
        The names of the list must be the same of the names in the   \code{start} list.}  
   \item{varest}{Logical; if \code{TRUE} the estimates' variances and
     standard errors are returned.
@@ -127,7 +127,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
 
 
   The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead}
-  and other available methods are \code{nlm}, \code{BFGS} and \code{L-BFGS-B}. In this last case upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper}.
+  and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper}.
 
 
 

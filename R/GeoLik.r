@@ -606,64 +606,82 @@ if(!onlyvar){   # performing optimization
   if(length(param)>1)
         {
 
-  if(optimizer=='L-BFGS-B'&&!parallel){
+  if(optimizer=='L-BFGS-B'&&!parallel)
                         Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
+                          corrmodel=corrmodel,control=list(fnscale=1,factr=1e-10,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) }
+                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
   if(optimizer=='L-BFGS-B'&&parallel){
-        ncores=parallel::detectCores()-1
+       ncores=max(1, parallel::detectCores() - 1)
         cl <- parallel::makeCluster(ncores,type = "FORK")
        parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1, factr=1e7,
+                          corrmodel=corrmodel,control=list(fnscale=1, factr=1e-10,
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-        
        parallel::setDefaultCluster(cl=NULL)
        parallel::stopCluster(cl)
   }
-  if(optimizer=='BFGS'){
-    ############## optim ########
+  if(optimizer=='BFGS')
      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
+                          corrmodel=corrmodel,control=list(fnscale=1,factr=1e-10,
                         pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
- }
-
-
-        
-
-######################
-  if(optimizer=='Nelder-Mead'){
+  if(optimizer=='Nelder-Mead')
                    Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(fnscale=1,factr=1,
-                        pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
+                          corrmodel=corrmodel,control=list(fnscale=1,
+                             reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-                    }
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS)
+  if(optimizer=='nlminb')
+                       Likelihood <-nlminb(objective=eval(as.name(lname)),start=param,
+                             control = list( iter.max=100000),
+                         lower=lower,upper=upper, hessian=hessian,
+                          const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+                          setup=setup,X=X,ns=ns,NS=NS)
+    if(optimizer=='ucminf')    
+                        Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
+                        control=list( maxeval=100000),
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
+                          radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     }
-#}
 
     if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS')
                    {names(Likelihood$par)=namesparam
                     param <- Likelihood$par
                    maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun}
+      if(optimizer=='ucminf'){
+                   names(Likelihood$par)=namesparam
+                   param <- Likelihood$par
+                   maxfun <- -Likelihood$value
+                   Likelihood$value <- maxfun
+      }
+       if(optimizer=='nlminb'){
+                   names(Likelihood$par)=namesparam
+                   param <- Likelihood$par
+                   maxfun <- -Likelihood$objective
+                   Likelihood$value <- maxfun
+      }
     if(optimizer=='nlm')
-           { param <- Likelihood$estimate
-             names(param)<-namesparam
+           { names(Likelihood$estimate)=namesparam
+             param <- Likelihood$estimate
+             #names(param)<-namesparam
              maxfun <- -as.numeric(Likelihood$minimum)
              Likelihood$value <- maxfun
              Likelihood$param <- param}
@@ -689,11 +707,21 @@ if(!onlyvar){   # performing optimization
         Likelihood$convergence <- 'Optimization may have failed'}
     if(optimizer=='optimize'){  Likelihood$convergence <- 'Successful'}
     if(optimizer=='nlm'){
-               if(Likelihood$code == 1)
+               if(Likelihood$code == 1||Likelihood$code == 2)
                Likelihood$convergence <- 'Successful'
                else
                if(Likelihood$code == 4)
                Likelihood$convergence <- 'Iteration limit reached'
+               else
+               Likelihood$convergence <- 'Optimization may have failed'}
+        if(optimizer=='nlminb'){
+               if(Likelihood$convergence == 0)
+               Likelihood$convergence <- 'Successful'
+               else
+               Likelihood$convergence <- 'Optimization may have failed'}
+       if(optimizer=='ucminf'){
+               if(Likelihood$convergence== 1||Likelihood$convergence== 2||Likelihood$convergence == 4)
+               Likelihood$convergence <- 'Successful'
                else
                Likelihood$convergence <- 'Optimization may have failed'}
     if(maxfun==-1.0e8) Likelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
@@ -724,10 +752,9 @@ if(!onlyvar){   # performing optimization
 
     ### START Computing the asymptotic variance-covariance matrices:  
     if(varest){
-print(type)
-print(model)
+
     if( (model==20||model==34||model==22||model==1)&& !(type==5||type==6))      {
-print("dd")
+
         if(is.null(Likelihood$hessian)) {
             Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=param,method="Richardson",
             const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
@@ -737,7 +764,7 @@ print("dd")
             namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
         rownames(Likelihood$hessian)=namesparam; colnames(Likelihood$hessian)=namesparam     
                      }
-            
+        if(optimizer=="nlm") {rownames(Likelihood$hessian)=namesparam; colnames(Likelihood$hessian)=namesparam   }
          ii=try(solve(Likelihood$hessian),silent=T)
          if(is.matrix(ii)) 
          {Likelihood$varcov <-   ii
@@ -745,10 +772,6 @@ print("dd")
          }
 
          else {
-
-
-
-
             ii=diag(numparam)
           #warning("Asymptotic information matrix is singular")  
             #Likelihood$varcov <- NULL
@@ -791,6 +814,7 @@ print("dd")
         if(bivariate) dname<-"DCorrelationMat_biv"
         numparamcorr<-length(paramcorr[flagcor==1])# set the effective number of the corr param
         namescorr<-namescorr[flagcor==1]# set the effective names of the corr param
+
         # ML and REML cases:
         if(type==3||type==4){
             # Computing variance-covariance matrix of the random field:
@@ -985,6 +1009,7 @@ print("dd")
                   J <- rbind(c(fishmJ,zeros),cbind(zeros,J))
               }
           }
+          
             cholH <- try(chol(-H),silent = TRUE)
             invH=try(-chol2inv(cholH),silent = TRUE)
               Likelihood$sensmat <- H
@@ -1000,6 +1025,7 @@ print("dd")
                 Likelihood$clbic <- -2*(maxfun)+log(dimat)*sum(diag(prJH))
                 }
         }
+
         ### END Computing the asymptotic variance-covariance matrices
         Likelihood$varcov <- invfisher
         #Checks if the resulting variance and covariance matrix:
@@ -1012,6 +1038,7 @@ print("dd")
             Likelihood$stderr<-diag(Likelihood$varcov)
         if(any(Likelihood$stderr < 0)) Likelihood$stderr <- 'none'
         else{
+
             Likelihood$stderr<-sqrt(Likelihood$stderr)
             names(Likelihood$stderr)<-namesparam}}
     }}}

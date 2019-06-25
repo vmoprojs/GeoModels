@@ -1,8 +1,10 @@
 exportPattern("^[^\\.]")
 useDynLib(GeoModels)
 export(GeoSim,GeoFit,GeoKrig,GeoWLS,GeoVariogram,GeoCovariogram)
+S3method(print,GeoFit) 
+S3method(print,GeoWLS)
 importFrom("grDevices", dev.cur)
 importFrom("graphics", abline, lines, par, persp, plot,points)
-importFrom("stats", dist, nlm, optim, optimize, pchisq,pnorm,qnorm,rgamma,rnorm, uniroot, var)
+importFrom("stats", nlminb, dist, nlm, optim, optimize, pchisq,pnorm,qnorm,rgamma,rnorm, uniroot, var)
 importFrom("methods","is", "new", "slot<-")
 

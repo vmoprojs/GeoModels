@@ -138,6 +138,79 @@ void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double
 
 
 
+void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0,N=2;
+     double lags=0.0, lagt=0.0,weights=1.0,nugget,corr,corr1,corr2,mui,muj,bl,z,u=0.0, w=0.0;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+    double **M;
+        M= (double **) Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    
+    double *dat;
+    dat=(double *) Calloc(N,double);
+    nugget=nuis[0];
+
+
+    // Computes the log-likelihood:
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+           
+                        if(lags<=maxdist[0]){
+                          if(!ISNAN(u)&&!ISNAN(w) ){
+                            corr=CorFct(cormod,lags, 0,par,t,v);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                            corr2=corr*corr;
+                            z=2*sqrt(mui*muj)/(1-corr2);
+                            if(z<700)corr1=corr2*(1-exp(-z)*(bessel_i(z,0,1)+bessel_i(z,1,1)));
+                            else corr1=corr2*(1-(sqrt(2/(M_PI*z)))*(1+1/(8*z))); /// approx for large z
+             
+                                u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];   
+
+                            M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
+                           dat[0]=u-mui;dat[1]=w-muj;
+                                
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                              bl=dNnorm(N,M,dat);
+                              *res+= log(bl)*weights;  
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+
+                           if(!ISNAN(u)&&!ISNAN(w)){
+                        corr=CorFct(cormod,lags, 0,par,t,v);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                            corr2=corr*corr;
+                            z=2*sqrt(mui*muj)/(1-corr2);
+                            if(z<700)corr1=corr2*(1-exp(-z)*(bessel_i(z,0,1)+bessel_i(z,1,1)));
+                            else corr1=corr2*(1-(sqrt(2/(M_PI*z)))*(1+1/(8*z))); /// approx for large z
+             
+                                u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];   
+
+                            M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
+                           dat[0]=u-mui;dat[1]=w-muj;
+                               
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                              bl=dNnorm(N,M,dat);
+                              *res+= log(bl)*weights;  
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res)|| !*res)*res = LOW;
+    return;
+}
+
 
 /*tukey h space time */
 void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
@@ -1897,17 +1970,17 @@ double **M;
                     mui=exp(mean[i]);muj=exp(mean[j]);
                      corr=CorFct(cormod,lags,0,par,0,0);
                      corr2=corr*corr;
-                     z=4*sqrt(mui*muj)/(1-corr2);
-                      corr1=corr2*(1-exp(-z/2)*(bessel_i(z/2,0,1)+bessel_i(z/2,1,1)));
+                     z=2*sqrt(mui*muj)/(1-corr2);
+                     
+                     if(z<700)corr1=corr2*(1-exp(-z)*(bessel_i(z,0,1)+bessel_i(z,1,1)));
+                     else corr1=corr2*(1-(sqrt(2/(M_PI*z)))*(1+1/(8*z))); /// approx for large z
+                      
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                         M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
                         dat[0]=data[i]-mui;dat[1]=data[j]-muj;
-            //***********/
+                      
                       bl=dNnorm(N,M,dat);
-                       //
-                       // bl=log_biv_Norm(corr1,data[i]-mui,data[j]-muj,mui,muj,sqrt(mui*muj),nugget);
-                    //  if(!R_FINITE(bl)) { bl=0;}
-                        *res+= log(bl)*weights;
+                      *res+= log(bl)*weights;
                     }}}}   
    for(i=0;i<N;i++)  {Free(M[i]);}
     Free(M);         
