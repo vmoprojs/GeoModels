@@ -615,7 +615,8 @@ if(!onlyvar){   # performing optimization
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
   if(optimizer=='L-BFGS-B'&&parallel){
        ncores=max(1, parallel::detectCores() - 1)
-        cl <- parallel::makeCluster(ncores,type = "FORK")
+        if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
+        else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
        parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(fnscale=1, factr=1e-10,

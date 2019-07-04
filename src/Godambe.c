@@ -1079,10 +1079,11 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
     winsty=*winstp * dimwiny;     // y step is a  proportion of sub-window y length (deafult is 0.5)
     
+  
     
-    
+
     // what is this ??
-    
+        
     // Start conditions for valid space subwindows
     if(cdyn[0] ==0) // no dym coords
     {
@@ -1092,18 +1093,33 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     {
         nnc = ncoord[0]/ntime[0];
     }
-    float Cspace = (deltax-dimwinx);
-    if(Cspace>0)
+    double Cspace1 = (deltax-dimwinx);
+    double Cspace2 = (deltay-dimwiny);
+    if(Cspace1>0&&Cspace2>0)
     {
+          
         numintx=floor((deltax-dimwinx)/winstx+1);   //number of overlapping sub-windows is  numintx+1 * numinty+1
         numinty=floor((deltay-dimwiny)/winsty+1);
-    }else
+    }
+     if(Cspace1>0&&Cspace2<0)
+    {
+          
+        numintx=floor((deltax-dimwinx)/winstx+1);   //number of overlapping sub-windows is  numintx+1 * numinty+1
+        numinty=nnc;
+    }
+       if(Cspace1<0&&Cspace2>0)
+    {
+          
+        numintx=nnc;   //number of overlapping sub-windows is  numintx+1 * numinty+1
+        numinty=floor((deltay-dimwiny)/winsty+1);
+    }
+    if(Cspace1<0&&Cspace2<0)
     {
         numintx = nnc;
         numinty = nnc;
     }
     // End conditions for valid space subwindows
-    
+   
     
     ygrid=(double *) R_alloc(numinty, sizeof(double));
     xgrid=(double *) R_alloc(numintx, sizeof(double));
@@ -1160,8 +1176,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     for(i=0;i<wint;i++){sublagt[i+1]=sublagt[i]+step;nstime++;}
     
     // Start conditions for valid time subwindows
-    float Ctime = (ntime[0]-wint); //condition for time subsampling
-    
+    double Ctime = (ntime[0]-wint); //condition for time subsampling
+     Rprintf("%f %f %f %d\n",winc[0],winc[1],Cspace1,wint);
     if(Ctime>0)
     {
         nsub_t=floor(((ntime[0]-wint)/(winstp[0]*wint)+1));
@@ -1170,9 +1186,8 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
         nsub_t = ntime[0];
     }
     // End conditions for valid time subwindows
-    
-    
-    if(Cspace<=0 && Ctime<=0 ) {return;} // Conditions for valid SPACE && TIME subwindows
+  
+    if( (Cspace1<=0 || Cspace2<=0) && Ctime<=0 ) {return;} // Conditions for valid SPACE && TIME subwindows
     
     n_win=(numintx+1)*(numinty+1);   //number of spatial windows
     nsub=0;
