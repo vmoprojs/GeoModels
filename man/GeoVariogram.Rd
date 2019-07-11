@@ -175,18 +175,18 @@ plot(fit$centers, fit$variograms, xlab='h', ylab=expression(gamma(h)),
 set.seed(331)
 # Define the temporal sequence:
 # Set the coordinates of the sites:
-x = runif(400, 0, 1)
-y = runif(400, 0, 1)
+x = runif(200, 0, 1)
+y = runif(200, 0, 1)
 coords = cbind(x,y)
-times = seq(1,5,1)
+times = seq(1,10,1)
 
 # Simulation of a spatio-temporal Gaussian random field:
 data = GeoSim(coordx=coords, coordt=times, corrmodel="gneiting",
-              param=list(mean=0,scale_s=0.1,scale_t=0.1,sill=1,
+              param=list(mean=0,scale_s=0.08,scale_t=0.4,sill=1,
               nugget=0,power_s=1,power_t=1,sep=0.5))$data
 
 # Empirical spatio-temporal semi-variogram estimation:
-fit = GeoVariogram(data=data, coordx=coords, coordt=times, maxtime=5,maxdist=0.5)
+fit = GeoVariogram(data=data, coordx=coords, coordt=times, maxtime=7,maxdist=0.5)
 
 # Results: Marginal spatial empirical  semi-variogram
 par(mfrow=c(2,2), mai=c(.5,.5,.3,.3), mgp=c(1.4,.5, 0))
@@ -229,18 +229,17 @@ persp(c(0,fit$centers), c(0,fit$bint), st.vario,
 ###
 ###############################################################
 # Simulation of a bivariate spatial Gaussian random field:
-set.seed(29)
+set.seed(293)
 # Define the spatial-coordinates of the points:
-x = runif(200, 0, 1)
-set.seed(7)
-y = runif(200, 0, 1)
+x = runif(400, 0, 1)
+y = runif(400, 0, 1)
 coords=cbind(x,y)
 
 # Simulation of a bivariate Gaussian Random field 
 # with matern (cross)  covariance function
-param=list(mean_1=0,mean_2=0,scale_1=0.15/3,scale_2=0.2/3,scale_12=0.15/3,
+param=list(mean_1=0,mean_2=0,scale_1=0.1/3,scale_2=0.15/3,scale_12=0.15/3,
            sill_1=1,sill_2=1,nugget_1=0,nugget_2=0,
-           smooth_1=0.5,smooth_12=0.5,smooth_2=0.5,pcol=-0.45)  
+           smooth_1=0.5,smooth_12=0.5,smooth_2=0.5,pcol=0.3)  
 data = GeoSim(coordx=coords, corrmodel="Bi_matern", param=param)$data
 
 # Empirical  semi-(cross)variogram estimation:

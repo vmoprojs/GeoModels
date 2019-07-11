@@ -23,7 +23,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
   {
     ### Define the object function:
     comploglik <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, 
-                                                           namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
+                              namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
       {
         names(param) <- namesparam
         param <- c(param, fixed)
@@ -32,22 +32,26 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
-
-        result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), 
-                    as.double(data), 
+       
+        result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
                    res=double(1),as.double(c(X%*%mm)),as.double(0),as.double(other_nuis),
                     as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                     PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res   
-
-        #result <- dotCall64::.C64(as.character(fan), 
-         #            SIGNATURE = c("integer",rep("double",4),"integer","double","integer",
-          #                          rep("double",4),rep("integer",4)), 
-           #          INTENT = c("r","r","r","r","r","r","r","r","w","r","r","r","r","r","r","r"), 
-            #         NAOK = TRUE,PACKAGE='GeoModels',
-             #        corrmodel,coordx,coordy,coordt,data, n,paramcorr, weigthed, 
-              #                    res = vector_dc("numeric",1),c(X%*%mm),0,other_nuis,ns,NS,local,GPU)$res
-             #print(result)
+       # result <- dotCall64::.C64(as.character(fan), 
+       #              SIGNATURE = c(
+       #  "integer","double","double","double","double",
+       #  "integer","double","integer",
+       #   "double","double","double","double",    
+       #    "integer","integer","integer","integer"),
+       # corrmodel,coordx,coordy,coordt, data, 
+       #            n,paramcorr, weigthed, 
+       #            res=double(1),c(X%*%mm),as.double(0),other_nuis,
+       #             ns,NS,local,GPU,
+       # INTENT = c("r","r","r","r",
+       #   "r","r","r","r","w","r","r","r","r","r","r","r"), 
+       #             NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)$res
+            # print(result)
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
@@ -66,7 +70,19 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                      as.double(paramcorr), as.integer(weigthed), res=double(1),as.double(c(X*mm1)),
                     as.double(0),as.double(other_nuis),as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                      PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
-
+     #result <- dotCall64::.C64(fan, 
+     #                SIGNATURE = c(
+     #    "integer","double","double","double","double",
+     #    "integer","double","integer",
+     #     "double","double","double","double",    
+     #      "integer","integer","integer","integer"),
+     #   corrmodel,coordx,coordy,coordt, data, 
+     #              n,paramcorr, weigthed, 
+     #              res=double(1),c(X*mm1),as.double(0),other_nuis,
+     #               ns,NS,local,GPU,
+     #   INTENT = c("r","r","r","r",
+     #     "r","r","r","r","w","r","r","r","r","r","r","r"), 
+      #              NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)$res
         return(-result)
       }
    ############################################################################################################################################
@@ -186,7 +202,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
    if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
 
-
+    if(is.null(GPU)) GPU=0
    if(!onlyvar){
   ##############################.  spatial or space time ############################################
    if(!bivariate)           {
@@ -198,24 +214,25 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)}
    if(length(param)>1) {
     if(optimizer=='L-BFGS-B'&&!parallel)
-      CompLikelihood <- optim(par=param,fn=comploglik, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
-                              control=list(fnscale=1,factr=1e-10,
-                              pgtol=1e-14, maxit=100000), data=data, fixed=fixed,
-                              fan=fname, hessian=hessian, lower=lower, method=optimizer,n=n,
+      CompLikelihood <- optim(par=param,fn=comploglik, 
+                              control=list(fnscale=1,factr=1e-10,pgtol=1e-14, maxit=100000), 
+                              coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                              fan=fname, lower=lower, method=optimizer,n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
-                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, hessian=hessian)
       if(optimizer=='L-BFGS-B'&&parallel){
         ncores=max(1, parallel::detectCores() - 1)
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
-        CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
+        CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik, 
                               control=list(fnscale=1,pgtol=1e-14, maxit=100000,factr=1e-10),
-                               data=data, fixed=fixed,
-                              fan=fname, hessian=hessian, lower=lower, method=optimizer,n=n,
+                              coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
+                               data=data, fixed=fixed,fan=fname, lower=lower, method=optimizer,n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
-                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU
+                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, hessian=hessian
                                )
+         print(CompLikelihood$convergence)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
          }
@@ -230,6 +247,15 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                              reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=hessian, method=optimizer,n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    if(optimizer=='nmk')
+      CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik, control = list(maxfeval=100000,tol=1e-10),
+         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+         n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    if(optimizer=='nmkb')
+      CompLikelihood <-dfoptim::nmkb(par=param, fn=comploglik, control = list(maxfeval=100000,tol=1e-10),
+        lower=lower,upper=upper,
+         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+         n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f=comploglik,p=param,steptol = 1e-4, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
                                fan=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
@@ -242,11 +268,12 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
     if(optimizer=='ucminf')   
-      CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik, hessian=as.numeric(hessian),  
+      CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik, hessian=as.numeric(hessian),   
                         control=list( maxeval=100000),
                             coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
                             n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-                               }}
+                               
+    }}
      ############################## bivariate  ############################################                           
     if(bivariate)           {
      if(length(param)==1)
@@ -258,19 +285,19 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)}
       if(length(param)>1) {   
     if(optimizer=='L-BFGS-B'&&!parallel){
-      CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
-                             control=list(fnscale=1, pgtol=1e-14, maxit=100000), data=data, fixed=fixed,
-                              fan=fname, hessian=hessian, lower=lower, method=optimizer,n=n,
+      CompLikelihood <- optim(param,comploglik_biv, control=list(fnscale=1, pgtol=1e-14, maxit=100000),
+                              method=optimizer,hessian=hessian,lower=lower, upper=upper,
+                              coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
+                              data=data, fixed=fixed,fan=fname,n=n,
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
-                              upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)}
+                             weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU )}
 
-         if(optimizer=='L-BFGS-B'&&parallel){
-          ncores=max(1, parallel::detectCores() - 1)
-        
-        if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
-        else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
-        parallel::setDefaultCluster(cl = cl)
-        CompLikelihood <- optimParallel::optimParallel(param,comploglik_biv, 
+    if(optimizer=='L-BFGS-B'&&parallel){
+           ncores=max(1, parallel::detectCores() - 1)
+           if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
+           else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
+           parallel::setDefaultCluster(cl = cl)
+           CompLikelihood <- optimParallel::optimParallel(param,comploglik_biv, 
                               control=list(fnscale=1, pgtol=1e-14, maxit=100000),
                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
                               data=data, fixed=fixed,
@@ -278,10 +305,10 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, 
                               lower=lower,upper=upper,
                               hessian=hessian)
-           parallel::setDefaultCluster(cl=NULL)
-         parallel::stopCluster(cl)
+              parallel::setDefaultCluster(cl=NULL)
+              parallel::stopCluster(cl)
          }
-       if(optimizer=='BFGS')
+      if(optimizer=='BFGS')
       CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
                               reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=hessian, method=optimizer,n=n,
@@ -291,12 +318,34 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=hessian, method=optimizer,n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-   if(optimizer=='nlm') 
+    if(optimizer=='nmk')
+        CompLikelihood <- dfoptim::nmk(par=param, fn=comploglik_biv, control = list(maxfeval=100000,tol=1e-10),
+                             coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                            n=n, namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    if(optimizer=='nmkb')
+        CompLikelihood <- dfoptim::nmkb(par=param, fn=comploglik_biv, control = list(maxfeval=100000,tol=1e-10),
+                             lower=lower,upper=upper,
+                             coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                            n=n, namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+     if(optimizer=='nlm') 
         CompLikelihood <- nlm( f=comploglik_biv,p=param, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
                                fan=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-                               }
-    }                    
+    if(optimizer=='ucminf') 
+         CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik_biv, hessian=as.numeric(hessian),   
+                        control=list( maxeval=100000), 
+                        coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                        fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                        weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    if(optimizer=='nlminb') 
+        CompLikelihood <- nlminb( objective=comploglik_biv,start=param, 
+                                     control = list( iter.max=100000),
+                              lower=lower,upper=upper,
+                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+
+   }}                    
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
@@ -310,6 +359,14 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         CompLikelihood$convergence <- 'Iteration limit reached'
         else
         CompLikelihood$convergence <- "Optimization may have failed"
+        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+    }
+        if(optimizer=='nmk'||optimizer=='nmkb'){
+        CompLikelihood$value = -CompLikelihood$value
+        names(CompLikelihood$par)<- namesparam
+        if(CompLikelihood$convergence == 0)
+        CompLikelihood$convergence <- 'Successful'
+        else CompLikelihood$convergence <- "Optimization may have failed"
         if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
       if(optimizer=='ucminf'){
@@ -400,7 +457,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
 #print(CompLikelihood$par)
 #print(CompLikelihood$hessian)
 #####################################
-if(!is.matrix(CompLikelihood$hessian)||!is.numeric(sum(CompLikelihood$hessian))||optimizer=="nlminb")
+if(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0)
   {
 if(!bivariate)  
 
@@ -440,6 +497,7 @@ colnames(CompLikelihood$hessian)=namesparam
 
             # Set the window parameter:
            if(length(winconst)==1) winconst=c(winconst,0)
+           
             GD=.C('GodambeMat',as.double(mm),as.integer(bivariate),as.double(coordx),as.double(coordy),
               as.double(coordt),as.integer(corrmodel), as.double(data),as.integer(distance),as.double(eps),
               as.integer(flagcorr), as.integer(flagnuis),as.integer(grid),as.integer(likelihood),
@@ -447,7 +505,38 @@ colnames(CompLikelihood$hessian)=namesparam
               as.integer(numparam),as.integer(numparamcorr),as.integer(length(paramcorr)),as.double(paramcorr),as.double(nuisance),
               score=score,sensmat=sensmat,as.integer(spacetime),as.integer(type),
               varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
+           #
               as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+            
+         #GD=dotCall64::.C64('GodambeMat', 
+          #           SIGNATURE = c(
+           #  "double","integer","double","double",
+           #  "double","integer","double","integer","double",
+           #  "integer","integer","integer","integer",
+           #  "double","integer","double","integer",
+           #  "integer","integer","integer","double","double",
+           #  "double","double","integer","integer",  
+           #   "double","integer", "double", "double", "double", "double",
+           #   "integer","double","integer","integer"),
+           #   mm,bivariate,coordx,coordy,
+           #   coordt,corrmodel,data,distance,eps,
+           #   flagcorr,flagnuis,grid,likelihood,
+           #   c(X%*%mm),model,n,num_betas,
+           #   numparam,numparamcorr,length(paramcorr),paramcorr,nuisance,
+           #   score= score,sensmat=sensmat,spacetime,type,
+           #   varimat=varimat,vartype,winconst,winstp,winconst_t,winstp_t,
+           #  weigthed,c(t(X)),ns,NS,
+           #  INTENT = c("r","r","r","r",
+           #             "r","r","r","r","r",
+           #             "r","r","r","r",
+           #             "r","r","r","r",
+           #             "r","r","r","r","r",
+           #           "w","w","r","r",
+            #          "w","r","r","r","r","r",
+            #        "r","r","r","r"), 
+            # NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
+              
+
             if(!sum(GD$varimat)) print("Std error estimation failed")
             # Set score vectore:
             #print(CompLikelihood$hessian)
@@ -458,11 +547,19 @@ colnames(CompLikelihood$hessian)=namesparam
             CompLikelihood$sensmat <- matrix(rep(0,dimmat),ncol=numparam)
             # Set variability matrix:
             CompLikelihood$varimat <- matrix(rep(0,dimmat),ncol=numparam)
+            
+          
+
             namesgod <- c(namesnuis[as.logical(flagnuis)], namescorr[as.logical(flagcorr)])
             names(CompLikelihood$score) <- namesgod
             CompLikelihood$score <- CompLikelihood$score[namesparam]
+            
+            #namesgod=namesparam
+            #names(CompLikelihood$score )=namesparam
+#print(namesgod)
             dimnames(CompLikelihood$sensmat) <- list(namesgod, namesgod)
             dimnames(CompLikelihood$varimat) <- list(namesgod, namesgod)
+
             if(numparam>1){
              # CompLikelihood$sensmat[lower.tri(CompLikelihood$sensmat, diag=TRUE)] <- GD$sensmat
              # CompLikelihood$sensmat <- t(CompLikelihood$sensmat)

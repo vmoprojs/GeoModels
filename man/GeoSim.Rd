@@ -122,8 +122,8 @@ image.plot(x,y,data2,col=terrain.colors(100),main="Wendland",xlab="",ylab="")
 
 ################################################################
 ###
-### Example 2. Simulation of a spatial binomial RF based on
-### the latent Gaussian RF with exponential correlation
+### Example 2. Simulation of a spatial binomial RF 
+### with  underlying exponential correlation
 ### on a regular grid
 ###
 ################################################################
@@ -145,7 +145,7 @@ image.plot(x,y,sim$data,nlevel=n+1,col=terrain.colors(n+1),zlim=c(0,n))
 ################################################################
 ###
 ### Example 3. Simulation of a spatial Weibull  RF
-### with  exponential correlation 
+### with  underlying exponential correlation 
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
@@ -162,7 +162,7 @@ image.plot(x,y,data1,col=terrain.colors(200),main="Weibull RF",xlab="",ylab="")
 ################################################################
 ###
 ### Example 4. Simulation of a spatial t  RF
-### with  exponential correlation 
+### with  with  underlying exponential correlation 
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
@@ -180,7 +180,7 @@ image.plot(x,y,data1,col=terrain.colors(100),main="Student-t RF",xlab="",ylab=""
 ################################################################
 ###
 ### Example 5. Simulation of a sinhasinh RF
-### with  Wend0 correlation.
+###   with  underlying Wend0 correlation.
 ###
 ###############################################################
 
@@ -331,7 +331,7 @@ map("usa", add = TRUE)
 ################################################################
 ###
 ### Example 10. Simulation of a Wrapped  RF 
-### with exponential correlation
+### with   underlying exponential correlation
 ### on a regular grid
 ###
 ###############################################################

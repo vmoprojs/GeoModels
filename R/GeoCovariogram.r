@@ -10,7 +10,7 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 28/03/2018.
+### Last change: 28/03/2019.
 ####################################################
    
  

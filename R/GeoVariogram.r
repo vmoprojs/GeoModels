@@ -100,10 +100,24 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                lenbins_marg<-integer(n_var*numvario)  #
                moments_cross<-double(0.5*n_var*(n_var-1)*numvario)  # vect of square differences for cross components (12)
                lenbins_cross<-integer(0.5*n_var*(n_var-1)*numvario) #
-               DEV=.C("Binned_Variogram_biv2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double(data),
-               lenbins_cross=lenbins_cross, moments_cross=moments_cross, as.integer(numbins),lenbins_marg=lenbins_marg,
-               moments_marg=moments_marg,as.integer(ns),as.integer(NS),
-               PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
+              # DEV=.C("Binned_Variogram_biv2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double(data),
+              # lenbins_cross=lenbins_cross, moments_cross=moments_cross, as.integer(numbins),lenbins_marg=lenbins_marg,
+              # moments_marg=moments_marg,as.integer(ns),as.integer(NS),
+              # PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+               
+              DEV=dotCall64::.C64("Binned_Variogram_biv2", 
+                     SIGNATURE = c("double","double","double","double","double",
+                                "integer","double","integer","integer",
+                                "double","integer","integer"),
+                bins=bins, coordx,coordy,coordt,data,
+               lenbins_cross=lenbins_cross, moments_cross=moments_cross, numbins,lenbins_marg=lenbins_marg,
+               moments_marg=moments_marg,ns,NS,
+                 INTENT = c("w","r","r","r","r",
+                            "w","w","r","w",
+                            "w","r","r"), 
+                    NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
+
                bins=DEV$bins
                lenbins_cross=DEV$lenbins_cross
                moments_cross=DEV$moments_cross
@@ -155,9 +169,21 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
          NS=c(0,NS)[-(length(ns)+1)]
       fname <- paste(fname,"2",sep="") 
       # Compute the spatial-temporal moments:
-      EV=.C(fname, bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
+     # EV=.C(fname, bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
+     #      lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments=moments,momentst=momentst,momentt=momentt,
+     #      as.integer(numbins), as.integer(numbint),as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
+     EV=dotCall64::.C64(fname, 
+                     SIGNATURE = c("double","double","double","double","double","double",
+                                "integer","integer","integer","double","double","double",
+                                "integer","integer","integer","integer"),
+               bins=bins, bint=bint,coordx,coordy,coordt,data,
            lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments=moments,momentst=momentst,momentt=momentt,
-           as.integer(numbins), as.integer(numbint),as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+           numbins,numbint,ns,NS,
+                 INTENT = c("w","w","r","r","r","r",
+                            "w","w","w","w","w","w",
+                            "r","r","r","r"), 
+                    NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
        bins=EV$bins
        bint=EV$bint
        lenbins=EV$lenbins
@@ -212,8 +238,18 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
      fname <- paste(fname,"2",sep="") 
       if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
      # Computes the spatial moments
-      EV=.C(fname, bins=bins,  as.double(coordx),as.double(coordy),as.double(coordt),as.double(data), lenbins=lenbins,
-         moments=moments, as.integer(numbins),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+     # EV=.C(fname, bins=bins,  as.double(coordx),as.double(coordy),as.double(coordt),as.double(data), 
+     #   lenbins=lenbins, moments=moments, as.integer(numbins),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
+       EV=dotCall64::.C64(fname, 
+                     SIGNATURE = c("double","double","double","double","double",
+                                "integer","double","integer"),
+              bins=bins, coordx,coordy,coordt,data, 
+        lenbins=lenbins, moments=moments, numbins,
+                 INTENT = c("w","r","r","r","r",
+                            "w","w","r"), 
+                    NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
+
        bins=EV$bins
        lenbins=EV$lenbins
        moments=EV$moments
@@ -228,6 +264,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
       variograms <- moments/lenbins}
     # Start --- compute the extremal coefficient
     .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    #dotCall64::.C64('DeleteGlobalVar', SIGNATURE =c(),NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
     EVariogram <- list(bins=bins,
                        bint=bint,
                        cloud=cloud,

@@ -8,13 +8,13 @@ Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
 Author: Moreno Bevilacqua [aut, cre],
   Víctor Morales-Onate [aut]
 Maintainer: Moreno Bevilacqua <moreno.bevilacqua@uv.cl>
-Depends: R (>= 2.12.0) 
+Depends: R (>= 2.12.0)
 Description: This package provides a set of procedures for a) simulation and estimation  of  some spatial and spatio-temporal random fields using standard likelihood and a likelihood approximation  method called  composite likelihood and b) prediction using best linear unbiased prediction.
  Spatio (temporal) bivariate  data estimation involves estimation of both regression and covariance parameters.
  Gaussian and some non Gaussian Random fields can be analyzed using the  GeoModels package. Among them,   Weibull, logGaussian, skewGaussian, T, binomial, negative
  binomial  and circular  random fields can be analyzed.
-Imports: methods
-Suggests: spam, scatterplot3d, fields, mapproj, gpuR, optimParallel, parallel, pbivnorm, plot3D, shape, numDeriv, hypergeo, sphereplot, ucminf,
+Imports: methods,
+Suggests: spam, scatterplot3d,  dfoptim, dotCall64, fields, mapproj, gpuR, gsl, optimParallel, parallel, pbivnorm, plot3D, shape, numDeriv, hypergeo, sphereplot, ucminf
 License: GPL (>= 2)
 URL: https://vmoprojs.github.io/GeoModels-page/ 
 Repository: GitHub

@@ -660,14 +660,29 @@ if(!onlyvar){   # performing optimization
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+    if(optimizer=='nmk')    
+                        Likelihood <- dfoptim::nmk(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
+                          radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+   if(optimizer=='nmkb')    
+                        Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
+                        lower=lower,upper=upper,
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
+                          radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     }
 
-    if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS')
+    if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS'
+        ||optimizer=='nmk'||optimizer=='nmkb')
                    {names(Likelihood$par)=namesparam
                     param <- Likelihood$par
                    maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun}
-      if(optimizer=='ucminf'){
+
+    if(optimizer=='ucminf'){
                    names(Likelihood$par)=namesparam
                    param <- Likelihood$par
                    maxfun <- -Likelihood$value
@@ -707,6 +722,9 @@ if(!onlyvar){   # performing optimization
       else
         Likelihood$convergence <- 'Optimization may have failed'}
     if(optimizer=='optimize'){  Likelihood$convergence <- 'Successful'}
+    if(optimizer=='nmk' || optimizer=='nmkb'){
+                   if(Likelihood$convergence == 0) Likelihood$convergence <- 'Successful'
+                   else Likelihood$convergence <- 'Optimization may have failed'}
     if(optimizer=='nlm'){
                if(Likelihood$code == 1||Likelihood$code == 2)
                Likelihood$convergence <- 'Successful'
@@ -737,15 +755,19 @@ if(!onlyvar){   # performing optimization
             }
    
 #####################################
-#if(varest) 
-#  {
-#Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
-#                          coordt=coordt,corr=corr,corrmat=corrmat,
-#                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-#                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-#rownames(Likelihood$hessian)=namesparam
-#colnames(Likelihood$hessian)=namesparam
-#  }
+if(varest) 
+  {
+   if(is.null(Likelihood$hessian)||min(eigen(Likelihood$hessian)$values)<0)
+  {  
+    print("numderiv")
+Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
+                          coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+rownames(Likelihood$hessian)=namesparam
+colnames(Likelihood$hessian)=namesparam
+}
+  }
 #####################################  
 
    if(Likelihood$convergence == 'Successful' || Likelihood$convergence =='None')

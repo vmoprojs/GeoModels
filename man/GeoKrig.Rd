@@ -299,7 +299,7 @@ start=list(mean=0,scale=scale)
 # Maximum pairwise likelihood fitting :
 fit = GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
                     likelihood='Marginal', type='Pairwise',maxdist=0.03,
-                    start=start,fixed=fixed)
+                    optimizer="BFGS", start=start,fixed=fixed)
                     
 # locations to predict
 xx=seq(0,1,0.03)
@@ -360,7 +360,7 @@ start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 maxdist=0.1
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
               maxdist=maxdist,likelihood="Marginal",type="Pairwise",
-            start=start,fixed=fixed, model = model)
+              optimizer="BFGS",start=start,fixed=fixed, model = model)
 ## obtaining residuals              
 res=GeoResiduals(fit2)
 
@@ -413,8 +413,8 @@ start=list(mean=mean, scale=scale,sill=sill)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-                    maxdist=0.02,likelihood="Marginal",type="Pairwise",
-                    start=start,fixed=fixed, model = model)
+             maxdist=0.02,likelihood="Marginal",type="Pairwise",
+             optimizer="BFGS", start=start,fixed=fixed, model = model)
                     
 # locations to predict
 xx=seq(0,1,0.04)
@@ -453,10 +453,9 @@ data=GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,
 # Maximum pairwise likelihood fitting of the space time random field:
 start = list(scale_s=0.2/3,scale_t=1,sill=1,mean=0)
 fixed = list(nugget=0)
-fit = GeoFit(data, coordx=coords, coordt=times,
-                    corrmodel=corrmodel, likelihood='Marginal',
-                    type='Pairwise',start=start,fixed=fixed,
-                    maxdist=0.1,maxtime=1)
+fit = GeoFit(data, coordx=coords, coordt=times,corrmodel=corrmodel, 
+             likelihood='Marginal', type='Pairwise',start=start,fixed=fixed,
+             optimizer="BFGS", maxdist=0.1,maxtime=1)
 
 ################################################################
 ###
@@ -519,7 +518,7 @@ start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
 # Maximum Composite likelihood fitting of the random field:
 fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
         likelihood="Marginal",type="Pairwise",maxdist=0.1,
-        start=start,fixed=fixed)
+        optimizer="BFGS", start=start,fixed=fixed)
 
 
 # locations to predict

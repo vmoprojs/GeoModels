@@ -84,12 +84,12 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
           as.integer(ns),as.integer(NS),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
-       # cr=.C64(fname,SIGNATURE = c("double","double","double","double","integer","double","double",
-        #                        "double","integer","integer"),
-         #    INTENT = c("w", "r", "r", "r", "r","w","w","r", "r", "r"),
-          #    corr=numeric_dc(numpairstot),  coordx=coordx,coordy=coordy,coordt=coordt,
-          #corrmodel=corrmodel, nuisance=nuisance, paramcorr=paramcorr,radius=radius, ns=ns,NS=NS,
-         #PACKAGE='GeoModels',NAOK=TRUE)
+     #   cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+     #  "integer","double","double","double","integer","integer"),         
+     #  corr=double(numpairstot),
+     #  coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+     #        INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+     #        NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
 
         corr=cr$corr
 
@@ -113,10 +113,18 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
        if(bivariate) fname <- "CorrelationMat_biv_tap"
         #if(bivariate) fname <- "CorrelationMat_biv_tap_dyn2"
 
-     
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
            as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+    #      cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairs),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0) 
+
 
         corr=cr$corr
         if(!bivariate){
@@ -240,10 +248,18 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
               fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-        cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
           as.integer(ns),as.integer(NS),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+    #     cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
 
             corr=cr$corr
             if(!bivariate)                
@@ -299,10 +315,19 @@ if(model==34)  {  ## TukeyH
               fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-        cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+           cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
           as.integer(ns),as.integer(NS),
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+   #         cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+   #    "integer","double","double","double","integer","integer"),        
+   #    #corr=vector_dc("numeric", numpairstot), 
+   #    corr=double(numpairstot),
+   #    coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+   #          INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+   #          NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
+   
             corr=cr$corr
             if(!bivariate)                
 
@@ -339,9 +364,18 @@ if(model==12)   ##  student case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0) 
+
         nu=as.numeric(1/nuisance['df'])    
   corr=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cr$corr^2))*cr$corr)/(2*gamma(nu/2)^2)
   if(!bivariate) {
@@ -395,9 +429,18 @@ if(model==27)   ##  two piece student case case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+
+             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
           corr2=cr$corr^2;sk2=sk^2
           a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
@@ -434,9 +477,20 @@ if(model==29)   ##  two piece gaussian case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+
+ cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
+     
+
+     #cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+     #  "integer","double","double","double","integer","integer"),        
+     #  #corr=vector_dc("numeric", numpairstot), 
+     #  corr=double(numpairstot),
+     #  coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+     #        INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+     #        NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
+
           corr2=sqrt(1-cr$corr^2)
           xx=as.numeric(nuisance['skew']); xx2=xx^2
           ll=qnorm((1-xx)/2)
@@ -476,9 +530,18 @@ if(model==21)   ##  gamma case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
        #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+
+          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+  
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)     
   
   corr=cr$corr^2   ### gamma correlation
   if(!bivariate) {
@@ -513,9 +576,18 @@ if(model==30)   ##  poisson case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
        #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+
+ # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+ #      "integer","double","double","double","integer","integer"),        
+  #     #corr=vector_dc("numeric", numpairstot), 
+  #     corr=double(numpairstot),
+  #     coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+  #           INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+  #           NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)      
 
 corr=cr$corr*(1-nuisance['nugget'])         
 corr2=corr^2   ### gamma correlation
@@ -555,9 +627,18 @@ if(model==26)   ##  weibull case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+
+                 cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+
+   # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+   #    "integer","double","double","double","integer","integer"),        
+     #  #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+      # coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+      #       INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+      #       NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0) 
            bcorr=    gamma(1+1/nuisance['shape'])^2/
            (gamma(1+2/nuisance['shape'])-gamma(1+1/nuisance['shape'])^2)    
          # weibull correlations                
@@ -594,9 +675,17 @@ if(model==26)   ##  weibull case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+           cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)       
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)        
     corr= ((pi*sin(2*pi/nuisance['shape']))/(2*nuisance['shape']*
            (sin(pi/nuisance['shape']))^2-pi*sin(2*pi/nuisance['shape'])))*
              (Re(hypergeo::hypergeo(-1/nuisance['shape'],-1/nuisance['shape'] ,1 ,cr$corr^2))*
@@ -625,9 +714,18 @@ if(model==22)  {  ## Log Gaussian
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
         vvar=nuisance['sill']
         nuisance['sill']=1
-        cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+
+            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
+
+  #cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+  #     "integer","double","double","double","integer","integer"),        
+  #     #corr=vector_dc("numeric", numpairstot), 
+  #     corr=double(numpairstot),
+  #     coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+  #           INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+  #           NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)      
             corr=cr$corr*(1-nuisance['nugget'])
             corr=exp(vvar*corr)
             #print(corr[1:10])
@@ -660,10 +758,16 @@ if(model==22)  {  ## Log Gaussian
         fname <-"CorrelationMat2"
        # if(spacetime) fname <- "CorrelationMat_st2"
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
-    
-            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
+      cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
              as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-              ##print(cr$corr)
+        
+ # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+ #      "integer","double","double","double","integer","integer"),        
+ #      #corr=vector_dc("numeric", numpairstot), 
+ #      corr=double(numpairstot),
+ #      coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+ #            INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+ #            NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0) 
               corr2=cr$corr^2; sk=as.numeric(nuisance['skew']); sk2=sk^2; vv=as.numeric(nuisance['sill'])
               corr=((2*sk2/pi)*(sqrt(1-corr2) + cr$corr*asin(cr$corr)-1) + cr$corr*vv)/(vv+sk2*(1-2/pi));
                 # Builds the covariance matrix:
@@ -784,6 +888,7 @@ if(model==22)  {  ## Log Gaussian
             if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}
             else{               initparam$NS=rep(0,initparam$numtime)}
     }
+    if(is.null(initparam$NS)) initparam$NS=0
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
                         initparam$NS,
                         initparam$param[initparam$namesnuis],

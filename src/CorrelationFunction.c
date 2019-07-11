@@ -693,9 +693,28 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_s=par[3];
         scale_t=par[4];
         sep=par[5];  
-        //Rprintf("%f %f %f %f\n",R_power_t,R_power_s,R_power,sep);
-        arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));
+       // Rprintf("%f %f  %f\n",sep,R_power_t,R_power);
+        //arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));
+        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
         rho=R_pow(arg,R_power)*CorFunW0(h,scale_s*R_pow(arg,sep),R_power_s);   
+        break;
+          case 64:
+        R_power_s=par[0];
+        R_power=par[1];
+        R_power_t=par[2];
+        scale_s=par[3];
+        scale_t=par[4];
+        sep=par[5];
+       // Rprintf("%f %f  %f\n",R_power_s,R_power,R_power_t);
+        //arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+        //rho=R_pow(arg,R_power)*CorFunW0(u,scale_t*R_pow(arg,sep),R_power_t); 
+        
+        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+       /* Rprintf("f\n,arg ");
+           arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+                Rprintf("f\n,arg ");  */ 
+        rho=R_pow(arg,R_power)*CorFunW0(u,scale_t*R_pow(arg,sep),R_power_t);  //2.5+2*0
+         //2.5+2*0
         break;
     case 65:  
           R_power_t=par[0];
@@ -704,8 +723,19 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_s=par[3];
         scale_t=par[4];
         sep=par[5];
-        arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));
+        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
         rho=R_pow(arg,R_power)*CorFunW1(h,scale_s*R_pow(arg,sep),R_power_s);   
+        break;
+
+     case 66:
+        R_power_s=par[0];
+        R_power=par[1];
+        R_power_t=par[2];  
+        scale_s=par[3];
+        scale_t=par[4];
+        sep=par[5];
+        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+        rho=R_pow(arg,R_power)*CorFunW1(u,scale_t*R_pow(arg,sep),R_power_t); //2.5+2*1
         break;
       case 67:  //
          R_power_t=par[0];
@@ -714,8 +744,19 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_s=par[3];
         scale_t=par[4];
         sep=par[5];
-        arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));   
+        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);   
         rho=R_pow(arg,R_power)*CorFunW2(h,scale_s*R_pow(arg,sep),R_power_s);   
+        break;
+
+     case 68:
+        R_power_s=par[0];
+        R_power_t=par[2];
+        R_power=par[1];
+        scale_s=par[3];
+        scale_t=par[4];
+        sep=par[5];
+        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+        rho=R_pow(arg,R_power)*CorFunW2(u,scale_t*R_pow(arg,sep),R_power_t); ////2.5+2*2
         break;
     case 87:  
           R_power_t=par[0];
@@ -725,7 +766,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_t=par[4];
         sep=par[5];
         smooth=par[6];
-        arg=R_pow(1+R_pow(u/scale_t,R_power_t/2),-1/(R_power_t/2));
+        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
         rho=R_pow(arg,R_power)*CorFunW_gen(h,R_power_s,smooth,scale_s*R_pow(arg,sep)); 
         break;  
       case 88:
@@ -736,40 +777,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale_t=par[4];
         sep=par[5];
         smooth=par[6];
-        arg=R_pow(1+R_pow(h/scale_s,R_power_s/2),-1/(R_power_s/2));
+        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
         rho=R_pow(arg,R_power)*CorFunW_gen(u,R_power_t,smooth,scale_t*R_pow(arg,sep));  
-        break;
-     case 64:
-        R_power_s=par[0];
-        R_power=par[1];
-        R_power_t=par[2];
-        scale_s=par[3];
-        scale_t=par[4];
-        sep=par[5];
-        arg=R_pow(1+R_pow(h/scale_s,R_power_s/2),-1/(R_power_s/2));
-        rho=R_pow(arg,R_power)*CorFunW0(u,scale_t*R_pow(arg,sep),R_power_t);  //2.5+2*0
-        break;
-
-     case 66:
-        R_power_s=par[0];
-        R_power=par[1];
-        R_power_t=par[2];  
-        scale_s=par[3];
-        scale_t=par[4];
-        sep=par[5];
-        arg=R_pow(1+R_pow(h/scale_s,R_power_s/2),-1/(R_power_s/2));
-        rho=R_pow(arg,R_power)*CorFunW1(u,scale_t*R_pow(arg,sep),R_power_t); //2.5+2*1
-        break;
-
-     case 68:
-        R_power_s=par[0];
-        R_power_t=par[2];
-        R_power=par[1];
-        scale_s=par[3];
-        scale_t=par[4];
-        sep=par[5];
-        arg=R_pow(1+R_pow(h/scale_s,R_power_s/2),-1/(R_power_s/2));
-        rho=R_pow(arg,R_power)*CorFunW2(u,scale_t*R_pow(arg,sep),R_power_t); ////2.5+2*2
         break;
         case 69:
           R_power_s=par[0];

@@ -509,9 +509,10 @@ library(fields)
 
 ################################################################
 ###
-### Example 1, 2, 3:  Estimation of a spatial Gaussian RF with 
-### exponential correlation using and pairwise likelihood
-### maximum likelihood and tapering likelihood
+### Example 1, 2 :  Estimation of a spatial Gaussian RF with 
+### Matern correlation using  pairwise likelihood and 
+### maximum likelihood with  BGGS and nlminb optimization
+###
 ###############################################################
 
 # Define the spatial-coordinates of the points:
@@ -526,19 +527,22 @@ coords <- cbind(x,y)
 X=cbind(rep(1,N),runif(N))
 
 # Set the covariance model's parameters:
-corrmodel <- "Exp"
+corrmodel <- "Matern"
 mean <- 0.2
 mean1 <- -0.5
 sill <- 1
 nugget <- 0
 scale <- 0.2/3
-param<-list(mean=mean,mean1=mean1,sill=sill,nugget=nugget,scale=scale)
+smooth=0.5
+param<-list(mean=mean,mean1=mean1,sill=sill,nugget=nugget,scale=scale,smooth=smooth)
 
 # Simulation of the spatial Gaussian RF:
 data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,X=X)$data
 
-fixed<-list(nugget=nugget)
+fixed<-list(nugget=nugget,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+
+
 
 ################################################################
 ###
@@ -547,8 +551,8 @@ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 ###
 ###############################################################
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
-                    maxdist=0.05,likelihood="Marginal",type="Pairwise",
-                    start=start,fixed=fixed,X=X)
+                    optimizer="BFGS",maxdist=0.05,likelihood="Marginal",
+                    type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
 ################################################################
@@ -557,23 +561,15 @@ print(fit1)
 ### Gaussian RFs with exponential correlation.
 ###
 ###############################################################
+I=Inf
+lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
+upper<-list(mean=I,mean1=I,scale=I,sill=I)
 fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-                    likelihood="Full",type="Standard",
+                    optimizer="nlminb",upper=upper,lower=lower,
+                    likelihood="Full",type="Standard", 
                     start=start,fixed=fixed,X=X)
 print(fit2)
 
-################################################################
-###
-### Example 3. Tapered Maximum likelihood fitting of
-### Gaussian RFs with exponential correlation.
-###
-###############################################################
-
-
-fit3 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-                    likelihood="Full",type="Tapering",taper="Wendland1",
-                    maxdist=0.1,start=start,fixed=fixed,X=X)
-print(fit3)
 
 
 
@@ -584,9 +580,9 @@ print(fit3)
 
 ################################################################
 ###
-### Example 4. Maximum pairwise likelihood fitting of spatial
-### Gamma and Weibull  RFs with Wendland correlation
-###
+### Example 3. Maximum pairwise likelihood fitting of spatial
+### Gamma and Weibull  RFs with Generalized Wendland correlation
+### using Nelder-Mead and BFGS 
 ###############################################################
 set.seed(524)
 # Define the spatial-coordinates of the points:
@@ -599,20 +595,23 @@ mean=1; mean1=2 # regression parameters
 nugget=0
 shape=2
 scale=0.2
+smooth=0
 
 model="Weibull"
-corrmodel="Wend0"
-param=list(mean=mean,mean1=mean1,sill=1-nugget,scale=scale,shape=shape,nugget=nugget,power2=4)
+corrmodel="GenWend"
+param=list(mean=mean,mean1=mean1,sill=1-nugget,scale=scale,
+                     shape=shape,nugget=nugget,power2=4,smooth=smooth)
 # Simulation of a  non stationary weibull RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 
-fixed<-list(nugget=nugget,power2=4,sill=1-nugget)
+fixed<-list(nugget=nugget,power2=4,sill=1-nugget,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    optimizer="Nelder-Mead",
                     start=start,fixed=fixed)
 print(fit$param)
 
@@ -622,6 +621,7 @@ fixed<-list(nugget=nugget,power2=4,sill=1-nugget,shape=6)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
                     maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                      optimizer="BFGS",
                     start=start,fixed=fixed)
 
 print(fit$param)
@@ -629,7 +629,7 @@ print(fit$param)
 
 ################################################################
 ###
-### Example 5. Maximum pairwise likelihood fitting of
+### Example 4. Maximum pairwise likelihood fitting of
 ### StudendT spatial  RFs with Wendland correlation
 ###
 ###############################################################
@@ -648,18 +648,27 @@ scale=0.2
 df=4   ## degrees of freedom
 model="StudentT"
 corrmodel="Wend0"
-param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,df=1/df,nugget=nugget,power2=4)
+
 # Simulation of a studentT RF:
+param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,df=1/df,nugget=nugget,power2=4)
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 ##  estimation assuming df unknown
 fixed<-list(nugget=nugget,power2=4)
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill,df=1/df)
+
+
+
 # Maximum pairwise composite-likelihood fitting of the RF:
+
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
-                    start=start,fixed=fixed)
+               maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+               optimizer="BFGS",start=start,fixed=fixed)
 print(fit1$param)
+
+
+
+
 
 ##  df must be rounded and fixed
 df=round(1/(as.numeric(fit1$param['df'])))
@@ -668,12 +677,15 @@ df=round(1/(as.numeric(fit1$param['df'])))
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
-                    start=start,fixed=fixed)
+                    optimizer="BFGS" , start=start,fixed=fixed)
 print(fit$param)
+
+
 ################################################################
 ###
-### Example 6. Maximum pairwise likelihood fitting of
+### Example 5. Maximum pairwise likelihood fitting of
 ### SinhAsinh-Gaussian spatial  RFs with Wendland correlation
+### using  BFGS
 ###
 ###############################################################
 set.seed(261)
@@ -702,20 +714,20 @@ start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 # Maximum pairwise likelihood:
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     maxdist=0.05,likelihood="Marginal",type="Pairwise",
-                    start=start,fixed=fixed)
+                   optimizer="BFGS" , start=start,fixed=fixed)
 print(fit1$param)
 # Maximum likelihood:
 fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     likelihood="Full",type="Standard",
-                    start=start,fixed=fixed)
+                   optimizer="BFGS" , start=start,fixed=fixed)
 print(fit2$param)
 
 
 ################################################################
 ###
-### Example 7. Maximum pairwise likelihood fitting of 
+### Example 6. Maximum pairwise likelihood fitting of 
 ### Binomial and negative Binomial   RFs 
-### with exponential correlation.
+### with exponential correlation using  BFGS.
 ###
 ###############################################################
 
@@ -735,9 +747,9 @@ data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="Binomial", n=10,X=X,
 fixed <- list(nugget=nugget,power2=4,sill=1)
 start <- list(scale=0.2,mean=mean,mean1=mean1,mean2=mean2)
 # Maximum pairwise likelihood:
-fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X,
-                    maxdist=0.05,model="Binomial",  fixed=fixed,
-                    start=start)
+fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
+                    maxdist=0.05,model="Binomial",  fixed=fixed, optimizer="BFGS")
+                  
 print(fit1)
 
 set.seed(220)
@@ -745,9 +757,9 @@ set.seed(220)
 data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="BinomialNeg", n=5,X=X,
               param=param)$data
 # Maximum pairwise likelihood:
-fit2 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel, n=5,X=X,
-                    maxdist=0.05,model="BinomialNeg", fixed=fixed,
-                    start=start)
+fit2 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel, n=5,X=X, start=start,
+              maxdist=0.05, model="BinomialNeg", fixed=fixed, optimizer="BFGS")
+                
 
 print(fit2)
 
@@ -782,8 +794,9 @@ data <- GeoSim(coordx=coords,coordt=time,corrmodel=corrmodel,
 
 ################################################################
 ###
-### Example 8. Maximum pairwise likelihood fitting of a
-### space time Gaussian RF with double-exponential correlation.
+### Example 7. Maximum pairwise likelihood fitting of a
+### space time Gaussian RF with double-exponential correlation
+### using  BFGS
 ###
 ###############################################################
 # Fixed parameters
@@ -795,13 +808,16 @@ start<-list(mean=mean,scale_s=scale_s,scale_t=scale_t,sill=sill)
 fit <- GeoFit(data=data,coordx=coords,coordt=time,
                     corrmodel="Exp_Exp",maxtime=1,maxdist=0.3,
                     likelihood="Marginal",type="Pairwise",
-                    start=start,fixed=fixed)
+                    optimizer="BFGS" , start=start,fixed=fixed)
 print(fit)
+
+
 ################################################################
 ###
-### Example 9. Maximum standard likelihood fitting of a
+### Example 8. Maximum standard likelihood fitting of a
 ### space time Gaussian RF observed on  dynamical spatial coordinates
-### with double-exponential correlation.
+### with double-exponential correlation using  BFGS
+### 
 ###############################################################
 
 maxN=50
@@ -817,11 +833,13 @@ coordx_dyn[[k]]=cbind(x,y)
 
 data <- GeoSim(coordx_dyn=coordx_dyn, coordt=time, corrmodel="Exp_Exp",
                 param=param)$data
-
+I=Inf
+lower<-list(mean=-I,scale_s=0,scale_t=0,sill=0)
+upper<-list(mean=-I,scale_s=I,scale_t=I,sill=I)
 fit <- GeoFit(data=data,coordx_dyn=coordx_dyn,coordt=time,
-                    corrmodel="Exp_Exp",
-                    likelihood="Full",type="Standard",
-                    start=start,fixed=fixed)
+              corrmodel="Exp_Exp",likelihood="Full",type="Standard",
+              optimizer="BFGS", lower=lower,upper=upper,
+              start=start,fixed=fixed)
 print(fit)
 
 
@@ -834,10 +852,10 @@ print(fit)
 
 ################################################################
 ###
-### Example 10. Maximum, and pairwise  likelihood fitting of a
+### Example 9. Maximum, and pairwise  likelihood fitting of a
 ### bivariate Gaussian RF with separable Bivariate  matern 
-### (cross) correlation model.
-###
+### (cross) correlation model using BFGS and a parallel 
+### implementation of L-BFGS-B
 ###############################################################
 
 # Define the spatial-coordinates of the points:
@@ -861,14 +879,23 @@ start=list(mean_1=0,mean_2=0,sill_1=var(data[1,]),sill_2=var(data[2,]),
 # Maximum pairwise likelihood
 
 fitcl<- GeoFit(data=data, coordx=coords, corrmodel="Bi_Matern_sep",
-                     likelihood="Marginal",type="Pairwise",start=start,
-                     fixed=fixed,maxdist=c(0.05,0.05,0.05))
+                     likelihood="Marginal",type="Pairwise",
+                     optimizer="BFGS" , start=start,fixed=fixed,
+                     maxdist=c(0.05,0.05,0.05))
 print(fitcl)
 
+I=Inf
+lower=list(mean_1=-I,mean_2=-I,sill_1=0,sill_2=0,
+           scale=0,pcol=-1)
+upper=list(mean_1=I,mean_2=I,sill_1=I,sill_2=I,
+           scale=I,pcol=1)
 # Maximum likelihood :
+require(optimParallel)
 fitml<- GeoFit(data=data, coordx=coords, likelihood="Full",
-                     corrmodel="Bi_Matern_sep", type="Standard",
-                     start=start, fixed=fixed)
+               corrmodel="Bi_Matern_sep", type="Standard",
+               upper=upper,lower=lower,optimizer="L-BFGS-B", 
+               parallel=TRUE,
+               start=start,fixed=fixed)
 print(fitml)
 
 }
