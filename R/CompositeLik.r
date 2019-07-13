@@ -424,7 +424,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     CompLikelihood$value <- maxfun
     CompLikelihood$convergence <- 'Successful'
     }
-  } ##### end if onlyvar
+  } ##### end if !onlyvar
     else {
           CompLikelihood=as.list(0)
           names(CompLikelihood)="value"
@@ -435,6 +435,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                              n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
           else CompLikelihood$value = -comploglik_biv(param=CompLikelihood$par ,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
                              n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+          
           if(hessian) 
           {
                if(!bivariate)  
@@ -457,7 +458,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
 #print(CompLikelihood$par)
 #print(CompLikelihood$hessian)
 #####################################
-if(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0)
+if(varest&&(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0))
   {
 if(!bivariate)  
 
