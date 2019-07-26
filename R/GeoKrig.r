@@ -75,12 +75,18 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
      
-     ### here to modify
+    
     covmatrix <- GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param, 
       radius, sparse, taper, tapsep, type, X) 
     ###########
+
+    bivariate <- covmatrix$bivariate;   
+    if(bivariate) tloc=1
+    spacetime <- covmatrix$spacetime; 
+
     spacetime_dyn=FALSE
     if(!is.null(covmatrix$coordx_dyn)) spacetime_dyn=TRUE
+    
     ##############
     if(!spacetime_dyn) dimat=covmatrix$numcoord*covmatrix$numtime
     if(spacetime_dyn)  dimat =sum(covmatrix$ns)
@@ -97,15 +103,14 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     ###############
     ###############
     num_betas=ncol(X)
-    if(is.null(Xloc))   Xloc=as.matrix(rep(1,dimat2)) 
-    if(spacetime_dyn)
-    { 
-      if(!ncol(X)==1)
-      {
-      if(!is.list(Xloc)) {stop("covariates must be given as a list")}
-      else               {env <- new.env();Xloc=do.call(rbind,args=c(Xloc),envir = env)
-                          Xloc=as.matrix(Xloc)}
-                        }
+    
+    NS=0
+    if(spacetime||bivariate)
+         { NS=cumsum(covmatrix$ns); NS=c(0,NS)[-(length(covmatrix$ns)+1)] }
+
+    if(is.null(Xloc)) Xloc=as.matrix(rep(1,dimat2))
+    else {
+    if(spacetime_dyn) Xloc=as.matrix(Xloc)
     } 
     nuisance <- param[covmatrix$namesnuis]
     sel=substr(names(nuisance),1,4)=="mean"
@@ -123,18 +128,27 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     corrmodel <- CkCorrModel(covmatrix$corrmodel)
     distance <- CheckDistance(covmatrix$distance)
     corrparam <- unlist(covmatrix$param[covmatrix$namescorr])# selecting the correlation parametrs
-    bivariate <- covmatrix$bivariate;   
-    if(bivariate) tloc=1
-    spacetime <- covmatrix$spacetime; 
     if(bivariate) if(!(which==1 || which==2) ) stop("which  parameter must be 1 or 2")
     pred <- NULL
     varpred<-varpred2<-vv<-vv2<-NULL
     k <- 0 
+
+    ccc=cbind(covmatrix$coordx,covmatrix$coordy)
     if(grid) ccc=expand.grid(covmatrix$coordx,covmatrix$coordy)
-    else     ccc=cbind(covmatrix$coordx,covmatrix$coordy)
+    else  { 
+     if((spacetime||bivariate)&&(!spacetime_dyn)) ccc=cbind(rep(covmatrix$coordx,covmatrix$numtime),
+                                                            rep(covmatrix$coordy,covmatrix$numtime))
+
+     if((spacetime||bivariate)&&( spacetime_dyn)) ccc=do.call(rbind,args=c(coordx_dyn)) 
+      }
+      
+
     ###############################################################
     if((spacetime||bivariate)&&spacetime_dyn) dataT=t(unlist(data)) 
     else dataT=t(data)
+  
+    
+
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -153,15 +167,20 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
 ## sihasin=20
     ################################
     ## standard kriging  ##############
-    ################################    
+    ################################   
+       #print(head(Xloc))
+       #print(head(X))
+       #print(dim(Xloc))
+       #print(dim(X))
        mu=X%*%betas
        muloc=Xloc%*%betas
-
     if((type=="Standard"||type=="standard")) {
          ## Computing CORRELATIONS between the locations to predict and the locations observed
         cc=.C('Corr_c',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
         as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-        as.integer(numloc),as.integer(tloc),as.integer(covmatrix$ns),as.integer(covmatrix$numtime),as.double(corrparam),
+        as.integer(numloc),as.integer(tloc),as.integer(covmatrix$ns),
+        as.integer(NS),
+        as.integer(covmatrix$numtime),as.double(corrparam),
         as.integer(covmatrix$spacetime),
         as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
         as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
@@ -212,9 +231,9 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         sh=as.numeric(covmatrix$param['shape'])
                         cc1=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
-corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
-                        (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,cc1^2))*
-                         Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
+                        corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
+                                  (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,cc1^2))*
+                                        Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
                         cc$corri[cc$corri>0.99999999999]= 0.9999999999
@@ -309,7 +328,9 @@ if(type_krig=='Simple'||type_krig=='simple')  {
       if(!bivariate) {  ## space and spacetime simple kringing
                ####gaussian, StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10))
+               {
                      pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
+              }
               ####sinh
                if(covmatrix$model %in% c(20))
                {
@@ -408,7 +429,7 @@ if(type=="Tapering"||type=="tapering")  {
         as.integer(corrmodel),as.integer(tapmod),as.integer(FALSE),as.double(locx),as.double(locy),
         as.double(c(covmatrix$maxdist,covmatrix$tapsep)),as.double(covmatrix$maxtime),
         as.integer(covmatrix$numcoord),
-        as.integer(numloc),as.integer(covmatrix$ns),as.integer(tloc),as.integer(covmatrix$numtime),as.double(corrparam),as.integer(covmatrix$spacetime),
+        as.integer(numloc),as.integer(covmatrix$ns),as.integer(NS),as.integer(tloc),as.integer(covmatrix$numtime),as.double(corrparam),as.integer(covmatrix$spacetime),
         as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
         as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
     corri_tap=tp$corri_tap;corri=tp$corri
@@ -462,7 +483,7 @@ if(covmatrix$model %in% c(2,11,14,19))
     ccorr=.C('Corr_c_bin',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
     as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-    as.double(kk),as.integer(covmatrix$ns),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
+    as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
     as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
     as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
     corri=ccorr$corri

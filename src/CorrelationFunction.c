@@ -953,11 +953,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale22=par[6];
         smoo11=  CorFunStable(h, 1, scale11); //CorFunStable(h, 2, scale11);    //; for environmetrics
         smoo22=CorFunStable(h, 1, scale22); //CorFunWave(h,scale22);        //;      for environmetrics
-        if((c11==0)&&(c22==0))                  {rho=R_pow(var11,2)*smoo11+R_pow(col,2)*smoo22;
-                                                 if(h==0) rho=rho+nug11;break;}
+        if((c11==0)&&(c22==0))                  { if(h==0) rho=rho+nug11;break;
+                                                  rho=R_pow(var11,2)*smoo11+R_pow(col,2)*smoo22;
+                                                 }
         if((c11==0&&c22==1)||(c11==1&&c22==0))  {rho=var11*col*smoo11+var22*col*smoo22;break;}
-        if((c11==1)&&(c22==1))                  {rho=R_pow(col,2)*smoo11+R_pow(var22,2)*smoo22;
-                                                 if(h==0) rho=rho+nug22;break;}
+        if((c11==1)&&(c22==1))                  {if(h==0) rho=rho+nug22;break;
+                                                 rho=R_pow(col,2)*smoo11+R_pow(var22,2)*smoo22;
+                                                 }
         break;
 
         case 126:   /*not parsimonious LMC */
@@ -2380,7 +2382,7 @@ void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double 
 
 //computation of correlation between a points and a vector (for kriging)
 void Corr_c(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,int *tloc,
-                 int *ns,int *ntime, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
+                 int *ns,int *NS,int *ntime, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
 int i,j,h=0;
 double dis=0.0;
@@ -2395,12 +2397,17 @@ if(!spt[0]&&!biv[0])	{   //spatial case
 else{    //spatio temporal  case or bivariate case
 int t,v;double dit=0.0;
 if(*spt) {   
-      for(j=0;j<(*nloc);j++){
+      //for(j=0;j<(*nloc);j++){
+       // for(v=0;v<(*tloc);v++){
+
+        for(j=0;j<(*nloc);j++){
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){
                       dit=fabs(coordt[t]-time[v]);
                 for(i=0;i<ns[t];i++){ //for(i=0;i<*ncoord;i++){
-                  dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
+                     
+                  //dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
+                   dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
               //  Rprintf("%d %d %d %d  %f %f\n",i,j,t,v,dis,dit);
 		   cc[h]=CorFct(cormod,dis,dit,par,t,v);
 		    h++;}}}}		    
@@ -2410,14 +2417,15 @@ if(*spt) {
        for(j=0;j<(*nloc);j++){
             for(t=0;t<*ntime;t++){
                     for(i=0;i<ns[t];i++){ //for(i=0;i<*ncoord;i++){
-                        dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
+                    //    dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
+                      dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
                                 cc[h]=CorFct(cormod,dis,0,par,which[0],t);
                                 h++;}}}}
 }
 }
 ///compute the covariance btwen loc to predict and locaton sites for binomial and geometric RF
 void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
-                int *model,int *tloc,double *n, int *ns,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
+                int *model,int *tloc,double *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
     int i=0,j=0,h=0;
     int t=0,v=0;double dit=0.0;
@@ -2427,6 +2435,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
             for(j=0;j<(*nloc);j++){
                 for(i=0;i<(*ncoord);i++){
                      dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
+                     //dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
                         ai=mean[i];aj=mean[j];
                         psj=pbnorm(cormod,dis,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2444,7 +2453,9 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
            for(t=0;t<*ntime;t++){
                       dit=fabs(coordt[t]-time[v]);
                for(i=0;i<ns[t];i++){
-                  dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
+                  //dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);   
+                 ///dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
+                   dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
                              ai=mean[j+*nloc * v];      
                              aj=mean[i+*nloc * t];
                                 psj=pbnorm(cormod,dis,dit,ai,aj,nuis[0],nuis[1],par,0);
@@ -2469,7 +2480,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
 
 
 
-
+/*
 void Corr_c_tukeygh(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
       int *model,int *tloc,int *n, int *ns,int *ntime, double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
@@ -2515,25 +2526,13 @@ void Corr_c_tukeygh(double *cc,double *coordx, double *coordy, double *coordt, i
   else                  cc[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
 
                                 h++;}}}}
-          }
-      /* if(*biv) {
-            
-                // in case of an irregular grid of coordinates:
-                for(j=0;j<(*nloc);j++){
-                    for(i=0;i<*ncoord;i++){
-                        dis=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                        for(t=0;t<*ntime;t++){
-                            cc[h]=CorFct(cormod,dis,0,par,which[0],t);
-                            h++;}}}
-                
-              }*/
-        
+          }   
     }}
-
+*/
 
 
  void Corr_c_tap(double *cc,double *cc_tap,double *coordx, double *coordy, double *coordt, int *cormod, int *cormodtap, int *grid, double *locx,  double *locy,
-                 double *mxd,double *mxt, int *ncoord, int *nloc, int *ns,int*tloc,int *ntime, double *par, int *spt, int *biv, double *time,int *type,int *which,double *radius)
+                 double *mxd,double *mxt, int *ncoord, int *nloc, int *ns, int *NS,int*tloc,int *ntime, double *par, int *spt, int *biv, double *time,int *type,int *which,double *radius)
 {
 int i,j,h=0,*modtap;
 double *partap,dis=0.0;
@@ -2569,7 +2568,9 @@ if(*spt) {
            for(t=0;t<*ntime;t++){
                       dit=fabs(coordt[t]-time[v]);
                for(i=0;i<ns[t];i++){
-                  dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
+                 // dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
+                    ///dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
+                      dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
 		    cc[h]=CorFct(cormod,dis,dit,par,t,v);
 	         cc_tap[h]=cc[h]*CorFct(modtap,dis,dit,partap,t,v);
 		    h++;}}}}

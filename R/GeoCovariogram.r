@@ -484,23 +484,35 @@ if(!bivariate) {
             if(isvario){
                 nbins <- length(vario$centers)
                 nbint <- length(vario$bint)
-                evario <- matrix(vario$variogramst,nrow=nbins,
-                                 ncol=nbint,byrow=TRUE)
-                evario <- rbind(c(zero,vario$variogramt),cbind(vario$variograms,evario))
-                evario.grid <- expand.grid(c(0,vario$centers),c(0,vario$bint))
+
+         # if(!dyn) {
+                  evario <- matrix(vario$variogramst,nrow=nbins,ncol=nbint,byrow=TRUE)
+                  evario <- rbind(c(zero,vario$variogramt),cbind(vario$variograms,evario))
+                  evario.grid <- as.matrix(expand.grid(c(0,vario$centers),c(0,vario$bint)))
+            #      }
+         ## else   {
+           ##       evario <- matrix(vario$variogramst,nrow=nbins-1,ncol=nbint,byrow=TRUE)
+             #     evario <- rbind(c(zero,vario$variogramt),cbind(vario$variograms,evario))
+              #    evario.grid <- expand.grid(c(vario$centers),c(0,vario$bint))
+               #   }
+             
                 scatterplot3d::scatterplot3d(evario.grid[,1],evario.grid[,2], c(evario),
                               type="h",highlight.3d=TRUE,cex.axis=.7,cex.lab=.7,
                               main=paste("Empirical",vario.main),xlab="Distance",
                               ylab="Time",zlab=vario.zlab,mar=c(2,2,2,2),mgp=c(0,0,0))
+
                 if(plagt) tup <- max(evario[fix.lags,],na.rm=TRUE)
                 if(plags) sup <- max(evario[,fix.lagt],na.rm=TRUE)
             } 
+
+
             par(mai=c(.2,.2,.2,.2))
             persp(lags_m, lagt_m, variogram, xlab="Distance",
                   ylab="Time", zlab=vario.zlab, ltheta=90,
                   shade=0.75, ticktype="detailed", phi=30,
                   theta=30,main=vario.main, cex.axis=.8,
                    cex.lab=.8)  #zlim=c(0,max(variogram))
+
             vvv=nuisance["nugget"]+nuisance["sill"]
             ########
             if(gamma)    vvv=2*exp(mm["mean"])^2/nuisance["shape"]
@@ -513,19 +525,27 @@ if(!bivariate) {
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
             if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)
+     
             ########
             if(plagt){
+
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lagt_m, variogram[fix.lags,], xlab="Time",cex.axis=.8,cex.lab=.8,
                      ylab=vario.ylab, type="l", ylim=c(0,max(vvv,tup)), main=paste(vario.ylab,": temporal profile",
                      sep=""),...)
-                if(isvario) points(lagt, evario[fix.lags,],...)}
+                if(isvario) points(lagt, evario[fix.lags,],...)
+               }
+
             if(plags){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lags_m, variogram[,fix.lagt], xlab="Distance",cex.axis=.8,cex.lab=.8,
                      ylab=vario.ylab, type="l", ylim=c(0,max(vvv,sup)), main=paste(vario.ylab,": spatial profile",
                      sep=""),...)
-                if(isvario) points(lags, evario[,fix.lagt],...)}}
+                if(isvario) points(lags, evario[,fix.lagt],...)
+                }}
+          
+  
+
         if(!ispatim && !bivariate){# spatial case:
             if(add.vario & dev.cur()!=1){
                 points(vario$centers, vario$variograms,...)

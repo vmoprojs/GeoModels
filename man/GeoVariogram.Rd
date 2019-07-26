@@ -1,7 +1,7 @@
 \name{GeoVariogram}
 \alias{GeoVariogram}
 \encoding{UTF-8}
-\title{Empirical Variogram(variants) estimation}
+\title{Empirical Variogram estimation}
 \description{
   The function returns an empirical estimate of the  variogram  for spatio (temporal)  and bivariate 
   random fields. 
@@ -108,6 +108,8 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
                  If no spatial distance is specified then it is NULL;}
   \item{maxtime}{The maximum temporal distance used for the calculation of the variogram.
                 If no temporal distance is specified then it is NULL;}
+  \item{spacetime_dyn}{If the space-time variogram is obtained using dynamical coordinates
+  then it is(\code{TRUE}).   }
   \item{variograms}{The empirical spatial variogram;}
   \item{variogramst}{The empirical spatial-temporal variogram;}
   \item{variogramt}{The empirical temporal variogram;}
