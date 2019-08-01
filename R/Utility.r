@@ -198,7 +198,6 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
   {
     error <- NULL
     replicates=1
-
     # START Include internal functions:
     CheckParamRange <- function(param)
     {
@@ -258,6 +257,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
 
 
 
+
     if(missing(corrmodel) || !is.character(corrmodel)){
         error <- 'insert the correlation model\n'
         return(list(error=error))}
@@ -285,8 +285,12 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     if(CkModel(model)==11&&(n<1||!is.numeric(n))){
         error <- 'the parameter n for the Binomial RF is wrong \n'
         return(list(error=error))}
+
+
     # START check fitting
     if(fcall=="Fitting"){
+
+
 
          if(!is.null(coordx_dyn))
             {
@@ -308,6 +312,8 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
 
         if(!is.null(fixed)){
             namfixed <- names(fixed)
+
+
         
             if(!all(namfixed %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas),CorrelationPar(CkCorrModel(corrmodel))))){
                 error <- 'some names of the fixed parameters is/are not correct\n'
@@ -524,7 +530,6 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert a numerical vector of temporal coordinates\n'
             return(list(error=error))
           }
-        
     if(grid) # START regular grid
               {
                 if(is.null(dimdata))

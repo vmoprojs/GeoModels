@@ -2297,7 +2297,7 @@ void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double 
       if(t==v){
          for(j=i;j<ns[t];j++){
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                rho[h]=CorFct(cormod,lags,0,par,t,t);
+                rho[h]=CorFct(cormod,lags,0,par,t,v);
                 h++;}}
     else {  
          for(j=0;j<ns[v];j++){

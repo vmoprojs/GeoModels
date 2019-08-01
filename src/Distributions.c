@@ -1834,7 +1834,6 @@ double LambertW(double z) {
   //exit(1);
 }
 
-
 // pdf bivariate gaussian distribution
 double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,double corr)
 {
@@ -1876,7 +1875,7 @@ double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, doub
   est_mean_ij = 1/(est_mean_i*est_mean_j);
     extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
   dens = dbnorm(x_i,x_j,0,0,1,corr)*
-              x_i*x_j*est_mean_ij*extra/sill;
+              x_i*x_j * est_mean_ij * extra/sill;
   return(dens);
 }
 

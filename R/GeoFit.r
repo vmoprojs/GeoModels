@@ -34,7 +34,6 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
                              type, varest, vartype, weighted, X)
-
     if(!is.null(checkinput$error))
       stop(checkinput$error)
     ### Initialization global variables:

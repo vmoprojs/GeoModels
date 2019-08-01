@@ -232,7 +232,6 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, hessian=hessian
                                )
-         print(CompLikelihood$convergence)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
          }
@@ -449,14 +448,9 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                              weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
                rownames(CompLikelihood$hessian)=namesparam
                colnames(CompLikelihood$hessian)=namesparam
-               #print(CompLikelihood$hessian)
           }
   }
 
-
-
-#print(CompLikelihood$par)
-#print(CompLikelihood$hessian)
 #####################################
 if(varest&&(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0))
   {
@@ -540,7 +534,6 @@ colnames(CompLikelihood$hessian)=namesparam
 
             if(!sum(GD$varimat)) print("Std error estimation failed")
             # Set score vectore:
-            #print(CompLikelihood$hessian)
             CompLikelihood$winconst<-winconst
             CompLikelihood$winstp<-winstp
             CompLikelihood$score <- GD$score
@@ -574,8 +567,6 @@ colnames(CompLikelihood$hessian)=namesparam
                   CompLikelihood$varimat[1,1] <- varimat}
             if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
 
-            #print(CompLikelihood$sensmat)
-            #print(CompLikelihood$varimat)
       
             icholsensmat <- try(chol(CompLikelihood$sensmat), silent = TRUE)
             isensmat <- try(chol2inv(icholsensmat), silent = TRUE)
