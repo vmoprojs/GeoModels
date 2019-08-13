@@ -2092,33 +2092,45 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
     double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
     int i=0, j=0,  t=0, v=0;
-    double det=0.0,u=0.0, w=0.0, rhott=0.0,rhovv=0.0,rhotv=0.0,lags=0.0,weights=1.0;
+    double det=0.0,u=0.0, w=0.0, dens=0.0, rhott=0.0,rhovv=0.0,rhotv=0.0,lags=0.0,weights=1.0;
     //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
     if(  par[0]<0|| par[1]<0|| par[2]<0|| par[3]<0) {*res=LOW;  return;} 
+
+      //// Rprintf(" %f %f %f %f  \n",dista[1][1],dista[0][1],dista[1][0],dista[0][0]);
+
     // Computes the log-likelihood:
       weights=1;
-    for(t=0;t<ntime[0];t++){
+  for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
+                    
       if(t==v){
-         for(j=i+1;j<ns[t];j++){
+
+         for(j=i+1;j<ns[v];j++){
+
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);   
+          //lags=dist(type[0],coordx[(i)],coordx[(j)],coordy[(i)],coordy[(j)],*REARTH); 
+     
                         if(lags<=dista[t][v]){
+                                  
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                             det=rhott*rhovv-R_pow(rhotv,2);
                             u=data[(i+NS[t])]-mean[(i+NS[t])];
                             w=data[(j+NS[v])]-mean[(j+NS[v])];
+     
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                    *res+= -0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det)*weights;
+                                    dens=-0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det);
+                            
+                                    *res+= dens*weights;
 
-                                }}}}
+                                }}}
+        }
             else {  
          for(j=0;j<ns[v];j++){
          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-     
                         if(lags<=dista[t][v]){
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
@@ -2126,9 +2138,11 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
                                det=rhott*rhovv-R_pow(rhotv,2);
                             u=data[(i+NS[t])]-mean[(i+NS[t])];
                             w=data[(j+NS[v])]-mean[(j+NS[v])];
+                         
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                                    *res+= -0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det)*weights;
+                                     dens=-0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det);
+                                    *res+= dens*weights;
                                 }}}}}}}
     if(!R_FINITE(*res))*res = LOW;
     return;
@@ -2158,10 +2172,10 @@ void Comp_Pair_SkewGauss_biv2(int *cormod, double *coordx, double *coordy, doubl
                         if(lags<=dista[t][v]){
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                              u=data[(i+NS[t])]-mean[(i+NS[t])];
-                            w=data[(j+NS[v])]-mean[(j+NS[v])];
+                             w=data[(j+NS[v])]-mean[(j+NS[v])];
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                          if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
-                     *res+= log(biv_skew2(rhotv,u,w,vari[t],vari[v],1,nuis[t],nuis[v]))*weights;
+                     *res+= log(biv_skew2(rhotv,u,w,vari[t],vari[v],1,nuis[v],nuis[v]))*weights;
                                 }}}}
             else {  
            for(j=0;j<ns[v];j++){

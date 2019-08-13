@@ -412,7 +412,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
       
         loglik_u <- do.call(what="LogNormDenStand_SH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
-            mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
+            mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
         return(loglik_u)
       }
 
@@ -1062,9 +1062,8 @@ colnames(Likelihood$hessian)=namesparam
             names(Likelihood$stderr)<-namesparam}}
     }}}
     ### END the main code of the function:
-
+if(varest)
     if(is.null(Likelihood$varcov)){
-                Likelihood$varcov <- 'none'
-            Likelihood$stderr <- 'none'}
+                Likelihood$varcov <- 'none';Likelihood$stderr <- 'none'}
     return(Likelihood)
   }

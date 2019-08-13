@@ -1356,6 +1356,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     mem=FALSE
     if(tapering)  { mem=TRUE }   #### NB
     if(bivariate) if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
+    if(bivariate) { if(is.na(srange[3])) srange[3]=srange[2];
+                  if(is.na(srange[4])) srange[4]=srange[2];}
     if(CheckSph(corrmodel))   radius=1
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
     if(!is.null(coordx_dyn)) {dyn <- TRUE} else {dyn <- FALSE}

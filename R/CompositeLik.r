@@ -591,7 +591,7 @@ colnames(CompLikelihood$hessian)=namesparam
                   CompLikelihood$stderr <- sqrt(CompLikelihood$stderr)
               }
         }
-    setwd(path.parent)
+    #setwd(path.parent)
       }
       if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
     if(!is.null(GPU)) gc()
