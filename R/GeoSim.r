@@ -385,7 +385,22 @@ if(model %in% c("poisson","Poisson"))   {
         else                        sim <- array(sim_bn, c(numcoordx, numcoordy, numtime)) 
         }}   
 
+################################################
+if(model %in% c("SkewStudentT"))   { 
+     sim=NULL
+     for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
 
+        aa= sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
+        sim=mm+sqrt(vv)*(aa/sqrt(rowSums(sim)/(k-2)))
+            if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(sim)
+                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
+        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+            }
+        }    
 ################################################        
 if(model %in% c("StudentT"))   { 
      sim=NULL
@@ -454,22 +469,7 @@ if(model %in% c("TwoPieceStudentT"))   {
         else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
             }
         }
-################################################
-if(model %in% c("SkewStudentT"))   { 
-     sim=NULL
-     for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
 
-        aa=0+sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
-        sim=mm+sqrt(vv)*(aa/sqrt(rowSums(sim)/(k-2)))
-            if(!grid)  {
-                if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
-        }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
-            }
-        }    
 
 #######################################
     if(model %in% c("LogLogistic","Logistic"))   { 

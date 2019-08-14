@@ -226,15 +226,14 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         # Computes the covariance matrix: Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,corr2))
         df=1/nuisance['df']
         cova=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* cova *Re(hypergeo::hypergeo(0.5,0.5,df/2,cova^2)) ## t correlation
-
+      
         varcov <- ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
-
+       # print(varcov[1:10,1:10])
         vv=nuisance['sill']*(df/(df-2)) ## variance
-
-        varcov=varcov*vv + diag(nuisance['nugget'],nrow=dimat,ncol=dimat) # adding nugget
+        varcov=varcov*vv #+ diag(nuisance['nugget'],nrow=dimat,ncol=dimat) # adding nugget
         # decomposition of the covariance matrix:
         decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
@@ -433,6 +432,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         #if(corr[1]==-2||is.nan(corr[1])) return(llik)
         if(nuisance['df']>0.5||nuisance['df']<0)  return(llik)
+        #print(corr[1:50])
         # Computes the correlation matrix:
         cova <- corr
       loglik_u <- do.call(what="LogNormDenStand_Miss_T",args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,

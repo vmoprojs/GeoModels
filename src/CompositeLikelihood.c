@@ -1868,16 +1868,17 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
     nugget=nuis[1];
     sill=nuis[2];
     skew=nuis[3];
+
+//Rprintf("%f %f  %f\n",df,sill,skew);
+
     //auxuliary variables
     double D1=(df-1)/2;
     double D2=df/2;
     double skew2=R_pow(skew,2);
+    double w=1-skew2;
     
     double MM=sqrt(df)*skew*gammafn(D1)/(sqrt(M_PI)*gammafn(D2));
     double FF=df/(df-2) -  (df*skew2/M_PI)*R_pow(gammafn(D1)/gammafn(D2),2);
-
-    
-    double CC=(M_PI*(df-2)*R_pow(gammafn(D1),2)) /(2*( M_PI*R_pow(gammafn(D2),2) *(1+skew2) - skew2*(df-2)*R_pow(gammafn(D1),2)) );
     double KK=2*skew2/M_PI;
 
     for(i=0;i<(ncoord[0]-1);i++){
@@ -1886,14 +1887,16 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
                      corr=CorFct(cormod,lags,0,par,0,0);
-        corr2= (1/(-1+1/KK))*(  sqrt(1-R_pow(corr,2)) + corr*asinh(corr) - 1 )+(1-skew2)*corr/(1-KK);
-        corr1=CC* ( hypergeo(0.5,0.5,df/2,R_pow(corr,2)) * 
-                  ((1+skew2*(1-2/M_PI))*corr2 + KK)  -
-                            KK );
+
+
+         corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
+
+corr1=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
+(hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                      bl=log_biv_Norm(corr1,data[i],data[j],mean[i]+MM*sqrt(sill),mean[j]+MM*sqrt(sill),sill*FF,nugget);
-                      //if(!R_FINITE(bl)) { bl=0;}
+                          bl=log_biv_Norm(corr1,data[i],data[j],mean[i]+MM,mean[j]+MM,sill*FF,nugget);
+                   
                         *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
@@ -1922,6 +1925,7 @@ void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double
                      corr=CorFct(cormod,lags,0,par,0,0);
         corr1=(df-2)*R_pow(gammafn((df-1)/2),2)/(2*R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      if(corr1<1)
                       bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nugget);
                         *res+= bl*weights;
                     }}}}            
