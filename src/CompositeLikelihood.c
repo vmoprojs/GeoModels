@@ -135,6 +135,57 @@ void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double
 
 
 
+void Comp_Pair_Gauss_misp_T_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0;
+    double corr,corr1, lags=0.0, lagt=0.0;
+    double  df=0.0,u=0.0, w=0.0,weights=1.0,bl;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr)
+    //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
+    // Set nuisance parameters:
+    df=1/nuis[0];
+    // Set nuisance parameters:
+    double sill=nuis[2];   
+    double nugget=nuis[1];
+    if((int)df%2==0) df=df+0.0000001;
+    // Computes the log-likelihood:
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+           
+                        if(lags<=maxdist[0]){
+                            corr=CorFct(cormod,lags, 0,par,t,v);
+                               corr1=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+                                u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];   
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+bl=log_biv_Norm(corr1,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+                                     //  if(!R_FINITE(bl)) { bl=1;}
+                *res+= bl*weights;   
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+                        corr=CorFct(cormod,lags, lagt,par,t,v);
+                           corr1=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+                                u=data[(i+NS[t])];    
+                                w=data[(j+NS[v])];    
+                             if(!ISNAN(u)&&!ISNAN(w) ){
+                           bl=log_biv_Norm(corr1,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+                *res+= bl*weights;  
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
@@ -1865,20 +1916,15 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
     if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1){*res=LOW; return;}
 
     df=1/nuis[0];
+    //if((int)df%2==0) df=df+0.0000001;
     nugget=nuis[1];
     sill=nuis[2];
     skew=nuis[3];
-
-//Rprintf("%f %f  %f\n",df,sill,skew);
-
     //auxuliary variables
     double D1=(df-1)/2;
     double D2=df/2;
     double skew2=R_pow(skew,2);
     double w=1-skew2;
-    
-    double MM=sqrt(df)*skew*gammafn(D1)/(sqrt(M_PI)*gammafn(D2));
-    double FF=df/(df-2) -  (df*skew2/M_PI)*R_pow(gammafn(D1)/gammafn(D2),2);
     double KK=2*skew2/M_PI;
 
     for(i=0;i<(ncoord[0]-1);i++){
@@ -1887,16 +1933,12 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
                      corr=CorFct(cormod,lags,0,par,0,0);
-
-
          corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
-
 corr1=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
 (hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                          bl=log_biv_Norm(corr1,data[i],data[j],mean[i]+MM,mean[j]+MM,sill*FF,nugget);
-                   
+                          bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nugget);
                         *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
@@ -1908,26 +1950,30 @@ void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
     int i=0, j=0;
-    double lags=0.0, weights=1.0,sill,nugget,corr,corr1,df,bl;
+    double lags=0.0, weights=1.0,corr,corr1,df=0.0,bl,sill;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
     if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
     // Set nuisance parameters:
-
     df=1/nuis[0];
-    sill=nuis[2]*(df/( df-2));
-    nugget=nuis[1];
+
+    if((int)df%2==0) df=df+0.0000001; ///bug of hypergeo for z near to 1 anc c is even
+    
+    sill=nuis[2];
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
                      corr=CorFct(cormod,lags,0,par,0,0);
-        corr1=(df-2)*R_pow(gammafn((df-1)/2),2)/(2*R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+        corr1=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+       ///  hypergeo(df/2-0.5,df/2-0.5,df/2,R_pow(corr,2))*R_pow(1-R_pow(corr,2),df/2-1) if(corr1<1) {*res=LOW; return;}
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                      if(corr1<1)
-                      bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nugget);
-                        *res+= bl*weights;
+                     bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nuis[1]);
+                    //  Rprintf("%f %f %f %f %f %f %f \n",lags,df,sill,corr1,par[0],bl,nuis[1]);
+                    //if(R_FINITE(bl))  
+                       *res+= bl*weights;
+                      
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
     return;

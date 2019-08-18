@@ -692,7 +692,8 @@ double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double v
     u=zi-mi;
     v=zj-mj;
     u2=R_pow(u,2);v2=R_pow(v,2);
-    s1=vari+nugget;s12=vari*corr;
+    s1=vari+nugget;
+    s12=vari*corr;
     det=R_pow(s1,2)-R_pow(s12,2);
     dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));
 return(dens);
@@ -1197,6 +1198,8 @@ double hyp2f1( double a,double b,double c,double x)
     flag = 0;
     ia = round(a); /* nearest integer to a */
     ib = round(b);
+
+    if (x == 0.0) {return 1.0; }
     
     if( a <= 0 )
     {
@@ -1582,6 +1585,7 @@ return(RR);
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
 double RR=0.0,bb=0.0,res0=0.0;int k=0;
+if((int)c%2==0) c=c+0.0000001;
  for (k=0;k<=15000;k=k+1)
   {
     bb=k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))

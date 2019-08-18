@@ -168,10 +168,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
     ################################
     ## standard kriging  ##############
     ################################   
-       #print(head(Xloc))
-       #print(head(X))
-       #print(dim(Xloc))
-       #print(dim(X))
+
        mu=X%*%betas
        muloc=Xloc%*%betas
     if((type=="Standard"||type=="standard")) {
@@ -213,11 +210,11 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         vv=as.numeric(covmatrix$param['sill']) 
                         nu=1/as.numeric(covmatrix$param['df'])
                         sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
+                        w=sqrt(1-sk2)
                         KK=2*sk2/pi
                         D1=(nu-1)/2;D2=nu/2;
-                        CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
-                        corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
-                        corri=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
+                        corr2=(2*sk2/(pi*w^2+sk2*(pi-2)))*(sqrt(1-cc^2)+cc*asin(cc)-1)+w^2*cc/(w^2+sk2*(1-2/pi))  
+                        corri=(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-sk2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,nu/2,cc^2))*((1-KK)*corr2+KK)-KK) 
                       }
         if(covmatrix$model==26) {  # weibull 
                         cc$corri[cc$corri>0.99999999999]= 0.9999999999
@@ -327,7 +324,7 @@ krig_weights <- t(getInv(covmatrix,cc))
 if(type_krig=='Simple'||type_krig=='simple')  {  
       if(!bivariate) {  ## space and spacetime simple kringing
                ####gaussian, StudenT  two piece  skew gaussian simple kriging
-               if(covmatrix$model %in% c(1,12,27,29,10))
+               if(covmatrix$model %in% c(1,12,27,29,10,18))
                {
                      pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
               }
@@ -374,7 +371,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
    ####### 
       if(mse) {
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
-if(covmatrix$model %in% c(1,12,27,29,10))  
+if(covmatrix$model %in% c(1,12,27,29,10,18))  
         {vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc)) } ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) 

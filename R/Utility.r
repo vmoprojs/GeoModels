@@ -487,6 +487,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                   }
                 if(is.null(coordy))
                   {
+                     
                     dimcoord <- dim(coordx)
                     if(is.null(dimcoord))
                       {
@@ -506,6 +507,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                   {
                     if(length(coordx)!=length(coordy))
                       {
+                       
                         error <- c('the number of the two coordinates does not match\n')
                         return(list(error=error))
                       }

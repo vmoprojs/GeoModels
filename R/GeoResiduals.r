@@ -38,7 +38,7 @@ else dd=c(t(fit$data))
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(mu)  
 ### 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh",
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh","",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
 ###
@@ -47,6 +47,19 @@ if(model %in% c("SkewGaussian"))
 res1=(dd-c(mu))/sqrt(vskew)
 }
 
+if(model %in% c("Gaussian_misp_StudentT"))  
+{vv=param['sill']*(1/param['df']-2)/(1/param['df'])
+res1=(dd-c(mu))/sqrt(vv)
+}
+
+if(model %in% c("Gaussian_misp_SkewStudentT"))
+{
+
+df=1/param['df']
+kk=(df/(df-2)-(df*gamma(0.5*(df-1))^2*param['skew']^2)/(pi*gamma(df/2)^2))
+vv=param['sill']/kk
+res1=(dd-c(mu - sqrt(param['sill'])*sqrt(df)*gamma(0.5*(df-1))*param['skew']/(sqrt(pi)*gamma(df/2))))/sqrt(vv)
+}
 
 
 #if(binomial or binomialneg or geom or bernoulli)
@@ -64,7 +77,7 @@ fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh",
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 {fit$param['sill']=1;fit$param['mean']=0}
 

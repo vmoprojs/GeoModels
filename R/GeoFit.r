@@ -34,6 +34,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
                              type, varest, vartype, weighted, X)
+
     if(!is.null(checkinput$error))
       stop(checkinput$error)
     ### Initialization global variables:
@@ -43,6 +44,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     unname(coordt);
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
+
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist, maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
@@ -71,7 +73,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
       initparam$upper <- uu;initparam$lower <- ll
      }}
       #if(length(param)==1)  {initparam$upper=1000}
-   
+  
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
