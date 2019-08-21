@@ -3,7 +3,9 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Applic.h>
+#include <assert.h>
 #include <stdint.h>
+//#include "polevl.h"
 #define LOW -1.0e15
 #define MAXERR 1e-6
 #define EPS DBL_EPSILON
@@ -14,9 +16,14 @@
 #define ETHRESH 1.0e-12
 #define MACHEP   1.11022302462515654042E-16   /* 2**-53 */
 #define MAXNUM   1.79769313486231570815E308    /* 2**1024*(1-MACHEP) */
-
-
-
+#define MAX_ITERATIONS 10000
+#define NPY_NAN NAN
+#define gamma gammafn
+#define NPY_INFINITY 1.7976931348623157e+308
+#define NPY_PI M_PI
+#define MAXLGM 2.556348e305
+#define LS2PI  0.91893853320467274178
+#define LOGPI  1.14472988584940017414
 //---------START GLOBAL VARIABLES-----------
 
 double **dista;// 2x2 matrix of distance weight (for c)and commpact suppots (tap)
@@ -908,15 +915,32 @@ End
 
 
 
+/*----------------------------------------------------------------
+ File name: Host.c
+ Description: procedures for OCL computation.
+ Start
+ ---------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------
+ File name: Host.c
+ Description: procedures for OCL computation.
+ End
+ ---------------------------------------------------------------*/
 
 
 
 
 
 
-/*for bivariate t distributions*/
+double hyp2f1_neg_c_equal_bc(double a, double b, double x);
+double hyp2f1ra(double a, double b, double c, double x,double *loss);
+double lgam(double x);
+double lgam_sgn(double x, int *sign);
 double hyt2f1( double a, double b, double c, double x, double *loss );
 double hys2f1( double a,double b,double c,double x,double *loss );
 double hyp2f1( double a,double b,double c,double x);
 double hypergeo(double a,double b,double c,double x);
 void hypergeo_call(double *a,double *b,double *c,double *x, double *res);
+double polevl(double x, const double coef[], int N);
+double p1evl(double x, const double coef[], int N);

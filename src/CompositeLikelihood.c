@@ -1912,7 +1912,7 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
     int i=0, j=0;
-    double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr1,corr2,df,bl;
+    double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr2,corr3,df,bl;
     if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1){*res=LOW; return;}
 
     df=1/nuis[0];
@@ -1927,6 +1927,9 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
     double w=1-skew2;
     double KK=2*skew2/M_PI;
 
+    double MM=sqrt(sill)*sqrt(df)*gammafn(D1)*skew/(sqrt(M_PI)*gammafn(D2));
+    double FF=sill*(df/(df-2))-MM*MM;
+
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1934,11 +1937,11 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
                      corr=CorFct(cormod,lags,0,par,0,0);
          corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
-corr1=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
+corr3=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
 (hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                          bl=log_biv_Norm(corr1,data[i],data[j],mean[i],mean[j],sill,nugget);
+                          bl=log_biv_Norm(corr3,data[i],data[j],mean[i]+MM,mean[j]+MM,FF,nugget);
                         *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;

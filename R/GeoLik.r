@@ -407,17 +407,18 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
 
+        
         nu=1/nuisance['df']; eta2=nuisance['skew']^2
+        if(nu<2||abs(nuisance['skew'])>1)  return(llik)
         w=sqrt(1-eta2);
         KK=2*eta2/pi
         D1=(nu-1)/2; D2=nu/2
         CorSkew<-(2*eta2/(pi*w^2+eta2*(pi-2)))*(sqrt(1-corr^2)+corr*asin(corr)-1)+w^2*corr/(w^2+eta2*(1-2/pi))   
         corr3<-(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-eta2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,D2,corr^2))*((1-KK)*CorSkew+KK)-KK)
-        print(sum(corr3>1))
-        if(df<4||abs(nuisance['skew'])>1)  return(llik)
+        #print(sum(corr3>1))
         # Computes the correlation matrix:
-        cova <- corr3*nuisance['sill']# *(1-ng)
-        #nuisance['nugget']=0
+        cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
+        nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
@@ -439,12 +440,10 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        # ng=nuisance['nugget']
         df=1/nuisance['df']
+         if(df<2)  return(llik)
         corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
-        #if(corr[1]==-2||is.nan(corr[1])) return(llik)
-        if(df<2)  return(llik)
-        # Computes the correlation matrix:
-        cova <- corr*nuisance['sill']# *(1-ng)
-        #nuisance['nugget']=0
+        cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
+        nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
