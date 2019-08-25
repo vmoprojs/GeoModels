@@ -4,7 +4,7 @@
 \title{Update a \code{GeoFit} object   using parametric bootstrap for std error estimation}
 \description{
   The procedure update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
-\usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1))}
+\usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1),optimizer="Nelder-Mead")}
 \arguments{
   \item{fit}{A fitted object obtained from the
     \code{\link{GeoFit}}.}
@@ -14,6 +14,7 @@
        \item{GPU}{Numeric; if \code{NULL} (the default) 
       no OpenCL computation is performed. The user can choose the device to be used. Use \code{DeviceInfo()} function to see available devices, only double precision devices are allowed} 
         \item{local}{Numeric; number of local work-items of the OpenCL setup}
+        \item{optimizer}{The type of optimization algorithm. See  \code{\link{GeoFit}} for details.}
 }
 
 \value{  

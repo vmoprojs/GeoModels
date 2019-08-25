@@ -12,12 +12,17 @@
 ### Last change: 28/03/2018.
 ####################################################
    
-GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1))
+GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead")
 {
 
 k=1;res=NULL;#H=list();
 if(length(fit$coordt)==1) fit$coordt=NULL
 print("Parametric bootstrap can be time consuming ...")
+
+model=fit$model
+if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
+if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
+
 while(k<=K){
 data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn,
@@ -28,16 +33,16 @@ data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
 
 estimation=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   corrmodel=fit$corrmodel, model=fit$model, sparse=FALSE,n=fit$n,
-   GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, 
+   corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
+   GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
    X=fit$X, distance=fit$distance, radius=fit$radius,
    varest=FALSE, 
    vartype='SubSamp', weighted=FALSE, winconst=NULL,
    taper=fit$taper, tapsep=fit$tapsep, winstp=NULL,winconst_t=NULL, winstp_t=NULL,method="cholesky",onlyvar=FALSE)
 
-print(estimation$param)
 if(estimation$convergence=="Successful"){
+  print((estimation$param))
 res=rbind(res,estimation$param)
 print(k)
 k=k+1

@@ -197,15 +197,18 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         corri=((1-as.numeric(covmatrix$param["nugget"]))*cc$corri)^2
         if(covmatrix$model==12) # student T
                          {
-                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
+                  
                         cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
                         vv=as.numeric(covmatrix$param['sill']) 
                         nu=1/as.numeric(covmatrix$param['df'])
-                        corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2))*cc)/(2*gamma(nu/2)^2)
+                        if(nu<170) corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2))*cc)/(2*gamma(nu/2)^2)
+                        else       corri=exp(log(nu-2)+2*lgamma(0.5*(nu-1))-log(2)-2*lgamma(nu/2)+log(Re(hypergeo::hypergeo(0.5,0.5, nu/2,cc^2)))+log(cc))
+
+                        #corri=cc
                       }
            if(covmatrix$model==18) # skew student T
                          {
-                        cc$corri[cc$corri>0.99999999999]= 0.9999999999  
+                       
                         cc=as.numeric((1-as.numeric(covmatrix$param["nugget"]))*cc$corri ) 
                         vv=as.numeric(covmatrix$param['sill']) 
                         nu=1/as.numeric(covmatrix$param['df'])
@@ -217,7 +220,6 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                         corri=(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-sk2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,nu/2,cc^2))*((1-KK)*corr2+KK)-KK) 
                       }
         if(covmatrix$model==26) {  # weibull 
-                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc1=as.numeric((1-covmatrix$param["nugget"])*cc$corri)
@@ -225,7 +227,6 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                                
          }
           if(covmatrix$model==24) {  # loglogistic
-                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         sh=as.numeric(covmatrix$param['shape'])
                         cc1=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
                         corri=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
@@ -233,7 +234,6 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
                                         Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc1^2)) -1)              
          }
          if(covmatrix$model==27) {  # two piece StudenT
-                        cc$corri[cc$corri>0.99999999999]= 0.9999999999
                         nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
                         vv=as.numeric(covmatrix$param['sill'])
                         corr2=cc$corri^2;sk2=sk^2
@@ -317,6 +317,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34))
 ##################################################################
 #################kriging weights##################################
 ##################################################################
+
 krig_weights <- t(getInv(covmatrix,cc))
 ##################################################################
 ################# simple kriging #################################
@@ -325,6 +326,8 @@ if(type_krig=='Simple'||type_krig=='simple')  {
       if(!bivariate) {  ## space and spacetime simple kringing
                ####gaussian, StudenT  two piece  skew gaussian simple kriging
                if(covmatrix$model %in% c(1,12,27,29,10,18))
+
+
                {
                      pp <- c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
               }

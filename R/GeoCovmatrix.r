@@ -377,7 +377,8 @@ if(model==12)   ##  student case
     #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0) 
 
         nu=as.numeric(1/nuisance['df'])    
-  corr=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cr$corr^2))*cr$corr)/(2*gamma(nu/2)^2)
+  if(nu<170) corr=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cr$corr^2))*cr$corr)/(2*gamma(nu/2)^2)
+  else corr=exp(log(nu-2)+2*lgamma(0.5*(nu-1))-log(2)-2*lgamma(nu/2)+log(Re(hypergeo::hypergeo(0.5,0.5, nu/2,cr$corr^2)))+log(cr$corr))
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)

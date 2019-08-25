@@ -359,7 +359,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         sill=nuisance['sill']
         nuisance['sill']=1
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-      
+         corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what="LogNormDenStand_TukeyH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
@@ -384,7 +384,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         sill=nuisance['sill']
         nuisance['sill']=1
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-      
+        corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what="LogNormDenStand_SH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
@@ -406,8 +406,6 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-
-        
         nu=1/nuisance['df']; eta2=nuisance['skew']^2
         if(nu<2||abs(nuisance['skew'])>1)  return(llik)
         w=sqrt(1-eta2);
@@ -438,15 +436,19 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-       # ng=nuisance['nugget']
         df=1/nuisance['df']
          if(df<2)  return(llik)
-        corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
+         if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
+        #else      corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-log(2)-2*lgamma(df/2)+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
+ 
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
+
         nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
+      #print(loglik_u)
         return(loglik_u)
+    
       }
 
     # Call to the objective functions:
