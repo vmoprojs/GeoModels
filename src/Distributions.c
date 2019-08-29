@@ -230,6 +230,45 @@ return(gammafn(k+a)/gammafn(a));
 
 
 
+double biv_chisqu2(double corr,double zi,double zj, double shape)
+{
+double KK1,KK2,KK3,rr;
+   rr=1-corr*corr;  
+   KK1=R_pow(gammafn(shape/2),2)*R_pow(rr,shape/2);
+   KK2=R_pow(2,-shape)*R_pow(zi*zj,shape/2-1)*exp(-0.5*(zi+zj)/rr)/KK1;
+   KK3= KK2* gammafn(shape/2)*R_pow(0.5*fabs(corr)*sqrt(zi*zj)/rr,1-shape/2)*bessel_i(fabs(corr)*sqrt(zi*zj)/rr ,shape/2-1,1);
+   return(KK3);
+}
+
+
+/*********** bivariate bimodal********************/ 
+double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double eta,
+             double p11,double mui,double muj)
+{
+double res;  
+double nu=1/nuu;
+double etamas=1+eta;
+double etamos=1-eta;
+double zistd=(zi-mui)/sqrt(sill);
+double zjstd=(zj-muj)/sqrt(sill);
+
+
+if(zi>=mui&&zj>=muj)
+{res=          (zistd*zjstd*p11/R_pow(etamos,4))*biv_chisqu2(rho,R_pow(zistd/etamos,2),R_pow(zjstd/etamos,2),nu);  }
+if(zi>=mui&&zj<muj)
+{res=-zistd*zjstd*(1-eta-2*p11)/(R_pow(etamos,2)*R_pow(etamas,2))*biv_chisqu2(rho,R_pow(zistd/etamos,2),R_pow(zjstd/etamas,2),nu);}
+if(zi<mui&&zj>=muj)
+{res=-zistd*zjstd*(1-eta-2*p11)/(R_pow(etamos,2)*R_pow(etamas,2))*biv_chisqu2(rho,R_pow(zistd/etamas,2),R_pow(zjstd/etamos,2),nu);}
+if(zi<mui&&zj<muj)
+{res=     (zistd*zjstd*(p11+eta)/R_pow(etamas,4))*biv_chisqu2(rho,R_pow(zistd/etamas,2),R_pow(zjstd/etamas,2),nu);}
+return(4*res/sill);
+}
+
+
+
+
+
+
 
 double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2)
 
@@ -274,21 +313,35 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
              }
     return(res);
 }
-/*
-double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
+
+
+
+/*******************************************/
+
+double e_n(int k,double x)
+{ double sum=0.0;int i;
+  for(i=0;i<=k;i++) sum=sum+R_pow(x,i)/gamma(i+1);
+    return(sum);
+}
+
+double cor_pois(double rho,double mi,double mj)
 {
-    double ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
-    k=pow(gammafn(1+1/shape),-1);
-    ui=zi/ci;uj=zj/cj;
-   // if(corr)   {
-        a=1-R_pow(corr,2);
-        z=2*fabs(corr)*pow(ui*uj,shape/2)/(pow(k,shape)*a);
-        A=pow(shape,2)*pow(ui*uj,shape-1)/(a*pow(k,2*shape));
-        B= exp(-(pow(ui,shape)+pow(uj,shape))/(a*pow(k,shape)));
-        res=A*B*bessel_i(z,0,1);
-    return(res/(ci*cj));
-    
-}*/
+int r=0; double res0=0.0,sum=0.0,pi,pj;
+double rho2=rho*rho;
+double ki=mi/(1-rho2);
+double kj=mj/(1-rho2);
+double K=rho2*(1-rho2)/sqrt(mi*mj);
+while(r<169){
+  pi=exp(-ki)*e_n(r,ki);
+  pj=exp(-kj)*e_n(r,kj);
+  sum=sum+(1-pi)*(1-pj);
+  //Rprintf("%f %f %f %f -------+++++\n",ki,kj,pi,pj);
+if((fabs(sum-res0)<1e-10)  ) {break;}
+else {res0=sum;}
+        r++;
+    }
+return(sum*K);
+}
 
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
@@ -1349,6 +1402,9 @@ double lgam_sgn(double x, int *sign)
         q += polevl(p, A, 4) / x;
     return (q);
 }
+
+
+
 
 
 

@@ -8,11 +8,8 @@
 ### This file contains a set of procedures
 ### for maximum composite-likelihood fitting of
 ### random fields.
-### Last change: 28/03/2017.
+### Last change: 28/08/2019.
 ####################################################
-
-
-
 
 ### Optim call for Composite log-likelihood maximization
 
@@ -147,6 +144,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     if(all(model==18,likelihood==3,type==2)){ fname <- 'Comp_Pair_SkewTGauss'
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==27,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECET'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==39,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEBIMODAL'
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
                                               if(varest & vartype==2) hessian <- TRUE} 
@@ -473,8 +472,7 @@ colnames(CompLikelihood$hessian)=namesparam
           else{
     if(varest)
           {
-            # The sensitivity (H) and the variability (J) matrices
-            # are estimated by the sample estimators contro-parts:
+        
             dimmat <- numparam^2
             dmat <- numparam*(numparam+1)/2
             eps <- (.Machine$double.eps)^(1/3)

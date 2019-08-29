@@ -421,6 +421,55 @@ if(model==12)   ##  student case
         varcov=varcov*vv*as.numeric(nuisance['sill'])
         }
         }
+############################################################### 
+if(model==39)   ##  two piece student case case
+    {
+        fname <-"CorrelationMat2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+
+             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
+    #print(cr$corr)
+          nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
+          ll=qnorm((1-sk)/2)
+          #print(nu);print(sk)
+          p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
+          corr2=cr$corr^2;sk2=sk^2
+          a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+          a3=3*sk2 + 2*sk + 4*p11 - 1
+          MM=df*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+          KK=2*gamma((nu+1)/2)^2 / MM
+          corr= KK*(a1*a3-4*sk2);
+  if(!bivariate) {
+        # Builds the covariance matrix:
+        varcov <-  diag(dime)
+        varcov[lower.tri(varcov)] <- corr
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- corr   
+        vv=nu*(1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2
+        varcov=varcov*vv*nuisance['sill']
+        }
+    ## todo
+    #if(bivariate)      {
+     #     varcov<-diag(dime)
+      #    varcov[lower.tri(varcov,diag=T)] <- corr
+       #   varcov <- t(varcov)
+        #  varcov[lower.tri(varcov,diag=T)] <- corr
+        #}
+      ###  
+}
 ###############################################################           
  
 if(model==27)   ##  two piece student case case

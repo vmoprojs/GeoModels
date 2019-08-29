@@ -34,7 +34,7 @@ forGaussparam<-function(model,param,bivariate)
                   
    }
 
-     if(model %in% c("SkewStudentT","TwoPieceStudentT")){
+     if(model %in% c("SkewStudentT","TwoPieceStudentT","TwoPieceBimodal")){
      if(!bivariate) param[which(names(param) %in% c("df","skew"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2","skew_1","skew_2"))] <- NULL
    }
@@ -138,7 +138,7 @@ forGaussparam<-function(model,param,bivariate)
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson","TwoPieceTukeyh","Poisson",
-                    "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeygh","SinhAsinh",
+                     "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeygh","SinhAsinh",
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
        {
@@ -153,13 +153,13 @@ forGaussparam<-function(model,param,bivariate)
 
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
-          'LogGaussian',"TwoPieceTukeyh",
+          'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", 
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
         {
           vv<-param$sill;
           param$sill=1-param$nugget
         }
-        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT","TwoPieceTukeyh",
+        if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT","TwoPieceTukeyh","TwoPieceBimodal", 
                "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
                { sk<-param$skew
                if(model%in% c("TwoPieceTukeyh")) tl<-param$tail
@@ -222,7 +222,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Gamma"))  k=round(param$shape)
     if(model %in% c("Beta"))  {k=round(param$shape1)+round(param$shape2);}
     if(model %in% c("Kumaraswamy"))  k=4
-    if(model %in% c("StudentT"))  k=round(1/param$df)+1
+    if(model %in% c("StudentT","TwoPieceBimodal"))  k=round(1/param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
 #################################
      if(model %in% c("Gamma2")) {    
@@ -306,7 +306,7 @@ KK=1;sel=NULL;ssp=double(dime)
     if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy"
               ,"LogGaussian","TwoPieceTukeyh",
                 "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
-                "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss")) {
+                "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
        if(!bivariate) dd[,,i]=t(sim)
        if(bivariate)  dd[,,i]=sim[i,]
       }
@@ -439,6 +439,27 @@ if(model %in% c("TwoPieceTukeyh"))   {
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
         aa=mm+sqrt(vv)*(abs(sim)*discrete)
+            if(!grid)  {
+                if(!spacetime&&!bivariate) sim <- c(aa)
+                else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
+        }
+         else{numcoordx=length(coordx);numcoordy=length(coordy);
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
+        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+            }
+        }
+
+################################################
+
+if(model %in% c("TwoPieceBimodal"))   { 
+     sim=NULL
+     for(i in 1:(k-1))  sim=cbind(sim,dd[,,i]^2)
+        sim=rowSums(sim)
+        pp=qnorm((1-sk)/2)
+        discrete=dd[,,k] 
+        sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
+        aa=mm+sqrt(vv)*sqrt(sim)*discrete
+
             if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)

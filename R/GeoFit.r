@@ -161,6 +161,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
         method <- 'Composite-Likelihood'; claic <- 'CLAIC';clbic <- 'CLBIC';}
   if(x$model=='Gaussian'||x$model=='Gauss'){ process <- 'Gaussian';model <- 'Gaussian'}
   if(x$model=='Gamma') { process <- 'Gamma'; model <- 'Gamma'}
+    if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
     if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian '}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian '}

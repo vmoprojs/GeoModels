@@ -115,7 +115,11 @@ double corr_binomneg (int N, double p1,double p2,double p11);
 double biv_poisbin (int NN,  int u, int v, double p01,double p10,double p11);
 double biv_poisbinneg(int NN, int u, int v, double p01,double p10,double p11);
 
+double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double eta,
+             double p11,double mui,double muj);
 
+double cor_pois(double rho,double mi,double mj);
+double e_n(int k,double x);
 double biv_skew(double corr,double zi,double zj,double mi,double mj,double vari,double skew);
 
 double biv_sinh(double corr,double zi,double zj,double mi,double mj,double skew,double tail,double vari);
@@ -143,6 +147,8 @@ double marg_binomneg(int n,int x,double p);
 double marg_pois(int n,double x,double p);
 
 double marg_geom(int x,double p);
+
+double corr_pois(double rho,double mi,double mj);
 
 double marg_p(double categ_0,double psm,int *model,int n);
 

@@ -354,7 +354,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-                if(nuisance['tail']<0||nuisance['sill']<0) return(llik)
+                if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['sill']<0) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -416,7 +416,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         #print(sum(corr3>1))
         # Computes the correlation matrix:
         cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
-        nuisance['nugget']=0
+       nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
