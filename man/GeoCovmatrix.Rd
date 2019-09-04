@@ -143,10 +143,6 @@ The associated parameters in the argument \code{param} are
     \deqn{R(h)  =e^{-h}}
     This model is a special case of the \code{Matern} and the \code{Stable} model.
 
-    \item \eqn{Gauss} defined as:
-    \deqn{R(h) = e^{-h^2}} 
-    This model is a special case of the \code{stable} model.
-
     \item \eqn{GenCauchy} (generalised \eqn{Cauchy}) defined as:
     \deqn{R(h) = ( 1+h^{\alpha} )^{-\beta / \alpha}} 
       If \eqn{h} is the geodesic distance then \eqn{\alpha \in (0,1]}.

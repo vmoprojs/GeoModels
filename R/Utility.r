@@ -55,7 +55,7 @@ CkCorrModel <- function(corrmodel)
                              cauchy=1,Cauchy=1,
                              exponential=4,Exponential=4,Exp=4,exp=4,
                              dagum = 5, Dagum = 5,
-                             gauss=6,Gauss=6,Gaussian=6,gaussian=6,
+                             genWend2=6,Genwend2=6,GenWend2=6,genwend2=6,
                              gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
                              Shkarofski=10,shkarofski=10,
                              Wend0=11,wend0=11,
@@ -777,7 +777,7 @@ CorrelationPar <- function(corrmodel)
     if(is.null(corrmodel)){param <- NULL}
     else { 
     # Exponential and Gaussian and spherical and wave correlation :
-     if(corrmodel %in% c(4,6,16)) {
+     if(corrmodel %in% c(4,16)) {
       param <- c('scale')
       return(param)}
         if(corrmodel %in% c(10)) {
@@ -788,7 +788,7 @@ CorrelationPar <- function(corrmodel)
       param <- c('power1', 'power2','scale')
       return(param)}
     # Generalised wend correlation model:
-     if(corrmodel %in% c(19)) {
+     if(corrmodel %in% c(19,6)) {
         param <- c('power2', 'scale','smooth')
         return(param)}
     # sine power on sphere 

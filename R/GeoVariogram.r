@@ -17,7 +17,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                        radius=6371, type='variogram',bivariate=FALSE)
   {
     call <- match.call()
-    corrmodel <- 'gauss'
+    corrmodel <- 'exponential'
     ### Check the parameters given in input:
     if(is.null(type))
       type <- 'variogram'

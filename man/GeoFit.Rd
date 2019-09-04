@@ -657,13 +657,16 @@ data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
 fixed<-list(nugget=nugget,power2=4)
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill,df=1/df)
 
+I=Inf
+lower<-list(mean=-I,mean1=-I,scale=0,sill=0,df=0)
+upper<-list(mean=I,mean1=I,scale=I,sill=I,df=0.5)
 
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
-               optimizer="BFGS",start=start,fixed=fixed)
+               lower=lower,upper=upper,optimizer="nlminb",start=start,fixed=fixed)
 print(fit1$param)
 
 
@@ -674,10 +677,14 @@ print(fit1$param)
 df=round(1/(as.numeric(fit1$param['df'])))
  fixed<-list(nugget=nugget,power2=4,df=1/df)
  start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+
+lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
+upper<-list(mean=I,mean1=I,scale=I,sill=I)
+
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
-                    optimizer="BFGS" , start=start,fixed=fixed)
+                    lower=lower,upper=upper, optimizer="nlminb" , start=start,fixed=fixed)
 print(fit$param)
 
 
@@ -685,7 +692,6 @@ print(fit$param)
 ###
 ### Example 5. Maximum pairwise likelihood fitting of
 ### SinhAsinh-Gaussian spatial  RFs with Wendland correlation
-### using  BFGS
 ###
 ###############################################################
 set.seed(261)
@@ -727,7 +733,7 @@ print(fit2$param)
 ###
 ### Example 6. Maximum pairwise likelihood fitting of 
 ### Binomial and negative Binomial   RFs 
-### with exponential correlation using  BFGS.
+### with exponential correlation 
 ###
 ###############################################################
 

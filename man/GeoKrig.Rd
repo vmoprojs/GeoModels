@@ -365,7 +365,7 @@ fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
 res=GeoResiduals(fit2)
 
 # locations to predict
-xx=seq(0,1,0.015)
+xx=seq(0,1,0.025)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging for residuals
@@ -390,14 +390,16 @@ image.plot(xx, xx, mapmse,
 ###            random field 
 ###
 ###############################################################
+
+###############################################################
 model="StudentT"
-df=6 
+df=7
 corrmodel = "Wend0"  
-nsel=800
+nsel=700
 coords=cbind(runif(nsel),runif(nsel))
 
 mean = 0
-sill = 1.9       
+sill = 1 
 nugget = 0
 power2=4
 scale = 0.2
@@ -410,14 +412,17 @@ data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
 
 fixed=list(nugget=nugget,power2=4,df=1/df)
 start=list(mean=mean, scale=scale,sill=sill)
-
+I=Inf
+upper=list(mean=I, scale=I,sill=I)
+lower=list(mean=-I, scale=0,sill=0)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-             maxdist=0.02,likelihood="Marginal",type="Pairwise",
-             optimizer="BFGS", start=start,fixed=fixed, model = model)
+             maxdist=0.03,likelihood="Marginal",type="Pairwise",
+             lower=lower,upper=upper,
+             optimizer="nlminb", start=start,fixed=fixed, model = model)
                     
 # locations to predict
-xx=seq(0,1,0.04)
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging

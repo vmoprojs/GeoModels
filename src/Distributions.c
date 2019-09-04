@@ -111,6 +111,561 @@ double HyperG_integral(double x, double *param) {
     return(result);
 }
 
+
+
+
+//************************************** ST igam.c*****************************************
+
+
+
+void igam_call(double *a,double *x,double *res)
+{
+    *res = igam(*a,*x);
+}
+
+double igam(a, x)
+double a, x;
+{
+    double absxma_a;
+    
+    /* Check zero integration limit first */
+    if (x == 0)
+        return (0.0);
+    
+    if ((x < 0) || (a <= 0)) {
+        //sf_error("gammainc", SF_ERROR_DOMAIN, NULL);
+       // printf("gammainc  SF_ERROR_DOMAIN\n");
+        return (NAN);
+    }
+    
+    /* Asymptotic regime where a ~ x; see [2]. */
+    absxma_a = fabs(x - a) / a;
+    if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
+        return asymptotic_series(a, x, IGAM);
+    } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
+        return asymptotic_series(a, x, IGAM);
+    }
+    
+    if ((x > 1.0) && (x > a)) {
+        return (1.0 - igamc(a, x));
+    }
+    
+    return igam_series(a, x);
+}
+
+
+double igamc(double a, double x)
+{
+    double absxma_a;
+    
+    if ((x < 0) || (a <= 0)) {
+        //sf_error("gammaincc", SF_ERROR_DOMAIN, NULL);
+        //printf("gammainc  SF_ERROR_DOMAIN\n");
+        return (NAN);
+    } else if (x == 0) {
+        return 1;
+    } else if (isinf(x)) {
+        return 0.0;
+    }
+    
+    /* Asymptotic regime where a ~ x; see [2]. */
+    absxma_a = fabs(x - a) / a;
+    if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
+        return asymptotic_series(a, x, IGAMC);
+    } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
+        return asymptotic_series(a, x, IGAMC);
+    }
+    
+    /* Everywhere else; see [2]. */
+    if (x > 1.1) {
+        if (x < a) {
+            return 1.0 - igam_series(a, x);
+        } else {
+            return igamc_continued_fraction(a, x);
+        }
+    } else if (x <= 0.5) {
+        if (-0.4 / log(x) < a) {
+            return 1.0 - igam_series(a, x);
+        } else {
+            return igamc_series(a, x);
+        }
+    } else {
+        if (x * 1.1 < a) {
+            return 1.0 - igam_series(a, x);
+        } else {
+            return igamc_series(a, x);
+        }
+    }
+}
+
+
+
+
+double igam_fac(double a, double x)
+{
+    double ax, fac, res, num;
+    
+    if (fabs(a - x) > 0.4 * fabs(a)) {
+        ax = a * log(x) - x - lgam(a);
+        if (ax < -MAXLOG) {
+            //sf_error("igam", SF_ERROR_UNDERFLOW, NULL);
+            //printf("gammainc  SF_ERROR_DOMAIN\n");
+            return 0.0;
+        }
+        return exp(ax);
+    }
+    
+    fac = a + lanczos_g - 0.5;
+    res = sqrt(fac / exp(1)) / lanczos_sum_expg_scaled(a);
+    
+    if ((a < 200) && (x < 200)) {
+        res *= exp(a - x) * pow(x / fac, a);
+    } else {
+        num = x - a - lanczos_g + 0.5;
+        res *= exp(a * log1pmx(num / fac) + x * (0.5 - lanczos_g) / fac);
+    }
+    
+    return res;
+}
+
+
+/* Compute igamc using DLMF 8.9.2. */
+double igamc_continued_fraction(double a, double x)
+{
+    int i;
+    double ans, ax, c, yc, r, t, y, z;
+    double pk, pkm1, pkm2, qk, qkm1, qkm2;
+    
+    ax = igam_fac(a, x);
+    if (ax == 0.0) {
+        return 0.0;
+    }
+    
+    /* continued fraction */
+    y = 1.0 - a;
+    z = x + y + 1.0;
+    c = 0.0;
+    pkm2 = 1.0;
+    qkm2 = x;
+    pkm1 = x + 1.0;
+    qkm1 = z * x;
+    ans = pkm1 / qkm1;
+    
+    for (i = 0; i < MAXITER; i++) {
+        c += 1.0;
+        y += 1.0;
+        z += 2.0;
+        yc = y * c;
+        pk = pkm1 * z - pkm2 * yc;
+        qk = qkm1 * z - qkm2 * yc;
+        if (qk != 0) {
+            r = pk / qk;
+            t = fabs((ans - r) / r);
+            ans = r;
+        }
+        else
+            t = 1.0;
+        pkm2 = pkm1;
+        pkm1 = pk;
+        qkm2 = qkm1;
+        qkm1 = qk;
+        if (fabs(pk) > big) {
+            pkm2 *= biginv;
+            pkm1 *= biginv;
+            qkm2 *= biginv;
+            qkm1 *= biginv;
+        }
+        if (t <= MACHEP) {
+            break;
+        }
+    }
+    
+    return (ans * ax);
+}
+
+
+/* Compute igam using DLMF 8.11.4. */
+double igam_series(double a, double x)
+{
+    int i;
+    double ans, ax, c, r;
+    
+    ax = igam_fac(a, x);
+    if (ax == 0.0) {
+        return 0.0;
+    }
+    
+    /* power series */
+    r = a;
+    c = 1.0;
+    ans = 1.0;
+    
+    for (i = 0; i < MAXITER; i++) {
+        r += 1.0;
+        c *= x / r;
+        ans += c;
+        if (c <= MACHEP * ans) {
+            break;
+        }
+    }
+    
+    return (ans * ax / a);
+}
+
+
+/* Compute igamc using DLMF 8.7.3. This is related to the series in
+ * igam_series but extra care is taken to avoid cancellation.
+ */
+double igamc_series(double a, double x)
+{
+    int n;
+    double fac = 1;
+    double sum = 0;
+    double term, logx;
+    
+    for (n = 1; n < MAXITER; n++) {
+        fac *= -x / n;
+        term = fac / (a + n);
+        sum += term;
+        if (fabs(term) <= MACHEP * fabs(sum)) {
+            break;
+        }
+    }
+    
+    logx = log(x);
+    term = -expm1(a * logx - lgam1p(a));
+    return term - exp(a * logx - lgam(a)) * sum;
+}
+
+
+/* Compute igam/igamc using DLMF 8.12.3/8.12.4. */
+double asymptotic_series(double a, double x, int func)
+{
+    int k, n, sgn;
+    int maxpow = 0;
+    double lambda = x / a;
+    double sigma = (x - a) / a;
+    double eta, res, ck, ckterm, term, absterm;
+    double absoldterm = NPY_INFINITY;
+    double etapow[NIC] = {1};
+    double sum = 0;
+    double afac = 1;
+    
+    if (func == IGAM) {
+        sgn = -1;
+    } else {
+        sgn = 1;
+    }
+    
+    if (lambda > 1) {
+        eta = sqrt(-2 * log1pmx(sigma));
+    } else if (lambda < 1) {
+        eta = -sqrt(-2 * log1pmx(sigma));
+    } else {
+        eta = 0;
+    }
+    res = 0.5 * erfc(sgn * eta * sqrt(a / 2));
+    
+    for (k = 0; k < KIC; k++) {
+        ck = d[k][0];
+        for (n = 1; n < NIC; n++) {
+            if (n > maxpow) {
+                etapow[n] = eta * etapow[n-1];
+                maxpow += 1;
+            }
+            ckterm = d[k][n]*etapow[n];
+            ck += ckterm;
+            if (fabs(ckterm) < MACHEP * fabs(ck)) {
+                break;
+            }
+        }
+        term = ck * afac;
+        absterm = fabs(term);
+        if (absterm > absoldterm) {
+            break;
+        }
+        sum += term;
+        if (absterm < MACHEP * fabs(sum)) {
+            break;
+        }
+        absoldterm = absterm;
+        afac /= a;
+    }
+    res += sgn * exp(-0.5 * a * eta * eta) * sum / sqrt(2 * M_PI * a);
+    
+    return res;
+}
+
+
+
+
+
+
+
+double ratevl(double x, const double num[], int M,
+              const double denom[], int N)
+{
+    int i, dir;
+    double y, num_ans, denom_ans;
+    double absx = fabs(x);
+    const double *p;
+    
+    if (absx > 1) {
+        /* Evaluate as a polynomial in 1/x. */
+        dir = -1;
+        p = num + M;
+        y = 1 / x;
+    } else {
+        dir = 1;
+        p = num;
+        y = x;
+    }
+    
+    /* Evaluate the numerator */
+    num_ans = *p;
+    p += dir;
+    for (i = 1; i <= M; i++) {
+        num_ans = num_ans * y + *p;
+        p += dir;
+    }
+    
+    /* Evaluate the denominator */
+    if (absx > 1) {
+        p = denom + N;
+    } else {
+        p = denom;
+    }
+    
+    denom_ans = *p;
+    p += dir;
+    for (i = 1; i <= N; i++) {
+        denom_ans = denom_ans * y + *p;
+        p += dir;
+    }
+    
+    if (absx > 1) {
+        i = N - M;
+        return pow(x, i) * num_ans / denom_ans;
+    } else {
+        return num_ans / denom_ans;
+    }
+}
+
+
+
+
+double lanczos_sum_expg_scaled(double x)
+{
+    return ratevl(x, lanczos_sum_expg_scaled_num,
+                  sizeof(lanczos_sum_expg_scaled_num) / sizeof(lanczos_sum_expg_scaled_num[0]) - 1,
+                  lanczos_sum_expg_scaled_denom,
+                  sizeof(lanczos_sum_expg_scaled_denom) / sizeof(lanczos_sum_expg_scaled_denom[0]) - 1);
+}
+
+double log1p(double x)
+{
+    double z;
+    
+    z = 1.0 + x;
+    if ((z < NPY_SQRT1_2) || (z > NPY_SQRT2))
+        return (log(z));
+    z = x * x;
+    z = -0.5 * z + x * (z * polevl(x, LP, 6) / p1evl(x, LQ, 6));
+    return (x + z);
+}
+
+
+/* log(1 + x) - x */
+double log1pmx(double x)
+{
+    if (fabs(x) < 0.5) {
+        int n;
+        double xfac = x;
+        double term;
+        double res = 0;
+        
+        for(n = 2; n < MAXITER; n++) {
+            xfac *= -x;
+            term = xfac / n;
+            res += term;
+            if (fabs(term) < MACHEP * fabs(res)) {
+                break;
+            }
+        }
+        return res;
+    }
+    else {
+        return log1p(x) - x;
+    }
+}
+
+
+
+double expm1(double x)
+{
+    double r, xx;
+    
+    if (!isinf(x)) {
+        if (isnan(x)) {
+            return x;
+        }
+        else if (x > 0) {
+            return x;
+        }
+        else {
+            return -1.0;
+        }
+        
+    }
+    if ((x < -0.5) || (x > 0.5))
+        return (exp(x) - 1.0);
+    xx = x * x;
+    r = x * polevl(xx, EP, 2);
+    r = r / (polevl(xx, EQ, 3) - r);
+    return (r + r);
+}
+
+
+
+double cosm1(double x)
+{
+    double xx;
+    
+    if ((x < -NPY_PI_4) || (x > NPY_PI_4))
+        return (cos(x) - 1.0);
+    xx = x * x;
+    xx = -0.5 * xx + xx * xx * polevl(xx, coscof, 6);
+    return xx;
+}
+
+
+/* Compute lgam(x + 1) around x = 0 using its Taylor series. */
+double lgam1p_taylor(double x)
+{
+    int n;
+    double xfac, coeff, res;
+    
+    if (x == 0) {
+        return 0;
+    }
+    res = -NPY_EULER * x;
+    xfac = -x;
+    for (n = 2; n < 42; n++) {
+        xfac *= -x;
+        coeff = zeta(n, 1) * xfac / n;
+        res += coeff;
+        if (fabs(coeff) < MACHEP * fabs(res)) {
+            break;
+        }
+    }
+    
+    return res;
+}
+
+
+/* Compute lgam(x + 1). */
+double lgam1p(double x)
+{
+    if (fabs(x) <= 0.5) {
+        return lgam1p_taylor(x);
+    } else if (fabs(x - 1) < 0.5) {
+        return log(x) + lgam1p_taylor(x - 1);
+    } else {
+        return lgam(x + 1);
+    }
+}
+
+
+
+
+double zeta(x, q)
+double x, q;
+{
+    int i;
+    double a, b, k, s, t, w;
+    
+    if (x == 1.0)
+        goto retinf;
+    
+    if (x < 1.0) {
+    domerr:
+        //sf_error("zeta", SF_ERROR_DOMAIN, NULL);
+        //printf("zeta  SF_ERROR_DOMAIN\n");
+        return (NAN);
+    }
+    
+    if (q <= 0.0) {
+        if (q == floor(q)) {
+            //sf_error("zeta", SF_ERROR_SINGULAR, NULL);
+            //printf("zeta  SF_ERROR_SINGULAR\n");
+        retinf:
+            return (NPY_INFINITY);
+        }
+        if (x != floor(x))
+            goto domerr;    /* because q^-x not defined */
+    }
+    
+    /* Asymptotic expansion
+     * https://dlmf.nist.gov/25.11#E43
+     */
+    if (q > 1e8) {
+        return (1/(x - 1) + 1/(2*q)) * pow(q, 1 - x);
+    }
+    
+    /* Euler-Maclaurin summation formula */
+    
+    /* Permit negative q but continue sum until n+q > +9 .
+     * This case should be handled by a reflection formula.
+     * If q<0 and x is an integer, there is a relation to
+     * the polyGamma function.
+     */
+    s = pow(q, -x);
+    a = q;
+    i = 0;
+    b = 0.0;
+    while ((i < 9) || (a <= 9.0)) {
+        i += 1;
+        a += 1.0;
+        b = pow(a, -x);
+        s += b;
+        if (fabs(b / s) < MACHEP)
+            goto done;
+    }
+    
+    w = a;
+    s += b * w / (x - 1.0);
+    s -= 0.5 * b;
+    a = 1.0;
+    k = 0.0;
+    for (i = 0; i < 12; i++) {
+        a *= x + k;
+        b /= w;
+        t = a * b / AA[i];
+        s = s + t;
+        t = fabs(t / s);
+        if (t < MACHEP)
+            goto done;
+        k += 1.0;
+        a *= x + k;
+        b /= w;
+        k += 1.0;
+    }
+done:
+    return (s);
+}
+
+
+
+
+
+//************************************* END igam.c*****************************************
+
+
+
+
+
+
+
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
@@ -317,25 +872,68 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 
 /*******************************************/
+/*
+double incgamma(double x, double a){
+  double sum=0;
+  double term=1.0/a;
+  int n=1;
+  while (term != 0){
+    sum = sum + term;
+    term = term*(x/(a+n));
+    n++;
+  }
+  return (R_pow(x,a)*exp(-1*x)*sum);
+}
 
+double corr_pois1(double rho,double lambda1,double lambda2){
+  double corr=0.0;
+  double rho2=rho*rho;
+        double aux1=lambda1/(1-rho2);
+        double aux2=lambda2/(1-rho2);
+        double aux3=0;
+        int r=0;
+        while (r <= 2000){
+            aux3 = aux3 + exp(log(incgamma(aux1,r+1))+log(incgamma(aux2,r+1))-2*(lgammafn(r+1)));
+            r++;
+        }
+        corr = rho2*(1-rho2)*aux3/sqrt(lambda1*lambda2);
+    return(corr);
+}
+*/
+
+/*
 double e_n(int k,double x)
 { double sum=0.0;int i;
   for(i=0;i<=k;i++) sum=sum+R_pow(x,i)/gamma(i+1);
     return(sum);
 }
-
-double cor_pois(double rho,double mi,double mj)
+double corr_pois(double rho,double mi,double mj)
 {
 int r=0; double res0=0.0,sum=0.0,pi,pj;
 double rho2=rho*rho;
 double ki=mi/(1-rho2);
 double kj=mj/(1-rho2);
 double K=rho2*(1-rho2)/sqrt(mi*mj);
-while(r<169){
-  pi=exp(-ki)*e_n(r,ki);
-  pj=exp(-kj)*e_n(r,kj);
+while(r<4000){
+  pi=exp( -ki+log(e_n(r,ki)));
+  pj=exp( -kj+log(e_n(r,kj)));
   sum=sum+(1-pi)*(1-pj);
-  //Rprintf("%f %f %f %f -------+++++\n",ki,kj,pi,pj);
+if((fabs(sum-res0)<1e-10)  ) {break;}
+else {res0=sum;}
+        r++;
+    }
+return(sum*K);
+}*/
+
+double corr_pois(double rho,double mi,double mj)
+{
+int r=0; double res0=0.0,sum=0.0;
+double rho2=rho*rho;
+double ki=mi/(1-rho2);
+double kj=mj/(1-rho2);
+double K=rho2*(1-rho2)/sqrt(mi*mj);
+while(r<4000){
+  sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
 if((fabs(sum-res0)<1e-10)  ) {break;}
 else {res0=sum;}
         r++;

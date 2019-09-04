@@ -18,7 +18,7 @@ double CheckCor(int *cormod, double *par)
       if(scale<=0 || R_power2<=0) rho=-2;
      break;
     case 4:// Exponential correlation function
-    case 6:// Gaussian correlation function
+    //case 6:// Gaussian correlation function
     case 10:// skarofsky
     case 16://wave correlation function
       scale=par[0];
@@ -53,6 +53,7 @@ double CheckCor(int *cormod, double *par)
         if(scale<=0 || R_power<3.5) rho=-2;
         break; 
     case 19: // Generalised wendland
+    case 6:
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
@@ -456,11 +457,11 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
     scale=par[2];
     rho=CorFunDagum(h, R_power1, R_power2, scale);
     break;
-    case 6:// Gaussian correlation function
-      R_power=2;
-      scale=par[0];
-      rho=CorFunStable(h, R_power, scale);
-      break;
+    //case 6:// Gaussian correlation function
+    ///  R_power=2;
+    //  scale=par[0];
+     /// rho=CorFunStable(h, R_power, scale);
+     /// break;
     case 8: // Generalised Cuachy correlation function
       R_power1=par[0];
       R_power2=par[1];
@@ -517,7 +518,17 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
-        rho=CorFunW_gen(h, R_power1, smooth, scale);
+  rho=CorFunW_gen(h, R_power1, smooth, scale);
+        break;
+  
+    case 6: // Generalised wend correlation function second paramtrizazion
+        R_power1=1/par[0];        
+        scale=par[1];
+        smooth=par[2];
+        ///sep=log(R_power1)+lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1);
+        sep=R_power1*gammafn(2*smooth+R_power1+1)/gammafn(R_power1+1);
+        rho=CorFunW_gen(h, R_power1, smooth,scale*R_pow(exp(sep),1/(1+2*smooth)));
+        //Rprintf("%f %f \n",rho,R_power1);
         break;
      case 20://  Whittle-Matern correlation function
       scale=par[0];
@@ -1829,19 +1840,22 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
          else rho=0;
          return(rho);
     }      
-       /* x=lag/scale;    
+            
+//first version 
+    
+             x=lag/scale;    
          if(x<=1)
-  rho= (gammafn(smooth)*gammafn(2*smooth+R_power1+1))/(gammafn(smooth+R_power1+1)*R_pow(2,R_power1+1)*gammafn(2*smooth)) * 
-                   R_pow(1-x*x,smooth+R_power1) * 
-                                 hypergeo(R_power1/2,(1+R_power1)/2,smooth+R_power1+1,1-x*x);
-                                 else rho=0;
-*/
+  rho=(gammafn(smooth)*gammafn(2*smooth+R_power1+1))/(gammafn(2*smooth)*gammafn(smooth+R_power1+1)*R_pow(2,R_power1+1))*
+        R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,0.5*(R_power1+1),smooth+R_power1+1, 1-x*x);
+                                else rho=0;
+//second version 
+                                /*
         x=lag;
         double *param;
         param=(double *) Calloc(3,double);
         param[0]=R_power1;param[1]=smooth;param[2]=scale;  //mu,alpha //beta
         rho=wendintegral(x,param);
-        Free(param);
+        Free(param);*/
     return(rho);
 }
 
@@ -3224,10 +3238,10 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       scale=par[0];//scale parameter
       if(flag[0] == 1) grad[i]=DExpoSc(h, scale, rho);
       break;
-    case 6:// Gaussian correlation function
-      scale=par[0];//scale parameter
-      if(flag[0]==1) grad[i]=DGaussSc(h,scale,rho);
-      break;
+    //case 6:// Gaussian correlation function
+     // scale=par[0];//scale parameter
+     // if(flag[0]==1) grad[i]=DGaussSc(h,scale,rho);
+     // break;
     case 8:// Generalised Cuachy correlation function
       R_power1=par[0];
       R_power2=par[1];

@@ -252,9 +252,9 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
                         corr2=cc$corri^2;sk2=sk^2
                         a1=Re(hypergeo::hypergeo(-0.5,-0.5 ,nu/2 ,corr2))
                         ll=qnorm((1-sk)/2)
-                        p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
+                        p11=pbivnorm::pbivnorm(ll,ll, rho = cc$corri, recycle = TRUE)
                         a3=3*sk2 + 2*sk + 4*p11 - 1
-                        MM=df*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+                        MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
                         KK=2*gamma((nu+1)/2)^2 / MM
                         corri= KK*(a1*a3-4*sk2);   
                       }

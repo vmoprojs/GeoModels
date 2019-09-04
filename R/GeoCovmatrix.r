@@ -449,7 +449,7 @@ if(model==39)   ##  two piece student case case
           corr2=cr$corr^2;sk2=sk^2
           a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
           a3=3*sk2 + 2*sk + 4*p11 - 1
-          MM=df*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+          MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
           KK=2*gamma((nu+1)/2)^2 / MM
           corr= KK*(a1*a3-4*sk2);
   if(!bivariate) {

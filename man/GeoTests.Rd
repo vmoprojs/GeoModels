@@ -174,7 +174,7 @@ start=list(scale=c_supp,skew=skew,tail=tail,sill=sill)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                    likelihood="Full",type="Standard",varest=TRUE,
-                    start=start,fixed=fixed)
+                    optimizer="BFGS",start=start,fixed=fixed)
 
 fitH1$param
 
@@ -184,7 +184,7 @@ start=list(scale=c_supp,sill=sill)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     likelihood="Full",type="Standard",varest=TRUE,
-                    start=start,fixed=fixed)
+                    optimizer="BFGS",start=start,fixed=fixed)
 
 
 #  Wald statistic test
@@ -222,14 +222,14 @@ start=list(mean=mean,mean1=mean1,sill=sill,scale=scale)
 fixed=list(nugget=nugget)
 fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start,X=X)
+                    optimizer="BFGS",fixed=fixed,start=start,X=X)
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
 start=list(mean=mean,sill=sill,scale=scale)
 fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
 fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start,X=X)
+                    optimizer="BFGS",fixed=fixed,start=start,X=X)
 
 
 # Hypothesis testing results:

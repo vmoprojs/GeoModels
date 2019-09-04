@@ -9,7 +9,7 @@
 ### This file contains function to compute stderr estimation
 ### for composite likelihoodestimation
 ### and model selection critera given an object of class GeoFit
-### Last change: 28/03/2018.
+### Last change: 28/03/2019.
 ####################################################
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead")
