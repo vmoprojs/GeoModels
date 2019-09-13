@@ -172,6 +172,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     if(bivariate) fname <- paste(fname,"_biv",sep="")
     fname <- paste(fname,"2",sep="")
     path.parent <- getwd()
+  
     # if(!is.null(GPU)) 
     # {
     #   path <- system.file("CL", "Kernel.cl", package = "GeoModels")
@@ -589,7 +590,7 @@ colnames(CompLikelihood$hessian)=namesparam
                   CompLikelihood$stderr <- sqrt(CompLikelihood$stderr)
               }
         }
-    #setwd(path.parent)
+    setwd(path.parent)
       }
       if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
     if(!is.null(GPU)) gc()

@@ -2564,6 +2564,8 @@ void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 
 /***********************************************************/
 /*********** bivariate T distribution********************/ 
+/***********************************************************/
+/*********** bivariate T distribution********************/ 
 double biv_T(double rho,double zi,double zj,double nuu)
 {
   int k=0; 
@@ -2583,24 +2585,29 @@ double biv_T(double rho,double zi,double zj,double nuu)
   double a1 = 0; double a2 = 0;
   double aux  = R_pow(rho*x*y,2)/(x1*y1);
   double aux1 = R_pow(rho*nu,2)/(x1*y1);
-  while( k<=10000 )
+ //if(fabs(rho)<=EPS1)
+  /*if(!fabs(rho))  
+  {
+    C = lgammafn(cc)+log(R_pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+    B = lgammafn(cc)+log(R_pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
+    return(exp(B)*exp(C));
+  }*/
+  while( k<=6000 )
     {
-    
-   // pp1=log(hypergeo(cc+k,cc+k,0.5,aux)); 
-    pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux));       
+   // pp1=hypergeo(cc+k,cc+k,0.5,aux);
+    pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
     bb1=pp1+k*log(aux1)+2*(lgammafn(cc+k)-lgammafn(cc))-lgammafn(k+1)-lgammafn(nu2+k)+lgammafn(nu2);
     a1 = a1 + exp(bb1);
-   // pp2=log(hypergeo(nu2+1+k,nu2+1+k,1.5,aux));
+   // pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
     pp2=(1.5-2*(nu2+1+k))*log(1-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
     bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
     RR=(b1/c1)*a1+(b2/c2)*a2;
-    ////if(!R_FINITE(RR)) {return(res0);}
+   if(!R_FINITE(RR)) return(res0);
     if((fabs(RR-res0)<1e-10)  ) {break;}
     else {res0=RR;}
         k++;
     }
-   // Rprintf("RR: %f\n",RR);
 return(RR);
 }
 /*********** Appell F4 function ********/
