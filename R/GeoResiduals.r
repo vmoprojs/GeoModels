@@ -28,6 +28,7 @@ nf=names(fit$fixed)
 #################################
 #### computing mean ########
 #################################
+
 mu=fit$X%*%beta2  
 #################################
 #### computing residuals ########
@@ -36,7 +37,8 @@ if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
 ### 
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
-res1=dd/exp(mu)  
+res1=dd/exp(c(mu))
+
 ### 
 if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh","",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))

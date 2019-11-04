@@ -53,7 +53,9 @@ CkCorrModel <- function(corrmodel)
     CkCorrModel <- switch(corrmodel,
             #spatial models
                              cauchy=1,Cauchy=1,
-                             exponential=4,Exponential=4,Exp=4,exp=4,
+                             Matern1=2,
+                             Matern2=3,
+                             exponential=4,Exponential=4,Exp=4,exp=4,Matern0=4,
                              dagum = 5, Dagum = 5,
                              genWend2=6,Genwend2=6,GenWend2=6,genwend2=6,
                              gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
@@ -234,8 +236,8 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         return(TRUE)  
     }
     
-
-      if(length(coordt)>0&&is.list(X)) X=X[[1]]
+ 
+    if(length(coordt)>0&&is.list(X)) X=X[[1]]
     if(is.null(X))  {X=1;num_betas=1} 
     else num_betas=ncol(X)  
     #bivariate<-CheckBiv(CheckCorrModel(corrmodel))
@@ -442,7 +444,8 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     {
     dimdata <- dim(data) # set the data dimension
     if(is.null(coordt)) # START 1) spatial random field
-      { if(CheckST(CkCorrModel(corrmodel)))
+      {   
+        if(CheckST(CkCorrModel(corrmodel)))
           {
             error <- 'temporal coordinates are missing\n'
             return(list(error=error))}
@@ -632,9 +635,9 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                     CorrelationPar(CkCorrModel(corrmodel)))))
              {
   #                           print(length(param))
-print(NuisParam(model,biv,num_betas))  
-print(CorrelationPar(CkCorrModel(corrmodel)))
-print(unique(c(NuisParam("Gaussian",biv,num_betas))))
+#print(NuisParam(model,biv,num_betas))  
+#print(CorrelationPar(CkCorrModel(corrmodel)))
+#print(unique(c(NuisParam("Gaussian",biv,num_betas))))
             error <- "some parameters are missing or does not match with the declared model\n"
             return(list(error=error))}
 
@@ -777,7 +780,7 @@ CorrelationPar <- function(corrmodel)
     if(is.null(corrmodel)){param <- NULL}
     else { 
     # Exponential and Gaussian and spherical and wave correlation :
-     if(corrmodel %in% c(4,16)) {
+     if(corrmodel %in% c(2,3,4,16)) {
       param <- c('scale')
       return(param)}
         if(corrmodel %in% c(10)) {

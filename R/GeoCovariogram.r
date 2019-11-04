@@ -257,7 +257,7 @@ if(!bivariate) {
    if(twopieceGauss)        { if(bivariate) {}
                         else {
                               sk=nuisance['skew'];sill=nuisance['sill'];sk2=sk^2
-                              vs= sill*(1+3*sk2)-8*sk2/pi
+                              vs= sill*((1+3*sk2)-8*sk2/pi) ## is it ok?
                               corr2=sqrt(1-correlation^2)
                               ll=qnorm((1-sk)/2)
                               p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)

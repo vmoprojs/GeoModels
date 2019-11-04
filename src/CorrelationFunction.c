@@ -8,7 +8,7 @@ double CheckCor(int *cormod, double *par)
   double rho=0.0, sep=0, scale=0.0, smooth=0.0,smooth_s=0.0,smooth_t=0.0, scale_s=0.0, scale_t=0;
   double scale11=0.0, scale22=0, scale12=0.0, smoo11=0.0, smoo12=0.0, smoo22=0,
     R_power11=0.0, R_power12=0.0, R_power22=0,nug11=0.0,nug22=0.0;
-
+ 
 
   switch(*cormod) // Correlation functions are in alphabetical order
     {
@@ -17,6 +17,8 @@ double CheckCor(int *cormod, double *par)
       scale=par[1];
       if(scale<=0 || R_power2<=0) rho=-2;
      break;
+    case 2:
+    case 3:
     case 4:// Exponential correlation function
     //case 6:// Gaussian correlation function
     case 10:// skarofsky
@@ -445,6 +447,14 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
       R_power2=par[0];
       scale=par[1];
       rho=CorFunCauchy(h, R_power2, scale);
+      break;
+    case 2:// Matern1
+      scale=par[0];
+      rho=exp(-h/scale)*(1+h/scale);
+      break;
+    case 3:// Matern2
+      scale=par[0];
+       rho=exp(-h/scale)*(1+h/scale+pow(h/scale,2)/3);
       break;
     case 4:// Exponential correlation function
       R_power=1;
@@ -1644,7 +1654,7 @@ double CorFunCauchy(double lag, double R_power2, double scale)
 double CorFunDagum(double lag, double R_power1, double R_power2, double scale)
 {
     double rho=0.0;
-    rho=1-R_pow(R_pow(lag/scale,R_power1)/(1+R_pow(lag/scale,R_power1)), R_power2);
+    rho=1-R_pow(R_pow(lag/scale,R_power1)/(1+R_pow(lag/scale,R_power1)), R_power2/R_power1);
     return rho;
 }
 // Generalised Cauhcy class of correlation models:

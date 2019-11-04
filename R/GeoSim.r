@@ -110,6 +110,10 @@ forGaussparam<-function(model,param,bivariate)
 ####################################################################
 ############# END internal functions ###############################
 ####################################################################
+    corrmodel=gsub("[[:blank:]]", "",corrmodel)
+    model=gsub("[[:blank:]]", "",model)
+    distance=gsub("[[:blank:]]", "",distance)
+    method=gsub("[[:blank:]]", "",method)
     checkinput <- CkInput(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
     NULL, grid, NULL, NULL, NULL, model, n,  NULL, param,radius,
      NULL, NULL, NULL, "Standard", NULL, NULL, NULL,X)

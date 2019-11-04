@@ -34,6 +34,14 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     }
 ###################################### 
 ######################################  
+    corrmodel=gsub("[[:blank:]]", "",corrmodel)
+    model=gsub("[[:blank:]]", "",model)
+    distance=gsub("[[:blank:]]", "",distance)
+    method=gsub("[[:blank:]]", "",method)
+    type_krig=gsub("[[:blank:]]", "",type_krig)
+    type=gsub("[[:blank:]]", "",type)
+    print(corrmodel)
+#####################################
     if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
     if(!is.matrix(loc))   stop("loc parameter must be a matrix")
     if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")

@@ -30,6 +30,14 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     #Stime <- CheckST(CMdl)  
     
     ### Check the parameters given in input:
+    corrmodel=gsub("[[:blank:]]", "",corrmodel)
+    model=gsub("[[:blank:]]", "",model)
+    distance=gsub("[[:blank:]]", "",distance)
+    optimizer=gsub("[[:blank:]]", "",optimizer)
+    likelihood=gsub("[[:blank:]]", "",likelihood)
+    type=gsub("[[:blank:]]", "",type)
+
+
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
