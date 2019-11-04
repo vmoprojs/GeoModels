@@ -10,7 +10,7 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 28/03/2019.
+### Last change: 28/07/2019.
 ####################################################
    
  
@@ -154,6 +154,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     else{
         lower <- 0  
         upper <- 1e100}
+
     num_betas=fitted$numbetas
     mu=0;nuisance=0
     mm=0
@@ -202,7 +203,7 @@ if(!bivariate) {
     corrmodel <- CkCorrModel(fitted$corrmodel)
 
      nui=nuisance
-     nui['sill']=1-nui['nugget']
+     nui['sill']=1;nui['nugget']=0
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
@@ -231,6 +232,7 @@ if(!bivariate) {
               vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;
               vs=(vv+sk2*(1-2/pi))
               correlation=(1-nuisance['nugget'] )*correlation
+              correlation[correlation>1]=1
               corr2=correlation^2;  
               cc=((2*sk2/pi)*(sqrt(1-corr2) + correlation*asin(correlation)-1) + correlation*vv)/(vv+sk2*(1-2/pi))
               covariance=vs*cc;variogram=vs*(1-cc) }
@@ -299,6 +301,7 @@ if(!bivariate) {
                         vs=exp(mm)^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
                         auxcorr= (gamma(1+1/nuisance['shape']))^2/((gamma(1+2/nuisance['shape']))-(gamma(1+1/nuisance['shape']))^2)
                         cc=auxcorr*(Re(hypergeo::hypergeo(-1/nuisance['shape'], -1/nuisance['shape'], 1,((1-nuisance['nugget'] )*correlation)^2)) -1)
+                        
                         covariance=vs*cc;variogram=vs*(1-cc)  }
                     }
 ##########################################
@@ -552,7 +555,9 @@ if(!bivariate) {
                 lines(lags_m, variogram,...)
                 if(show.range) abline(v=Range)}
             else{
+
                 bnds <- range(variogram)
+
                 bnds[1] <- min(bnds[1], min(vario$variograms))
                 bnds[2] <- max(bnds[2], max(vario$variograms))
                 plot(lags_m, variogram, type='l',  ylim=c(bnds[1],bnds[2]),
