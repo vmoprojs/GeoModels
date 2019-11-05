@@ -128,7 +128,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeyh<- model ==34
     loglogistic <- model==24
     zero <- 0;slow=1e-2;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-10
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-5
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -220,6 +220,7 @@ if(!bivariate) {
                         variogram22  <- correlation[(7*length(lags_m)+1):(8*length(lags_m))]
                            }
         else { 
+          
         covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
         variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
         
