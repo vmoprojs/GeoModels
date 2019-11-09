@@ -57,7 +57,7 @@ CkCorrModel <- function(corrmodel)
                              Matern2=3,
                              exponential=4,Exponential=4,Exp=4,exp=4,Matern0=4,
                              dagum = 5, Dagum = 5,
-                             genWend2=6,Genwend2=6,GenWend2=6,genwend2=6,
+                             GenWend_Matern=6,GenWend_matern=6,Genwend_Matern=6,genWend_Matern=6,
                              gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
                              Shkarofski=10,shkarofski=10,
                              Wend0=11,wend0=11,

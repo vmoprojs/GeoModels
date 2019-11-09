@@ -536,8 +536,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale=par[1];
         smooth=par[2];
         ///sep=log(R_power1)+lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1);
-        sep=R_power1*gammafn(2*smooth+R_power1+1)/gammafn(R_power1+1);
-        rho=CorFunW_gen(h, R_power1, smooth,scale*R_pow(sep,1/(1+2*smooth)));
+        sep=R_power1*exp(lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1));
+        rho=CorFunW_gen(h, R_power1, smooth,  scale * R_pow(sep,1/(1+2*smooth)));
         //Rprintf("%f %f \n",rho,R_power1);
         break;
      case 20://  Whittle-Matern correlation function

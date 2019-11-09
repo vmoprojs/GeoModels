@@ -45,7 +45,9 @@ if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh",""
 res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
 ###
 if(model %in% c("SkewGaussian"))  
-{vskew=as.numeric(param['sill']) + as.numeric(param['skew'])^2
+{
+#vskew=as.numeric(param['sill']) + as.numeric(param['skew'])^2
+vskew=as.numeric(param['sill'])
 res1=(dd-c(mu))/sqrt(vskew)
 }
 
@@ -86,7 +88,7 @@ if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh", "
 if(model %in% c("SkewGaussian")) 
 {param['mean']=0;
  fit$param['skew']=as.numeric(param['skew'])/sqrt(vskew)
- fit$param['sill']=(sqrt(as.numeric(param['sill']))/sqrt(vskew))^2
+ fit$param['sill']=1#(sqrt(as.numeric(param['sill']))/sqrt(vskew))^2
 }
 fit$param=fit$param[nm]
 fit$fixed=fit$fixed[nf]
