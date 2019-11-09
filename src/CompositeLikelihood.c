@@ -635,6 +635,59 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+
+
+/******************************************************************************************/
+/******************************************************************************************/
+void Comp_Pair_TWOPIECEBIMODAL_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    
+    int i=0,j=0,t=0,v=0;
+    double p11,qq,bl,corr,zi,zj,lags,lagt,weights=1.0;
+    double eta=nuis[3];  //skewness parameter
+    double sill=nuis[2];
+    double nugget=nuis[1];
+    double df=nuis[0];
+    if( fabs(eta)>1|| sill<0||df >0.5||df<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+
+           qq=qnorm((1-eta)/2,0,1,1,0); 
+
+          for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                            if(lags<=maxdist[0]){
+                              
+                                zi=data[(i+NS[t])];zj=data[(j+NS[v])];
+                                p11=pbnorm(cormod,lags,0,qq,qq,nugget,sill,par,0);
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,0,par,0,0);
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                                     bl=biv_two_piece_bimodal((1-nugget)*corr,zi,zj,sill,df,eta,p11,mean[i],mean[j]);
+                             *res+= weights*log(bl);
+                         }}}}
+                     else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                            if(lagt<=maxtime[0] &&lags<=maxdist[0]){
+                              zi=data[(i+NS[t])];zj=data[(j+NS[v])];
+                              p11=pbnorm(cormod,lags,lagt,qq,qq,nugget,sill,par,0);
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,lagt,par,0,0);
+                                           if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
+                                   bl=biv_two_piece_bimodal((1-nugget)*corr,zi,zj,sill,df,eta,p11,mean[i],mean[j]);
+                                   
+                             *res+= weights*log(bl);
+                                        
+                                }}}}
+                }}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 /******************************************************************************************/
 /******************************************************************************************/
 void Comp_Pair_SinhGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
