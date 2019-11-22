@@ -245,6 +245,42 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     }
 
 
+ LogNormDenStand_Tukey2H <- function(const,cova,ident,dimat,mdecomp,nuisance,sill,setup,stdata)
+    {
+        llik <- 1.0e8
+   # Computes the covariance matrix:
+        varcov <- ident
+        varcov[lower.tri(varcov)] <- cova
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- cova      
+        # decomposition of the covariance matrix:
+        decompvarcov <- MatDecomp(varcov,mdecomp)
+        if(is.logical(decompvarcov)) return(llik)  
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+################################################
+        delta1=nuisance["tail1"]
+        delta2=nuisance["tail2"]
+        if(stdata>0)
+        {
+        vv=sqrt(VGAM::lambertW(delta1*stdata^2)/delta1)
+        IL=sign(stdata)*vv
+        IW=1/(stdata*(1+VGAM::lambertW(delta1*stdata1^2)))
+        llik <- 0.5*( const*log(sill)/log(2*pi) + 
+                      const + logdetvarcov + sum((backsolve(decompvarcov, IL, transpose = TRUE))^2)
+                      - 2*sum(log(IL*IW)))
+        }
+        if(stdata<=0){
+        vv=sqrt(VGAM::lambertW(delta2*stdata^2)/delta2)
+        IL=sign(stdata)*vv
+        IW=1/(stdata*(1+VGAM::lambertW(delta2*stdata1^2)))
+        llik <- 0.5*( const*log(sill)/log(2*pi) + 
+                      const + logdetvarcov + sum((backsolve(decompvarcov, IL, transpose = TRUE))^2)
+                      - 2*sum(log(IL*IW)))
+        }
+        return(llik)
+    }
+
+
 ######## Standard log-likelihood function for SH random fields
     LogNormDenStand_SH <- function(const,cova,ident,dimat,mdecomp,nuisance,sill,setup,stdata)
     {
@@ -340,7 +376,30 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
       }
 
 
+   loglik_tukey2h <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+    {
 
+        llik <- 1.0e8
+
+        names(param) <- namesparam
+        # Set the parameter vector:
+        pram <- c(param, fixed)
+        paramcorr <- pram[namescorr]
+        nuisance <- pram[namesnuis]
+        sel=substr(names(nuisance),1,4)=="mean"
+        mm=as.numeric(nuisance[sel])
+                if(nuisance['tail']<0||nuisance['tail1']>0.5||nuisance['tail2']>0.5||nuisance['sill']<0) return(llik)
+        # Computes the vector of the correlations:
+        sill=nuisance['sill']
+        nuisance['sill']=1
+         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+         corr= corr*(1-nuisance['nugget'])
+        loglik_u <- do.call(what="LogNormDenStand_Tukey2H",
+            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
+            mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
+        return(loglik_u)
+      }
     loglik_tukeyh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
@@ -585,6 +644,14 @@ hessian=FALSE
     if(bivariate)  {lname <- 'loglik_biv_tukeyh'}
     #hessian=TRUE
 }
+
+ if(model==34){   ## Tukeyh case
+     lname <- 'loglik_tukey2h'
+    if(bivariate)  {lname <- 'loglik_biv_tukey2h'}
+    #hessian=TRUE
+}
+
+
  if(model==35){   ## gaussian misspecified t
      lname <- 'loglik_miss_T'
     if(bivariate)  {lname <- 'loglik_biv_miss_T'}

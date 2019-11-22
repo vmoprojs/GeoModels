@@ -47,6 +47,13 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("tail"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("tail_1","tail_2"))] <- NULL
    } 
+
+      if(model %in% c("Tukeyh2"))  {
+     if(!bivariate) param[which(names(param) %in% c("tail1","tail2"))] <- NULL
+     #if(bivariate)  param[which(names(param) %in% c("tail_1","tail_2"))] <- NULL
+   } 
+
+
     if(model %in% c("Gamma","LogLogistic","Weibull"))  {
      if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
@@ -142,7 +149,7 @@ forGaussparam<-function(model,param,bivariate)
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson","TwoPieceTukeyh","Poisson",
-                     "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeygh","SinhAsinh",
+                     "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
                     "Gamma","Gamma2","Weibull",
                     "LogLogistic","Logistic")) 
        {
@@ -201,6 +208,20 @@ forGaussparam<-function(model,param,bivariate)
             vv1<-param$sill_1;param$sill_1=1;vv2<-param$sill_2;param$sill_2=1;vv=c(vv1,vv2)
             tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2)
         }}
+
+         if(model %in% c("Tukeyh2"))  {
+         if(!bivariate){
+          #mm<-param$mean;
+          param$mean=0
+          vv<-param$sill;param$sill=1
+          t1l<-param$tail1
+          t2l<-param$tail2
+           }
+        # else {
+         #   mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
+          #  vv1<-param$sill_1;param$sill_1=1;vv2<-param$sill_2;param$sill_2=1;vv=c(vv1,vv2)
+           # tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2) }
+          }
 #################################
     if(model %in% c("Wrapped"))  {
         k=2;
@@ -579,7 +600,7 @@ if(model %in% c("TwoPieceStudentT"))   {
  #### simulation based on a transformation of ONE standard GRF ######
  ###########################################################
 
-if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","SinhAsinh"))
+if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2","SinhAsinh"))
 {
   sim=c(sim)
 #######################################
@@ -598,6 +619,13 @@ if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","SinhAsinh"))
      if(!tl) sim= mm+sqrt(vv)*sim
      if(tl)  sim= mm+sqrt(vv)*sim*exp(tl*sim^2/2)
    }  
+
+    if(model %in% c("Tukeyh2"))   { 
+       sel=sim>0
+       bb=sim*exp(t1l*sim^2/2)*as.numeric(sel);  bb[bb==0]=1
+       aa=sim*exp(t2l*sim^2/2)*as.numeric(!sel); aa[aa==0]=1
+      sim= mm+sqrt(vv)*(aa*bb)
+   } 
 #########################################
   if (model %in% c("SinhAsinh")) 
     { 

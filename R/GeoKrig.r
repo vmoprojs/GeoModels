@@ -160,7 +160,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
 ########################################################################################
 ########################################################################################
 
-if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
+if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
 {  
 ## gaussian=1 
 ## skew gaussian=10   
@@ -171,7 +171,9 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
 ## loggaussian=22 ojo
 ## twopieceStudentT=27
 ## twopieceGaussian=29
+## twopieceTukeyh=38
 ## sihasin=20
+## tukey=34
     ################################
     ## standard kriging  ##############
     ################################   
@@ -252,7 +254,22 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
                         KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma((nu)/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
                         corri= KK*(a1*a2*a3-4*sk2);                     
                       }
-
+         if(covmatrix$model==38) {  # two piece Tukey h
+                        tail=as.numeric(covmatrix$param['tail']);sk=as.numeric(covmatrix$param['skew'])
+                        vv=as.numeric(covmatrix$param['sill'])
+                        corr2=cc$corri^2;sk2=sk^2;
+                        gg2=(1-(1-corr2)*tail)^2
+                        xx=corr2/gg2
+                        A=(asin(sqrt(xx))*sqrt(xx)+sqrt(1-xx))/(1-xx)^(1.5)
+                        ll=qnorm((1-sk)/2)
+                        p11=pbivnorm::pbivnorm(ll,ll, rho = cc$corri, recycle = TRUE)
+                        a3=3*sk2 + 2*sk + 4*p11 - 1
+                        mm=8*sk2/(pi*(1-tail)^2); 
+                        ff=(1+3*sk2)/(1-2*tail)^(1.5)
+                        M=(2*(1-corr2)^(3/2))/(pi*gg2)
+                        corri=  (M*A*a3-mm)/( ff- mm)      
+                        print("qua")
+                      }
              if(covmatrix$model==39) {  # bimodal
                         nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
                         vv=as.numeric(covmatrix$param['sill'])
@@ -284,6 +301,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
                       if(covmatrix$model==12)  vvar=vv*nu/(nu-2)              ## studentT
                       if(covmatrix$model==27)  vvar=vv*(nu*(3*sk2+1)/(nu-2)-
                                                      (4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) )# two pieceT
+                      if(covmatrix$model==38)  vvar=vv*((1+3*sk2)/(1-2*tail)^(1.5) - 8*sk2/(pi*(1-tail)^2)  )# two piecetukeyh
                       if(covmatrix$model==39)  vvar=vv*(nu*(1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2 )                        
                       if(covmatrix$model==29)  vvar=vv*((1+3*sk2)-8*sk2/pi )                 # two piece Gaussian
                       #if(covmatrix$model==21)  vvar=2*exp(muloc)/covmatrix$param['shape']
@@ -308,6 +326,9 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,29,20,34,39))
           ##two piece studentT
           if(covmatrix$model==27)   
                           cc=cc* vv *(nu*(3*sk2+1)/(nu-2)-(4*sk2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2) )  
+            ##two piece tukeyh
+          if(covmatrix$model==38)   
+                          cc=cc* vv * ((1+3*sk2)/(1-2*tail)^(1.5)- 8*sk2/(pi*(1-tail)^2)  )
             if(covmatrix$model==39)   
                           cc=cc* vv *   (nu*(1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2 )   
           ##two piece gaussian
@@ -349,7 +370,7 @@ krig_weights <- t(getInv(covmatrix,cc))
 if(type_krig=='Simple'||type_krig=='simple')  {  
       if(!bivariate) {  ## space and spacetime simple kringing
                ####gaussian, StudenT  two piece  skew gaussian simple kriging
-               if(covmatrix$model %in% c(1,12,27,29,10,18,39))
+               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))
 
 
                {
@@ -398,7 +419,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
    ####### 
       if(mse) {
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
-if(covmatrix$model %in% c(1,12,27,29,10,18,39))  
+if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))  
         {vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%cc)) } ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) 

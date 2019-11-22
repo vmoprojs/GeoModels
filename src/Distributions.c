@@ -2614,19 +2614,24 @@ return(RR);
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
 double RR=0.0,bb=0.0,res0=0.0;int k=0;
- for (k=0;k<=15000;k=k+1)
-  {
+  while( k<=6000 )
+    {
     bb=k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
                +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
               // +log(hypergeo(a+k,b+k,c,x));
     RR=RR+exp(bb);
-    if(!R_FINITE(RR)) return(res0);
- if(fabs(RR-res0)<=EPS) {break;}
+ if(!R_FINITE(RR)) return(res0);
+    if((fabs(RR-res0)<1e-10)  ) {break;}
     else {res0=RR;}
-}
+        k++;
+    }
 return(RR);
 }
+
+
+
+
 /****************************************/
 double appellF4_mod(double nu,double rho2,double x,double y)
 {

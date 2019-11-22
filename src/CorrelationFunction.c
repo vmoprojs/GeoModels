@@ -3658,7 +3658,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
       if(*model==1||*model==10||*model==12||*model==21||
-      *model==22||*model==24|*model==26||*model==27||*model==29||*model==34) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
+      *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
       //if(*model==12)                      rho[t]=R_pow(CorFct(cormod, h[i], u[j], par,0,0),2);  // chisq case
      // if(*model==10)  // skew gaussian case
       //{

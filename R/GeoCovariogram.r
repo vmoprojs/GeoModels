@@ -66,6 +66,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                     }
         return(cc)
     }
+
     if(show.range)  {
     # Pratical range in the Gaussian case:
     PracRangeNorm <- function(corrmodel, lags, lagt, nuisance, numlags, numlagt, param, pract.range)
@@ -118,6 +119,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     studentT<- model==12
     weibull<- model==26
     twopieceT<- model==27
+    twopieceTukeyh<- model==38 
     twopieceGauss<- model==29
     loggauss<- model==22
     binary <- model==2
@@ -127,8 +129,8 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     studentT <- model ==12
     tukeyh<- model ==34
     loglogistic <- model==24
-    zero <- 0;slow=1e-2;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-5
+    zero <- 0;slow=1e-3;
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-6
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -207,8 +209,10 @@ if(!bivariate) {
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
+ 
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param)
+print(correlation)
     # Gaussian random field:
     if(gaussian){
     
@@ -241,24 +245,45 @@ if(!bivariate) {
 ##########################################
    if(twopieceT)        { if(bivariate) {}
                         else {
-
-                              nu=1/as.numeric(nuisance['df']); sk=nuisance['skew'];sill=nuisance['sill']
-                              vs= sill* nu*(3*sk^2+1)/(nu-2)-(4*sk^2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2)
-                              ##
+                              correlation=correlation*(1-nuisance['nugget'] )
+                              nu=1/as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew']);sill=as.numeric(nuisance['sill'])
+                              vs=sill* (nu*(3*sk^2+1)/(nu-2)-(4*sk^2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2))
                               corr2=correlation^2;sk2=sk^2
-                              a1=Re(hypergeo::hypergeo(0.5, 0.5, nu/2,corr2))
-                              a2=correlation*asin(correlation) + (1-corr2)^(0.5)
+
+                                  a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
+                                  a2=correlation *asin(correlation) + (1-corr2)^(0.5)
+                                  ll=qnorm((1-sk)/2)
+                                  p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+                                  a3=3*sk2 + 2*sk + 4*p11 - 1
+                                  KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
+                                  cc= KK*(a1*a2*a3-4*sk2);
+                              ##
+                              covariance=vs*cc;variogram=vs*(1-cc)  }
+                  } 
+  ##########################################
+   if(twopieceTukeyh)        { if(bivariate) {}
+                        else {
+
+                              correlation=correlation*(1-nuisance['nugget'] )
+                              tail=as.numeric(nuisance['tail']); sk=nuisance['skew'];sill=nuisance['sill']
+                              corr2=correlation^2;sk2=sk^2
+                              gg2=(1-(1-corr2)*tail)^2
+                              xx=corr2/gg2
+                              A=(asin(sqrt(xx))*sqrt(xx)+sqrt(1-xx))/(1-xx)^(1.5)
                               ll=qnorm((1-sk)/2)
                               p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
                               a3=3*sk2 + 2*sk + 4*p11 - 1
-                              KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
-                              cc= KK*(a1*a2*a3-4*sk2);
-                              ##
-                              covariance=vs*cc;variogram=vs*(1-cc)  }
+                              mm=8*sk2/(pi*(1-tail)^2); ff=(1+3*sk2)/(1-2*tail)^(1.5)
+                              M=(2*(1-corr2)^(3/2))/(pi*gg2)
+                              cc=  (M*A*a3-mm)/( ff- mm)
+                              vs=sill*(ff- mm)
+                              covariance=vs*cc;variogram=vs*(1-cc) 
+                               }
                   }  
 ##########################################
    if(twopieceGauss)        { if(bivariate) {}
                         else {
+                              correlation=correlation*(1-nuisance['nugget'] )
                               sk=nuisance['skew'];sill=nuisance['sill'];sk2=sk^2
                               vs= sill*((1+3*sk2)-8*sk2/pi) ## is it ok?
                               corr2=sqrt(1-correlation^2)
@@ -274,6 +299,7 @@ if(!bivariate) {
    if(studentT)        { if(bivariate) {}
                         else {
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
+                              correlation=correlation*(1-nuisance['nugget'] )
                               vs=sill*(nu)/(nu-2)
                               
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
@@ -282,6 +308,7 @@ if(!bivariate) {
 ##########################################
   if(tukeyh)        { if(bivariate) {}
                         else {
+                              correlation=correlation*(1-nuisance['nugget'] )
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
                               vs=  (1-2*h)^(-1.5)     ## variance
@@ -308,6 +335,7 @@ if(!bivariate) {
 ##########################################
   if(loglogistic)    { if(bivariate) {}  
                       else { 
+                     correlation=correlation*(1-nuisance['nugget'] )
                      sh=nuisance["shape"]
                      vs=exp(mm)^2*(2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
                      cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
@@ -331,8 +359,7 @@ if(!bivariate) {
                     vvar=as.numeric(nuisance["sill"])
                     yy=vvar*correlation*(1-as.numeric(nuisance["nugget"]))
                     cc<-(exp(yy)-1)/(exp(vvar)-1)
-                    vs<-(exp(vvar)-1)#*exp(2*mm+vvar)
-                    #print(vs)
+                    vs<-(exp(vvar)-1)
                     covariance=vs*cc;variogram=vs*(1-cc)   
                      }
                   }

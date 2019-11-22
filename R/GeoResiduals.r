@@ -40,7 +40,7 @@ if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(c(mu))
 
 ### 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh","",
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh", "Tukeyh","SinhAsinh","",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
 ###
@@ -81,7 +81,7 @@ fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
+if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
          "StudentT","TwoPieceGauss","TwoPieceStudentT"))
 {fit$param['sill']=1;fit$param['mean']=0}
 

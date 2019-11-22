@@ -283,7 +283,8 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
    if(!g&&h){ ##
               vv=(1-2*h)^(-1.5) # variance
               varcov <-  diag(dime)
-              corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/vv
+              corr <- corr/(vv*( (1-h)^2-h^2*corr^2 )^(1.5))
+              #corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/vv
               varcov[lower.tri(varcov)] <- corr
               varcov <- t(varcov)
               varcov[lower.tri(varcov)] <- corr 
@@ -455,9 +456,9 @@ if(model==39)   ##  two piece student case case
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
-        varcov[lower.tri(varcov)] <- corr
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <- corr   
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])   
         vv=nu*(1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2
         varcov=varcov*vv*nuisance['sill']
         }
@@ -491,22 +492,23 @@ if(model==27)   ##  two piece student case case
     #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
     #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
     #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
+          corr=cr$corr
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-          corr2=cr$corr^2;sk2=sk^2
+          corr2=corr^2;sk2=sk^2
           a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
-          a2=cr$corr*asin(cr$corr) + (1-corr2)^(0.5)
+          a2=corr*asin(corr) + (1-corr2)^(0.5)
           ll=qnorm((1-sk)/2)
-          p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
+          p11=pbivnorm::pbivnorm(ll,ll, rho = corr, recycle = TRUE)
           a3=3*sk2 + 2*sk + 4*p11 - 1
           KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
           corr= KK*(a1*a2*a3-4*sk2);
-         # print(corr)
+          
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
-        varcov[lower.tri(varcov)] <- corr
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <- corr   
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
         vv=nu*(3*sk^2+1)/(nu-2)-(4*sk^2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2)
         varcov=varcov*vv*nuisance['sill']
         }
@@ -519,6 +521,58 @@ if(model==27)   ##  two piece student case case
         #}
       ###  
 }
+
+if(model==38)   ##  two piece tukey h  case
+    {
+        fname <-"CorrelationMat2"
+        #if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+
+             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+
+    # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+    #   "integer","double","double","double","integer","integer"),        
+    #   #corr=vector_dc("numeric", numpairstot), 
+    #   corr=double(numpairstot),
+    #   coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+    #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+    #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
+          tail=as.numeric(nuisance['tail']); sk=as.numeric(nuisance['skew'])
+          corr2=cr$corr^2;sk2=sk^2;
+          gg2=(1-(1-corr2)*tail)^2
+          xx=corr2/gg2
+          A=(asin(sqrt(xx))*sqrt(xx)+sqrt(1-xx))/(1-xx)^(1.5)
+          ll=qnorm((1-sk)/2)
+          p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
+          a3=3*sk2 + 2*sk + 4*p11 - 1
+          mm=8*sk2/(pi*(1-tail)^2); 
+          ff=(1+3*sk2)/(1-2*tail)^(1.5)
+          M=(2*(1-corr2)^(3/2))/(pi*gg2)
+          corr=  (M*A*a3-mm)/( ff- mm)
+         # print(corr)
+  if(!bivariate) {
+        # Builds the covariance matrix:
+        varcov <-  diag(dime)
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])  
+        vv=ff-mm
+        varcov=varcov*vv*nuisance['sill']
+        }
+    ## todo
+    #if(bivariate)      {
+     #     varcov<-diag(dime)
+      #    varcov[lower.tri(varcov,diag=T)] <- corr
+       #   varcov <- t(varcov)
+        #  varcov[lower.tri(varcov,diag=T)] <- corr
+        #}
+      ###  
+}
+
 ###############################################################  
 if(model==29)   ##  two piece gaussian case
     {
@@ -551,9 +605,9 @@ if(model==29)   ##  two piece gaussian case
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
-        varcov[lower.tri(varcov)] <- corr
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <- corr   
+        varcov[lower.tri(varcov)] <- corr*(1-nuisance['nugget'])  
         vv=(1+3*xx2)-8*xx2/pi
         varcov=varcov*vv*nuisance['sill']
         }

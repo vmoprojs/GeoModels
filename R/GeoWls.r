@@ -177,7 +177,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
 
 
         if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','Beta','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
-          'Tukeygh','Tukeyh','Kumaraswamy','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
+          'Tukeygh','Tukeyh','Tukeyh2','Kumaraswamy','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
           "Gaussian_misp_StudentT","Gaussian_misp_Poisson",
           "Gaussian_misp_SkewStudentT",
           "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh","TwoPieceBimodal")) & 
