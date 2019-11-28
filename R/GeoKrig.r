@@ -268,7 +268,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
                         ff=(1+3*sk2)/(1-2*tail)^(1.5)
                         M=(2*(1-corr2)^(3/2))/(pi*gg2)
                         corri=  (M*A*a3-mm)/( ff- mm)      
-                        print("qua")
+                      
                       }
              if(covmatrix$model==39) {  # bimodal
                         nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])

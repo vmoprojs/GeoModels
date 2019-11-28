@@ -18,7 +18,7 @@ GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optim
 k=1;res=NULL;#H=list();
 if(length(fit$coordt)==1) fit$coordt=NULL
 print("Parametric bootstrap can be time consuming ...")
-
+if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 model=fit$model
 if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
 if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
