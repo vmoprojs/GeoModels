@@ -2285,6 +2285,7 @@ void Comp_Pair_TWOPIECEGauss2(int *cormod, double *coordx, double *coordy, doubl
                          int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,
                          double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
+
     int i,j;double bl,corr,zi,zj,lags,weights=1.0,p11,eta,qq,sill,nugget;
     eta=nuis[2];  //skewness parameter
     sill=nuis[1];

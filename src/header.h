@@ -9,6 +9,7 @@
 #define LOW -1.0e15
 #define MAXERR 1e-6
 #define EPS DBL_EPSILON
+#define DEPSILON 10e-16
 /* for bivariate t distribution */
 #define EPS1 1.0e-10
 #define EPS2 1.0e-10
@@ -829,6 +830,11 @@ void Comp_Pair_T_st2_OCL(int *cormod, double *coordx, double *coordy, double *co
                          double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local_wi, int *dev);
 
 void wendintegral_call(double *x, double *param, double *res);
+
+
+void Comp_Pair_TWOPIECEGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN,
+double *par,  int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,
+                                  int *local_wi, int *dev);
 /*----------------------------------------------------------------
  File name: CompositeLikelihood_OCL.c
  Description: functions for composite log-likelihood evaluation in OpenCL
@@ -1238,18 +1244,6 @@ End
 
 
 
-
-/*----------------------------------------------------------------
- File name: Host.c
- Description: procedures for OCL computation.
- Start
- ---------------------------------------------------------------*/
-
-/*----------------------------------------------------------------
- File name: Host.c
- Description: procedures for OCL computation.
- End
- ---------------------------------------------------------------*/
 
 
 

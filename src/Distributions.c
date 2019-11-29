@@ -1,6 +1,188 @@
 #include "header.h"
 
 
+
+// ===================================== START: Bivariate Normal  =====================================//
+
+
+//#define HSQRT 1.414213562373095048801688724209698078569671
+#define HSQRT 1.4142
+
+// https://www.jstatsoft.org/article/view/v052i10/v52i10.pdf
+
+double Phi(double x)
+{
+    double val =(1+     (1-erfc(x/HSQRT) )    )/2;
+    //double val =(1+     (1-0.1 )    )/2;
+    
+    return ( val );
+}
+
+
+double Phi2diag( double x, double a, double px, double pxs )
+{
+    double sol=NAN;
+    if( a <= 0.0 ) sol = px;
+    if( a >= 1.0 ) sol =  px * px;
+    double b = 2.0 - a, sqrt_ab = sqrt( a * b );
+    double c1 = 6.36619772367581343e-001;
+    double c2 = 1.25331413731550025;
+    double c3 = 1.57079632679489662;
+    double c4 = 1.591549430918953358e-001;
+    //double asr = ( a > 0.1 ? asin( 1.0 - a ) : acos( sqrt_ab ) );
+    double asr;
+    if(a > 0.1)
+    {
+        asr = asin( 1.0 - a );
+    }else
+    {
+        asr = acos( sqrt_ab );
+    }
+    
+    double comp = px * pxs;
+    if( comp * ( 1.0 - a - c1 * asr ) < 5e-17 ) sol =  b * comp;
+    double tmp = c2 * x;
+    double alpha = a * x * x / b;
+    double a_even = -tmp * a;
+    double a_odd = -sqrt_ab * alpha;
+    double beta = x * x;
+    double b_even = tmp * sqrt_ab;
+    double b_odd = sqrt_ab * beta;
+    double delta = 2.0 * x * x / b;
+    double d_even = ( 1.0 - a ) * c3 - asr;
+    double d_odd = tmp * ( sqrt_ab - a );
+    double res = 0.0, res_new = d_even + d_odd;
+    int k = 2;
+    /*while( res != res_new )
+     {
+     d_even = ( a_odd + b_odd + delta * d_even ) / k;
+     a_even *= alpha / k;
+     b_even *= beta / k;
+     k++;
+     a_odd *= alpha / k;
+     b_odd *= beta / k;
+     d_odd = ( a_even + b_even + delta * d_odd ) / k;
+     k++;
+     res = res_new;
+     res_new += d_even + d_odd;
+     }*/
+    double cond = fabs(res-res_new);
+    while( cond>DEPSILON )
+    {
+        d_even = ( a_odd + b_odd + delta * d_even ) / k;
+        a_even *= alpha / k;
+        b_even *= beta / k;
+        k++;
+        a_odd *= alpha / k;
+        b_odd *= beta / k;
+        d_odd = ( a_even + b_even + delta * d_odd ) / k;
+        k++;
+        res = res_new;
+        res_new += d_even + d_odd;
+        cond = fabs(res-res_new);
+    }
+    double sol1;
+    if(isnan(sol))
+    {
+        res *= exp( -x * x / b ) * c4;
+        sol1 =  fmax( ( 1.0 + c1 * asr ) * comp, b * comp - fmax( 0.0, res ) );
+    }else{
+        sol1 = sol;
+    }
+    return sol1;
+}
+
+
+double Phi2help( double x, double y, double rho )
+{
+    double s = sqrt( ( 1.0 - rho ) * ( 1.0 + rho ) );
+    double a = 0.0, b1 = -fabs( x ), b2 = 0.0;
+    if( rho > 0.99 )
+    {
+        double tmp = sqrt( ( 1.0 - rho ) / ( 1.0 + rho ) );
+        b2 = -fabs( ( x - y ) / s - x * tmp );
+        a = pow( ( x - y ) / x / s - tmp,2 );
+    }
+    else if( rho < -0.99 )
+    {
+        double tmp = sqrt( ( 1.0 + rho ) / ( 1.0 - rho ) );
+        b2 = -fabs( ( x + y ) / s - x * tmp );
+        a = pow( ( x + y ) / x / s - tmp,2 );
+    }
+    else
+    {
+        b2 = -fabs( rho * x - y ) / s;
+        a = pow( b2 / x ,2);
+    }
+    
+    double p1 = Phi( b1 ), p2 = Phi( b2 ), q = 0.0;
+    if( a <= 1.0 )
+        q = 0.5 * Phi2diag( b1, 2.0 * a / ( 1.0 + a ), p1, p2 );
+    else
+        q = p1 * p2 - 0.5 * Phi2diag( b2, 2.0 / ( 1.0 + a ), p2, p1 );
+    int c1 = ( y / x >= rho ), c2 = ( x < 0.0 ), c3 = c2 && ( y >= 0.0 );
+    
+    bool c13 = (c1 && c3);
+    bool c12 = (c1 && c2);
+    double sol;
+    if(c13) {sol = (q - 0.5);}
+    else if(c12) {sol = (q);}
+    else if(c1 ) {sol = (0.5 - p1 + q);}
+    else if(c3 ) {sol = (p1 - q - 0.5);}
+    else if(c2 ) {sol = (p1 - q);}
+    else {sol = (0.5 - q);}
+    
+    //return (0.5 - p1 + q );
+    return (sol );
+    //return ( c1 && c3 ? q - 0.5
+    //        : c1 && c2 ? q
+    //        : c1 ? 0.5 - p1 + q
+    //        : c3 ? p1 - q - 0.5
+    //        : c2 ? p1 - q
+    //        : 0.5 - q );
+}
+
+double Phi2( double x, double y, double rho )
+{
+    double sol = NAN;
+    if( ( 1.0 - rho ) * ( 1.0 + rho ) <= 0.0 )
+    {
+        if( rho > 0.0 )
+        {
+            //return (Phi( min( x, y ) ));
+            sol = (Phi( fmin( x, y ) ));
+        }
+        else
+        {
+            //return (max( 0.0, min( 1.0, Phi( x ) + Phi( y ) - 1.0 ) ));
+            sol = (fmax( 0.0, fmin( 1.0, Phi( x ) + Phi( y ) - 1.0 ) ));
+        }
+    }
+    if( x == 0.0 && y == 0.0 )
+    {
+        if( rho > 0.0 )
+        {
+            //return (Phi2diag( 0.0, 1.0 - rho, 0.5, 0.5 ));
+            sol = (Phi2diag( 0.0, 1.0 - rho, 0.5, 0.5 ));
+        }
+        else
+        {
+            //return (0.5 - Phi2diag( 0.0, 1.0 + rho, 0.5, 0.5 ));
+            sol = (0.5 - Phi2diag( 0.0, 1.0 + rho, 0.5, 0.5 ));
+        }
+    }
+    else
+    {
+        sol = (fmax( 0.0,
+                   fmin( 1.0,
+                       Phi2help( x, y, rho ) + Phi2help( y, x, rho ) ) ));
+    }
+    
+    return (sol);
+}
+
+
+
 /*for bivariate t distributions*/
 double A[] = {
     8.11614167470508450300E-4,
@@ -1555,7 +1737,8 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
   double lim_sup[2]={mean1,mean2};
   int infin[2]={0,0};//set the bounds for the integration
   double corr[1]={(1-nugget)*CorFct(cormod,h,u,par,0,0)};
-  res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
+    res=F77_CALL(bvnmvn)(lim_inf,lim_sup,infin,corr);
+    //res = Phi2(lim_sup[0],lim_sup[1],corr[0]);
   return(res);
 }
 
