@@ -130,7 +130,8 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeyh<- model ==34
     loglogistic <- model==24
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh) slow=1e-6
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh
+            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -212,7 +213,7 @@ if(!bivariate) {
  
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param)
-print(correlation)
+#print(correlation)
     # Gaussian random field:
     if(gaussian){
     
@@ -247,7 +248,8 @@ print(correlation)
                         else {
                               correlation=correlation*(1-nuisance['nugget'] )
                               nu=1/as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew']);sill=as.numeric(nuisance['sill'])
-                              vs=sill* (nu*(3*sk^2+1)/(nu-2)-(4*sk^2*nu*gamma((nu-1)/2)^2)/(pi*gamma(nu/2)^2))
+                              sk2=sk^2
+                              vs=sill* ((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
                               corr2=correlation^2;sk2=sk^2
 
                                   a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
@@ -276,21 +278,21 @@ print(correlation)
                               mm=8*sk2/(pi*(1-tail)^2); ff=(1+3*sk2)/(1-2*tail)^(1.5)
                               M=(2*(1-corr2)^(3/2))/(pi*gg2)
                               cc=  (M*A*a3-mm)/( ff- mm)
-                              vs=sill*(ff- mm)
+                              vs=sill*(ff- mm) 
                               covariance=vs*cc;variogram=vs*(1-cc) 
                                }
                   }  
 ##########################################
    if(twopieceGauss)        { if(bivariate) {}
-                        else {
+                        else {                             
                               correlation=correlation*(1-nuisance['nugget'] )
                               sk=nuisance['skew'];sill=nuisance['sill'];sk2=sk^2
-                              vs= sill*((1+3*sk2)-8*sk2/pi) ## is it ok?
+                              vs= sill*(1+3*sk2-8*sk2/pi) ## is it ok?
                               corr2=sqrt(1-correlation^2)
                               ll=qnorm((1-sk)/2)
                               p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
                               KK=3*sk2+2*sk+ 4*p11 - 1
-                              cc=(2*((corr2 + correlation*atan(correlation/corr2))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   ) 
+                              cc=(2*((corr2 + correlation*asin(correlation))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   ) 
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   } 
 

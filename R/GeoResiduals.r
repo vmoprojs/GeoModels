@@ -81,8 +81,8 @@ fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
-         "StudentT","TwoPieceGauss","TwoPieceStudentT"))
+if(model %in% c("Gaussian","Logistic","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
+         "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh"))
 {fit$param['sill']=1;fit$param['mean']=0}
 
 if(model %in% c("SkewGaussian")) 

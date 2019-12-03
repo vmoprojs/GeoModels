@@ -1245,6 +1245,77 @@ End
 
 
 
+/*----------------------------------------------------------------
+ File name: Host.c
+ Description: procedures for OCL computation.
+ Start
+ ---------------------------------------------------------------*/
+#define CL_SILENCE_DEPRECATION
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#include <unistd.h>
+#else
+#include <CL/cl.h>
+#endif
+
+#define LOW -1.0e15
+#define MAXERR 1e-6
+//#define EPS DBL_EPSILON
+
+#pragma once
+
+#include <string.h>
+
+#define MAX_PLATFORMS     8
+#define MAX_DEVICES      16
+#define MAX_INFO_STRING 256
+
+
+
+#ifdef __cplusplus
+#include <cstdio>
+#endif
+
+
+
+
+
+const char *err_code (cl_int err_in);
+void check_error(cl_int err, const char *operation, char *filename, int line);
+#define checkError(E, S) check_error(E,S,__FILE__,__LINE__)
+unsigned getDeviceList(cl_device_id devices[MAX_DEVICES]);
+void getDeviceName(cl_device_id device, char name[MAX_INFO_STRING]);
+int parseUInt(const char *str, cl_uint *output);
+double sum_total(double *arr, int ngrid);
+void param_OCL(int *cormod,int *NN,double *par,int *weigthed,double *nuis,int *int_par, double *dou_par);
+void exec_kernel(double *h_x, double *h_y, double *h_mean, double *h_data, int *int_par,double *dou_par,
+                 int *local_wi, int *dev, double *res, char *f_name);
+void create_binary_kernel(int *dev, char **fname);
+int DeviceInfo();
+void exec_kernel_st(double *h_x, double *h_y,double *h_t, double *h_mean, double *h_data, int *int_par,double *dou_par,
+                    int *local_wi, int *dev, double *res, char *f_name, int *ns, int *NS);
+void param_st_OCL(int *cormod,int *NN,double *par,int *weigthed,double *nuis,int *int_par, double *dou_par);
+void CBessel(double *xxx, double *nuu, int *expscale,double *res, int *tipo);
+void exec_kernel_source(double *h_x, double *h_y, double *h_mean, double *h_data, int *int_par,double *dou_par,
+                        int *local_wi, int *dev, double *res, char *f_name);
+void exec_kernel_st_dyn(double *h_x, double *h_y,double *h_t, double *h_mean, double *h_data, int *int_par,double *dou_par,
+                        int *local_wi, int *dev, double *res, char *f_name,int *ns, int *NS);
+void cdf_norm_call(double *lim1,double *lim2,double *a11,double *a12, double *res);
+
+double Phi(double x);
+double Phi2diag( double x, double a, double px, double pxs );
+double Phi2help( double x, double y, double rho );
+double Phi2( double x, double y, double rho );
+double cdf_norm_OCL(double lim1,double lim2,double a11,double a12);
+double pnorm_OCL(double x, double mu, double sd);
+double qnorm555(double p, double mu, double sigma, int lower_tail, int log_p);
+/*----------------------------------------------------------------
+ File name: Host.c
+ Description: procedures for OCL computation.
+ End
+ ---------------------------------------------------------------*/
+
 
 
 
