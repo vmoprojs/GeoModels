@@ -2010,6 +2010,41 @@ void Comp_Pair_Logistic2(int *cormod, double *coordx, double *coordy, double *co
     return;
 }
 
+
+// Composite marginal (pariwise) log-likelihood for poisson model
+void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0;
+    double lags=0.0, weights=1.0,nugget,corr,mui,muj,bl;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
+   //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+    nugget=nuis[0];
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+             //***********/
+                    mui=exp(mean[i]);muj=exp(mean[j]);
+
+                     corr=CorFct(cormod,lags,0,par,0,0);
+
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      bl=biv_Poisson(corr,data[i], data[j],mui, muj);
+                      Rprintf("%f %f %f %f \n",log(bl),corr,data[i],data[j]);
+
+                     // Rprintf("%f %f %f \n",bl,corr,corr1);
+                      *res+= log(bl)*weights;
+                    }}}}          
+    // Checks the return values
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
 // Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
 void Comp_Pair_Gauss_misp_Pois2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)

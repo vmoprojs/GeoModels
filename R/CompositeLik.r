@@ -169,6 +169,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==38,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECETukeyh'
                                               if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
+                                              if(varest & vartype==2) hessian <- TRUE}
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")

@@ -1,5 +1,329 @@
 #include "header.h"
 
+//************************************* START hyperg.c*****************************************
+// FUNCTION: 1F1
+//Source: https://github.com/scipy/scipy/blob/master/scipy/special/cephes/hyperg.c
+
+
+void  hyperg_call(double *a,double *b,double *x,double *res)
+{
+    *res = hyperg(*a,*b,*x);
+}
+
+double hyperg(a, b, x)
+double a, b, x;
+{
+    double asum, psum, acanc, pcanc, temp;
+
+    /* See if a Kummer transformation will help */
+    temp = b - a;
+    if (fabs(temp) < 0.001 * fabs(a))
+    return (exp(x) * hyperg(temp, b, -x));
+
+
+    /* Try power & asymptotic series, starting from the one that is likely OK */
+    if (fabs(x) < 10 + fabs(a) + fabs(b)) {
+    psum = hy1f1p(a, b, x, &pcanc);
+    if (pcanc < 1.0e-15)
+        goto done;
+    asum = hy1f1a(a, b, x, &acanc);
+    }
+    else {
+    psum = hy1f1a(a, b, x, &pcanc);
+    if (pcanc < 1.0e-15)
+        goto done;
+    asum = hy1f1p(a, b, x, &acanc);
+    }
+
+    /* Pick the result with less estimated error */
+
+    if (acanc < pcanc) {
+    pcanc = acanc;
+    psum = asum;
+    }
+
+  done:
+    if (pcanc > 1.0e-12)
+    //sf_error("hyperg", SF_ERROR_LOSS, NULL);
+        printf("hyperg SF_ERROR_LOSS\n");
+
+    return (psum);
+}
+
+
+
+
+/* Power series summation for confluent hypergeometric function                */
+
+
+double hy1f1p(double a, double b, double x, double *err)
+{
+    double n, a0, sum, t, u, temp, maxn;
+    double an, bn, maxt;
+    double y, c, sumc;
+
+    /* set up for power series summation */
+    an = a;
+    bn = b;
+    a0 = 1.0;
+    sum = 1.0;
+    c = 0.0;
+    n = 1.0;
+    t = 1.0;
+    maxt = 0.0;
+    *err = 1.0;
+
+    maxn = 200.0 + 2 * fabs(a) + 2 * fabs(b);
+
+    while (t > MACHEP) {
+    if (bn == 0) {        /* check bn first since if both   */
+        //sf_error("hyperg", SF_ERROR_SINGULAR, NULL);
+        printf("hyperg SF_ERROR_SINGULAR\n");
+        return (NPY_INFINITY);    /* an and bn are zero it is     */
+    }
+    if (an == 0)        /* a singularity            */
+        return (sum);
+    if (n > maxn) {
+        /* too many terms; take the last one as error estimate */
+        c = fabs(c) + fabs(t) * 50.0;
+        goto pdone;
+    }
+    u = x * (an / (bn * n));
+
+    /* check for blowup */
+    temp = fabs(u);
+    if ((temp > 1.0) && (maxt > (DBL_MAX / temp))) {
+        *err = 1.0;        /* blowup: estimate 100% error */
+        return sum;
+    }
+
+    a0 *= u;
+
+    y = a0 - c;
+    sumc = sum + y;
+    c = (sumc - sum) - y;
+    sum = sumc;
+
+    t = fabs(a0);
+
+    an += 1.0;
+    bn += 1.0;
+    n += 1.0;
+    }
+
+  pdone:
+
+    /* estimate error due to roundoff and cancellation */
+    if (sum != 0.0) {
+    *err = fabs(c / sum);
+    }
+    else {
+    *err = fabs(c);
+    }
+
+    if (*err != *err) {
+    /* nan */
+    *err = 1.0;
+    }
+
+    return (sum);
+}
+
+
+/*                                                     hy1f1a()        */
+/* asymptotic formula for hypergeometric function:
+ *
+ *        (    -a
+ *  --    ( |z|
+ * |  (b) ( -------- 2f0( a, 1+a-b, -1/x )
+ *        (  --
+ *        ( |  (b-a)
+ *
+ *
+ *                                x    a-b                     )
+ *                               e  |x|                        )
+ *                             + -------- 2f0( b-a, 1-a, 1/x ) )
+ *                                --                           )
+ *                               |  (a)                        )
+ */
+
+double hy1f1a(double a, double b, double x, double *err)
+
+{
+    double h1, h2, t, u, temp, acanc, asum, err1, err2;
+    if (x == 0) {
+    acanc = 1.0;
+    asum = NPY_INFINITY;
+    goto adone;
+    }
+    temp = log(fabs(x));
+    t = x + temp * (a - b);
+    u = -temp * a;
+
+    if (b > 0) {
+    temp = lgam(b);
+    t += temp;
+    u += temp;
+    }
+
+    h1 = hyp2f0(a, a - b + 1, -1.0 / x, 1, &err1);
+
+    temp = exp(u) / gamma(b - a);
+    h1 *= temp;
+    err1 *= temp;
+
+    h2 = hyp2f0(b - a, 1.0 - a, 1.0 / x, 2, &err2);
+
+    if (a < 0)
+    temp = exp(t) / gamma(a);
+    else
+    temp = exp(t - lgam(a));
+
+    h2 *= temp;
+    err2 *= temp;
+
+    if (x < 0.0)
+    asum = h1;
+    else
+    asum = h2;
+
+    acanc = fabs(err1) + fabs(err2);
+
+    if (b < 0) {
+    temp = gamma(b);
+    asum *= temp;
+    acanc *= fabs(temp);
+    }
+
+
+    if (asum != 0.0)
+    acanc /= fabs(asum);
+
+    if (acanc != acanc)
+    /* nan */
+    acanc = 1.0;
+
+    if (asum == NPY_INFINITY || asum == -NPY_INFINITY)
+    /* infinity */
+    acanc = 0;
+
+    acanc *= 30.0;        /* fudge factor, since error of asymptotic formula
+                 * often seems this much larger than advertised */
+
+  adone:
+
+
+    *err = acanc;
+    return (asum);
+}
+
+/*                                                     hyp2f0()        */
+
+double hyp2f0(double a, double b, double x, int type, double *err)
+
+{
+    double a0, alast, t, tlast, maxt;
+    double n, an, bn, u, sum, temp;
+
+    an = a;
+    bn = b;
+    a0 = 1.0e0;
+    alast = 1.0e0;
+    sum = 0.0;
+    n = 1.0e0;
+    t = 1.0e0;
+    tlast = 1.0e9;
+    maxt = 0.0;
+
+    do {
+    if (an == 0)
+        goto pdone;
+    if (bn == 0)
+        goto pdone;
+
+    u = an * (bn * x / n);
+
+    /* check for blowup */
+    temp = fabs(u);
+    if ((temp > 1.0) && (maxt > (DBL_MAX / temp)))
+        goto error;
+
+    a0 *= u;
+    t = fabs(a0);
+
+    /* terminating condition for asymptotic series:
+     * the series is divergent (if a or b is not a negative integer),
+     * but its leading part can be used as an asymptotic expansion
+     */
+    if (t > tlast)
+        goto ndone;
+
+    tlast = t;
+    sum += alast;        /* the sum is one term behind */
+    alast = a0;
+
+    if (n > 200)
+        goto ndone;
+
+    an += 1.0e0;
+    bn += 1.0e0;
+    n += 1.0e0;
+    if (t > maxt)
+        maxt = t;
+    }
+    while (t > MACHEP);
+
+
+  pdone:            /* series converged! */
+
+    /* estimate error due to roundoff and cancellation */
+    *err = fabs(MACHEP * (n + maxt));
+
+    alast = a0;
+    goto done;
+
+  ndone:            /* series did not converge */
+
+    /* The following "Converging factors" are supposed to improve accuracy,
+     * but do not actually seem to accomplish very much. */
+
+    n -= 1.0;
+    x = 1.0 / x;
+
+    switch (type) {        /* "type" given as subroutine argument */
+    case 1:
+    alast *=
+        (0.5 + (0.125 + 0.25 * b - 0.5 * a + 0.25 * x - 0.25 * n) / x);
+    break;
+
+    case 2:
+    alast *= 2.0 / 3.0 - b + 2.0 * a + x - n;
+    break;
+
+    default:
+    ;
+    }
+
+    /* estimate error due to roundoff, cancellation, and nonconvergence */
+    *err = MACHEP * (n + maxt) + fabs(a0);
+
+  done:
+    sum += alast;
+    return (sum);
+
+    /* series blew up: */
+  error:
+    *err = NPY_INFINITY;
+    //sf_error("hyperg", SF_ERROR_NO_RESULT, NULL);
+    printf("hyperg SF_ERROR_NO_RESULT\n");
+    return (sum);
+}
+
+
+
+//************************************* END hyperg.c*****************************************
+
+
 
 
 // ===================================== START: Bivariate Normal  =====================================//
@@ -101,18 +425,18 @@ double Phi2help( double x, double y, double rho )
     {
         double tmp = sqrt( ( 1.0 - rho ) / ( 1.0 + rho ) );
         b2 = -fabs( ( x - y ) / s - x * tmp );
-        a = pow( ( x - y ) / x / s - tmp,2 );
+        a = R_pow( ( x - y ) / x / s - tmp,2 );
     }
     else if( rho < -0.99 )
     {
         double tmp = sqrt( ( 1.0 + rho ) / ( 1.0 - rho ) );
         b2 = -fabs( ( x + y ) / s - x * tmp );
-        a = pow( ( x + y ) / x / s - tmp,2 );
+        a = R_pow( ( x + y ) / x / s - tmp,2 );
     }
     else
     {
         b2 = -fabs( rho * x - y ) / s;
-        a = pow( b2 / x ,2);
+        a = R_pow( b2 / x ,2);
     }
     
     double p1 = Phi( b1 ), p2 = Phi( b2 ), q = 0.0;
@@ -627,9 +951,9 @@ double ratevl(double x, const double num[], int M,
     
     if (absx > 1) {
         i = N - M;
-        return pow(x, i) * num_ans / denom_ans;
+        return(R_pow(x, i) * num_ans / denom_ans);
     } else {
-        return num_ans / denom_ans;
+        return(num_ans / denom_ans);
     }
 }
 
@@ -791,7 +1115,7 @@ double x, q;
      * https://dlmf.nist.gov/25.11#E43
      */
     if (q > 1e8) {
-        return (1/(x - 1) + 1/(2*q)) * pow(q, 1 - x);
+        return (1/(x - 1) + 1/(2*q)) * R_pow(q, 1 - x);
     }
     
     /* Euler-Maclaurin summation formula */
@@ -801,14 +1125,14 @@ double x, q;
      * If q<0 and x is an integer, there is a relation to
      * the polyGamma function.
      */
-    s = pow(q, -x);
+    s = R_pow(q, -x);
     a = q;
     i = 0;
     b = 0.0;
     while ((i < 9) || (a <= 9.0)) {
         i += 1;
         a += 1.0;
-        b = pow(a, -x);
+        b = R_pow(a, -x);
         s += b;
         if (fabs(b / s) < MACHEP)
             goto done;
@@ -1055,7 +1379,7 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 /*******************************************/
 /*
-double incgamma(double x, double a){
+double igam(double x, double a){
   double sum=0;
   double term=1.0/a;
   int n=1;
@@ -1075,7 +1399,7 @@ double corr_pois1(double rho,double lambda1,double lambda2){
         double aux3=0;
         int r=0;
         while (r <= 2000){
-            aux3 = aux3 + exp(log(incgamma(aux1,r+1))+log(incgamma(aux2,r+1))-2*(lgammafn(r+1)));
+            aux3 = aux3 + exp(log(igam(aux1,r+1))+log(igam(aux2,r+1))-2*(lgammafn(r+1)));
             r++;
         }
         corr = rho2*(1-rho2)*aux3/sqrt(lambda1*lambda2);
@@ -3096,6 +3420,9 @@ double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, doub
     extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
   dens = dbnorm(x_i,x_j,0,0,1,corr)*
               x_i*x_j * est_mean_ij * extra/sill;
+  if((x_i==0.0)&&(x_j!=0.0))  dens = dbnorm(x_i,x_j,0,0,1,corr)*x_j/(est_mean_j*(1 + LambertW(tail*est_mean_j*est_mean_j)));
+  if((x_j==0.0)&&(x_i!=0.0))  dens = dbnorm(x_i,x_j,0,0,1,corr)*x_i/(est_mean_i*(1 + LambertW(tail*est_mean_i*est_mean_i)));
+  if((x_j==0.0)&&(x_i==0.0))  dbnorm(x_i,x_j,0,0,1,corr);
   return(dens);
 }
 
@@ -3136,5 +3463,173 @@ if(zi<mui&&zj<muj)
 
 return(res/sill);
 }
+
+
+/*******************************************************************************/
+
+
+
+double  binomialCoeff(double n, double k) 
+{ 
+    double res=0.0;
+    res=lgammafn(n+1)-(lgammafn(k+1)+lgammafn(n-k+1));
+    return(exp(res)); 
+} 
+
+/*************************************************************/
+double Prt(double corr,double r, double t, double mean_i, double mean_j){
+    double rho2= pow(corr,2);
+    double prt;
+    double term =0, term1 =0 ;
+    double value = 0, value1 = 0;
+    double auxi= mean_i/(1-rho2);
+    double auxj= mean_j/(1-rho2);
+    double n= r-t;
+    double aux=0, aux1=0;
+    int k=0,j=0,l1=0,l2=0,m=0;
+    for(k=0; k<50; ++k){
+        for(int j=0; j<=n; ++j){
+            aux= binomialCoeff(n, j)*pow((1-rho2)/rho2,j+t);
+            aux1= exp(lgammafn(t+j+k)+(n-j)*log(mean_i)-lgammafn(k+1))*pow(-1,j);
+            term1= aux*aux1*igam(t+j+k, rho2*auxi)*igam(t+k, auxj);
+            //if(term1<1e-10) break;
+            value1 =value1+ term1;
+        }
+    }
+    int iter=45;
+    double aux2=0, aux3=0, aux4=0;
+    for(k=0; k<iter; ++k){
+        for(j=0; j<=n-1; ++j){
+            for(m=0; m<iter; ++m){
+                for(l1=0; l1<iter; ++l1){
+                    for(l2=0; l2<iter; ++l2){
+                        aux2= binomialCoeff(n-1, j)*R_pow(rho2,k+m+l1)*R_pow(1-rho2,-2*k-2*m-l1-l2-1)*R_pow(-1,j+l1+l2);
+                        aux3= exp(lgammafn(t+m)+2*lgammafn(k+1)+lgammafn(m+1)+lgammafn(l1+1)+lgammafn(l2+1)+log((j+k+l1+1)*(k+l2+1))-lgammafn(t));
+                        aux4= R_pow(mean_i,m+k+n+l1)*R_pow(mean_j,m+k+l2+1);
+                        term= (aux2/aux3)*aux4*exp(lbeta(n+k+l1+1,t+m)+lbeta(k+l2+2,t+m))*hyperg(t+m, n+k+l1+1+t+m,-rho2*auxi)*hyperg(t+m, k+l2+2+t+m,-auxj);
+                        value =value+ term;
+                    }
+                }
+            }
+        }
+    }
+
+     prt= exp(-mean_i+log(value1)-(lgammafn(n+1)+lgammafn(t)))- 
+        exp(-mean_i+t*log(mean_i*mean_j/(1-rho2))+log(value)-(2*lgammafn(t)+lgammafn(n)));
+    return(prt);
+}
+
+//*****************************************************************************/
+
+double Prr(double corr,double r, double t, double mean_i, double mean_j){
+    double rho2= pow(corr,2);
+    double prr;
+    
+    double term, term1=0.0, term2=0.0, term3=0.0;
+    double value = 0, value1 = 0, value2 = 0, value3 = 0 ;
+    int k = 0, m=0, l1=0, l2=0 ;
+    double auxi= mean_i/(1-rho2);
+    double auxj= mean_j/(1-rho2);
+    
+    while ( term1>1e-10 && term2> 1e-10 && term3>1e-10 )
+    {
+      term1 = pow(rho2,k)* gammafn(r+k) * igam(r+k, auxi) * igam(r+k, auxj)/gammafn(k+1) ;
+      term2 =  exp(lgammafn(r+k) + log(igam(r+k, rho2*auxi))+log(igam(r+k, auxj))-lgammafn(k+1)) ;
+      term3 =  exp(lgammafn(r+k) + log(igam(r+k, auxi)) + log(igam(r+k, rho2*auxj))-lgammafn(k+1) ) ;
+      value1 += term1;
+      value2 += term2;
+      value3 += term3;
+      k++;
+     } 
+    
+    double aux=0, aux1=0, aux2=0; 
+     int iter=50;
+      for(k=0; k<iter; ++k){
+          for(m=0; m<iter; ++m){
+              for(l1=0; l1<iter; ++l1){
+                  for( l2=0; l2<iter; ++l2){
+                      aux=pow(rho2,k+m)*pow(1-rho2,-2*k-2*m-l1-l2)*pow(-1,l1+l2);
+                      aux1= exp(lgammafn(r+m)+2*lgammafn(k+1)+lgammafn(m+1)+lgammafn(l1+1)+lgammafn(l2+1)+log((k+l1+1)*(k+l2+1))-lgammafn(r));
+                      aux2=pow(mean_i,m+k+l1)*pow(mean_j,m+k+l2);
+                      term=(aux/aux1)*aux2*exp(lbeta(k+l1+2,r+m)+lbeta(k+l2+2,r+m))*hyperg(r+m, k+l1+2+r+m,-1*auxi)*hyperg(r+m, k+l2+2+r+m,-1*auxj);
+                      value += term;
+                  }
+              }
+          }
+      }
+    
+    prr =  (pow(1-rho2,r)/gammafn(r))*(-1*value1+exp(-1*mean_i)*pow(rho2,-1*r)*value2+exp(-1*mean_j)*pow(rho2,-1*r)*value3)+ pow(mean_i*mean_j/(1-rho2),r+1)*value/pow(gammafn(r),2);
+    return prr;
+    
+}
+
+/*******+++++++++++++++++++++++++*********************************************/
+double Pr0(double corr,double r, double t, double mean_i, double mean_j){
+    double rho2= pow(corr,2);
+    double pr0;
+    
+    double term =0 ;
+    double value = 0;
+    
+    double auxi= mean_i/(1-rho2);
+    double auxj= mean_j/(1-rho2);
+   
+    double aux=0, aux1=0;
+
+    int iter=100;
+    for(int k=0; k<iter; ++k){
+        for(int j=0; j<=r-1; ++j){
+            aux= binomialCoeff(r-1, j)*pow((1-rho2)/rho2,j+1);
+            aux1= exp(lgammafn(j+k+1)+ (r-j-1)*log(mean_i)-lgammafn(k+1))*pow(-1,j);
+            term= aux*aux1*igam(j+k+1, rho2*auxi)*igam(k+1, auxj);
+            value =value+ term;
+        }
+    }
+    pr0= exp(r*log(mean_i)-mean_i-lgammafn(r+1))-
+    exp(-mean_i + log(value)-lgammafn(r));
+    return(pr0);
+}
+
+/*******************************************************************************/
+double P00(double corr,double r, double t, double mean_i, double mean_j){
+    double rho2= R_pow(corr,2);
+    double p00;int k = 0;
+    double sum = 0.0,res0=0.0;
+    double auxi= mean_i/(1-rho2);
+    double auxj= mean_j/(1-rho2);
+    
+    while(k<1000){
+             sum =sum+ exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
+    if((fabs(sum-res0)<1e-10)  ) {break;}
+else {res0=sum;}
+        k++;}
+
+    p00 = -1+ exp(-mean_i)+ exp(-mean_j)+(1-rho2)*sum;
+    return(p00);
+}
+
+
+
+
+double biv_Poisson(double corr,double r, double t, double mean_i, double mean_j)
+{
+double dens;
+if(r==t)
+{if(r==0) dens=P00(corr,r,r,mean_i,mean_j);
+     if(r>0)  dens=Prr(corr,r,r,mean_i,mean_j);
+}
+
+if(r==0&&t>0) dens=Pr0(corr,t,r,mean_j,mean_i);
+if(r>0&&t==0) dens=Pr0(corr,r,t,mean_i,mean_j);
+
+if(r>0&&t>0)
+{  
+if(r>t) dens=Prt(corr,r,t,mean_i,mean_j);
+if(t>r) dens=Prt(corr,t,r,mean_j,mean_i);
+}
+return(dens);
+
+}
+
 
 
