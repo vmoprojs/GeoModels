@@ -2015,7 +2015,7 @@ void Comp_Pair_Logistic2(int *cormod, double *coordx, double *coordy, double *co
 void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
-    int i=0, j=0;
+    int i=0, j=0,uu,ww;
     double lags=0.0, weights=1.0,nugget,corr,mui,muj,bl;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
@@ -2033,7 +2033,8 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
                      corr=CorFct(cormod,lags,0,par,0,0);
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                      bl=biv_Poisson(corr,data[i], data[j],mui, muj);
+                      uu=(int) data[i];  ww=(int) data[j];
+                      bl=biv_Poisson(corr,uu,ww,mui, muj);
                       Rprintf("%f %f %f %f \n",log(bl),corr,data[i],data[j]);
 
                      // Rprintf("%f %f %f \n",bl,corr,corr1);

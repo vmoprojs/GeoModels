@@ -25,7 +25,6 @@
 #define MAXLGM 2.556348e305
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
-#include <stdbool.h>
 
 
 
@@ -412,7 +411,7 @@ double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 
 double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 
-double biv_Poisson(double corr,double r, double t, double mean_i, double mean_j);
+double biv_Poisson(double corr,int    r, int t, double mean_i, double mean_j);
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -1250,9 +1249,6 @@ End
 
 
 
-
-
-
 double hyp2f1_neg_c_equal_bc(double a, double b, double x);
 double hyp2f1ra(double a, double b, double c, double x,double *loss);
 double lgam(double x);
@@ -1272,6 +1268,7 @@ double hy1f1a(double a, double b, double x, double *acanc);
 double hyp2f0(double a, double b, double x, int type, double *err);
 double hyperg(double a, double b, double x);
 void hyperg_call(double *a,double *b,double *x,double *res);
+void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res);
 // END hyperg.c
 
 

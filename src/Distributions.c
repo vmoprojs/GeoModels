@@ -3469,7 +3469,7 @@ return(res/sill);
 
 
 
-double  binomialCoeff(double n, double k) 
+double  binomialCoeff(int n, int k) 
 { 
     double res=0.0;
     res=lgammafn(n+1)-(lgammafn(k+1)+lgammafn(n-k+1));
@@ -3477,7 +3477,7 @@ double  binomialCoeff(double n, double k)
 } 
 
 /*************************************************************/
-double Prt(double corr,double r, double t, double mean_i, double mean_j){
+double Prt(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= pow(corr,2);
     double prt;
     double term =0, term1 =0 ;
@@ -3521,7 +3521,7 @@ double Prt(double corr,double r, double t, double mean_i, double mean_j){
 
 //*****************************************************************************/
 
-double Prr(double corr,double r, double t, double mean_i, double mean_j){
+double Prr(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= pow(corr,2);
     double prr;
     
@@ -3543,7 +3543,7 @@ double Prr(double corr,double r, double t, double mean_i, double mean_j){
      } 
     
     double aux=0, aux1=0, aux2=0; 
-     int iter=50;
+     int iter=45;
       for(k=0; k<iter; ++k){
           for(m=0; m<iter; ++m){
               for(l1=0; l1<iter; ++l1){
@@ -3558,13 +3558,15 @@ double Prr(double corr,double r, double t, double mean_i, double mean_j){
           }
       }
     
-    prr =  (pow(1-rho2,r)/gammafn(r))*(-1*value1+exp(-1*mean_i)*pow(rho2,-1*r)*value2+exp(-1*mean_j)*pow(rho2,-1*r)*value3)+ pow(mean_i*mean_j/(1-rho2),r+1)*value/pow(gammafn(r),2);
+    prr =  (pow(1-rho2,r)/gammafn(r))*(-value1+exp(-mean_i)*pow(rho2,-r)*value2+
+        exp(-1*mean_j)*pow(rho2,-r)*value3)
+    + pow(mean_i*mean_j/(1-rho2),r+1)*value/pow(gammafn(r),2);
     return prr;
     
 }
 
 /*******+++++++++++++++++++++++++*********************************************/
-double Pr0(double corr,double r, double t, double mean_i, double mean_j){
+double Pr0(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= pow(corr,2);
     double pr0;
     
@@ -3591,7 +3593,7 @@ double Pr0(double corr,double r, double t, double mean_i, double mean_j){
 }
 
 /*******************************************************************************/
-double P00(double corr,double r, double t, double mean_i, double mean_j){
+double P00(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= R_pow(corr,2);
     double p00;int k = 0;
     double sum = 0.0,res0=0.0;
@@ -3610,8 +3612,13 @@ else {res0=sum;}
 
 
 
+void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res)
+{
+    *res = biv_Poisson(*corr,*r,*t,*mean_i,*mean_j);
+}
 
-double biv_Poisson(double corr,double r, double t, double mean_i, double mean_j)
+
+double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j)
 {
 double dens;
 if(r==t)
@@ -3630,6 +3637,5 @@ if(t>r) dens=Prt(corr,t,r,mean_j,mean_i);
 return(dens);
 
 }
-
 
 
