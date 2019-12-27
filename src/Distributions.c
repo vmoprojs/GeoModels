@@ -10,6 +10,131 @@ void  hyperg_call(double *a,double *b,double *x,double *res)
     *res = hyperg(*a,*b,*x);
 }
 
+
+
+
+ int is_nonpos_int(double x)
+{
+    return x <= 0 && x == ceil(x) && fabs(x) < 1e13;
+}
+
+
+double poch(double a, double m)
+{
+    double r;
+    r = 1.0;
+    /* Recurse down */
+    while (m >= 1.0) {
+        if (a + m == 1) {
+            break;
+        }
+        m -= 1.0;
+        r *= (a + m);
+        if (!isfinite(r) || r == 0) {
+            break;
+        }
+    }
+
+    /* Recurse up */
+    while (m <= -1.0) {
+        if (a + m == 0) {
+            break;
+        }
+        r /= (a + m);
+        m += 1.0;
+        if (!isfinite(r) || r == 0) {
+            break;
+        }
+    }
+
+    if (m == 0) {
+        /* Easy case */
+        return r;
+    }
+    else if (a > 1e4 && fabs(m) <= 1) {
+        /* Avoid loss of precision */
+        return r * pow(a, m) * (
+            1
+            + m*(m-1)/(2*a)
+            + m*(m-1)*(m-2)*(3*m-1)/(24*a*a)
+            + m*m*(m-1)*(m-1)*(m-2)*(m-3)/(48*a*a*a)
+            );
+    }
+
+    /* Check for infinity */
+    if (is_nonpos_int(a + m) && !is_nonpos_int(a) && a + m != m) {
+        return INFINITY;
+    }
+
+    /* Check for zero */
+    if (!is_nonpos_int(a + m) && is_nonpos_int(a)) {
+        return 0;
+    }
+
+    return(r * exp(lgammafn(a + m) - lgammafn(a)) * sign(gammafn(a + m)) * sign(gammafn(a)));
+}
+
+/**************************************************/
+double aprox_reg_1F1(int n, int m,double z) 
+{
+double p1,term,s1=0.0;int k=0;
+p1=exp(z+(n-m)*log(z)-lgammafn(n));
+while(k<1000)
+{
+term=poch(1-n,k)*poch(m-n,k)*R_pow(z,-k)/gammafn(k+1);
+s1=s1+term;
+if(fabs(term)<1e-10)  {break;}
+k++;
+}
+return(p1*s1);
+}
+/***********************************************/
+double regularized1F1(int n, int m,double z) 
+{
+double s1=0.0,s2=0.0,res=0.0,p1;int k=0;
+if(n==0&&m==0)  res=0.0;
+else{
+if(m>n)
+{    
+
+p1=poch(2-m,n-1)*R_pow(z,1-m)/gammafn(n);
+for(k=0;k<=(n-1);k++) {s1=s1+poch(1-n,k)*R_pow(-z,k)/(poch(2-m,k)*gammafn(k+1));}
+for(k=0;k<=(m-n-1);k++) {s2=s2+poch(1-m+n,k)*R_pow(z,k)/(poch(2-m,k)*gammafn(k+1));}
+res=p1*(exp(z)*s1-s2);
+}
+if(m<=n){
+p1=exp(z)/gammafn(m);
+for(k=0;k<=n-m;k++)  {s1=s1+R_pow(-z,k)*poch(m-n,k)/(poch(m,k)*gammafn(k+1)) ;}
+res=p1*s1;
+}
+}    
+
+
+return(res);
+}
+
+void  reghyperg_call(int *a,int *b,double *x,double *res)
+{
+    *res = regularized1F1(*a,*b,*x);
+}
+/************ pochammer symbols*******************/
+double Poch(int q,int n)
+{
+    if(n==0) return(1.0);
+    else {
+        double res=1.0;
+        int i;
+        for (i=1; i<=n;i++) {
+            res =res * (q + i - 1);
+        }
+         return(res);
+    }
+       
+}
+
+
+
+
 double hyperg(a, b, x)
 double a, b, x;
 {
@@ -45,7 +170,10 @@ double a, b, x;
   done:
     if (pcanc > 1.0e-12)
     //sf_error("hyperg", SF_ERROR_LOSS, NULL);
-        printf("hyperg SF_ERROR_LOSS\n");
+        //printf("hyperg SF_ERROR_LOSS\n");
+        temp=0;
+
+    //if(isnan(psum)) psum=approx1F1(a,b,x);
 
     return (psum);
 }
@@ -78,7 +206,7 @@ double hy1f1p(double a, double b, double x, double *err)
     while (t > MACHEP) {
     if (bn == 0) {        /* check bn first since if both   */
         //sf_error("hyperg", SF_ERROR_SINGULAR, NULL);
-        printf("hyperg SF_ERROR_SINGULAR\n");
+        //printf("hyperg SF_ERROR_SINGULAR\n");
         return (NPY_INFINITY);    /* an and bn are zero it is     */
     }
     if (an == 0)        /* a singularity            */
@@ -315,7 +443,7 @@ double hyp2f0(double a, double b, double x, int type, double *err)
   error:
     *err = NPY_INFINITY;
     //sf_error("hyperg", SF_ERROR_NO_RESULT, NULL);
-    printf("hyperg SF_ERROR_NO_RESULT\n");
+    //printf("hyperg SF_ERROR_NO_RESULT\n");
     return (sum);
 }
 
@@ -1282,11 +1410,6 @@ double xj=(zj-mj)/(sqrt(vari));
  } 
 
 
-// pochammer factorial
-double ff(double a,int k) 
-{
-return(gammafn(k+a)/gammafn(a));
-}
 
 
 
@@ -1440,7 +1563,7 @@ double kj=mj/(1-rho2);
 double K=rho2*(1-rho2)/sqrt(mi*mj);
 while(r<4000){
   sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
-if((fabs(sum-res0)<1e-10)  ) {break;}
+if((fabs(sum-res0)<1e-8)  ) {break;}
 else {res0=sum;}
         r++;
     }
@@ -1565,7 +1688,7 @@ if(!R_FINITE(r1*r2)||ISNAN(r1*r2)){
  r1=asym_aprox_1F1(ar,br,c*rho2*x);
  r2=asym_aprox_1F1(ar,br,c*rho2*y);}
 
-ss=ff(shape1/2,k)*r1*r2*R_pow((R_pow(c,2)*rho2*x*y),k)/(gammafn(k+1)*R_pow(ff(beta/2,k),2));
+ss=Poch(shape1/2,k)*r1*r2*R_pow((R_pow(c,2)*rho2*x*y),k)/(gammafn(k+1)*R_pow(Poch(beta/2,k),2));
 a=a+ss;
 }
 b=R_pow(rate/2,beta)*R_pow(x*y,beta/2-1)*exp(-c*(x+y));
@@ -2392,11 +2515,7 @@ double marg_p(double categ_0,double psm,int *model,int n)
     return(res);
 }
 
-/************ pochammer symbols*******************/
-double Poch(double q,double n)
-{
-    return(gammafn(q+n)/gammafn(q));
-}
+
 /*********** ratio of gamma function type 1********************/
 double aprox(int k,double a, double b) 
 {
@@ -3109,6 +3228,8 @@ double biv_T(double rho,double zi,double zj,double nuu)
     pp2=(1.5-2*(nu2+1+k))*log(1-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
     bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
+
+   // if(!R_FINITE(a1)||!R_FINITE(a2)){break;}
     RR=(b1/c1)*a1+(b2/c2)*a2;
    if(!R_FINITE(RR)) return(res0);
     if((fabs(RR-res0)<1e-10)  ) {break;}
@@ -3120,17 +3241,15 @@ return(RR);
 /*********** Appell F4 function ********/
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
-double RR=0.0,bb=0.0,res0=0.0;int k=0;
+double RR=0.0,bb=0.0;int k=0;
   while( k<=6000 )
     {
-    bb=k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
+    bb=exp(k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
-               +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x)); //euler
+               +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x))); //euler
               // +log(hypergeo(a+k,b+k,c,x));
-    RR=RR+exp(bb);
- if(!R_FINITE(RR)) return(res0);
-    if((fabs(RR-res0)<1e-10)  ) {break;}
-    else {res0=RR;}
+    if((fabs(bb)<1e-10||!R_FINITE(bb))  ) {break;}
+        RR=RR+bb;
         k++;
     }
 return(RR);
@@ -3476,138 +3595,155 @@ double  binomialCoeff(int n, int k)
     return(exp(res)); 
 } 
 
-/*************************************************************/
+
 double Prt(double corr,int r, int t, double mean_i, double mean_j){
+
+       if(fabs(corr)<1e-10) {
+        return(exp(-mean_i-mean_j+r*log(mean_i)+t*log(mean_j) -lgammafn(r+1)-lgammafn(t+1)));}
+    else
+    {
     double rho2= pow(corr,2);
-    double prt;
-    double term =0, term1 =0 ;
-    double value = 0, value1 = 0;
+    double prt,q1,q2,term =0, term1 =0, value = 0, value1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    double n= r-t;
-    double aux=0, aux1=0;
-    int k=0,j=0,l1=0,l2=0,m=0;
-    for(k=0; k<50; ++k){
-        for(int j=0; j<=n; ++j){
-            aux= binomialCoeff(n, j)*pow((1-rho2)/rho2,j+t);
-            aux1= exp(lgammafn(t+j+k)+(n-j)*log(mean_i)-lgammafn(k+1))*pow(-1,j);
-            term1= aux*aux1*igam(t+j+k, rho2*auxi)*igam(t+k, auxj);
-            //if(term1<1e-10) break;
+    int n,k=0,m=0, iter=1000;
+
+    n= r-t;
+
+        while(m<=iter){
+
+            aux= m*(log(rho2)-log(1-rho2)); 
+            aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
+             // q2=regularized1F1(n+1,t+m+n+1,rho2*auxi);     // it doesn't work
+            q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
+            if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);
+                        
+             
+           //Rprintf("%f %f  %d %d %f\n",q2,regularized1F1(n+1,t+m+n+1,rho2*auxi),n+1,t+m+n+1,rho2*auxi);
+
+            term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
             value1 =value1+ term1;
-        }
-    }
-    int iter=45;
-    double aux2=0, aux3=0, aux4=0;
-    for(k=0; k<iter; ++k){
-        for(j=0; j<=n-1; ++j){
-            for(m=0; m<iter; ++m){
-                for(l1=0; l1<iter; ++l1){
-                    for(l2=0; l2<iter; ++l2){
-                        aux2= binomialCoeff(n-1, j)*R_pow(rho2,k+m+l1)*R_pow(1-rho2,-2*k-2*m-l1-l2-1)*R_pow(-1,j+l1+l2);
-                        aux3= exp(lgammafn(t+m)+2*lgammafn(k+1)+lgammafn(m+1)+lgammafn(l1+1)+lgammafn(l2+1)+log((j+k+l1+1)*(k+l2+1))-lgammafn(t));
-                        aux4= R_pow(mean_i,m+k+n+l1)*R_pow(mean_j,m+k+l2+1);
-                        term= (aux2/aux3)*aux4*exp(lbeta(n+k+l1+1,t+m)+lbeta(k+l2+2,t+m))*hyperg(t+m, n+k+l1+1+t+m,-rho2*auxi)*hyperg(t+m, k+l2+2+t+m,-auxj);
+                for(k=0;k<=iter;k++){
+                        aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
+                        aux3= lgammafn(m+1)+lgammafn(t);
+                        aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
+                           //q1=regularized1F1(n,t+m+n+k+1, rho2*auxi); // it doesn't work
+                       q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));
+                          if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1, rho2*auxi);
+                                               
+                // Rprintf("%f %f %d %d %f\n",q1,regularized1F1(n,t+m+n+k+1,rho2*auxi),n,t+m+n+k+1,rho2*auxi);
+                        term= exp(aux2-aux3+aux4+log(q1));
                         value =value+ term;
-                    }
-                }
+                        if((fabs(term)<1e-10||!R_finite(term))  ) {break;}
+                  
             }
-        }
+       if((fabs(term1)<1e-10||!R_finite(term1))  ) {break;}
+        m++;
     }
 
-     prt= exp(-mean_i+log(value1)-(lgammafn(n+1)+lgammafn(t)))- 
-        exp(-mean_i+t*log(mean_i*mean_j/(1-rho2))+log(value)-(2*lgammafn(t)+lgammafn(n)));
+     prt= exp(-auxi+log(value1))- exp(-auxi+log(value));
+     if(!R_finite(prt)) prt=1e-320;
+     ///if(prt<=0) prt=0;
     return(prt);
 }
+}
+
+
 
 //*****************************************************************************/
 
 double Prr(double corr,int r, int t, double mean_i, double mean_j){
-    double rho2= pow(corr,2);
-    double prr;
-    
-    double term, term1=0.0, term2=0.0, term3=0.0;
+
+       if(fabs(corr)<1e-10) {
+        return(exp(-mean_i-mean_j+r*log(mean_i)+t*log(mean_j) -lgammafn(r+1)-lgammafn(t+1)));}
+    else
+    {
+    double rho2= pow(corr,2);    
+    double prr, term, term1=0.0, term2=0.0, term3=0.0;
     double value = 0, value1 = 0, value2 = 0, value3 = 0 ;
-    int k = 0, m=0, l1=0, l2=0 ;
+    int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    
-    while ( term1>1e-10 && term2> 1e-10 && term3>1e-10 )
-    {
-      term1 = pow(rho2,k)* gammafn(r+k) * igam(r+k, auxi) * igam(r+k, auxj)/gammafn(k+1) ;
-      term2 =  exp(lgammafn(r+k) + log(igam(r+k, rho2*auxi))+log(igam(r+k, auxj))-lgammafn(k+1)) ;
-      term3 =  exp(lgammafn(r+k) + log(igam(r+k, auxi)) + log(igam(r+k, rho2*auxj))-lgammafn(k+1) ) ;
-      value1 += term1;
-      value2 += term2;
-      value3 += term3;
-      k++;
-     } 
-    
-    double aux=0, aux1=0, aux2=0; 
-     int iter=45;
-      for(k=0; k<iter; ++k){
-          for(m=0; m<iter; ++m){
-              for(l1=0; l1<iter; ++l1){
-                  for( l2=0; l2<iter; ++l2){
-                      aux=pow(rho2,k+m)*pow(1-rho2,-2*k-2*m-l1-l2)*pow(-1,l1+l2);
-                      aux1= exp(lgammafn(r+m)+2*lgammafn(k+1)+lgammafn(m+1)+lgammafn(l1+1)+lgammafn(l2+1)+log((k+l1+1)*(k+l2+1))-lgammafn(r));
-                      aux2=pow(mean_i,m+k+l1)*pow(mean_j,m+k+l2);
-                      term=(aux/aux1)*aux2*exp(lbeta(k+l1+2,r+m)+lbeta(k+l2+2,r+m))*hyperg(r+m, k+l1+2+r+m,-1*auxi)*hyperg(r+m, k+l2+2+r+m,-1*auxj);
-                      value += term;
-                  }
-              }
-          }
+    int iter=10000;
+
+    while(k<iter){
+
+term1 = pow(rho2,k)*                exp(lgammafn(r+k) + log(igam(r+k,      auxi))+log(igam(r+k,      auxj))-lgammafn(k+1)-lgammafn(r));
+term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(lgammafn(r+k) + log(igam(r+k, rho2*auxi))+log(igam(r+k,      auxj))-lgammafn(k+1)-lgammafn(r));
+term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(lgammafn(r+k) + log(igam(r+k,      auxi))+log(igam(r+k, rho2*auxj))-lgammafn(k+1)-lgammafn(r));
+      value1 =value1+ term1;
+      value2 =value2+ term2;
+      value3 =value3+ term3;
+
+      m=0;
+      while(m<iter){
+                  term=(1-rho2)*R_pow(rho2,k+m)*
+                       exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
+                  value =value+term;
+                  if((fabs(term)<1e-10)||!R_finite(term)  ) {break;}
+                  m++;     
+                 }
+                  if((fabs(term1)<1e-10&&fabs(term2)<1e-10)||(!R_finite(term1))||(!R_finite(term2))) {break;}
+          k++;       
       }
-    
-    prr =  (pow(1-rho2,r)/gammafn(r))*(-value1+exp(-mean_i)*pow(rho2,-r)*value2+
-        exp(-1*mean_j)*pow(rho2,-r)*value3)
-    + pow(mean_i*mean_j/(1-rho2),r+1)*value/pow(gammafn(r),2);
-    return prr;
-    
+    prr= R_pow((1-rho2),r)*(- value1 + value2 + value3 + value);
+     //if(prr<=0) prr=0;//1e-320;
+    return(prr);
+}
+   
 }
 
-/*******+++++++++++++++++++++++++*********************************************/
+/***************************************************************/
 double Pr0(double corr,int r, int t, double mean_i, double mean_j){
+
+    if(fabs(corr)<1e-10) {
+       // return(exp(-mean_i)*R_pow(mean_i,r) *exp(-mean_j)/gammafn(r+1));}
+        return(exp(-mean_i+r*log(mean_i) -mean_j-lgammafn(r+1)));}
+    else
+    {
     double rho2= pow(corr,2);
-    double pr0;
-    
-    double term =0 ;
-    double value = 0;
-    
+    int j=0,k=0;
+    double pr0,term =0.0, value = 0.0,aux=0.0, aux1=0.0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-   
-    double aux=0, aux1=0;
 
-    int iter=100;
-    for(int k=0; k<iter; ++k){
-        for(int j=0; j<=r-1; ++j){
+    int iter=10000;
+    for(j=0; j<=r-1; ++j){
+            k=0;
+    while(k<=iter){
+  
             aux= binomialCoeff(r-1, j)*pow((1-rho2)/rho2,j+1);
             aux1= exp(lgammafn(j+k+1)+ (r-j-1)*log(mean_i)-lgammafn(k+1))*pow(-1,j);
             term= aux*aux1*igam(j+k+1, rho2*auxi)*igam(k+1, auxj);
             value =value+ term;
-        }
+                if(fabs(term)<1e-10||!R_finite(term))  {break;}
+            k++;}
     }
     pr0= exp(r*log(mean_i)-mean_i-lgammafn(r+1))-
     exp(-mean_i + log(value)-lgammafn(r));
     return(pr0);
+    }
 }
 
 /*******************************************************************************/
 double P00(double corr,int r, int t, double mean_i, double mean_j){
+
+if(fabs(corr)<1e-10) {return(exp(-mean_i)*exp(-mean_j));}
+    else
+    {
     double rho2= R_pow(corr,2);
-    double p00;int k = 0;
-    double sum = 0.0,res0=0.0;
+    int k = 0;
+    double p00,sum = 0.0,term;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    
-    while(k<1000){
-             sum =sum+ exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
-    if((fabs(sum-res0)<1e-10)  ) {break;}
-else {res0=sum;}
+    while(k<10000){
+              term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
+              if(fabs(term)<1e-10||!R_finite(term))  {break;}
+             sum =sum+term;
         k++;}
-
     p00 = -1+ exp(-mean_i)+ exp(-mean_j)+(1-rho2)*sum;
     return(p00);
+   }
 }
 
 
@@ -3634,6 +3770,7 @@ if(r>0&&t>0)
 if(r>t) dens=Prt(corr,r,t,mean_i,mean_j);
 if(t>r) dens=Prt(corr,t,r,mean_j,mean_i);
 }
+//Rprintf("%f %f %d %d %f %f \n",log(dens),corr,r,t,mean_i,mean_j);
 return(dens);
 
 }

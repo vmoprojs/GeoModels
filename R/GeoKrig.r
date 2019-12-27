@@ -477,11 +477,15 @@ if(covmatrix$model==1&&logGausstemp)
 ######################################################
 ####formatting data ##################################
 ######################################################
+
+
+
 if(mse)
 {
      if(spacetime||bivariate)  varpred=matrix(c(vv),nrow=tloc,ncol=numloc)
      else                      varpred=c(vv)
 }
+
 if(spacetime||bivariate)  pred=matrix(t(pp),nrow=tloc,ncol=numloc)
 else pred=c(pp)
 }#end gaussian standard kriging

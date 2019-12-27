@@ -27,7 +27,7 @@
 #define LOGPI  1.14472988584940017414
 
 
-#include <stdbool.h>
+
 
 
 //************************************** ST igam.c*****************************************
@@ -241,7 +241,7 @@ void igam_call(double *a,double *x,double *res);
 double igam(double a, double x);
 double igamc(double a, double x);
 
-
+void  reghyperg_call(int *a,int *b,double *x,double *res);
 
 
 
@@ -716,6 +716,8 @@ File name: CompositeLikelihood.c
 Description: functions for composite log-likelihood evaluation
 Start
  ---------------------------------------------------------------*/
+void Comp_Pair_Pois(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local);
+void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local);
 void Comp_Pair_Kumaraswamy2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_Kumaraswamy_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
 void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
@@ -1165,7 +1167,7 @@ double fac(int x,int j);
 double logfac(int n);
 
 /*for bivariate t distributions*/
-double Poch(double q,double n);
+double Poch(int q,int n);
 double biv_T(double rho,double zi,double zj,double nuu);
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,double p11,
   double mui,double muj);
@@ -1241,7 +1243,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

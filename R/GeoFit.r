@@ -172,6 +172,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
     if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
     if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian '}
+     if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian '}
     if(x$model=='Gaussian_misp_SkewStudentT') { process <- 'SkewStudentT'; model <- 'Misspecified Gaussian '}
   if(x$model=='Logistic') { process <- 'Logistic'; model <- 'Logistic'}

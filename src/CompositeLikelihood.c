@@ -212,12 +212,13 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
          for(j=i+1;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
+                          u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];
                           if(!ISNAN(u)&&!ISNAN(w) ){
-                            corr=CorFct(cormod,lags, 0,par,t,v);
+                                      corr=CorFct(cormod,lags,0,par,0,0);
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                              corr2=corr_pois(corr,mui, muj);
-                                u=data[(i+NS[t])];      
-                                w=data[(j+NS[v])];   
+                                   
                             M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr2;M[1][0]= M[0][1];
                            dat[0]=u-mui;dat[1]=w-muj;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
@@ -229,13 +230,13 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
          for(j=0;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]&&lagt<=maxtime[0]){
-
+    u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])]; 
                            if(!ISNAN(u)&&!ISNAN(w)){
-                        corr=CorFct(cormod,lags, 0,par,t,v);
+              corr=CorFct(cormod,lags,lagt,par,0,0);
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                              corr2=corr_pois(corr,mui, muj);
-                                u=data[(i+NS[t])];      
-                                w=data[(j+NS[v])];   
+                                 
 
                             M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr2;M[1][0]= M[0][1];
                            dat[0]=u-mui;dat[1]=w-muj;
@@ -249,6 +250,58 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
     return;
 }
 
+
+
+void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0,uu,ww;
+     double lags=0.0, lagt=0.0,weights=1.0,nugget,corr,mui,muj,bl,u=0.0, w=0.0;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
+   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+    nugget=nuis[0];
+    // Computes the log-likelihood:
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                          u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];
+                          if(!ISNAN(u)&&!ISNAN(w) ){
+                                      corr=CorFct(cormod,lags,0,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                          uu=(int) u;  ww=(int) w;
+
+                      bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
+                       // Rprintf("%f %f %d %d\n",log(bl),corr,uu,ww);
+                       *res+= log(bl)*weights;
+
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+    u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])]; 
+                           if(!ISNAN(u)&&!ISNAN(w)){
+              corr=CorFct(cormod,lags,lagt,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                            
+                              uu=(int) u;  ww=(int) w;
+
+                      bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
+                       // Rprintf("%f %f %d %d\n",log(bl),corr,uu,ww);
+                       *res+= log(bl)*weights;
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 /*tukey h space time */
 void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
@@ -2019,7 +2072,7 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
     double lags=0.0, weights=1.0,nugget,corr,mui,muj,bl;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
-   //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
     nugget=nuis[0];
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
@@ -2031,13 +2084,12 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
                     mui=exp(mean[i]);muj=exp(mean[j]);
 
                      corr=CorFct(cormod,lags,0,par,0,0);
+                   //  if(corr>=1) {*res=LOW; return;}
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       uu=(int) data[i];  ww=(int) data[j];
-                      bl=biv_Poisson(corr,uu,ww,mui, muj);
-                      Rprintf("%f %f %f %f \n",log(bl),corr,data[i],data[j]);
-
-                     // Rprintf("%f %f %f \n",bl,corr,corr1);
+                      bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj);
+                      //Rprintf("%f = %d %d --%f -- %f %f \n",bl,uu,ww,corr,mui,muj);
                       *res+= log(bl)*weights;
                     }}}}          
     // Checks the return values
