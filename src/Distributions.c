@@ -3231,8 +3231,8 @@ double biv_T(double rho,double zi,double zj,double nuu)
 
    // if(!R_FINITE(a1)||!R_FINITE(a2)){break;}
     RR=(b1/c1)*a1+(b2/c2)*a2;
-   if(!R_FINITE(RR)) return(res0);
-    if((fabs(RR-res0)<1e-10)  ) {break;}
+  // if(!R_FINITE(RR)) return(res0);
+    if((fabs(RR-res0)<1e-10||!R_FINITE(RR))  ) {break;}
     else {res0=RR;}
         k++;
     }

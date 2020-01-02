@@ -174,6 +174,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
 ## twopieceTukeyh=38
 ## sihasin=20
 ## tukey=34
+
     ################################
     ## standard kriging  ##############
     ################################   
@@ -542,15 +543,17 @@ if(type=="Tapering"||type=="tapering")  {
 ###################### binomial and geometric case (only simple kriging) #####################################
 ####################################################################################################################################
 
-if(covmatrix$model %in% c(2,11,14,19))
+if(covmatrix$model %in% c(2,11,14,19,30))
 {  
          if(type=="Standard"||type=="standard") {
 
      mu0 = Xloc%*%betas; mu  = X%*%betas 
-     p0=pnorm(mu0); pmu=pnorm(mu)   
+     if(covmatrix$model!=30) p0=pnorm(mu0); pmu=pnorm(mu)   
+     if(covmatrix$model==30) p0=exp(mu0); pmu=exp(mu) 
      kk=0
     if(covmatrix$model==2||covmatrix$model==11) kk=min(n)
     if(covmatrix$model==19) kk=min(nloc)
+        if(covmatrix$model!=30)
     ## Computing correlation between the locations to predict and the locations observed
     ccorr=.C('Corr_c_bin',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
@@ -558,6 +561,14 @@ if(covmatrix$model %in% c(2,11,14,19))
     as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
     as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
     as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+    if(covmatrix$model==30)
+      ccorr=.C('Corr_c_poi',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
+    as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
+    as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
+    as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
+    as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
+    as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+
     corri=ccorr$corri
     ###inverse of cov matrix
     
@@ -568,6 +579,16 @@ if(covmatrix$model %in% c(2,11,14,19))
         krig_weights <- t(getInv(covmatrix,cc))
 
        if(type_krig=='Simple'||type_krig=='simple')  {
+
+          ##########################################################
+       if(covmatrix$model==30){  ### binomial
+            if(!bivariate) pp <- c(p0) + krig_weights %*% (c(dataT)-c(pmu))  ## simple kriging
+            else{} #todo
+           if(mse){
+                   vvar=c(p0)  ### variance (possibly no stationary)
+                   vv <- diag(as.matrix(diag(vvar,dimat2)   - krig_weights%*%cc))}
+          } 
+
        ##########################################################
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
             if(!bivariate) pp <- n*c(p0) + krig_weights %*% (c(dataT)-n*c(pmu))  ## simple kriging

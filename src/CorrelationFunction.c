@@ -2008,6 +2008,24 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
   return;
 }
 
+void CorrelationMat_poi2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean,
+ double *nuis, double *par,double *radius,int *ns, int *NS)
+{
+  int i=0,j=0,h=0;// check the paramaters range:
+  double lags=0.0,corr=0.0,mui,muj;
+  //if(nuis[1]<0 || nuis[2]<=0 || CheckCor(cormod,par)==-2){rho[0]=-2;return;}// compute the correlations:
+  //if(nuis[1]<0 || nuis[2]<=0){rho[0]=-2;return;}// compute the correlations:
+   
+     for(i=0;i<(ncoord[0]-1);i++){
+      for(j=(i+1);j<ncoord[0];j++){
+        lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+    corr=CorFct(cormod,lags,0,par,0,0);
+     mui=exp(mean[i]);muj=exp(mean[j]);
+    rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+       h++;
+    }}
+  return;
+}
 // Computation of the upper (lower) triangular spatial binomial type 1 covmatrix
 void CorrelationMat_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
         int *n,double *nuis, double *par,double *radius, int *ns, int *NS)
@@ -2255,6 +2273,42 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
 
 
 
+// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
+void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
+  double *nuis, double *par,double *radius, int *ns, int *NS)
+
+{
+    int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
+       double mui,muj,corr;
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i;j<ns[t];j++){
+      //    lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+ lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                         mui=exp(mean[i+ns[t]*t]);muj=exp(mean[j+ns[t]*v]);
+                        corr=CorFct(cormod,lags,0,par,t,v);
+                      
+                      rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+                        h++;}}
+                else {  
+                    lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+        // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                       mui=exp(mean[i+ns[v]*t]);muj=exp(mean[j+ns[v]*v]);
+                               corr=CorFct(cormod,lags,lagt,par,t,v);
+                     rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+                        h++;}}
+            }}}
+    return;
+}
+
+
+
+
+
 void CorrelationMat_st_dyn_tukeygh2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
   int *ns, int *NS)
 {
@@ -2421,8 +2475,6 @@ if(!spt[0]&&!biv[0])	{   //spatial case
 else{    //spatio temporal  case or bivariate case
 int t,v;double dit=0.0;
 if(*spt) {   
-      //for(j=0;j<(*nloc);j++){
-       // for(v=0;v<(*tloc);v++){
 
         for(j=0;j<(*nloc);j++){
         for(v=0;v<(*tloc);v++){
@@ -2433,7 +2485,7 @@ if(*spt) {
                   //dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
                    dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
               //  Rprintf("%d %d %d %d  %f %f\n",i,j,t,v,dis,dit);
-		   cc[h]=CorFct(cormod,dis,dit,par,t,v);
+		   cc[h]=CorFct(cormod,dis,dit,par,0,0);
 		    h++;}}}}		    
 }
 
@@ -2447,6 +2499,55 @@ if(*spt) {
                                 h++;}}}}
 }
 }
+
+///compute the covariance btwen loc to predict and locaton sites for binomial and geometric RF
+void Corr_c_poi(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
+                int *model,int *tloc,double *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
+{
+    int i=0,j=0,h=0;
+    int t=0,v=0;double dit=0.0;
+    double dis=0.0,mui=0.0,muj=0.0,corr=0.0;
+    if(!spt[0]&&!biv[0])  {   //spatial case
+    
+            for(j=0;j<(*nloc);j++){
+                for(i=0;i<(*ncoord);i++){
+                     dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
+                     corr=CorFct(cormod,dis,0,par,0,0);
+                        mui=exp(mean[i]);
+                        muj=exp(mean[j]);
+                       cc[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);  // geometric
+                    h++;}}
+           
+      }
+    else{    //spatio temporal  case or bivariate case
+
+        if(*spt) {
+        for(j=0;j<(*nloc);j++){
+        for(v=0;v<(*tloc);v++){
+           for(t=0;t<*ntime;t++){
+                      dit=fabs(coordt[t]-time[v]);
+               for(i=0;i<ns[t];i++){
+                  //dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);   
+                 ///dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
+                   dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
+                   corr=CorFct(cormod,dis,dit,par,0,0);
+                             mui=exp(mean[j+*nloc * v]);      
+                             muj=exp(mean[i+*nloc * t]);
+                             cc[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);
+                    h++;}}}}
+          }
+      /* if(*biv) {
+            
+                // in case of an irregular grid of coordinates:
+                for(j=0;j<(*nloc);j++){
+                    for(i=0;i<*ncoord;i++){
+                        dis=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                        for(t=0;t<*ntime;t++){
+                            cc[h]=CorFct(cormod,dis,0,par,which[0],t);
+                            h++;}}}
+              }*/        
+    }}
+
 ///compute the covariance btwen loc to predict and locaton sites for binomial and geometric RF
 void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
                 int *model,int *tloc,double *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
@@ -3657,7 +3758,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   double ai=0.0,aj=0.0,p1=0.0,p2=0.0,psj=0.0;
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
-      if(*model==1||*model==10||*model==12||*model==21||
+      if(*model==1||*model==10||*model==12||*model==21||*model==30||
       *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
       //if(*model==12)                      rho[t]=R_pow(CorFct(cormod, h[i], u[j], par,0,0),2);  // chisq case
      // if(*model==10)  // skew gaussian case

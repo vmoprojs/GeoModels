@@ -671,6 +671,7 @@ if(model==21)   ##  gamma case
         #}
       ###  
 }
+
 ###############################################################
 if(model==30)   ##  poisson case
     {
@@ -679,14 +680,13 @@ if(model==30)   ##  poisson case
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm
          other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
-        fname <-"CorrelationMat2"
+        fname <-"CorrelationMat_poi2"
        # if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime) fname <- "CorrelationMat_st_dyn2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn_poi2"
        #if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-
+        if(bivariate) fname <- "CorrelationMat_biv_poi_dyn2"
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+          as.integer(corrmodel), as.double(mu),as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
 
  # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
@@ -697,22 +697,15 @@ if(model==30)   ##  poisson case
   #           INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
   #           NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)      
 
-corr=cr$corr*(1-nuisance['nugget'])         
-corr2=corr^2   ### gamma correlation
-corriinv=1/(1-corr2)
+
   if(!bivariate) {
         # Builds the covariance matrix:
-        varcov <-  diag(1,dime);  varcov1 <-  diag(1,dime);
-        varcov[lower.tri(varcov)] <- corr2
+        varcov <-  diag(1,dime);  
+        varcov[lower.tri(varcov)] <- cr$corr
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <-corr2 
-        varcov1[lower.tri(varcov1)] <- corriinv
-        varcov1 <- t(varcov1)
-        varcov1[lower.tri(varcov1)] <-corriinv
-        vv=exp(mu);V=sqrt(vv%*%t(vv)); z=2*V*varcov1
-        varcov=varcov*(1-exp(-z)*(besselI(z,0)+besselI(z,1))) ## correlation matrix 
+        varcov[lower.tri(varcov)] <-cr$corr
+        vv=exp(mu);V=sqrt(vv%*%t(vv)); 
         varcov=varcov*V     ## covarianvce matrix 
-        diag(varcov)=diag(V) ## fixing diagonal
         }
     ## todo
     #if(bivariate)      {

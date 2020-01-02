@@ -264,7 +264,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         {
         vv=sqrt(VGAM::lambertW(delta1*stdata^2)/delta1)
         IL=sign(stdata)*vv
-        IW=1/(stdata*(1+VGAM::lambertW(delta1*stdata1^2)))
+        IW=1/(stdata*(1+VGAM::lambertW(delta1*stdata^2)))
         llik <- 0.5*( const*log(sill)/log(2*pi) + 
                       const + logdetvarcov + sum((backsolve(decompvarcov, IL, transpose = TRUE))^2)
                       - 2*sum(log(IL*IW)))
@@ -272,7 +272,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         if(stdata<=0){
         vv=sqrt(VGAM::lambertW(delta2*stdata^2)/delta2)
         IL=sign(stdata)*vv
-        IW=1/(stdata*(1+VGAM::lambertW(delta2*stdata1^2)))
+        IW=1/(stdata*(1+VGAM::lambertW(delta2*stdata^2)))
         llik <- 0.5*( const*log(sill)/log(2*pi) + 
                       const + logdetvarcov + sum((backsolve(decompvarcov, IL, transpose = TRUE))^2)
                       - 2*sum(log(IL*IW)))

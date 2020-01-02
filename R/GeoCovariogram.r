@@ -10,7 +10,7 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 28/07/2019.
+### Last change: 1/01/2020.
 ####################################################
    
  
@@ -128,6 +128,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     studentT <- model ==12
     tukeyh<- model ==34
+    poisson<- model==30
     loglogistic <- model==24
     zero <- 0;slow=1e-3;
     if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh
@@ -375,6 +376,16 @@ if(!bivariate) {
                            covariance=vv*correlation
                            variogram=vv*(1-correlation)}
                    }
+     if(poisson) {
+                    if(bivariate) {}
+                    if(!bivariate) {          
+                           vv=exp(mu);
+                           auxcorr=(1-nuisance['nugget'])*correlation
+                           z=2*vv/(1-auxcorr^2)
+                           correlation=auxcorr^2*(1-exp(-z)*(besselI(z,0)+besselI(z,1)))
+                           covariance=vv*correlation
+                           variogram=vv*(1-correlation)}
+                   }
 ##########################################
 ##########################################
 ##########################################
@@ -554,6 +565,7 @@ if(!bivariate) {
                                (2*nuisance['shape']*sin(pi/nuisance['shape'])^2/(pi*sin(2*pi/nuisance['shape']))-1)
             if(loggauss) vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
             if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
+            if(poisson) vvv=exp(mm['mean'])
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
