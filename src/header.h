@@ -25,8 +25,9 @@
 #define MAXLGM 2.556348e305
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
-
 #include <stdbool.h>
+
+
 
 
 
@@ -670,9 +671,9 @@ double DWen1sep_biv_smoo(double h,double var11,double var22,double nug11,double 
 
 
 void GradCorrFct(double rho, int *cormod, double eps, int *flag,
-		 double *grad, double h, double u, int c11, int c22, double *par);
+         double *grad, double h, double u, int c11, int c22, double *par);
 void GradVarioFct(double vario, int *cormod, double *eps, int *flag,
-		  double *grad, double lag, double *par, double tsep);
+          double *grad, double lag, double *par, double tsep);
 void TapVectCorrelation(double *rho,int *cormod,double *tdists,int *ntdists,double *nuis,double *par);
 void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
                      double *nuis,double *par, double *u);
@@ -892,7 +893,7 @@ double pnorm_two_piece(double x, double eta);
 double pbnorm_two_piece( int *cormod, double h, double u, 
     double xi, double xj, double nugget, double var,double eta,double *par);
 void vpbnorm(int *cormod, double *h, double *u, int *nlags, int *nlagt,
-	     double *nuis, double *par, double *rho, double *thr);
+         double *nuis, double *par, double *rho, double *thr);
 
 
 /*----------------------------------------------------------------
@@ -917,27 +918,27 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
 
 
 void Sens_Cond_Gauss(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis, double *nuis, int *np,
-		     int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
+             int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
 
 void Sens_Cond_Gauss_st(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis, double *nuis, int *np,
-			int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
+            int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
 
 void Sens_Cond_Gauss_biv(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis, double *nuis, int *np,
                          int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
 
 
 void Sens_Cond_Gauss_ij(double rho, int *flag, double *gradcor, int *npar,
-			int *nparc, double *par, double *sensmat);
+            int *nparc, double *par, double *sensmat);
 
 void Sens_Cond_Gauss_biv_ij(double *gradcorttii,double *gradcorvvii,double *gradcorvtii,double *gradcortvii ,
                             double *gradcorttij ,double *gradcorvvij, double *gradcorvtij,double *gradcortvij,
                             double **inverse,int *flag,int *npar, int * nparc, double *par,int N,double *sens);
 
 void Sens_Diff_Gauss(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis,
-		     double *nuis, int *np,int *npar, int *nparc, double *parcor,double *score, double *sensmat,int *weigthed);
+             double *nuis, int *np,int *npar, int *nparc, double *parcor,double *score, double *sensmat,int *weigthed);
 
 void Sens_Diff_Gauss_st(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis,
-			double *nuis, int *np,int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
+            double *nuis, int *np,int *npar, int *nparc, double *parcor, double *score, double *sensmat,int *weigthed);
 
 void Sens_Diff_Gauss_ij(double *gradient, int *npar, double *sensmat,double weigths);
 
@@ -995,19 +996,19 @@ Start
  ---------------------------------------------------------------*/
 
 void Grad_Cond_Bin(double rho,double pij, double p,int *flag, double *gradcor,
-		   double *grad, int *npar, double *nuis,  double u, double v);
+           double *grad, int *npar, double *nuis,  double u, double v);
 
 void Grad_Cond_Gauss(double rho, int *flag, double *gradcor, double *grad,
-		     int *npar, double *par, double u, double v);
+             int *npar, double *par, double u, double v);
 
 void Grad_Diff_Bin(double rho,double pij, double p,int *flag, double *gradcor,
-		   double *grad, int *npar, double *nuis,  double u, double v);
+           double *grad, int *npar, double *nuis,  double u, double v);
 
 void Grad_Diff_Gauss(double rho, int *flag, double *gradcor, double *grad,
-		     int *npar, double *par, double u, double v);
+             int *npar, double *par, double u, double v);
 
 void Grad_Diff_Vario(double rho, int *flag, double *gradcor, double *grad,
-		     int *npar, double *par);
+             int *npar, double *par);
 
 
 void Grad_Pair_Binom(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
@@ -1119,6 +1120,8 @@ Start
 
 
 
+void pairs(int *ncoords,double *data,double *coordx,double *coordy,double *numbins,double *bins,double *v0,double *v1,double *v2,double *maxdist);
+
 void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins);
 
 void Binned_Variogram_22(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
@@ -1135,12 +1138,12 @@ void Binned_Variogram_biv2(double *bins,double *coordx, double *coordy, double *
 void Cloud_Variogram2(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
 
 void LeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, double *moms,
-		      int *nbins, int *nbint, double *nuis, double *par, double *res);
+              int *nbins, int *nbint, double *nuis, double *par, double *res);
 
 
 
 void WLeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, double *moms,
-		      int *nbins, int *nbint, double *nuis, double *par, double *res);
+              int *nbins, int *nbint, double *nuis, double *par, double *res);
 
 
 
@@ -1227,12 +1230,12 @@ void SetSampling_t(double *data,double *sdata, int nbetas,int npts,
 
 void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,
       int *grid,int *ia,
-		  int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
-		  int *npair, double *radius, int *replic,double *srange, double *sep,int *st, int *times,double *trange,
-		  int *tap,int *tapmodel,int *tp,int *weighted, int *dyn);
+          int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
+          int *npair, double *radius, int *replic,double *srange, double *sep,int *st, int *times,double *trange,
+          int *tap,int *tapmodel,int *tp,int *weighted, int *dyn);
 
 void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
-		int *ismal,int *ja,double thres);
+        int *ismal,int *ja,double thres);
 
 void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,int *idx,int *ismal,int *ja,
                     int *tapmodel,double *thres,double *thret);
@@ -1243,82 +1246,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
-
-
-
-
-/*----------------------------------------------------------------
- File name: Host.c
- Description: procedures for OCL computation.
- Start
- ---------------------------------------------------------------*/
-#define CL_SILENCE_DEPRECATION
-#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
-#ifdef __APPLE__
-#include <OpenCL/opencl.h>
-#include <unistd.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#define LOW -1.0e15
-#define MAXERR 1e-6
-//#define EPS DBL_EPSILON
-
-#pragma once
-
-#include <string.h>
-
-#define MAX_PLATFORMS     8
-#define MAX_DEVICES      16
-#define MAX_INFO_STRING 256
-
-
-
-#ifdef __cplusplus
-#include <cstdio>
-#endif
-
-
-
-
-
-const char *err_code (cl_int err_in);
-void check_error(cl_int err, const char *operation, char *filename, int line);
-#define checkError(E, S) check_error(E,S,__FILE__,__LINE__)
-unsigned getDeviceList(cl_device_id devices[MAX_DEVICES]);
-void getDeviceName(cl_device_id device, char name[MAX_INFO_STRING]);
-int parseUInt(const char *str, cl_uint *output);
-double sum_total(double *arr, int ngrid);
-void param_OCL(int *cormod,int *NN,double *par,int *weigthed,double *nuis,int *int_par, double *dou_par);
-void exec_kernel(double *h_x, double *h_y, double *h_mean, double *h_data, int *int_par,double *dou_par,
-                 int *local_wi, int *dev, double *res, char *f_name);
-void create_binary_kernel(int *dev, char **fname);
-int DeviceInfo();
-void exec_kernel_st(double *h_x, double *h_y,double *h_t, double *h_mean, double *h_data, int *int_par,double *dou_par,
-                    int *local_wi, int *dev, double *res, char *f_name, int *ns, int *NS);
-void param_st_OCL(int *cormod,int *NN,double *par,int *weigthed,double *nuis,int *int_par, double *dou_par);
-void CBessel(double *xxx, double *nuu, int *expscale,double *res, int *tipo);
-void exec_kernel_source(double *h_x, double *h_y, double *h_mean, double *h_data, int *int_par,double *dou_par,
-                        int *local_wi, int *dev, double *res, char *f_name);
-void exec_kernel_st_dyn(double *h_x, double *h_y,double *h_t, double *h_mean, double *h_data, int *int_par,double *dou_par,
-                        int *local_wi, int *dev, double *res, char *f_name,int *ns, int *NS);
-void cdf_norm_call(double *lim1,double *lim2,double *a11,double *a12, double *res);
-
-double Phi(double x);
-double Phi2diag( double x, double a, double px, double pxs );
-double Phi2help( double x, double y, double rho );
-double Phi2( double x, double y, double rho );
-double cdf_norm_OCL(double lim1,double lim2,double a11,double a12);
-double pnorm_OCL(double x, double mu, double sd);
-double qnorm555(double p, double mu, double sigma, int lower_tail, int log_p);
-/*----------------------------------------------------------------
- File name: Host.c
- Description: procedures for OCL computation.
- End
- ---------------------------------------------------------------*/
-
 
 
 

@@ -792,7 +792,7 @@ CorrelationPar <- function(corrmodel)
    if(corrmodel %in% c(8,5)) {
       param <- c('power1', 'power2','scale')
       return(param)}
-    # Generalised wend correlation model:
+    # Generalised wend correlation model abnd reparametrized version:
      if(corrmodel %in% c(19,6)) {
         param <- c('power2', 'scale','smooth')
         return(param)}
@@ -1019,7 +1019,8 @@ NuisParam <- function(model,bivariate=FALSE,num_betas=1)
       }  
 
       if(model %in% c('Gamma')){
-      param <- c('mean_1', 'mean_2','shape')
+   
+      param <- c('mean_1', 'mean_2','shape_1','shape_2')
        return(param)} 
 
         if((model %in% c('Weibull','LogGauss','LogGaussian',"LogLogistic"))){

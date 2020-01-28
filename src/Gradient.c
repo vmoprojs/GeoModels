@@ -415,6 +415,61 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
 }
 
 
+void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+{
+  // Initialization variables:
+  int h=0, i=0, j=0,kk=0,o=0,k=0;
+ // double sum0=0.0,sum1=0.0,sum2=0.0,
+  double rhod=0.0,ai_d=0.0,aj_d=0.0;
+  double delta=0,*b1,*parC;
+    b1=(double *) Calloc(nbetas,double);
+  parC=(double *) Calloc(nparcT[0],double);
+  for(k=0;k<nparcT[0];k++) parC[k]=par[k];
+  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+  double nugget=nuis[nbetas];
+
+  double rhosill=(1-nugget)*rho;
+  double ff=log( biv_Poisson(rhosill,u,v,ai,aj));
+  //Rprintf("----ff---%f\n",ff);
+  for(kk=0;kk<nbetas;kk++){
+  if(flag[kk]==1){
+     delta=sqrt(EPS)*(betas[kk]);                
+     b1[kk]=betas[kk]+delta;
+     ai_d=0.0;aj_d=0.0;
+     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
+                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+   grad[i]=(log( biv_Poisson(rhosill,u,v,ai_d,aj_d)) - ff)/delta; 
+  //   Rprintf("----grad1---%f\n",grad[i]);
+   i++; 
+ }}
+  // Derivvativve of the difference respect with the nugget*/
+  if(flag[nbetas]==1) { 
+    delta=sqrt(EPS)*nugget;
+      grad[i]=(log( biv_Poisson((1-(nugget+delta))*rho,u,v,ai,aj)) - 
+              ff)/delta; 
+     /// Rprintf("----grad2---%f\n",grad[i]);
+    i++; 
+  }
+
+    h=0;
+     kk=0;
+  for(j=i;j<(i+*nparcT);j++) { 
+      
+  if(flagcor[h]==1){
+       delta=sqrt(EPS)*par[h];
+       parC[h]=par[h]+delta;
+       rhod=CorFct(cormod,lag,lagt,parC,0,0);
+ grad[kk+i]=(log( biv_Poisson((1-nugget)*rhod,u,v,ai,aj)) - ff)/delta;
+    kk++;}
+      h++;
+    }
+//Rprintf("%f %f %f %f %f %f %f \n",grad[0],grad[1],grad[2],grad[3],grad[4],grad[5],grad[6]);
+  return;
+}
+
+
 
 void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,

@@ -70,28 +70,22 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 library(GeoModels)
 
 ################################################################
-###
-### Example 1. Empirical estimation of the semi-variogram from a
-### spatial Gaussian random field with exponential correlation.
-###
 ###############################################################
 set.seed(514)
-# Set the coordinates of the sites:
-x = runif(200, 0, 1)
-y = runif(200, 0, 1)
-coords = cbind(x,y)
-# Set the model's parameters:
-corrmodel = "exponential"
-mean = 0
-sill = 1
-nugget = 0
-scale = 0.3/3
+require(GeoModels)
 
-# Simulation of the spatial Gaussian random field:
-data = GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,
-              sill=sill, nugget=nugget, scale=scale))$data
+NN = 500
+coords = cbind(runif(NN),runif(NN))
+
+param = list(mean=0,sill=1,nugget=0,power2=4,scale=0.4,smooth=0)
+
+corrmodel = "GenWend"; model = "Gaussian"
+
+data = GeoSim(coordx = coords,corrmodel = corrmodel,
+                  model = model,param = param)$data
 
 
-GeoScatterplot(data, coordx=coords, maxdist=0.5)
+GeoScatterplot(data,coords,distance="Eucl",maxdist=.15,numbins=6)
+
 }
 \keyword{Scatterplot}

@@ -536,7 +536,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale=par[1];
         smooth=par[2];
         ///sep=log(R_power1)+lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1);
-        sep=R_power1*exp(lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1));
+        sep=exp(lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1));
         rho=CorFunW_gen(h, R_power1, smooth,  scale * R_pow(sep,1/(1+2*smooth)));
         //Rprintf("%f %f \n",rho,R_power1);
         break;
@@ -1851,15 +1851,16 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
          return(rho);
     }      
             
-//first version 
-    
-             x=lag/scale;    
+      x=lag/scale;    
          if(x<=1)
-  rho=(gammafn(smooth)*gammafn(2*smooth+R_power1+1))/(gammafn(2*smooth)*gammafn(smooth+R_power1+1)*R_pow(2,R_power1+1))*
+         {
+  rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
+    *R_pow(2,-R_power1-1)*
         R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,0.5*(R_power1+1),smooth+R_power1+1, 1-x*x);
-                                else rho=0;
-//second version 
-                                /*
+      }
+  else rho=0;
+ /*  //second version
+  
         x=lag;
         double *param;
         param=(double *) Calloc(3,double);

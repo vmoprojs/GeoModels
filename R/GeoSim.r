@@ -55,7 +55,7 @@ forGaussparam<-function(model,param,bivariate)
 
 
     if(model %in% c("Gamma","LogLogistic","Weibull"))  {
-     if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
+     if(!bivariate) param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
    }  
      if(model %in% c("Beta",'Kumaraswamy'))  {
@@ -543,8 +543,13 @@ if(model %in% c("TwoPieceStudentT"))   {
       sim=NULL
     for(i in 1:k)  sim=cbind(sim,dd[,,i]^2)
      ######################################################
-      if(model %in% c("Weibull"))   
-                sim=exp(mm)*(rowSums(sim)/2)^(1/param$shape)/(gamma(1+1/param$shape))
+      if(model %in% c("Weibull"))  
+
+               { print(bivariate) 
+                 print(sim)
+                if(!bivariate) sim=exp(mm)*(rowSums(sim)/2)^(1/param$shape)/(gamma(1+1/param$shape))
+                 if(bivariate) sim=1#exp(mm)*(rowSums(sim)/2)^(1/param$shape)/(gamma(1+1/param$shape))
+               }
       if(model %in% c("Gamma","Gamma2"))  
       { 
       #print(rowSums(sim)/k)

@@ -1,5 +1,37 @@
 #include "header.h"
 
+// get all pair between certain distance 
+void pairs(int *ncoords,double *data,double *coordx, double *coordy, double *numbins, double *bins, double *v0,double *v1, double *v2,double *maxdist)
+{
+  int ncrd,numbin,h=0,k=0,i,j;
+  double max_dist;
+  
+  ncrd     = *ncoords; //printf("num coords =  %d \n",ncrd);
+  numbin   = *numbins; //printf("num bins =  %d \n",numbin);
+  max_dist = *maxdist; //printf("max distance =  %f \n",max_dist);
+
+  double distance=0.0;
+  
+
+  for(h=0;h<=numbin;h++){
+      //printf("HERE");
+      for(i=0; i<(ncrd-1);i++){
+        for(j=(i+1);j<ncrd;j++){
+          distance = dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          if(distance <= max_dist){
+            //printf("dist =  %f \n",distance);
+            if((bins[h] < distance) && (distance <= bins[(h+1)])){
+              //printf("yes, dist =  %f \n",distance);
+              v0[k] = bins[(h)];
+              v1[k] = data[i];
+              v2[k] = data[j];
+              k = k+1;
+         } }  
+      }
+  }}
+
+return;
+}
 
 // binned spatial variogram:
 void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins)

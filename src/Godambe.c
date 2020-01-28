@@ -77,6 +77,7 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
     case 25: // logistic
     case 26: //Weibull
     case 27: //twopieceT
+    case 30: //poisson
     case 34: //tukeyh
     // more........
 
@@ -189,6 +190,11 @@ if(lags<maxdist[0]){
 
        case 21: // gamma
            Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
+       break;
+
+         case 30: // poisson
+           Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i],data[j],mean[i],mean[j],Xi,Xj,X,i,j,betas); 
        break;
 
@@ -351,6 +357,13 @@ for(t=0;t<ntime[0];t++){
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
+
+        case 30:
+       Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
+
         case 22:
        Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
@@ -449,6 +462,11 @@ else {
       break;
         case 21:
        Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                 data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
+                 Xi,Xj,X , i+NS[t],j+NS[v],betas); 
+      break;
+         case 30:
+       Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,grad,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                  data[i+NS[t]],data[j+NS[v]],mean[i+NS[t]],mean[j+NS[v]],
                  Xi,Xj,X , i+NS[t],j+NS[v],betas); 
       break;
@@ -980,6 +998,12 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
                                       Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
                         break;
+
+                         case 30: // gamma
+                                      Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
+                                       nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas); 
+                        break;
+
                         case 22: // loggauss
                                       Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lag,0,NN[0],npar,nparc,nparcT,nbetas[0],
                                        nuis,parcor, sdata[l],sdata[m],meanl,meanm,Xl,Xm,sX,l,m,betas);
@@ -1312,13 +1336,19 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                                           betas);
                                                         break;
                                                         case 21:
-                                                      //  Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
-                                                        //                s2data[l],s2data[m],meanl,meanm,Xl,Xm,s2X,l,m,
-                                                          //              betas);
+                                                
                                                          Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
                                                                           betas);
                                                         break;
+
+                                                              case 30:
+                                                
+                                                         Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
+                                                                          betas);
+                                                        break;
+
                                                         case 22:
                                                        Grad_Pair_LogGauss(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,0,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                           s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],
@@ -1405,6 +1435,10 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                                                         break;
                                                         case 21:
                                                              Grad_Pair_Gamma(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
+                                                                         s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
+                                                        break;
+                                                        case 30:
+                                                             Grad_Pair_Poisson(rho,cormod,flagnuis,flagcor,gradcor,gradient,lags,lagt,NN[0],npar,nparc,nparcT,nbetas[0],nuis,parcor,
                                                                          s2data[(l+NS_sub[t])],s2data[(m+NS_sub[v])],meanl,meanm,Xl,Xm,s2X,l+NS_sub[t],m+NS_sub[v],betas);
                                                         break;
                                                         case 22:
