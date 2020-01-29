@@ -59,7 +59,8 @@ double CheckCor(int *cormod, double *par)
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
-        if(scale<=0 ||  R_power1<(1.5+smooth) ||smooth<0) rho=-2;
+       // if(scale<=0 ||  R_power1<(1.5+smooth) ||smooth<0) rho=-2;
+            if(scale<=0 ||smooth<0) rho=-2;
       break;
     case 18://sinR_power valid on sphere
             R_power=par[0];
@@ -530,9 +531,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smooth=par[2];
   rho=CorFunW_gen(h, R_power1, smooth, scale);
         break;
-  
     case 6: // Generalised wend correlation function second paramtrizazion
-        R_power1=1/par[0];        
+        R_power1=par[0];        
         scale=par[1];
         smooth=par[2];
         ///sep=log(R_power1)+lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1);
@@ -1832,31 +1832,31 @@ double CorFunW2(double lag,double scale,double smoo)
 double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu alpha beta
 {
     double rho=0.0,x=0;
+    if(lag==0) {rho=1; return(rho);}
     if(smooth==0) {
           x=lag/scale;
-         if(x<=1) rho=R_pow(1-x,R_power1);
+         if(x<1) rho=R_pow(1-x,R_power1);
          else rho=0;
          return(rho);
     }
     if(smooth==1) {
           x=lag/scale;
-         if(x<=1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+         if(x<1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
          else rho=0;
          return(rho);
     }
     if(smooth==2) {
           x=lag/scale;
-         if(x<=1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+         if(x<1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
          else rho=0;
          return(rho);
     }      
             
-      x=lag/scale;    
-         if(x<=1)
+x=lag/scale;    
+    if(x<1)
          {
-  rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
-    *R_pow(2,-R_power1-1)*
-        R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,0.5*(R_power1+1),smooth+R_power1+1, 1-x*x);
+        rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
+         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(0.5*R_power1,0.5*(R_power1+1),smooth+R_power1+1, 1-x*x);
       }
   else rho=0;
  /*  //second version

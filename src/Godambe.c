@@ -20,7 +20,7 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
    //		     sensmat,spt,varimat,type_lik,weigthed);
       break;//------------ END EMPIRICAL ESTIMATION ------------//
     case 2://------------ START SUB-SAMPLE ESTIMATION ------------//
-
+ 
             //Rprintf("START: Sensitivity!!!!!\n");
 
      Sensitivity(betas,biv,coordx,coordy,coordt,cormod,data,eps,flagcor,flagnuis,like,mean,model,NN,nbetas,
