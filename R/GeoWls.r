@@ -154,15 +154,19 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                            param, parscale, paramrange, radius,  start, taper, tapsep,
                            "GeoWLS", type, varest, vartype,
                            weighted, winconst,winconst_t, winstp_t, winstp, X)
+
+    
   
     if(!is.null(initparam$error))     stop(initparam$error)
-    
-    #if(is.null(X))  {X=1;num_betas=1}
-    #else num_betas=ncol(X)
-
     if(length(coordt)>0&&is.list(X)) X=X[[1]]
-    if(is.null(X))  {X=1;num_betas=1} 
-    else num_betas=ncol(X)  
+
+    bivariate<-CheckBiv(CkCorrModel(corrmodel))
+    if(!bivariate)
+        {if(is.null(X))  {X=1;num_betas=1} 
+        else num_betas=ncol(X)  }
+    if(bivariate)
+        {if(is.null(X))  {X=1;num_betas=c(1,1)}  
+         else num_betas=c(ncol(X),ncol(X)) }   
 
 
     ### Set the initial type of likelihood objects:
@@ -226,6 +230,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
               if(initparam$numfixed > 0) {initparam$fixed <- fixed}
               else {initparam$fixed <- NULL}}
               else { initparam$fixed['mean_1'] <- fixed["mean_1"] }
+
               if(is.na(fixed["mean_2"])){
               initparam$namesparam<-names(initparam$namesparam)
               if(is.na(start["mean_2"])) {initparam$param <- c(initparam$fixed["mean_2"], initparam$param)}
@@ -237,9 +242,36 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
               initparam$numfixed <- initparam$numfixed-1
               if(initparam$numfixed > 0) {initparam$fixed <- fixed}
               else {initparam$fixed <- NULL}}
-              else {initparam$fixed['mean_2'] <- fixed["mean_2"]}
-              }
-            }
+              else {initparam$fixed['mean_2'] <- fixed["mean_2"]}  
+        if(num_betas[1]>1){
+          for(i in 1:(num_betas[1]-1)) {
+            if(is.na(fixed[paste("mean_1",i,sep="")]))
+          {
+              if(is.na(start[paste("mean_1",i,sep="")])) {initparam$param <- c(initparam$fixed[paste("mean_1",i,sep="")], initparam$param)}
+              else {initparam$param <- c(start[paste("mean_1",i,sep="")], initparam$param)}
+            initparam$namesparam <- sort(names(initparam$param))
+            initparam$param <- initparam$param[initparam$namesparam]
+            initparam$numparam <- initparam$numparam+1
+            initparam$flagnuis[paste("mean_1",i,sep="")] <- 1
+            initparam$numfixed <- initparam$numfixed-1}
+            else {initparam$fixed[paste("mean_1",i,sep="")] <- fixed[paste("mean_1",i,sep="")]} 
+         }}
+           if(num_betas[2]>1){
+          for(i in 1:(num_betas[2]-1)) {
+            if(is.na(fixed[paste("mean_2",i,sep="")]))
+          {
+              if(is.na(start[paste("mean_2",i,sep="")])) {initparam$param <- c(initparam$fixed[paste("mean_2",i,sep="")], initparam$param)}
+              else {initparam$param <- c(start[paste("mean_2",i,sep="")], initparam$param)}
+            initparam$namesparam <- sort(names(initparam$param))
+            initparam$param <- initparam$param[initparam$namesparam]
+            initparam$numparam <- initparam$numparam+1
+            initparam$flagnuis[paste("mean_2",i,sep="")] <- 1
+            initparam$numfixed <- initparam$numfixed-1}
+            else {initparam$fixed[paste("mean_2",i,sep="")] <- fixed[paste("mean_2",i,sep="")]} 
+         }}}
+###########################
+              
+        }
         paramrange=TRUE
         if(paramrange) paramrange <- SetRangeParam(names(initparam$param), length(initparam$param))
         else  paramrange <- list(lower=NULL, upper=NULL)

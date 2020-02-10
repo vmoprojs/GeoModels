@@ -1,5 +1,4 @@
 #include "header.h"
-
 // Computing the gradient and  the components of J matrix for Godmabe matrix computation
 
 void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *coordt, int *cormod, double *data, int *dst,
@@ -12,7 +11,7 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
   //---------- COMPUTATION OF THE GODAMBE MATRIX ---------//
   int *np;np=(int *) R_alloc(1, sizeof(int));  //numbers of effective pairs
 
-  switch(*vartype)
+  switch(*vartype) 
     {
     case 1://------------ START EMPIRICAL ESTIMATION ------------//
    //   GodambeMat_emp(coordx,coordy,coordt,cormod,data,eps,flagcor,flagnuis,like,
@@ -20,8 +19,6 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
    //		     sensmat,spt,varimat,type_lik,weigthed);
       break;//------------ END EMPIRICAL ESTIMATION ------------//
     case 2://------------ START SUB-SAMPLE ESTIMATION ------------//
- 
-            //Rprintf("START: Sensitivity!!!!!\n");
 
      Sensitivity(betas,biv,coordx,coordy,coordt,cormod,data,eps,flagcor,flagnuis,like,mean,model,NN,nbetas,
 	  npar,nparc,nparcT,parcor,nuis,np,score,sensmat,spt,type_lik,weigthed,X,ns,NS);
@@ -37,19 +34,14 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
                       //Vari_SubSamp_st(betas,coordx,coordy,coordt,cormod,data,dst,eps,flagcor,flagnuis,
                       //                   like,mean,model,NN,nbetas,npar,nparc,nuis,np,parcor,type_lik,
                         //                 varimat,winc,winstp,weigthed,X);
-
-
                 if(*biv) Vari_SubSamp_biv(betas,coordx,coordy,coordt,cormod,data,dst,eps,flagcor,flagnuis,
                                           grid,like,model,NN,npar,nparc,nparcT,nuis,np,parcor, type_lik, varimat,winc,winstp,weigthed,X,ns,NS);
-
             }
       break;//------------ END SUB-SAMPLE ESTIMATION ------------//
     
     }
   return;
 }
-
-
 
 // Compute the Sensitivity matrix of a random field:
 void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *coordt,int *cormod,  double *data, double *eps, int *flagcor, int *flagnuis, int *like,
@@ -80,7 +72,6 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
     case 30: //poisson
     case 34: //tukeyh
     // more........
-
         if( (!*spt) && (!*biv)) 
           Sens_Pair(betas,coordx,coordy,coordt,cormod,data,eps,flagcor,flagnuis,NN,nuis,np,nbetas,
 				   npar,nparc,nparcT,mean,model,parcor,score,sensmat,weigthed,Z);
@@ -99,8 +90,6 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
 
   return;
 }
-
- 
 
 // Compute the Sensitivity matrix for the pairwise composite  likelihood:
 void Sens_Pair(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, 
@@ -238,10 +227,6 @@ if(lags<maxdist[0]){
   return;
 }
 
-
-
-
-
 // Comgaufte the Sensitivity matrix for the space time pairwise composite  likelihood:
 void Sens_Pair_st(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, 
          double *eps, int *flagcor, int *flagnuis, double *NN,double *nuis, int *np,
@@ -280,9 +265,6 @@ void Sens_Pair_st(double *betas,double *coordx, double *coordy, double *coordt, 
                 qq++;
             }}
     }
-    
-    
-
       /********************************************************/
       /********************************************************/
 for(t=0;t<ntime[0];t++){
@@ -522,9 +504,6 @@ else {
   return;
 }
 
-
-
-
 // Compute the Sensitivity matrix for the space time pairwise composite Gaussian likelihood for bivariate GRF:
 void Sens_Pair_biv(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, 
     int *flagcor, int *flagnuis, double *NN,double *nuis, int *np,int *npar, int *nparc,int *nparcT,double *mean, int *model,
@@ -613,10 +592,6 @@ void Sens_Pair_biv(double *betas,double *coordx, double *coordy, double *coordt,
     Free(sens);// One sensitive contribute
     return;
 }
-
-
-
-
 
 // Compute the Sensitivity matrix for the space time Bipairwise composite Gaussian likelihood for bivariate GRF:
 void Sens_Cond_Gauss_biv(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis, double *nuis, int *np,
@@ -707,8 +682,6 @@ void Sens_Cond_Gauss_biv(double *coordx, double *coordy, double *coordt, int *co
     return;
 }
 
-
-
 // Compute the Sensitivity matrix for the Gaussian pairwise likelihood for bivariate GRF:
 void Sens_Pair_Gauss_biv_ij(double rhott,double rhotv,double rhovt,double rhovv,double *gradcortt,double *gradcortv,double *gradcorvt,double *gradcorvv,int *flag, int *npar,int *nparc, double *par, double *sensmat)
 {
@@ -749,8 +722,6 @@ void Sens_Pair_Gauss_biv_ij(double rhott,double rhotv,double rhovt,double rhovv,
     //---- END COMPUTATION OF THE SENSITIVITY MATRIX-----//
     return;
 }
-
-
 
 // Compute the Sensitivity matrix for the Gaussian pair of pairwise likelihood for bivariate GRF:
 void Sens_Cond_Gauss_biv_ij(double *gradcorttii,double *gradcorvvii,double *gradcorvtii,double *gradcortvii ,
@@ -828,9 +799,6 @@ void Sens_Cond_Gauss_biv_ij(double *gradcorttii,double *gradcorvvii,double *grad
     Free(D1);Free(D2);Free(P1);Free(P2);Free(P3);
     return;
 }
-
-
-
 
 /********************************************************************************/
 /********************************************************************************/
@@ -1048,11 +1016,6 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
 /********************************************************************************/
 /********************************************************************************/
 /********************************************************************************/
-
-
-
-
-
 /********************************************************************************/
 
 void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, int *dst, double *eps, int *flagcor,
@@ -1102,11 +1065,6 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
  
     winstx=*winstp * dimwinx;     // x step is a  proportion of sub-window x length (deafult is 0.5)
     winsty=*winstp * dimwiny;     // y step is a  proportion of sub-window y length (deafult is 0.5)
-    
-  
-    
-
-    // what is this ??
         
     // Start conditions for valid space subwindows
     if(cdyn[0] ==0) // no dym coords
@@ -1499,7 +1457,6 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
 }
 
 
-
 // Computes the variability matrix based on the sub-sampling method (bivariate):
 void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coordt,int *cormod, double *data,
                   int *dst,double *eps, int *flagcor, int *flagnuis, int *grid,
@@ -1571,10 +1528,6 @@ void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coor
                 h++;}
         coordx=ecoordx;
         coordy=ecoordy;}
-    
-    
-    
-    
     
     Range(coordx,rangex,ncoord);// range of the x-coordinate
     Range(coordy,rangey,ncoord);// range of the y-coordinate

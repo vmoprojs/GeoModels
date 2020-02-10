@@ -988,6 +988,7 @@ if(model==22)  {  ## Log Gaussian
         setup$taps<-tp$tapcorr
     }
     if(is.null(X))  initparam$X=as.matrix(rep(1,dime))
+    if(bivariate) {if(is.null(X))  initparam$X=as.matrix(rep(1,dime/2)) }
     if(spacetime||bivariate){
           initparam$NS=cumsum(initparam$ns);
             if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}

@@ -58,15 +58,18 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         param <- c(param, fixed)
         paramcorr <- param[namescorr]
         nuisance <- param[namesnuis]
+        sel1=substr(names(nuisance),1,6)=="mean_1"
+        mm1=as.numeric(nuisance[sel1])
+        sel2=substr(names(nuisance),1,6)=="mean_2"
+        mm2=as.numeric(nuisance[sel2])
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
-        #mm1=c(rep(mm[1],dimat/2),rep(mm[2],dimat/2))
-        mm1=c(rep(mm[1],ns[1]),rep(mm[2],ns[2]))
+        X1=as.matrix(X[1:ns[1],]);X2=as.matrix(X[(ns[1]+1):(ns[2]+ns[1]),]); 
         other_nuis=as.numeric(nuisance[!sel]) 
+   
         result <- .C(fan,as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data),as.integer(n), 
-                     as.double(paramcorr), as.integer(weigthed), res=double(1),as.double(c(X*mm1)),
-                    as.double(0),as.double(other_nuis),as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
-                     PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
+                    as.double(paramcorr), as.integer(weigthed), res=double(1),as.double(c(X1%*%mm1,X2%*%mm2)),
+                   as.double(0),as.double(other_nuis),as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
+                   PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
      #result <- dotCall64::.C64(fan, 
      #                SIGNATURE = c(
      #    "integer","double","double","double","double",
@@ -96,7 +99,10 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
        X=as.matrix(rep(1,dimat))
        if((spacetime||bivariate)&& spacetime_dyn)  X=as.matrix(rep(1,NS[numtime]))
     }
-    num_betas=ncol(X)   
+    else(if(bivariate) X=rbind(X,X))
+
+    if(!bivariate) num_betas=ncol(X)   
+    if(!bivariate) num_betas=c(ncol(X),ncol(X))
     fname <- NULL; hessian <- FALSE
 
     if(all(model==1,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss'

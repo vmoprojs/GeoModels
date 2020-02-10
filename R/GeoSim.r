@@ -76,12 +76,13 @@ forGaussparam<-function(model,param,bivariate)
 ##############################################################################
 ########### for Gaussian and non Gaussian RF obtained using Gaussian RF ######
 ##############################################################################
-   RFfct1<- function(ccov,dime,nuisance,param,simd,X,ns)
+     RFfct1<- function(ccov,dime,nuisance,param,simd,X,ns)
     {
         numcoord=ccov$numcoord; numtime=ccov$numtime;grid=ccov$grid;
-
-        if(is.null(dim(X))) X=as.matrix(rep(1,numcoord*numtime))  ## in the case of no covariates
         spacetime=ccov$spacetime;bivariate=ccov$bivariate
+        if(!bivariate) if(is.null(dim(X))) X=as.matrix(rep(1,numcoord*numtime))  ## in the case of no covariates
+        if( bivariate) if(is.null(dim(X))) X=as.matrix(rep(1,numcoord*1))
+    
         if(grid){
             numcoordx=ccov$numcoordx; numcoordy=ccov$numcoordy
             sim <- array(double(dime), c(numcoordx, numcoordy, numtime, 1))
@@ -96,18 +97,30 @@ forGaussparam<-function(model,param,bivariate)
         }
         else{ 
                 if(!bivariate) {
-                               sel=substr(names(nuisance),1,4)=="mean"; num_betas=sum(sel) ;mm=NULL
+                               sel=substr(names(nuisance),1,4)=="mean"; 
+                               num_betas=sum(sel);mm=NULL
                                if(num_betas==1) mm=nuisance$mean
                                if(num_betas>1)  mm=c(mm,as.numeric((nuisance[sel])))
                                sim <- X%*%mm+simd 
                               }
-                else   { 
-                  
-                   if(is.null(ns))  sim <- c(rep(as.numeric(nuisance['mean_1']),numcoord),
-                                     rep(as.numeric(nuisance['mean_2']),numcoord)) + simd 
-                    else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
+                if(bivariate)  { 
+                  sel1=substr(names(nuisance),1,6)=="mean_1";
+                  sel2=substr(names(nuisance),1,6)=="mean_2";
+                  num_betas1=sum(sel1);mm1=NULL;
+                  num_betas2=sum(sel2);mm2=NULL;
+
+                   if(num_betas1==1) mm1=nuisance$mean_1
+                   if(num_betas1>1)  mm1=c(mm1,as.numeric((nuisance[sel1])))
+                   if(num_betas2==1) mm2=nuisance$mean_2
+                   if(num_betas2>1)  mm2=c(mm2,as.numeric((nuisance[sel2])))
+    
+                   if(is.null(ns))  sim <- c(X%*%mm1,
+                                             X%*%mm2) + simd 
+
+                
+                  else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
                                      rep(as.numeric(nuisance['mean_2']),ns[2])) + simd 
-                          }
+                  }
 
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
@@ -121,10 +134,10 @@ forGaussparam<-function(model,param,bivariate)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
-    checkinput <- CkInput(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
-    NULL, grid, NULL, NULL, NULL, model, n,  NULL, param,radius,
-     NULL, NULL, NULL, "Standard", NULL, NULL, NULL,X)
-    if(!is.null(checkinput$error)) stop(checkinput$error)
+    #checkinput <- CkInput(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
+    #NULL, grid, NULL, NULL, NULL, model, n,  NULL, param,radius,
+    # NULL, NULL, NULL, "Standard", NULL, NULL, NULL,X)
+   # if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
     ##############################################################################
     ##############################################################################
@@ -138,13 +151,18 @@ forGaussparam<-function(model,param,bivariate)
   ################################################################################ 
   ################ setting parameters for each model #############################
   ################################################################################
-    
-    if(!bivariate)
-    {sel=substr(names(param),1,4)=="mean"; 
-    num_betas=sum(sel)   ## number of covariates
+     if(!bivariate)
+    {  sel=substr(names(param),1,4)=="mean"; 
+       num_betas=sum(sel)   ## number of covariates
     }
-    else
-    {}
+   if(bivariate)
+    {  sel1=substr(names(param),1,6)=="mean_1"; 
+       num_betas1=sum(sel1)
+       sel2=substr(names(param),1,6)=="mean_2"; 
+       num_betas2=sum(sel2)
+     num_betas=c(num_betas1,num_betas2) 
+    }
+
     k=1
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
@@ -158,11 +176,13 @@ forGaussparam<-function(model,param,bivariate)
           #coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
           if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)}
 
-        if(!bivariate){
+  if(!bivariate){
+
            if(num_betas==1)  mm<-param$mean
            if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
-
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
+
+
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
           'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", 
                     "StudentT","SkewStudentT","TwoPieceStudentT"))) 
@@ -177,8 +197,12 @@ forGaussparam<-function(model,param,bivariate)
                }
         }
         else {
-            mm1<-param$mean_1;param$mean_1=0; 
-            mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
+           if(num_betas[1]==1) {mm1<-param$mean_1;param$mean_1=0}
+            if(num_betas[1]>1)   mm1<- X%*%as.numeric((param[sel1])) 
+            if(num_betas[2]==1) {mm2<-param$mean_2;param$mean_2=0}
+            if(num_betas[2]>1)   mm2<- X%*%as.numeric((param[sel2])) 
+
+            mm=c(mm1,mm2)
             vv1<-param$sill_1;param$sill_1=1-param$nugget_1;
             vv2<-param$sill_2;param$sill_2=1-param$nugget_2;;vv=c(vv1,vv2)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
@@ -223,7 +247,7 @@ forGaussparam<-function(model,param,bivariate)
            # tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2) }
           }
 #################################
-    if(model %in% c("Wrapped"))  {
+   if(model %in% c("Wrapped"))  {
         k=2;
         if(!bivariate){
             if(num_betas==1) mm<-2*atan(param$mean)+pi;   
@@ -234,6 +258,8 @@ forGaussparam<-function(model,param,bivariate)
             mm1<-2*atan(param$mean_1)+pi;param$mean_1=0;
             mm2<-2*atan(param$mean_2)+pi;param$mean_2=0;
             mm=c(mm1,mm2)
+            if(num_betas1>1) {for(i in 1:(num_betas1-1)) param[[paste("mean_1",i,sep="")]]=0}
+            if(num_betas2>1) {for(i in 1:(num_betas2-1)) param[[paste("mean_2",i,sep="")]]=0}
         }} 
      
     npoi=1

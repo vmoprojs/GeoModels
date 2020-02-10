@@ -3,15 +3,12 @@
 //************************************* START hyperg.c*****************************************
 // FUNCTION: 1F1
 //Source: https://github.com/scipy/scipy/blob/master/scipy/special/cephes/hyperg.c
-
+ 
 
 void  hyperg_call(double *a,double *b,double *x,double *res)
 {
     *res = hyperg(*a,*b,*x);
 }
-
-
-
 
  int is_nonpos_int(double x)
 {

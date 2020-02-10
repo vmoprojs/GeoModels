@@ -8,7 +8,7 @@
   random field model.
 }
 \usage{
-NuisParam(model, bivariate=FALSE,num_betas=1)
+NuisParam(model, bivariate=FALSE,num_betas=c(1,1))
 }
 \arguments{
   \item{model}{String; the name of a random field.}

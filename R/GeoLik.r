@@ -497,9 +497,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         df=1/nuisance['df']
          if(df<2)  return(llik)
-         if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
-        #else      corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-log(2)-2*lgamma(df/2)+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
- 
+         #if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
+         #else      
+         corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
 
         nuisance['nugget']=0
@@ -537,24 +537,29 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
 
  
                           
-   loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
+     loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
       {
+
         # Set the parameter vector:
         names(param) <- namesparam
         pram <- c(param, fixed)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
+
+        sel1=substr(names(nuisance),1,6)=="mean_1"
+        mm1=as.numeric(nuisance[sel1])
+        sel2=substr(names(nuisance),1,6)=="mean_2"
+        mm2=as.numeric(nuisance[sel2])
+       
+        X1=as.matrix(X[1:ns[1],]);X2=as.matrix(X[(ns[1]+1):(ns[2]+ns[1]),]); 
+        mm=as.double(c(X1%*%mm1,X2%*%mm2))
         # Standardizes the data:
-         stdata <- data-c(
-              rep(as.numeric(nuisance['mean_1']),ns[1]),
-              rep(as.numeric(nuisance['mean_2']),ns[2]))
-         length(stdata)
+         stdata <- data-mm 
       # Computes the vector of the correlations
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
       # Computes the log-likelihood
-        #loglik <- sum(apply(stdata,1,fname,const=const,cova=corr,dimat=dimat,ident=ident,nuisance=nuisance,setup=setup))
-        loglik_b <- do.call(what=fname,args=list(stdata=stdata,const=const,cova=corr,ident=ident,dimat=dimat,
+       loglik_b <- do.call(what=fname,args=list(stdata=stdata,const=const,cova=corr,ident=ident,dimat=dimat,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_b)
       }
@@ -574,8 +579,13 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     if(spacetime_dyn)  dimat =sum(ns)
 
 
-    if(is.null(dim(X)))  X=as.matrix(rep(1,dimat))  # matrix of covariates
-    num_betas=ncol(X)  
+    if(is.null(dim(X))) {
+    if(!bivariate) X=as.matrix(rep(1,dimat))  # matrix of covariates
+    if( bivariate) {X=as.matrix(rep(1,dimat/2)); X=rbind(X,X)}}
+    
+    if(!bivariate) num_betas=ncol(X)  
+    if( bivariate) num_betas=c(ncol(X),ncol(X)) 
+    
     corrmat<-"CorrelationMat"# set the type of correlation matrix     
     if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
     if(bivariate)  corrmat<-"CorrelationMat_biv_dyn"  
