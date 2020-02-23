@@ -1,7 +1,7 @@
 #include "header.h"
 
 
-
+  
 
 // cdf of  a bivariate Gausssian distribution
 void cdf_norm_call(double *lim1,double *lim2,double *a11,double *a12, double *res)

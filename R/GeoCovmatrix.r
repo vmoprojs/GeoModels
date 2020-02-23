@@ -93,14 +93,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
         corr=cr$corr
 
-        if(!bivariate)                  {
+    if(!bivariate)                  {
         # Builds the covariance matrix:
           varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
           corr <- corr * nuisance['sill']
           varcov[lower.tri(varcov)] <- corr
           varcov <- t(varcov)
           varcov[lower.tri(varcov)] <- corr }
-        if(bivariate)      {
+    if(bivariate)      {
           varcov<-diag(dime)
           varcov[lower.tri(varcov,diag=TRUE)] <- corr
           varcov <- t(varcov)
@@ -946,16 +946,17 @@ if(model==22)  {  ## Log Gaussian
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,X)
-
+  
     if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
     # Initialising the parameters:
+
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
                            NULL, grid, NULL, maxdist, maxtime, model, n, 
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
                            NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X)
-
+       
     if(grid) cc=expand.grid(initparam$coordx,initparam$coordy)
     else     cc=cbind(initparam$coordx,initparam$coordy)  
 
@@ -988,13 +989,16 @@ if(model==22)  {  ## Log Gaussian
         setup$taps<-tp$tapcorr
     }
     if(is.null(X))  initparam$X=as.matrix(rep(1,dime))
-    if(bivariate) {if(is.null(X))  initparam$X=as.matrix(rep(1,dime/2)) }
+
+    if(bivariate) {if(is.null(X))  initparam$X=as.matrix(rep(1,initparam$ns[1]+initparam$ns[2])) }
+  
     if(spacetime||bivariate){
           initparam$NS=cumsum(initparam$ns);
             if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}
             else{               initparam$NS=rep(0,initparam$numtime)}
     }
     if(is.null(initparam$NS)) initparam$NS=0
+
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
                         initparam$NS,
                         initparam$param[initparam$namesnuis],

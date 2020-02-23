@@ -1,6 +1,6 @@
 #include "header.h"
 
-     
+      
 // check the validity of the parameters' range:
 double CheckCor(int *cormod, double *par)
 {

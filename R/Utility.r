@@ -236,15 +236,14 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         if(!is.na(param['pcol'])) if(param['pcol'] > 1 || param['pcol'] < -1  ) return(FALSE)
         return(TRUE)  
     }
-    
- 
-    if(length(coordt)>0&&is.list(X)) X=X[[1]]
+   
     bivariate=CheckBiv(CkCorrModel(corrmodel))
+    if(!bivariate)  if(length(coordt)>0&&is.list(X)) X=X[[1]]
     if(!bivariate) {if(is.null(X))  {X=1;num_betas=1} 
                     else num_betas=ncol(X)  }
     if( bivariate) {if(is.null(X))  {X=1;num_betas=c(1,1)} 
-                    else num_betas=c(ncol(X),ncol(X))  }
-
+                    else 
+                   { num_betas=c(ncol(X[[1]]),ncol(X[[2]])) } }
     #bivariate<-CheckBiv(CheckCorrModel(corrmodel))
     #spacetime<-CheckST(CheckCorrModel(corrmodel))
     #if(is.null(bivariate)&&is.null(bivariate))
@@ -398,9 +397,11 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
   if(bivariate){
+ 
        if(num_betas[1]>1&&num_betas[2]>1){
-       if(ncol(X)!=sum(substr(c(namstart,namfixed),1,6)=="mean_1")&&
-          ncol(X)!=sum(substr(c(namstart,namfixed),1,6)=="mean_2"))
+  
+       if(ncol(X[[1]])!=sum(substr(c(namstart,namfixed),1,6)=="mean_1")&&
+          ncol(X[[2]])!=sum(substr(c(namstart,namfixed),1,6)=="mean_2"))
        { error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
 
@@ -973,6 +974,7 @@ if(!bivariate)      {
 
     if(bivariate)     
    {   
+
      if(num_betas[1]==1&&num_betas[2]==1) {mm1='mean_1';mm2='mean_2'}
   else {mm1='mean_1';mm2='mean_2' 
         for(i in 1:(num_betas[1]-1)) mm1=c(mm1,paste("mean_1",i,sep=""))
@@ -1055,19 +1057,19 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     corrmodel<-CkCorrModel(corrmodel)
     bivariate <- CheckBiv(corrmodel); if(bivariate) coordt=c(1,2)
     spacetime <- CheckST(corrmodel)
-    
-       if(!bivariate){
+       if(!bivariate)
+       {
         if(is.null(X))  {X=1;num_betas=1}
-        else 
-        {
-           if(is.list(X))  num_betas=ncol(X[[1]])
-           else  num_betas=ncol(X) }}
-    if(bivariate){
+           else 
+        {if(is.list(X))  num_betas=ncol(X[[1]])
+           else  num_betas=ncol(X) }
+       }
+       if(bivariate){
         if(is.null(X))  {X=1;num_betas=c(1,1)}
         else
         { if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
             else  num_betas=c(ncol(X),ncol(X)) }}
-
+ 
     namesnuis <- NuisParam(model,bivariate,num_betas)
     ### Set returning variables and initialize the model parameters:
     # Initialises the starting and fixed parameters' names
@@ -1111,12 +1113,14 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
        numcoord <- numcoordx <- numcoordy <- length(coordx)
 
     }
+ 
     # initialize tapering variables:
     tapering<-ia<-idx<-ja<-integer(1)
     nozero<-NULL
     tapmodel=NULL
     cutoff <- FALSE
     distance<-CheckDistance(distance)
+
     ### END settings the data structure
     # START code for the simulation procedure
     if(fcall=="Fitting"){
@@ -1125,11 +1129,14 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         likelihood <- CkLikelihood(likelihood)
         vartype <- CkVarType(vartype)
         type <- CkType(type)
+    
      if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
      {
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
-          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40)) {# Gaussian  or skewgauss or wrapped  gamma type random field:
-           if(!bivariate) {mu <- mean(unlist(data))
+          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40)) 
+          {
+           if(!bivariate) {
+                           mu <- mean(unlist(data))
                            if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
                            else fixed <- list(mean=mu)
@@ -1140,7 +1147,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(model %in% c(21,24,12,26,34,35))   nuisance <- c(0,nuisance)
                            if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
                        }
-           if(bivariate) {
+     if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
                            else                   { mu1 <- mean(data[[1]]); mu2 <- mean(data[[2]])}
                            if(any(type==c(1, 3, 7, 8)))# Checks the type of likelihood
@@ -1152,7 +1159,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(model %in% c(21))  {nuisance <- c(nuisance,0.1)}
 
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
-                 }}
+                 }
+        }
         if(model %in% c(11,14,15,16,19,17,30)){
     
             p <- mean(unlist(data)[!is.na(unlist(data))])
@@ -1191,10 +1199,20 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     if(bivariate) {
             if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
             if(is.list(fixed)) {
+                if(!is.list(data))
+                {
                                 mu1 <- rowMeans(unlist(data))[1];fixed$mean_1 <- mu1# Fixs the mean
                                 mu2 <- rowMeans(unlist(data))[2];fixed$mean_2 <- mu2# Fixs the mean
                                 for(i in 1:(num_betas[1]-1)) fixed[[paste("mean_1",i,sep="")]]=1 
                                 for(i in 1:(num_betas[2]-1)) fixed[[paste("mean_2",i,sep="")]]=1  # fixed$meani=1
+                }
+                  if(is.list(data))
+                {
+                                mu1 <- mean(data[[1]]);fixed$mean_1 <- mu1# Fixs the mean
+                                mu2 <- mean(data[[2]]);fixed$mean_2 <- mu2# Fixs the mean
+                                for(i in 1:(num_betas[1]-1)) fixed[[paste("mean_1",i,sep="")]]=1 
+                                for(i in 1:(num_betas[2]-1)) fixed[[paste("mean_2",i,sep="")]]=1  # fixed$meani=1
+                }
                            }
             else  fixed <- list(mean_1=mu1,mean_2=mu2)
             for(i in 1:num_betas[1]) nuisance1=c(nuisance1,1);

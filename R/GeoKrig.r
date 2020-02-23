@@ -518,13 +518,16 @@ if(type=="Tapering"||type=="tapering")  {
     cc_tap <- matrix(corri_tap,nrow=dimat,ncol=dimat2)
     krig_weights_tap1 <- t(getInv(covmatrix,cc_tap))    # cc_tap%*%as.matrix(invcov)
     if(type_krig=='Simple'||type_krig=='simple')  {
-    if(!bivariate) pp <- c(Xloc%*%betas) + krig_weights_tap1 %*% (c(dataT)-c(X%*%betas)) 
-     else           { 
-          dat <- c(dataT) - as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
-             ww1<- krig_weights_tap1  %*% dat
-             if(which==1) pp <- param$mean_1 + ww1  
-             if(which==2) pp <- param$mean_2 + ww1    
-                     }    
+    if(!bivariate) 
+                { pp <- c(Xloc%*%betas) + krig_weights_tap1 %*% (c(dataT)-c(X%*%betas)) }
+     else           
+                { 
+
+                 dat <- c(dataT) - as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$numcoord), rep(covmatrix$param['mean_2'],covmatrix$numcoord)))
+                 ww1<- krig_weights_tap1  %*% dat
+                 if(which==1) pp <- param$mean_1 + ww1  
+                 if(which==2) pp <- param$mean_2 + ww1    
+                }    
      if(mse) {
          vv <- diag(as.matrix(diag(vvar,dimat2) - 2*krig_weights_tap1%*%cc)
                             +krig_weights_tap1%*%covmatrix_true$covmatrix%*%t(krig_weights_tap1 ) )      ## simple variance kriging tapering predictor variance

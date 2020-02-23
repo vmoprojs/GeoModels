@@ -80,8 +80,9 @@ forGaussparam<-function(model,param,bivariate)
     {
         numcoord=ccov$numcoord; numtime=ccov$numtime;grid=ccov$grid;
         spacetime=ccov$spacetime;bivariate=ccov$bivariate
-        if(!bivariate) if(is.null(dim(X))) X=as.matrix(rep(1,numcoord*numtime))  ## in the case of no covariates
-        if( bivariate) if(is.null(dim(X))) X=as.matrix(rep(1,numcoord*1))
+
+        if(!bivariate) {if(is.null(dim(X))) {X=as.matrix(rep(1,numcoord*numtime))}}  ## in the case of no covariates
+        if( bivariate) {if(is.null(dim(X))) {X=as.matrix(rep(1,ns[1]+ns[2]))}}
     
         if(grid){
             numcoordx=ccov$numcoordx; numcoordy=ccov$numcoordy
@@ -113,18 +114,20 @@ forGaussparam<-function(model,param,bivariate)
                    if(num_betas1>1)  mm1=c(mm1,as.numeric((nuisance[sel1])))
                    if(num_betas2==1) mm2=nuisance$mean_2
                    if(num_betas2>1)  mm2=c(mm2,as.numeric((nuisance[sel2])))
-    
-                   if(is.null(ns))  sim <- c(X%*%mm1,
-                                             X%*%mm2) + simd 
+             
+                  X11=as.matrix(X[1:ns[1],]);X22=as.matrix(X[(ns[1]+1):(ns[2]+ns[1]),]);
+  
 
-                
+                   if(is.null(ns))  {sim <- c(X11%*%mm1,
+                                              X22%*%mm2) + simd }
                   else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
-                                     rep(as.numeric(nuisance['mean_2']),ns[2])) + simd 
+                                         rep(as.numeric(nuisance['mean_2']),ns[2])) + simd 
                   }
 
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
           } 
+       
         return(sim)
     }
 ####################################################################
@@ -297,7 +300,9 @@ forGaussparam<-function(model,param,bivariate)
        coordx <- coords[,1]; coordy <- coords[,2]
        dime=sum(ns)
    }
-   else { dime=ddim(coordx,coordy,coordt) }
+   else { dime=ddim(coordx,coordy,coordt) 
+          if(bivariate) ns=c(length(coordx),length(coordx))/2}
+ 
    if(!bivariate) dd=array(0,dim=c(dime,1,k)) 
    if(bivariate)  dd=array(0,dim=c(dime,2,k))    
    cumu=NULL;#s=0 # for negative binomial  case
@@ -348,6 +353,7 @@ KK=1;sel=NULL;ssp=double(dime)
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
     ####################################
     #####formatting simulation #########
+
     sim<-RFfct1(ccov,dime,nuisance,param,simd,ccov$X,ns)
     ####################################
     ####### starting cases #############
@@ -403,8 +409,10 @@ if(model %in% c("poisson","Poisson"))   {
     #######################################
 if(model %in% c("SkewGaussian","SkewGauss"))   {
         if(!bivariate) sim=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2]
-        if(bivariate)  sim=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
+        if(bivariate)  {sim=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
                                  mm[2]+sk[2]*abs(dd[,,1][,2])+sqrt(vv[2])*dd[,,2][,2])
+                       print(mm);print(sk);print(vv)
+                       }
 
              if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

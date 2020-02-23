@@ -8,7 +8,7 @@
 ### This file contains a set of procedures in order
 ### to estimate the parameters of some covariance
 ### function models for a given dataset.
-### Last change: 28/03/2017.
+### Last change: 28/03/2020.
 ####################################################
 
 
@@ -161,12 +161,12 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     if(length(coordt)>0&&is.list(X)) X=X[[1]]
 
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
-    if(!bivariate)
-        {if(is.null(X))  {X=1;num_betas=1} 
-        else num_betas=ncol(X)  }
-    if(bivariate)
-        {if(is.null(X))  {X=1;num_betas=c(1,1)}  
-         else num_betas=c(ncol(X),ncol(X)) }   
+    
+    if(!bivariate) {if(is.null(X))  {X=1;num_betas=1} 
+                    else num_betas=ncol(X)  }
+    if( bivariate) {if(is.null(X))  {X=1;num_betas=c(1,1)} 
+                    else 
+                   { num_betas=c(ncol(X[[1]]),ncol(X[[2]])) } } 
 
 
     ### Set the initial type of likelihood objects:

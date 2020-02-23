@@ -7,7 +7,7 @@
 ### This file contains a set of procedures
 ### for maximum composite-likelihood fitting of
 ### random fields.
-### Last change: 27/01/2017.
+### Last change: 27/01/2020.
 ####################################################
 
 
@@ -37,12 +37,12 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     likelihood=gsub("[[:blank:]]", "",likelihood)
     type=gsub("[[:blank:]]", "",type)
 
-
+    
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
                              type, varest, vartype, weighted, X)
-
+   
     if(!is.null(checkinput$error))
       stop(checkinput$error)
     ### Initialization global variables:

@@ -8,7 +8,7 @@
 ### This file contains a set of procedures
 ### for maximum likelihood fitting of
 ### random fields.
-### Last change: 27/01/2018.
+### Last change: 27/01/2020
 ####################################################
 
 ### Procedures are in alphabetical order.
@@ -578,13 +578,13 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     if(!spacetime_dyn) dimat <- numcoord*numtime# length of data
     if(spacetime_dyn)  dimat =sum(ns)
 
-
     if(is.null(dim(X))) {
     if(!bivariate) X=as.matrix(rep(1,dimat))  # matrix of covariates
-    if( bivariate) {X=as.matrix(rep(1,dimat/2)); X=rbind(X,X)}}
-    
+    if( bivariate) {X=as.matrix(rep(1,ns[1]+ns[2]));# X=rbind(X,X)
+        }}
+    else{
     if(!bivariate) num_betas=ncol(X)  
-    if( bivariate) num_betas=c(ncol(X),ncol(X)) 
+    if( bivariate) num_betas=c(ncol(X),ncol(X)) }
     
     corrmat<-"CorrelationMat"# set the type of correlation matrix     
     if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
@@ -684,6 +684,8 @@ hessian=FALSE
 if(varest) hessian=TRUE
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
+
+
 
 if(!onlyvar){   # performing optimization
     maxit=10000
