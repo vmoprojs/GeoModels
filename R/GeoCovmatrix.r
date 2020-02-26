@@ -943,6 +943,7 @@ if(model==22)  {  ## Log Gaussian
   }
   taper=corrmodel
 }
+
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,X)
@@ -956,7 +957,7 @@ if(model==22)  {  ## Log Gaussian
                            NULL, grid, NULL, maxdist, maxtime, model, n, 
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
                            NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X)
-       
+    
     if(grid) cc=expand.grid(initparam$coordx,initparam$coordy)
     else     cc=cbind(initparam$coordx,initparam$coordy)  
 
@@ -998,13 +999,13 @@ if(model==22)  {  ## Log Gaussian
             else{               initparam$NS=rep(0,initparam$numtime)}
     }
     if(is.null(initparam$NS)) initparam$NS=0
-
+ 
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
                         initparam$NS,
                         initparam$param[initparam$namesnuis],
                         initparam$numpairs,numpairstot,initparam$model,
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
-
+   
     initparam$param=initparam$param[names(initparam$param)!='mean']
     if(sparse==TRUE) if(!spam::is.spam(covmatrix)) covmatrix=spam::as.spam(covmatrix)
     if(type=="Tapering") sparse=TRUE

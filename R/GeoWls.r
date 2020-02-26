@@ -164,11 +164,14 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     
     if(!bivariate) {if(is.null(X))  {X=1;num_betas=1} 
                     else num_betas=ncol(X)  }
+
     if( bivariate) {if(is.null(X))  {X=1;num_betas=c(1,1)} 
                     else 
-                   { num_betas=c(ncol(X[[1]]),ncol(X[[2]])) } } 
+                   { if(is.list(X)) num_betas=c(ncol(X[[1]]),ncol(X[[2]])) 
+                     else num_betas=c(ncol(X),ncol(X))
+                    } } 
 
-
+    
     ### Set the initial type of likelihood objects:
     initparam$type <- CkType(type)
    # if(substr(model,1,6)=='Binary'||substr(model,1,8)=='Binomial'||substr(model,1,11)=='BinomialNeg'||substr(model,1,4)=='Geom'||substr(model,1,4)=='Pois') return(initparam)
@@ -219,6 +222,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
           }}   
 ################################################################################################################################################
      if(initparam$bivariate) {           ###bivariate case
+   
               if(is.na(fixed["mean_1"])){
               if(is.na(start["mean_1"])) {initparam$param <- c(initparam$fixed["mean_1"], initparam$param)}
               else {initparam$param <- c(start["mean_1"], initparam$param)}

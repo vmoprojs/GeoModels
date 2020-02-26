@@ -242,8 +242,10 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     if(!bivariate) {if(is.null(X))  {X=1;num_betas=1} 
                     else num_betas=ncol(X)  }
     if( bivariate) {if(is.null(X))  {X=1;num_betas=c(1,1)} 
-                    else 
-                   { num_betas=c(ncol(X[[1]]),ncol(X[[2]])) } }
+                    else { 
+                               if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
+                               else  num_betas=c(ncol(X),ncol(X))
+                          } }
     #bivariate<-CheckBiv(CheckCorrModel(corrmodel))
     #spacetime<-CheckST(CheckCorrModel(corrmodel))
     #if(is.null(bivariate)&&is.null(bivariate))
@@ -397,10 +399,13 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
   if(bivariate){
- 
+ # print(dim(X))
+ # print(num_betas)
+
        if(num_betas[1]>1&&num_betas[2]>1){
   
-       if(ncol(X[[1]])!=sum(substr(c(namstart,namfixed),1,6)=="mean_1")&&
+       if(is.list(X)) 
+            if(ncol(X[[1]])!=sum(substr(c(namstart,namfixed),1,6)=="mean_1")&&
           ncol(X[[2]])!=sum(substr(c(namstart,namfixed),1,6)=="mean_2"))
        { error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
@@ -974,7 +979,7 @@ if(!bivariate)      {
 
     if(bivariate)     
    {   
-
+   #print(num_betas)
      if(num_betas[1]==1&&num_betas[2]==1) {mm1='mean_1';mm2='mean_2'}
   else {mm1='mean_1';mm2='mean_2' 
         for(i in 1:(num_betas[1]-1)) mm1=c(mm1,paste("mean_1",i,sep=""))
@@ -1057,19 +1062,18 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     corrmodel<-CkCorrModel(corrmodel)
     bivariate <- CheckBiv(corrmodel); if(bivariate) coordt=c(1,2)
     spacetime <- CheckST(corrmodel)
-       if(!bivariate)
+    if(!bivariate)
        {
         if(is.null(X))  {X=1;num_betas=1}
            else 
         {if(is.list(X))  num_betas=ncol(X[[1]])
            else  num_betas=ncol(X) }
-       }
-       if(bivariate){
+    }
+    if(bivariate){
         if(is.null(X))  {X=1;num_betas=c(1,1)}
         else
         { if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
             else  num_betas=c(ncol(X),ncol(X)) }}
- 
     namesnuis <- NuisParam(model,bivariate,num_betas)
     ### Set returning variables and initialize the model parameters:
     # Initialises the starting and fixed parameters' names

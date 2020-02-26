@@ -58,7 +58,6 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X)#31
     if(!is.null(initparam$error))   stop(initparam$error)
-
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
     if(optimizer=='L-BFGS-B'|| optimizer=='nlminb' || length(initparam$param)==1){
 
@@ -81,7 +80,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
       initparam$upper <- uu;initparam$lower <- ll
      }}
       #if(length(param)==1)  {initparam$upper=1000}
-  
+
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
