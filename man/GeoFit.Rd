@@ -390,6 +390,7 @@ Rf with marginal counts data
   \item{message}{Extra message passed from the numerical routines;}
   \item{model}{The density associated to the likelihood objects;}
   \item{n}{The number of trials in a binominal RF;the number of successes in a  negative Binomial RFs;} 
+  \item{ns}{The number of (different) location sites in the bivariate case;} 
    \item{nozero}{In the case of tapered likelihood  the percentage of non zero values in the covariance matrix.
   Otherwise is NULL.}
   \item{numcoord}{The number of spatial coordinates;}

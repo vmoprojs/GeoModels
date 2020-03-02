@@ -655,7 +655,7 @@ hessian=FALSE
     #hessian=TRUE
 }
 
- if(model==34){   ## Tukeyh case
+ if(model==40){   ## Tukey2h case
      lname <- 'loglik_tukey2h'
     if(bivariate)  {lname <- 'loglik_biv_tukey2h'}
     #hessian=TRUE

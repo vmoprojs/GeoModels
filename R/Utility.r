@@ -7,7 +7,7 @@
 ### Description:
 ### This file contains a set of procedures
 ### for the set up of all the package routines.
-### Last change: 28/03/2019.
+### Last change: 28/03/2020.
 ####################################################
 
 # Check if the correlation is bivariate
