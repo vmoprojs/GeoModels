@@ -122,6 +122,12 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     nuisance <- param[covmatrix$namesnuis]
     sel=substr(names(nuisance),1,4)=="mean"
     betas=as.numeric(nuisance[sel])   ## mean paramteres
+    if(bivariate) {
+                 sel1=substr(names(nuisance),1,6)=="mean_1"
+                 betas1=as.numeric(nuisance[sel1])   ## mean1 paramteres
+                 sel2=substr(names(nuisance),1,6)=="mean_2"
+                 betas2=as.numeric(nuisance[sel2])   ## mean1 paramteres
+               }
     other_nuis=as.numeric(nuisance[!sel]) 
     ################################################
     ################################################
@@ -153,9 +159,14 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     ###############################################################
     if((spacetime||bivariate)&&spacetime_dyn) dataT=t(unlist(data)) 
     else dataT=t(data)
-  
-    
 
+    if(bivariate){ X11=X[1:covmatrix$ns[1],]
+                   X22=X[(covmatrix$ns[1]+1):(covmatrix$ns[1]+covmatrix$ns[2]),]               
+                   if(!is.null(Xloc))
+                         {
+                          X11_loc=Xloc[(1:(nrow(Xloc)/2)),]
+                          X22_loc=Xloc[(nrow(Xloc)/2+1):nrow(Xloc),]}
+                  }
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -179,8 +190,12 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
     ## standard kriging  ##############
     ################################   
 
-       mu=X%*%betas
-       muloc=Xloc%*%betas
+       if(!bivariate) mu=X%*%betas
+       if(bivariate)  mu=c(X11%*%matrix(betas1),X22%*%matrix(betas2))
+
+   
+       if(!bivariate) muloc=Xloc%*%betas
+       if(bivariate)  {if(!is.null(Xloc)) muloc=c(X11_loc%*%matrix(betas1),X22_loc%*%matrix(betas2))}
     if((type=="Standard"||type=="standard")) {
          ## Computing CORRELATIONS between the locations to predict and the locations observed
         cc=.C('Corr_c',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
@@ -550,7 +565,9 @@ if(covmatrix$model %in% c(2,11,14,19,30))
 {  
          if(type=="Standard"||type=="standard") {
 
-     mu0 = Xloc%*%betas; mu  = X%*%betas 
+     mu0 = Xloc%*%betas; 
+     if(!bivariate) mu  = X%*%betas 
+     if(bivariate)  mu  = c(X11%*%betas1,X22%*%betas2)
      if(covmatrix$model!=30) p0=pnorm(mu0); pmu=pnorm(mu)   
      if(covmatrix$model==30) p0=exp(mu0); pmu=exp(mu) 
      kk=0
@@ -649,6 +666,7 @@ if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
                    coordx = covmatrix$coordx,
                    coordy = covmatrix$coordy,
                    coordt = covmatrix$coordt,
+                   coordx_dyn=covmatrix$coordx_dyn,
                    covmatrix=covmatrix$covmatrix,
                    corrmodel = corrmodel,
                    data=data,
@@ -656,6 +674,7 @@ if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
                    grid=covmatrix$grid,
                    loc=loc,
                    nozero=covmatrix$nozero,
+                   ns=covmatrix$ns,
                    numcoord = covmatrix$numcoord,
                    numloc= numloc,
                    numtime = covmatrix$numtime,

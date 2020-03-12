@@ -51,8 +51,86 @@ if(model %in% c("Gamma"))
    plot(sort(gamma.quantiles),sort(c(dd)), main ="Gamma qq-plot ",xlab=xlab,ylab=ylab)
 }
 #######################################
+if(model %in% c("Tukeyh"))
+{
+
+tail = as.numeric(fit$param["tail"])
+pTukeyh = function(x,tail){
+    t = sqrt(VGAM::lambertW(tail*x*x)/tail)*sign(x)
+    pnorm(t)
+    }
+
+f = function(x) pTukeyh(x,tail = tail)
+f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
+tukeyh.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
+plot(tukeyh.quantiles,sort(c(dd)),main="Tukey-h qq-plot",xlab=xlab,ylab=ylab)
+}
+
+#######################################
+if(model %in% c("TwoPieceGaussian"))
+{
+skew = as.numeric(fit$param["skew"])
+
+ptpGaussian = function(x,skew){
+    (1+skew)*pnorm(x/(1+skew))*I(x<0) + (skew + (1-skew)*pnorm(x/(1-skew)))*I(x>=0)
+}
+
+f = function(x) ptpGaussian(x,skew = skew)
+f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
+
+twopieceGaussian.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
+
+plot(twopieceGaussian.quantiles,sort(c(dd)),main="Two-Piece Gaussian qq-plot",xlab=xlab,ylab=ylab)
+
+}
+#######################################
+if(model %in% c("TwoPieceStudentT"))
+{
+qtwopieceStudent = function(probability,skew,df){
+    qt(probability/(1+skew),df = df)*(1+skew)*I(probability < (skew+1)*0.5) + (qt((probability-skew)/(1-skew),df = df)*(1-skew))*I(probability >= (skew+1)*0.5)
+}
+
+skew = as.numeric(fit$param["skew"])
+df   = 1/as.numeric(fit$param["df"])
+
+ptpStudent = function(x,skew,df){
+    (1+skew)*pt(x/(1+skew),df = df)*I(x<0) + (skew + (1-skew)*pt(x/(1-skew),df = df))*I(x>=0)
+}
+
+f = function(x) ptpStudent(x,skew = skew,df = df)
+f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
+
+twopieceStudent.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
+plot(twopieceStudent.quantiles,sort(c(dd)),main="Two-Piece Student qq-plot",xlab=xlab,ylab=ylab)
+}
+#######################################
+if(model %in% c("TwoPieceTukeyh"))
+{
+skew             = as.numeric(fit$param["skew"])
+tail             = as.numeric(fit$param["tail"])
+
+
+ptpTukeyh = function(x,skew,tail){
+    t = sqrt(VGAM::lambertW(tail*x*x)/tail)*sign(x)
+    (1+skew)*pnorm(t/(1+skew))*I(t<0) + (skew + (1-skew)*pnorm(t/(1-skew)))*I(t>=0)
+}
+
+f = function(x) ptpTukeyh(x,skew = skew,tail = tail)
+f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
+
+twopieceTukeyh.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
+plot(twopieceTukeyh.quantiles,sort(c(dd)),main="Two-Piece Tukey-h qq-plot",xlab=xlab,ylab=ylab)
+}
+
+
+
 abline(0,1)
  }
+
+
+
+
+
 ##########################################################
 ##########################################################
 

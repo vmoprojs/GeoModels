@@ -5,6 +5,6 @@ S3method(print,GeoFit)
 S3method(print,GeoWLS)
 importFrom("grDevices", dev.cur)
 importFrom("graphics", abline, lines, par, persp, plot,points)
-importFrom("stats", nlminb, dist, qqnorm,  qweibull, nlm, optim, optimize, pchisq,pnorm,qnorm,qgamma,rgamma,rnorm, uniroot, var,cor)
+importFrom("stats", nlminb, dist, qqnorm,  qweibull, nlm, optim, optimize, pchisq,pnorm,qnorm,qgamma,rgamma,rnorm, pt,qt,uniroot, var,cor)
 importFrom("methods","is", "new", "slot<-")
 
