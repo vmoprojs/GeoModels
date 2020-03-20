@@ -103,10 +103,10 @@ fit$fixed=fit$fixed[!is.na(fit$fixed)]
 
 
 
-if(model %in% c("Gaussian_misp_StudentT","StudentT")) 
-{
-     fit$param['df']=as.numeric(param['df'])
-}
+#if(model %in% c("Gaussian_misp_StudentT","StudentT")) 
+#{
+#     fit$param['df']=as.numeric(param['df'])
+#}
 
 ### formatting data
 if(fit$spacetime) 

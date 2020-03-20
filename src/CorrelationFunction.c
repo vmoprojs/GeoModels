@@ -2181,7 +2181,6 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[v];j++){
-           //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
            rho[h]=CorFct(cormod,lags,0,par,t,v);
            h++;}}
@@ -2189,21 +2188,14 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
     else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-       // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
         
 rho[h]=CorFct(cormod,lags,lagt,par,t,v);
               h++;
               }}
     }}}
-    //Rprintf("%d %d %d %d %d %d\n",h,ntime[0],ns[0],ns[1],ns[2],ns[3]);
   return;
 }
-
-
-
-
-
 
 // Computation of the upper (lower) triangular  correlation matrix:  geom spatial-temporal case
 void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, double *coordt, 
@@ -2217,7 +2209,6 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-         // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
     lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
@@ -2227,7 +2218,6 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
                 else {  
                     lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
@@ -2250,7 +2240,6 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-      //    lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
  lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                          ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
    
@@ -2261,7 +2250,7 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
                 else {  
                     lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-        // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+        
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                        ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
@@ -2286,7 +2275,6 @@ void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, doub
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i;j<ns[t];j++){
-      //    lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
  lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                          mui=exp(mean[i+ns[t]*t]);muj=exp(mean[j+ns[t]*v]);
                         corr=CorFct(cormod,lags,0,par,t,v);
@@ -2296,7 +2284,7 @@ void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, doub
                 else {  
                     lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-        // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+        
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                        mui=exp(mean[i+ns[v]*t]);muj=exp(mean[j+ns[v]*v]);
                                corr=CorFct(cormod,lags,lagt,par,t,v);
@@ -2328,7 +2316,6 @@ for(t=0;t<ntime[0];t++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-          //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
          cc=CorFct(cormod,lags,0,par,t,v);
        a=(1+cc)/(1-nuis[4]*(1+cc));
@@ -2340,7 +2327,6 @@ for(t=0;t<ntime[0];t++){
     else {  
       lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
-         //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
      cc=CorFct(cormod,0,lagt,par,t,v);
       a=(1+cc)/(1-nuis[4]*(1+cc));
@@ -2439,10 +2425,6 @@ void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double 
   return;
 }
 
-
-
-
-
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
@@ -2453,11 +2435,6 @@ void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double 
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-
-
-
-
-
 
 //computation of correlation between a points and a vector (for kriging)
 void Corr_c(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,int *tloc,
@@ -2481,20 +2458,17 @@ if(*spt) {
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){
                       dit=fabs(coordt[t]-time[v]);
-                for(i=0;i<ns[t];i++){ //for(i=0;i<*ncoord;i++){
-                     
-                  //dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
-                   dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
-              //  Rprintf("%d %d %d %d  %f %f\n",i,j,t,v,dis,dit);
-		   cc[h]=CorFct(cormod,dis,dit,par,0,0);
-		    h++;}}}}		    
+                for(i=0;i<ns[t];i++){      
+                   dis=dist(type[0],coordx[(i+NS[t])],locx[j],
+                                    coordy[(i+NS[t])],locy[j],radius[0]);
+       cc[h]=CorFct(cormod,dis,dit,par,0,0);
+        h++;}}}}        
 }
 
     if(*biv) {  
        for(j=0;j<(*nloc);j++){
             for(t=0;t<*ntime;t++){
-                    for(i=0;i<ns[t];i++){ //for(i=0;i<*ncoord;i++){
-                    //    dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
+                    for(i=0;i<ns[t];i++){
                       dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
                                 cc[h]=CorFct(cormod,dis,0,par,which[0],t);
                                 h++;}}}}
@@ -2606,59 +2580,8 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
 
 
 
-/*
-void Corr_c_tukeygh(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
-      int *model,int *tloc,int *n, int *ns,int *ntime, double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
-{
-    int i,j,h=0;
-    double dis=0.0,cor=0.0,a=0.0,b=0.0,c=0.0,t1=0.0,sk2=0.0,tm=0.0,consta=0.0;
-    
-    t1=1-nuis[4];c=R_pow(t1,2) - R_pow(nuis[4],2);sk2=R_pow(nuis[3],2);
-
-   if(nuis[3]==0) {consta= ( 2/(1-nuis[4]*(2))   -1)/sqrt(c) ;}
-    else {tm=(exp(sk2/(2*t1))-1)/(nuis[3]*sqrt(t1));
-          consta= ((exp(sk2 * 2/(1-2*nuis[4])) -
-               2* exp( sk2 *0.5)+1))/(sk2*sqrt(c)) - R_pow(tm,2);}
-
-
-    if(!spt[0]&&!biv[0])  {   //spatial case
-    
-            for(j=0;j<(*nloc);j++){
-                for(i=0;i<(*ncoord);i++){
-                     dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
-                     cor=CorFct(cormod,dis,0,par,0,0);
-
-                      a=(1+cor)/(1-nuis[4]*(1+cor));b=0.5* (1-nuis[4]*(1-cor*cor));
-
-  if(nuis[3]==0)        cc[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  cc[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;   
-                    h++;
-                }}}
-    else{    //spatio temporal  case or bivariate case
-        
-        int t,v;double dit=0.0;
-        
-        if(*spt) {
-              for(j=0;j<(*nloc);j++){
-        for(v=0;v<(*tloc);v++){
-           for(t=0;t<*ntime;t++){
-                      dit=fabs(coordt[t]-time[v]);
-               for(i=0;i<ns[t];i++){
-                  dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
-                                cor=CorFct(cormod,dis,dit,par,0,0);
-                                  a=(1+cor)/(1-nuis[4]*(1+cor));b=0.5* (1-nuis[4]*(1-cor*cor));
-
-  if(nuis[3]==0)        cc[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  cc[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-
-                                h++;}}}}
-          }   
-    }}
-*/
-
-
  void Corr_c_tap(double *cc,double *cc_tap,double *coordx, double *coordy, double *coordt, int *cormod, int *cormodtap, int *grid, double *locx,  double *locy,
-                 double *mxd,double *mxt, int *ncoord, int *nloc, int *ns, int *NS,int*tloc,int *ntime, double *par, int *spt, int *biv, double *time,int *type,int *which,double *radius)
+                 double *mxd,double *mxt, int *ncoord, int *nloc, int *ns,int *NS,int*tloc,int *ntime, double *par, int *spt, int *biv, double *time,int *type,int *which,double *radius)
 {
 int i,j,h=0,*modtap;
 double *partap,dis=0.0;
@@ -2694,14 +2617,10 @@ if(*spt) {
            for(t=0;t<*ntime;t++){
                       dit=fabs(coordt[t]-time[v]);
                for(i=0;i<ns[t];i++){
-                 // dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);    
-                    ///dis=dist(type[0],coordx[(i+NS[t])],locx[(j+NS[v])],coordy[(i+NS[t])],locy[(j+NS[v])],radius[0]);
-                      dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
+                  dis=dist(type[0],coordx[(i+NS[t])],locx[j],coordy[(i+NS[t])],locy[j],radius[0]);
 		    cc[h]=CorFct(cormod,dis,dit,par,t,v);
 	         cc_tap[h]=cc[h]*CorFct(modtap,dis,dit,partap,t,v);
 		    h++;}}}}
-
-		
 
     Free(partap);}
     if(*biv)  {
@@ -2723,7 +2642,6 @@ if(*spt) {
 }
     Free(modtap);
 }
-
 
 
 // Derivatives with respect to R_power2 of the Cauchy correlation model:
@@ -2780,9 +2698,6 @@ double DWen1Sc(double lag, double scale, double smooth)
     else return 0;
 }
 
-
-
-
 // Derivatives with respect to R_power of the Stable correlation model:
 double DStabPow(double lag, double R_power, double scale, double rho)
 {
@@ -2806,9 +2721,6 @@ double DWhMatSc(double eps, double lag, double scale, double smooth)
       (pscale-smooth*bessel_k(lag/scale,smooth,1)/scale);}
   else return 0;
 }
-
-
-
 
 // Derivatives with respect to scale of the wave model
 double DWaveSc(double lag, double scale)
@@ -2835,9 +2747,6 @@ double DWen1Sm(double lag, double scale, double smooth)
     if (lag<=scale) return R_pow(lag-scale,5)*R_pow((scale-lag)/scale,smooth)*( (log((scale-lag)/scale)*(smooth*lag+5*lag+scale))+lag)/R_pow(scale,6);
     else return 0;
 }
-
-
-
 
 double DMat_Cauchy_sc_t(double h,double u,double R_power2,double scale_s,double scale_t,double smooth)
 {
@@ -2910,10 +2819,6 @@ double DMat_Exp_sm(double h,double u,double eps,double scale_s,double scale_t,do
   return arg2;
 }
 
-
-
-
-
 /***************************************************/
 /* derivative of bivariate wendland2 model */
 /***************************************************/
@@ -2967,11 +2872,6 @@ double DWen1sep_biv_smoo(double h,double var11,double var22,double nug11,double 
 }
 /***************************************************/
 /***************************************************/
-
-
-
-
-
 
 /***************************************************/
 /* derivative of bivariate matern separable  model */
@@ -3027,14 +2927,6 @@ double Dmatsep_biv_col(double h,double var11,double var22,double nug11,double nu
 }
 /***************************************************/
 /***************************************************/
-
-
-
-
-
-
-
-
 /***************************************************/
 /* derivative of full bivariate matern model */
 /***************************************************/
@@ -3134,10 +3026,6 @@ double DMat_biv_col(double h,double var11,double var22,double nug11,double nug22
     if((c11==0&&c22==1)||(c11==1&&c22==0))  rho=sqrt(var11*var22)*CorFunWitMat(h, scale12,smoo12);
     return rho;
 }
-
-
-
-
 
 
 /***************************************************/
@@ -3243,8 +3131,6 @@ double DWen1_biv_col(double h,double var11,double var22,double nug11,double nug2
     if((c11==0&&c22==1)||(c11==1&&c22==0))  rho=sqrt(var11*var22)*CorFunWend1_tap(h,scale12,smoo12);
     return rho;
 }
-
-
 
 /***************************************************/
 /* derivative of LMC  (contr) model */

@@ -9,10 +9,10 @@
 ### This file contains function to compute stderr estimation
 ### for composite likelihoodestimation
 ### and model selection critera given an object of class GeoFit
-### Last change: 28/03/2019.
+### Last change: 28/03/2020.
 ####################################################
    
-GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead")
+GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",seed=1)
 {
 
 k=1;res=NULL;#H=list();
@@ -22,7 +22,7 @@ if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TR
 model=fit$model
 if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
 if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
-
+set.seed(round(seed))
 while(k<=K){
 data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn,
