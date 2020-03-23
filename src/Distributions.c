@@ -1506,12 +1506,11 @@ double rho2=rho*rho;
 double ki=mi/(1-rho2);
 double kj=mj/(1-rho2);
 double K=rho2*(1-rho2)/sqrt(mi*mj);
-while(r<4000){
+while(r<150000){
   sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
-if((fabs(sum-res0)<1e-10)  ) {break;}
+if((fabs(sum-res0)<1e-25)  ) {break;}
 else {res0=sum;}
-        r++;
-    }
+        r++;}
 return(sum*K);
 }
 

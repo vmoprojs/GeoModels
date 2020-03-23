@@ -79,6 +79,8 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
         fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
+
+
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
           as.integer(ns),as.integer(NS),
@@ -149,22 +151,25 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             #print(other_nuis)
            # if(bivariate) fname <- "CorrelationMat_biv_bin_dyn2"
             if(bivariate) fname <- "CorrelationMat_biv_bin_dyn2"
-            cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
+            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-            corr=cr$corr
+            corr=cr$corr # ojo que corr en este caso es una covarianza
             if(!bivariate)                  {
                 # Builds the covariance matrix:
                 varcov <-  diag(dime) 
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr
+                varcov[lower.tri(varcov)] <- corr ###   
                 varcov <- t(varcov)
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                varcov[lower.tri(varcov)] <- corr ##    
                 if(model %in% c(2,11)) {
-                 pg=pnorm(mu)
-                 diag(varcov)=pg*(1-pg)*n}
+                pg=pnorm(mu)
+                vv=pg*(1-pg)*n
+                #V=sqrt(vv%*%t(vv)); 
+                #varcov=V*varcov
+                diag(varcov)=vv
+              }
                 }  
-
                  ## covariance matrix  min(n)=k for the type 2
             #   if(bivariate)      {
             #    varcov<-diag(dime)
@@ -173,6 +178,49 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             #    varcov[lower.tri(varcov,diag=T)] <- corr
             #}
         }
+    ###############################################################
+if(model==30)   ##  poisson case
+    {
+
+         sel=substr(names(nuisance),1,4)=="mean"
+         mm=as.numeric(nuisance[sel]) 
+         mu = X%*%mm
+         other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
+        fname <-"CorrelationMat_poi2"
+       # if(spacetime) fname <- "CorrelationMat_st2"
+        if(spacetime) fname <- "CorrelationMat_st_dyn_poi2"
+       #if(bivariate) fname <- "CorrelationMat_biv2"
+        if(bivariate) fname <- "CorrelationMat_biv_poi_dyn2"
+         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
+          as.integer(corrmodel), as.double(mu),as.double(other_nuis), as.double(paramcorr),as.double(radius),
+          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
+ # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
+ #      "integer","double","double","double","integer","integer"),        
+  #     #corr=vector_dc("numeric", numpairstot), 
+  #     corr=double(numpairstot),
+  #     coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
+  #           INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
+  #           NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)      
+   corr=cr$corr  #ojo que corr en este caso es una covarianza
+  if(!bivariate) {
+        # Builds the covariance matrix:
+                varcov <-  diag(dime) 
+                varcov[lower.tri(varcov)] <- corr ###   
+                varcov <- t(varcov)
+                varcov[lower.tri(varcov)] <- corr ##    
+        vv=exp(mu)
+       diag(varcov)=vv
+        }
+    ## todo
+    #if(bivariate)      {
+     #     varcov<-diag(dime)
+      #    varcov[lower.tri(varcov,diag=T)] <- corr
+       #   varcov <- t(varcov)
+        #  varcov[lower.tri(varcov,diag=T)] <- corr
+        #}
+      ###  
+}
+###############################################################  
 ###############################################################
          if(model==14)  {  ##  geometric Gaussian
           ##nuisance <- param[namesnuis]
@@ -187,19 +235,19 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
            # if(bivariate) fname <- "CorrelationMat_biv_geom_dyn2"
             if(bivariate) fname <- "CorrelationMat_biv_geom_dyn2"
       
-            cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
+            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-            corr=cr$corr
+            corr=cr$corr  #ojo que corr en este caso es una covarianza
             if(!bivariate)                  {
                 # Builds the covariance matrix:
                 varcov <-  diag(dime) 
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr
+                varcov[lower.tri(varcov)] <- corr       ###   
                 varcov <- t(varcov)
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                varcov[lower.tri(varcov)] <- corr      
                 pg=pnorm(mu)
-                diag(varcov)=(1-pg)/pg^2
+                diag(varcov)=(1-pg)/pg^2                         ##    
                 } ## cov matrix
                 ##pp=pnorm(X%*%mm) # pr of success
                 ##varcov=varcov*((1-pp)/pp^2) ## covariance matrix
@@ -220,16 +268,16 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
             if(spacetime) fname <- "CorrelationMat_st_dyn_binneg2"
            # if(bivariate) fname <- "CorrelationMat_biv_binneg_dyn2"
            # if(bivariate&&spacetime_dyn) fname <- "CorrelationMat_biv_binneg_dyn2"
-            cr=.C(fname, corr=double(numpairstot+dime),  as.double(coordx),as.double(coordy),as.double(coordt),
+            cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             corr=cr$corr
             if(!bivariate)                  {
                 # Builds the covariance matrix:
                 varcov <-  diag(dime) 
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr
+                varcov[lower.tri(varcov)] <- corr
                 varcov <- t(varcov)
-                varcov[lower.tri(varcov,diag=TRUE)] <- corr 
+                varcov[lower.tri(varcov)] <- corr 
                 pg=pnorm(mu)
                 diag(varcov)=n*(1-pg)/pg^2
               }  
@@ -672,51 +720,7 @@ if(model==21)   ##  gamma case
       ###  
 }
 
-###############################################################
-if(model==30)   ##  poisson case
-    {
-
-         sel=substr(names(nuisance),1,4)=="mean"
-         mm=as.numeric(nuisance[sel]) 
-         mu = X%*%mm
-         other_nuis=0# not necessary as.numeric(nuisance[!sel])   ## other nuis parameters (nugget sill skew df)
-        fname <-"CorrelationMat_poi2"
-       # if(spacetime) fname <- "CorrelationMat_st2"
-        if(spacetime) fname <- "CorrelationMat_st_dyn_poi2"
-       #if(bivariate) fname <- "CorrelationMat_biv2"
-        if(bivariate) fname <- "CorrelationMat_biv_poi_dyn2"
-         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(mu),as.double(other_nuis), as.double(paramcorr),as.double(radius),
-          as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
-
- # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
- #      "integer","double","double","double","integer","integer"),        
-  #     #corr=vector_dc("numeric", numpairstot), 
-  #     corr=double(numpairstot),
-  #     coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
-  #           INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
-  #           NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)      
-
-
-  if(!bivariate) {
-        # Builds the covariance matrix:
-        varcov <-  diag(1,dime);  
-        varcov[lower.tri(varcov)] <- cr$corr
-        varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <-cr$corr
-        vv=exp(mu);V=sqrt(vv%*%t(vv)); 
-        varcov=varcov*V     ## covarianvce matrix 
-        }
-    ## todo
-    #if(bivariate)      {
-     #     varcov<-diag(dime)
-      #    varcov[lower.tri(varcov,diag=T)] <- corr
-       #   varcov <- t(varcov)
-        #  varcov[lower.tri(varcov,diag=T)] <- corr
-        #}
-      ###  
-}
-###############################################################           
+         
 if(model==26)   ##  weibull case
     {
          sel=substr(names(nuisance),1,4)=="mean"

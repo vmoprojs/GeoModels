@@ -2019,10 +2019,12 @@ void CorrelationMat_poi2(double *rho,double *coordx, double *coordy, double *coo
    
      for(i=0;i<(ncoord[0]-1);i++){
       for(j=(i+1);j<ncoord[0];j++){
+      //   for(i=0;i<(ncoord[0]);i++){
+      //for(j=i;j<ncoord[0];j++){
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
     corr=CorFct(cormod,lags,0,par,0,0);
      mui=exp(mean[i]);muj=exp(mean[j]);
-    rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+    rho[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);
        h++;
     }}
   return;
@@ -2035,8 +2037,10 @@ void CorrelationMat_bin2(double *rho,double *coordx, double *coordy, double *coo
     double psj=0.0,lags=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
     //if(nuis[1]<0 || nuis[2]<=0 || CheckCor(cormod,par)==-2){rho[0]=-2;return;}// compute the correlations:
     //if(nuis[1]<0 || nuis[2]<=0){rho[0]=-2;return;}// compute the correlations:
-    for(i=0;i<(ncoord[0]);i++){
-      for(j=i;j<ncoord[0];j++){
+      for(i=0;i<(ncoord[0]-1);i++){
+      for(j=(i+1);j<ncoord[0];j++){
+    //     for(i=0;i<(ncoord[0]);i++){
+    //  for(j=i;j<ncoord[0];j++){
         ai=mean[i];aj=mean[j];
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
@@ -2055,8 +2059,8 @@ void CorrelationMat_binneg2(double *rho,double *coordx, double *coordy, double *
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
-    for(i=0;i<(ncoord[0]);i++){
-      for(j=i;j<ncoord[0];j++){
+      for(i=0;i<(ncoord[0]-1);i++){
+      for(j=(i+1);j<ncoord[0];j++){
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
              ai=mean[i];aj=mean[j];
              psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
@@ -2075,8 +2079,8 @@ void CorrelationMat_geom2(double *rho,double *coordx, double *coordy, double *co
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
-    for(i=0;i<(ncoord[0]);i++){
-      for(j=(i);j<ncoord[0];j++){
+         for(i=0;i<(ncoord[0]-1);i++){
+      for(j=(i+1);j<ncoord[0];j++){
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
              ai=mean[i];aj=mean[j];
              psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
@@ -2204,19 +2208,19 @@ void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, dou
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
        double psj,ai,aj,p1,p2;
-   for(t=0;t<ntime[0];t++){
+for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i;j<ns[t];j++){
+         for(j=i+1;j<ns[v];j++){
     lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
                    rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
                         h++;}}
-                else {  
-                    lagt=fabs(coordt[t]-coordt[v]);
+          else {  
+         lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
@@ -2235,34 +2239,30 @@ void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, doub
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
        double psj,ai,aj,p1,p2;
-  for(t=0;t<ntime[0];t++){
+for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i;j<ns[t];j++){
+         for(j=i+1;j<ns[v];j++){
  lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                          ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
-   
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);///sqrt(p1*(1-p1)*p2*(1-p2));
+                        rho[h]=n[0]*(psj-p1*p2);
                         h++;}}
-                else {  
-                    lagt=fabs(coordt[t]-coordt[v]);
+            else {  
+         lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
         
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                        ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);///sqrt(p1*(1-p1)*p2*(1-p2));
+                        rho[h]=n[0]*(psj-p1*p2);
                         h++;}}
             }}}
     return;
 }
-
-
-
 // Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
 void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
   double *nuis, double *par,double *radius, int *ns, int *NS)
@@ -2270,34 +2270,30 @@ void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, doub
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
        double mui,muj,corr;
-  for(t=0;t<ntime[0];t++){
+for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
-         for(j=i;j<ns[t];j++){
+         for(j=i+1;j<ns[v];j++){
  lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                          mui=exp(mean[i+ns[t]*t]);muj=exp(mean[j+ns[t]*v]);
                         corr=CorFct(cormod,lags,0,par,t,v);
-                      
-                      rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+                      rho[h]= sqrt(mui* muj)*corr_pois((1-nuis[0])*corr,mui, muj);
                         h++;}}
-                else {  
-                    lagt=fabs(coordt[t]-coordt[v]);
+               else {  
+         lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
         
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                        mui=exp(mean[i+ns[v]*t]);muj=exp(mean[j+ns[v]*v]);
                                corr=CorFct(cormod,lags,lagt,par,t,v);
-                     rho[h]=corr_pois((1-nuis[0])*corr,mui, muj);
+                     rho[h]=sqrt(mui* muj)*corr_pois((1-nuis[0])*corr,mui, muj);
                         h++;}}
             }}}
     return;
 }
 
-
-
-
-
+//###########################
 void CorrelationMat_st_dyn_tukeygh2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
   int *ns, int *NS)
 {
@@ -2484,19 +2480,19 @@ void Corr_c_poi(double *cc,double *coordx, double *coordy, double *coordt, int *
     double dis=0.0,mui=0.0,muj=0.0,corr=0.0;
     if(!spt[0]&&!biv[0])  {   //spatial case
     
-            for(j=0;j<(*nloc);j++){
+          for(j=0;j<(*nloc);j++){
                 for(i=0;i<(*ncoord);i++){
                      dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
                      corr=CorFct(cormod,dis,0,par,0,0);
                         mui=exp(mean[i]);
                         muj=exp(mean[j]);
-                       cc[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);  // geometric
+                       cc[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);  
                     h++;}}
            
       }
     else{    //spatio temporal  case or bivariate case
 
-        if(*spt) {
+           if(*spt) {
         for(j=0;j<(*nloc);j++){
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){
@@ -2559,7 +2555,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                              ai=mean[j+*nloc * v];      
                              aj=mean[i+*nloc * t];
                                 psj=pbnorm(cormod,dis,dit,ai,aj,nuis[0],nuis[1],par,0);
-                                  p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
+                                p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
                                // Rprintf("%f %f %f %f %f %f %f %f \n",n[0],dis,dit,psj,p1,p2,nuis[0],nuis[1]);
                    if(*model==2||*model==11||*model==19) cc[h]=n[0]*(psj-p1*p2);//binomial
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
