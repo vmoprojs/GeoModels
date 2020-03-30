@@ -55,6 +55,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     numloc <- nrow(loc); tloc <- length(time);
     if(!tloc)  tloc <- 1
     locx <- loc[,1];locy <- loc[,2]
+    bb=0
     #######################################################
     ############ standard (tapered) kriging ###############
     #######################################################
@@ -146,7 +147,6 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
     pred <- NULL
     varpred<-varpred2<-vv<-vv2<-NULL
     k <- 0 
-
     ccc=cbind(covmatrix$coordx,covmatrix$coordy)
     if(grid) ccc=expand.grid(covmatrix$coordx,covmatrix$coordy)
     else  { 
@@ -155,8 +155,6 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
 
      if((spacetime||bivariate)&&( spacetime_dyn)) ccc=do.call(rbind,args=c(coordx_dyn)) 
       }
-      
-
     ###############################################################
     if((spacetime||bivariate)&&spacetime_dyn) dataT=t(unlist(data)) 
     else dataT=t(data)
@@ -217,7 +215,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
                         corr2=cc^2
                         sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
                         vv=as.numeric(covmatrix$param['sill'])
-                        corri=((2*sk2/pi)*(sqrt(1-corr2) + cc*asin(cc)-1) + cc*vv)/(vv+sk2*(1-2/pi));
+                        corri=((2*sk2/pi)*(sqrt(1-corr2) + cc*asin(cc)-1) + cc*vv)/(vv+sk2*(1-2/pi));                  
                         }        
         if(covmatrix$model==21) { # gamma
                         cc=((1-as.numeric(covmatrix$param["nugget"]))*cc$corri)
@@ -288,17 +286,17 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
                         corri=  (M*A*a3-mm)/( ff- mm)      
                       }
              if(covmatrix$model==39) {  # bimodal
-                        cc=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
-                        nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
-                        vv=as.numeric(covmatrix$param['sill'])
-                        corr2=cc^2;sk2=sk^2
-                        a1=Re(hypergeo::hypergeo(-0.5,-0.5 ,nu/2 ,corr2))
-                        ll=qnorm((1-sk)/2)
-                        p11=pbivnorm::pbivnorm(ll,ll, rho = cc, recycle = TRUE)
-                        a3=3*sk2 + 2*sk + 4*p11 - 1
-                        MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
-                        KK=2*gamma((nu+1)/2)^2 / MM
-                        corri= KK*(a1*a3-4*sk2);   
+                                 correlation=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
+                                 nu=as.numeric(1/covmatrix$param['df']); sk=as.numeric(covmatrix$param['skew'])
+                                 vv=as.numeric(covmatrix$param['sill'])
+                                 ll=qnorm((1-sk)/2)
+                                 p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+                                 corr2=correlation^2;sk2=sk^2
+                                 a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+                                 a3=3*sk2 + 2*sk + 4*p11 - 1
+                                 MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+                                 KK=2*gamma((nu+1)/2)^2 / MM
+                                 corri= KK*(a1*a3-4*sk2)  
                       }
         if(covmatrix$model==29) {  # two piece Gaussian 
                           cc=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
@@ -321,7 +319,7 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
                   if(covmatrix$model==12)  vvar= vv*nu/(nu-2)              ## studentT
                   if(covmatrix$model==27)  vvar= vv*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2) # two piece studentT
                   if(covmatrix$model==38)  vvar= vv*((1-2*tail)^(-1.5)* (1+3*(sk2)) - 4*(sk2)*2/(pi*(1-tail)^2)) # two piecetukeyh
-                  if(covmatrix$model==39)  vvar= vv*((1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2 )      # bimodal                   
+                  if(covmatrix$model==39)  vvar= vv*MM/(gamma(0.5*nu)^2)      # bimodal                   
                   if(covmatrix$model==29)  vvar= vv*((1+3*sk2) - 8*sk2/pi )                 # two piece Gaussian
                   if(covmatrix$model==18)  vvar= vv*(nu/(nu-2) -  (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
 
@@ -342,41 +340,53 @@ if(covmatrix$model %in% c(1,10,21,12,26,24,27,38,29,20,34,39))
          # if(covmatrix$model==20||covmatrix$model==34)  cc=cc*1  
           #skewgaussian
           if(covmatrix$model==10) {
-                                 muloc=muloc + sk*sqrt(2/pi)
-                                 mu=mu +       sk*sqrt(2/pi)
-                                 cc=cc* vv+sk^2*(1-2/pi) 
+                                 MM=sk*sqrt(2/pi)
+                                 muloc=muloc + MM
+                                 mu=mu +       MM
+                                 cc=cc* (vv+sk^2*(1-2/pi) )
                                  }
           #skewstudendT
           if(covmatrix$model==18) 
           { 
               KK=gamma(0.5*(nu-1))/gamma(0.5*nu)
-              muloc=muloc + sqrt(vv*nu/pi)*sk*KK
-              mu=mu +       sqrt(vv*nu/pi)*sk*KK
+              MM=sqrt(vv*nu/pi)*sk*KK
+              muloc=muloc + MM
+              mu=mu +       MM
               cc=cc* vv*(nu/(nu-2) -  (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
           }
           ##two piece gaussian
           if(covmatrix$model==29)   
                            {
-                            muloc=muloc - sqrt(vv)*2*sk*sqrt(2/pi)
-                            mu=mu  -  sqrt(vv)*2*sk*sqrt(2/pi)
+                            MM=sqrt(vv)*2*sk*sqrt(2/pi)
+                            muloc=muloc - MM
+                            mu=mu  -  MM
                             cc=cc*  vv*((1+3*sk2) - 8*sk2/pi ) 
                            }
           ##two piece studentT
           if(covmatrix$model==27)  
           { 
              KK=gamma(0.5*(nu-1))/gamma(0.5*nu)
-             muloc=muloc - sqrt(vv)*2*sk*sqrt(nu/pi)*KK
-             mu=mu  -      sqrt(vv)*2*sk*sqrt(nu/pi)*KK
+             MM=sqrt(vv)*2*sk*sqrt(nu/pi)*KK
+             muloc=muloc - MM
+             mu=mu  -      MM
              cc=cc*  vv*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
           }
           ##two piece tukeyh
           if(covmatrix$model==38)   {
-            muloc=muloc - sqrt(vv)*2*sk*sqrt(2/pi)/(1-tail)
-            mu=mu       - sqrt(vv)*2*sk*sqrt(2/pi)/(1-tail)
+            MM=sqrt(vv)*2*sk*sqrt(2/pi)/(1-tail)
+            muloc=muloc - MM
+            mu=mu       - MM
             cc=cc* vv*((1-2*tail)^(-1.5)* (1+3*(sk2)) - 4*(sk2)*2/(pi*(1-tail)^2))
                         }
           ### bimodal
-          if(covmatrix$model==39)   cc=cc* vv*((1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2 )   
+          if(covmatrix$model==39)   
+             {
+          MM=sk*sqrt(8)*gamma(0.5*(nu+1))/gamma(nu*0.5)
+          muloc=muloc -MM
+          mu=mu  -   MM
+          KK=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+          cc=cc* vv*KK/(gamma(0.5*nu)^2)  
+             }
           #####################################################################
           # gamma                
           if(covmatrix$model==21)   { 
@@ -426,7 +436,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                      pp <- c(muloc)      +  sqrt(vv)* kk*exp(tail*kk^2/2)    
                } 
                ###################################################
-               ####gamma weibbull loglogistic 
+               ####gamma weibull loglogistic 
                if(covmatrix$model %in% c(21,24,26))
                       {       ones=rep(1,length(c(dataT)))
                               one=rep(1,length(c(muloc)))

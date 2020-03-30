@@ -147,14 +147,13 @@ data_to_pred=data_tot[-sel_data,]
 
 data_sel_ord=data_sel[order(data_sel[,3]),]
 data_to_pred_ord=data_to_pred[order(data_to_pred[,3]),]
-print(data_sel_ord)
-print(data_to_pred_ord)
+
 #pr=GeoKrig(data=datanew,    coordt=timenew, coordx_dyn=coordx_dyn,  #ok
  #        corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
   #          model=fit$model, n=fit$n, #ok
    #        param=as.list(c(fit$param,fit$fixed)), 
     #       radius=fit$radius, sparse=sparse, time=time_to_pred, X=X,Xloc=Xloc) #ok
-    print(pr)
+
 err=c(data_to_pred)-c(pr$pred)  
    
 N2=length(err)

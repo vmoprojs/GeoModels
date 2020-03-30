@@ -61,7 +61,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
-    if(optimizer=='L-BFGS-B'|| optimizer=='nlminb' || length(initparam$param)==1){
+
+    if(optimizer %in% c('L-BFGS-B','nlminb','nmkb') || length(initparam$param)==1){
+   # if(optimizer=='L-BFGS-B'|| optimizer=='nlminb' || optimizer=='nmkb' ||optimizer=='lbfgsb3c' || length(initparam$param)==1){
 
     if(!is.null(lower)||!is.null(upper)){
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")

@@ -480,11 +480,9 @@ if(model==39)   ##  two piece bimodal case
         if(spacetime) fname <- "CorrelationMat_st_dyn2"
         #if(bivariate) fname <- "CorrelationMat_biv2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-
              cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE) 
-
     # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
     #   "integer","double","double","double","integer","integer"),        
     #   #corr=vector_dc("numeric", numpairstot), 
@@ -493,24 +491,23 @@ if(model==39)   ##  two piece bimodal case
     #         INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
     #         NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)    
     #print(cr$corr)
-          cr$corr=cr$corr*(1-nuisance['nugget'])
-          nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-          ll=qnorm((1-sk)/2)
-          #print(nu);print(sk)
-          p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
-          corr2=cr$corr^2;sk2=sk^2
-          a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
-          a3=3*sk2 + 2*sk + 4*p11 - 1
-          MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
-          KK=2*gamma((nu+1)/2)^2 / MM
-          corr= KK*(a1*a3-4*sk2);
+            correlation=cr$corr*(1-nuisance['nugget'])
+            nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
+            ll=qnorm((1-sk)/2)
+            p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+            corr2=correlation^2;sk2=sk^2
+            a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+            a3=3*sk2 + 2*sk + 4*p11 - 1
+            MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
+            KK=2*gamma((nu+1)/2)^2 / MM
+            corr= KK*(a1*a3-4*sk2)
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
         varcov[lower.tri(varcov)] <- corr
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- corr   
-        vv=((1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
+        vv=as.numeric(nuisance['sill'])*MM/(gamma(0.5*nu)^2)
         varcov=varcov*vv*nuisance['sill']
         }
     ## todo

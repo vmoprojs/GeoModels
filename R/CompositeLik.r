@@ -223,9 +223,9 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
    if(length(param)>1) {
     if(optimizer=='L-BFGS-B'&&!parallel)
       CompLikelihood <- optim(par=param,fn=comploglik, 
-                              control=list(fnscale=1,factr=1e-10,pgtol=1e-14, maxit=100000), 
+                              control=list(factr=1e-10,pgtol=1e-14, maxit=100000), 
                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
-                              fan=fname, lower=lower, method=optimizer,n=n,
+                              fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, hessian=hessian)
       if(optimizer=='L-BFGS-B'&&parallel){
@@ -234,9 +234,9 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
         CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik, 
-                              control=list(fnscale=1,pgtol=1e-14, maxit=100000,factr=1e-10),
+                              control=list(pgtol=1e-14, maxit=100000,factr=1e-10),
                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
-                               data=data, fixed=fixed,fan=fname, lower=lower, method=optimizer,n=n,
+                               data=data, fixed=fixed,fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU, hessian=hessian
                                )
@@ -245,24 +245,36 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
          }
     if(optimizer=='BFGS') 
         CompLikelihood <- optim(par=param, fn=comploglik,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
-                           control=list(fnscale=1,factr=1e-10,
+                           control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
-                              hessian=hessian, method=optimizer,n=n,namescorr=namescorr,
+                              hessian=hessian, method='BFGS',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+
       if(optimizer=='Nelder-Mead')
-        CompLikelihood <- optim(par=param, fn=comploglik,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
-                             reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
-                              hessian=hessian, method=optimizer,n=n,namescorr=namescorr,
+        CompLikelihood <- optim(par=param, fn=comploglik,  coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
+          control=list( reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
+                              hessian=hessian, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    
+ #    if(optimizer=='lbfgsb3')
+ #      CompLikelihood <-lbfgsb3::lbfgsb3(prm=param,fn=comploglik,gr=NULL,lower=lower,upper=upper,
+ #                             #control=list(factr=1e-10,pgtol=1e-14, maxit=100000), 
+ #                             coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+ #                             fan=fname,n=n,
+ #                             namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+ #                             weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+
     if(optimizer=='nmk')
       CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik, control = list(maxfeval=100000,tol=1e-10),
-         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
-         n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+                           coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                           n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
     if(optimizer=='nmkb')
+    {
       CompLikelihood <-dfoptim::nmkb(par=param, fn=comploglik, control = list(maxfeval=100000,tol=1e-10),
-        lower=lower,upper=upper,
-         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
-         n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+                         lower=lower,upper=upper,
+                         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed, fan=fname,
+                         n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+    }
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f=comploglik,p=param,steptol = 1e-4, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
                                fan=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
@@ -292,20 +304,27 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               upper=upper,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)}
       if(length(param)>1) {   
     if(optimizer=='L-BFGS-B'&&!parallel){
-      CompLikelihood <- optim(param,comploglik_biv, control=list(fnscale=1, pgtol=1e-14, maxit=100000),
-                              method=optimizer,hessian=hessian,lower=lower, upper=upper,
+      CompLikelihood <- optim(param,comploglik_biv, control=list(pgtol=1e-14, maxit=100000),
+                              method='L-BFGS-B',hessian=hessian,lower=lower, upper=upper,
                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
                               data=data, fixed=fixed,fan=fname,n=n,
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
                              weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU )}
-
+     #  if(optimizer=='lbfgsb3')
+     # CompLikelihood <- lbfgsb3c::lbfgsb3c(param,comploglik_biv, 
+     #                         #control=list(pgtol=1e-14, maxit=100000),
+     #                         lower=lower, upper=upper,
+     #                         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
+     #                         data=data, fixed=fixed,fan=fname,n=n,
+     #                         namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
+     #                        weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU )
     if(optimizer=='L-BFGS-B'&&parallel){
            ncores=max(1, parallel::detectCores() - 1)
            if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
            else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
            parallel::setDefaultCluster(cl = cl)
            CompLikelihood <- optimParallel::optimParallel(param,comploglik_biv, 
-                              control=list(fnscale=1, pgtol=1e-14, maxit=100000),
+                              control=list(pgtol=1e-14, maxit=100000),
                               coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, 
                               data=data, fixed=fixed,
                               fan=fname,  n=n, namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
@@ -316,14 +335,14 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
               parallel::stopCluster(cl)
          }
       if(optimizer=='BFGS')
-      CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
+      CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(
                               reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
-                              hessian=hessian, method=optimizer,n=n,
+                              hessian=hessian, method='BFGS',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
    if(optimizer=='Nelder-Mead')
-      CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(fnscale=1,
+      CompLikelihood <- optim(param,comploglik_biv, coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, control=list(
                               reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
-                              hessian=hessian, method=optimizer,n=n,
+                              hessian=hessian, method='Nelder-Mead',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
     if(optimizer=='nmk')
         CompLikelihood <- dfoptim::nmk(par=param, fn=comploglik_biv, control = list(maxfeval=100000,tol=1e-10),
@@ -388,7 +407,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         CompLikelihood$convergence <- "Optimization may have failed"
         if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
-    if(optimizer=='L-BFGS-B'||  optimizer=='BFGS'){
+    if(optimizer=='L-BFGS-B'||optimizer=='BFGS'||optimizer=='lbfgsb3c'){
         CompLikelihood$value = -CompLikelihood$value
         names(CompLikelihood$par)<- namesparam
         if(CompLikelihood$convergence == 0)

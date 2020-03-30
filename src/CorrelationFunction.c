@@ -468,11 +468,6 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
     scale=par[2];
     rho=CorFunDagum(h, R_power1, R_power2, scale);
     break;
-    //case 6:// Gaussian correlation function
-    ///  R_power=2;
-    //  scale=par[0];
-     /// rho=CorFunStable(h, R_power, scale);
-     /// break;
     case 8: // Generalised Cuachy correlation function
       R_power1=par[0];
       R_power2=par[1];
@@ -532,12 +527,11 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
   rho=CorFunW_gen(h, R_power1, smooth, scale);
         break;
     case 6: // Generalised wend correlation function second paramtrizazion
-        R_power1=par[0];        
+        R_power1=1/par[0];        
         scale=par[1];
         smooth=par[2];
-        ///sep=log(R_power1)+lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1+1);
-        sep=exp(lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1));
-        rho=CorFunW_gen(h, R_power1, smooth,  scale * R_pow(sep,1/(1+2*smooth)));
+        sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
+        rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         //Rprintf("%f %f \n",rho,R_power1);
         break;
      case 20://  Whittle-Matern correlation function
@@ -1831,35 +1825,37 @@ double CorFunW2(double lag,double scale,double smoo)
 /* generalized wendland function*/
 double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu alpha beta
 {
-    double rho=0.0,x=0;
+    double rho=0.0,x=0.0;
+
+   
     if(lag==0) {rho=1; return(rho);}
+   x=lag/scale;
+
     if(smooth==0) {
-          x=lag/scale;
-         if(x<1) rho=R_pow(1-x,R_power1);
+         if(x<=1)   rho=R_pow(1-x,R_power1);
          else rho=0;
          return(rho);
     }
     if(smooth==1) {
-          x=lag/scale;
-         if(x<1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+         if(x<=1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
          else rho=0;
          return(rho);
     }
     if(smooth==2) {
-          x=lag/scale;
-         if(x<1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+        
+         if(x<=1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
          else rho=0;
          return(rho);
-    }      
-            
-x=lag/scale;    
-    if(x<1)
+    }     
+     
+      /*first version  */     
+    if(x<=1)
          {
         rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
-         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(0.5*R_power1,0.5*(R_power1+1),smooth+R_power1+1, 1-x*x);
+         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
       }
-  else rho=0;
- /*  //second version
+  else {rho=0;}
+   /*/second version
   
         x=lag;
         double *param;
@@ -3642,7 +3638,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
       if(*model==1||*model==10||*model==12||*model==21||*model==30||
-      *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
+      *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38||*model==39) rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
       //if(*model==12)                      rho[t]=R_pow(CorFct(cormod, h[i], u[j], par,0,0),2);  // chisq case
      // if(*model==10)  // skew gaussian case
       //{

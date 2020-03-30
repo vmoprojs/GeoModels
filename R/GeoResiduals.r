@@ -41,7 +41,7 @@ res1=dd/exp(c(mu))
 
 ### 
 if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh", "Tukeyh","SinhAsinh","",
-         "StudentT","TwoPieceGauss","TwoPieceStudentT"))
+         "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
 res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
 ###
 if(model %in% c("SkewGaussian"))  
@@ -82,7 +82,7 @@ fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
 if(model %in% c("Gaussian","Logistic","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
-         "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh"))
+         "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh","TwoPieceBimodal"))
 {fit$param['sill']=1;fit$param['mean']=0}
 
 
