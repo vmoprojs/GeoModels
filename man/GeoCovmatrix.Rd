@@ -604,7 +604,7 @@ param=list(scale=0.3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
 # Covariance matrix 
 matrix9 = GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
 
-head(matrix8)
+head(matrix9)
 
 
 

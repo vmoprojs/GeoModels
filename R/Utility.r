@@ -206,7 +206,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
       #  if(!is.na(param['df'])) if(param['df'] > 1/2 || param['df'] < 0 ) return(FALSE)
         #if(!is.na(param['tail'])) if(param['tail'] >0.5) return(FALSE)
         if(!is.na(param['shape'])) if(param['shape'] <1) return(FALSE)
-        if(!is.na(param['nugget'])) if(param['nugget'] < 0) return(FALSE)
+        if(!is.na(param['nugget'])) if(param['nugget'] < 0||param['nugget'] >= 1) return(FALSE)
         if(!is.na(param['nugget_1'])) if(param['nugget_1'] < 0) return(FALSE)
         if(!is.na(param['nugget_2'])) if(param['nugget_2'] < 0) return(FALSE)
         if(!is.na(param['power'])) if(param['power'] <=0 || param['power'] > 2) return(FALSE)

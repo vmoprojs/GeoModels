@@ -66,11 +66,7 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    }  
-   
-    if(model %in% c("Gamma2"))  {
-     if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
-    # if(bivariate)  param[which(names(param) %in% c("shape1_1","shape1_2","shape2_1","shape2_2"))] <- NULL
-   }    
+     
  return(param)   
 }
 ##############################################################################
@@ -173,7 +169,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson","TwoPieceTukeyh","Poisson",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
-                    "Gamma","Gamma2","Weibull",
+                    "Gamma","Weibull",
                     "LogLogistic","Logistic")) 
        {
         if(spacetime_dyn){
@@ -188,12 +184,13 @@ forGaussparam<-function(model,param,bivariate)
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
 
 
-        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson",
-          'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", 
-                    "StudentT","SkewStudentT","TwoPieceStudentT"))) 
+        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian",
+          "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","Tukeyh","Tukeyh2",
+          'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", "Tukeygh","SinhAsinh",
+                    "StudentT","SkewStudentT","TwoPieceStudentT","Gaussian")))   ## 
         {
           vv<-param$sill;
-          param$sill=1-param$nugget
+          param$sill=1#-param$nugget
         }
         if(model%in% c("SkewGaussian","SkewGauss","SkewStudentT","TwoPieceTukeyh","TwoPieceBimodal", 
                "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
@@ -215,9 +212,7 @@ forGaussparam<-function(model,param,bivariate)
 #################################
   if(model %in% c("Tukeygh","SinhAsinh"))  {
          if(!bivariate){
-          #mm<-param$mean;
           param$mean=0
-          vv<-param$sill;param$sill=1
           sk<-param$skew; tl<-param$tail}
          else {
             mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
@@ -228,9 +223,7 @@ forGaussparam<-function(model,param,bivariate)
 
     if(model %in% c("Tukeyh"))  {
          if(!bivariate){
-          #mm<-param$mean;
           param$mean=0
-          vv<-param$sill;param$sill=1
           tl<-param$tail}
          else {
             mm1<-param$mean_1;param$mean_1=0; mm2<-param$mean_2;param$mean_2=0;mm=c(mm1,mm2)
@@ -240,9 +233,7 @@ forGaussparam<-function(model,param,bivariate)
 
          if(model %in% c("Tukeyh2"))  {
          if(!bivariate){
-          #mm<-param$mean;
           param$mean=0
-          vv<-param$sill;param$sill=1
           t1l<-param$tail1
           t2l<-param$tail2
            }
@@ -283,14 +274,11 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Kumaraswamy"))  k=4
     if(model %in% c("StudentT","TwoPieceBimodal"))  k=round(1/param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
-#################################
-     if(model %in% c("Gamma2")) {    
-             k=round(param$shape1)
-             if(!bivariate) {  mm<-param$mean;param$mean=0
-             vv<-param$sill;param$sill=1 }}
      #if(model %in% c("Beta")) {  k=round(param$shape1)+round(param$shape2)       
        #  if(!bivariate) {  mm<-param$mean;param$mean=0
         #     vv<-param$sill;param$sill=1 }} 
+
+
   ################################################################################ 
   ################################################################################ 
    ns=NULL
@@ -311,9 +299,8 @@ forGaussparam<-function(model,param,bivariate)
    cumu=NULL;#s=0 # for negative binomial  case
  #########################################
      
-#### computing covariance matrix of the Gaussian random field
-#print(forGaussparam(model,param,bivariate)) #pay attention to the parameter
-    ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
+#### computing correlation matrix  of the Gaussian random field
+ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
     
 
@@ -356,26 +343,23 @@ KK=1;sel=NULL;ssp=double(dime)
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
     ####################################
     #####formatting simulation #########
-
     sim<-RFfct1(ccov,dime,nuisance,param,simd,ccov$X,ns)
     ####################################
     ####### starting cases #############
     ####################################
  
-if(model %in% c("Binomial", "BinomialNeg")) {    
+    if(model %in% c("Binomial", "BinomialNeg")) {    
         simdim <- dim(sim)
         sim <- as.numeric(sim>0)
         dim(sim) <- simdim
-}
+         }
     ####################################    
     if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy"
               ,"LogGaussian","TwoPieceTukeyh",
-                "Gamma","Gamma2","LogLogistic","Logistic","StudentT",
+                "Gamma","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
        if(!bivariate) dd[,,i]=t(sim)
        if(bivariate)  dd[,,i]=t(sim)
-
-    
   }
      ####################################     
     if(model %in% c("BinomialNeg")){ 
@@ -383,6 +367,7 @@ if(model %in% c("Binomial", "BinomialNeg")) {
                  if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
                }
     }
+     ####################################
   if(model %in% c("poisson","Poisson"))   { 
   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
    ssp=ssp+c(pois1)
@@ -414,7 +399,6 @@ if(model %in% c("SkewGaussian","SkewGauss"))   {
         if(!bivariate) sim=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2]
         if(bivariate)  {sim=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
                                   mm[2]+sk[2]*abs(dd[,,1][,2])+sqrt(vv[2])*dd[,,2][,2])
-                       #print(mm);print(sk);print(vv)
                        }
 
              if(!grid)  {
@@ -585,14 +569,13 @@ if(model %in% c("LogLogistic","Logistic"))   {
         }
 
 #######################################
-if(model %in% c("Gamma","Gamma2","Weibull"))   { 
+if(model %in% c("Gamma","Weibull"))   { 
 
       sim=sim1=sim2=NULL;
     if(!bivariate) for(i in 1:k)  sim=cbind(sim,dd[,,i]^2)
     if(bivariate)  {for(i in 1:k)  sim1=cbind(sim1,dd[,,i][,1]^2)
                     for(i in 1:k)  sim2=cbind(sim2,dd[,,i][,2]^2)
                    }
-     #print(sim1);print(sim2)
      ######################################################
       if(model %in% c("Weibull"))   
            {
@@ -601,7 +584,7 @@ if(model %in% c("Gamma","Gamma2","Weibull"))   {
                                   exp(mm[1])*(rowSums(sim1)/2)^(1/param$shape_1)/(gamma(1+1/param$shape_1)),
                                   exp(mm[2])*(rowSums(sim2)/2)^(1/param$shape_2)/(gamma(1+1/param$shape_2)))
            }     
-      if(model %in% c("Gamma","Gamma2"))  
+      if(model %in% c("Gamma"))  
       { 
       if(!bivariate) sim=exp(mm)*rowSums(sim)/k      
 
@@ -624,9 +607,6 @@ if(model %in% c("Gamma","Gamma2","Weibull"))   {
         
         }
 
-
-      if(model %in% c("Gamma2")) 
-               sim=sim+rgamma(length(sim),shape=param$shape2/2)   ##gamma2
       }
      
          if(!grid)  {

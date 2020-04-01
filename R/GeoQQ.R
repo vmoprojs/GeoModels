@@ -65,11 +65,19 @@ if(model %in% c("LogLogistic"))
 shape=pp["shape"]
 cc=gamma(1+1/shape)*gamma(1-1/shape)
 loglogistic.quantiles = actuar::qllogis(probabilities,shape = shape,scale=1/cc)
-plot(sort(loglogistic.quantiles),sort(dd),xlab = "",ylab = "",main = "LogLogistic qq-plot") 
+plot(sort(loglogistic.quantiles),sort(c(dd)),xlab = "",ylab = "",main = "LogLogistic qq-plot") 
 }
 
+#######################################
+#######################################
+if(model %in% c("SinhAsinh"))
+{
 
-
+tail = as.numeric(pp["tail"])
+skew = as.numeric(pp["skew"])
+sas.quantiles=sinh(1/tail * asinh(qnorm(probabilities))+skew/tail)
+plot(sas.quantiles,sort(c(dd)),main="Sas qq-plot",xlab=xlab,ylab=ylab)
+}
 #######################################
 #######################################
 if(model %in% c("Tukeyh"))
@@ -91,19 +99,31 @@ plot(tukeyh.quantiles,sort(c(dd)),main="Tukey-h qq-plot",xlab=xlab,ylab=ylab)
 if(model %in% c("TwoPieceGaussian"))
 {
 skew = as.numeric(pp["skew"])
-
 ptpGaussian = function(x,skew){
     (1+skew)*pnorm(x/(1+skew))*I(x<0) + (skew + (1-skew)*pnorm(x/(1-skew)))*I(x>=0)
 }
 
 f = function(x) ptpGaussian(x,skew = skew)
 f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
-
 twopieceGaussian.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
-
 plot(twopieceGaussian.quantiles,sort(c(dd)),main="Two-Piece Gaussian qq-plot",xlab=xlab,ylab=ylab)
-
 }
+#######################################
+#if(model %in% c("TwoPieceBimodal"))
+
+if(model %in% c("TwoPieceBimodal"))
+{
+skew = as.numeric(pp["skew"])
+df   = 1/as.numeric(pp["df"])
+ptpbimodal = function(x,skew,df){  
+(0.5*(1+skew)*(1-pchisq((-x)^2/(1+skew)^2,df)))*I(x<0) + (0.5*(skew+1) + 0.5*(1-skew)*pchisq(x^2/(1-skew)^2,df)) *I(x>=0)
+}
+f = function(x) ptpbimodal(x,skew = skew,df=df)
+f.inv = GoFKernel::inverse(f,lower = -Inf,upper = Inf)
+twopiecebimodal.quantiles = sort(as.numeric(lapply(probabilities,f.inv)))
+plot(twopiecebimodal.quantiles,sort(c(dd)),main="Two-Piece Bimodal qq-plot",xlab=xlab,ylab=ylab)
+}
+
 #######################################
 if(model %in% c("TwoPieceStudentT"))
 {

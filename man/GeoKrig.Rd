@@ -170,6 +170,7 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 
 library(GeoModels)
 library(fields)
+library(hypergeo)
 
 ################################################################
 ############### Examples of Spatial kriging  ###################
@@ -202,7 +203,7 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel_1,
               param=param)$data
 
 # locations to predict
-xx=seq(0,1,0.03)
+xx=seq(0,1,0.025)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 ################################################################
@@ -214,14 +215,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,
        param= param, data=data,mse=TRUE)
 
-################################################################
-###
-### Example 2. Spatial tapered simple kriging of n sites of a
-### Gaussian random fields with exponential correlation.
-###
-###############################################################
-pr_tap=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_1,data=data,
-       param= param,type="Tapering",maxdist=0.2,taper="Wendland1",mse=TRUE)
+
 ################################################################
 ###
 ### Example 3. Spatial  simple kriging of n sites of a
@@ -233,30 +227,22 @@ pr_wen=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel_2,data=data,
        param=param_wen,sparse=TRUE,mse=TRUE)
 
 colour = rainbow(100)
-par(mfrow=c(3,2))
+par(mfrow=c(2,2))
 zlim=c(-2.6,2.6)
 # simple kriging map prediction
 image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
            zlim=zlim,xlab="",ylab="",
            main="Simple Kriging with  exponential model ")
 
-# simple kriging map prediction variance
+# simple kriging MSE map prediction variance
 image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="Std error")
 
-# simple tapered kriging map prediction
-image.plot(xx, xx, matrix(pr_tap$pred,ncol=length(xx)),col=colour,
-           zlim=zlim,xlab="",ylab="",main="Simple Tapered Kriging")
-
-# simple taperd kriging map prediction variance
-image.plot(xx, xx, matrix(pr_tap$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
-
-# simple tapered kriging map prediction
+# simple  kriging map prediction
 image.plot(xx, xx, matrix(pr_wen$pred,ncol=length(xx)),col=colour,
            zlim=zlim,xlab="",ylab="",main="Simple Kriging with Wendland model")
 
-# simple kriging map prediction variance
+# simple kriging MSE map prediction variance
 image.plot(xx, xx, matrix(pr_wen$mse,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="Std error")
 
@@ -310,8 +296,8 @@ pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=mode
        sparse=TRUE,param= as.list(c(fit$param,fixed)))
 
 #standard   binomial kriging
-map_binom=matrix(round(pr$pred),ncol=length(xx))
-image.plot(xx, xx, map_binom,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n),
+map_binom=matrix(pr$pred,ncol=length(xx))
+image.plot(xx, xx, map_binom,col=rainbow(n+1),zlim=c(0,n),
            xlab="",ylab="",main="Simple Kriging ")
 
 
@@ -361,7 +347,7 @@ maxdist=0.1
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
               maxdist=maxdist,likelihood="Marginal",type="Pairwise",
               optimizer="BFGS",start=start,fixed=fixed, model = model)
-## obtaining residuals              
+## computing residuals              
 res=GeoResiduals(fit2)
 
 # locations to predict
@@ -436,10 +422,13 @@ quilt.plot(coords[,1], coords[,2], data, main="Data")
 map_t=matrix(pr$pred,ncol=length(xx))
 image.plot(xx, xx, map_t,
            xlab="",ylab="",main="Simple Kriging ")
+
+
 ################################################################
 ########### Examples of spatio temporal kriging ############
 ################################################################
 
+model="Gaussian"
 # Define the spatial-coordinates of the points:
 x = runif(80, 0, 1)
 y = runif(80, 0, 1)
@@ -458,9 +447,12 @@ data=GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,
 # Maximum pairwise likelihood fitting of the space time random field:
 start = list(scale_s=0.2/3,scale_t=1,sill=1,mean=0)
 fixed = list(nugget=0)
-fit = GeoFit(data, coordx=coords, coordt=times,corrmodel=corrmodel, 
+I=Inf
+lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
+upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
+fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel, 
              likelihood='Marginal', type='Pairwise',start=start,fixed=fixed,
-             optimizer="BFGS", maxdist=0.1,maxtime=1)
+             optimizer="nlminb", maxdist=0.1,maxtime=1)
 
 ################################################################
 ###
@@ -503,14 +495,15 @@ image.plot(xx, xx, matrix(pr$mse[i,],ncol=length(xx)),col=colour,
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
-x = runif(80, 0, 1)
-y = runif(80, 0, 1)
+set.seed(12)
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
 coords=cbind(x,y)
 
 # Simulation of a spatial bivariate Gaussian random field
 # with Matern separable covariance model
 
-set.seed(12)
+
 param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
           nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
           
@@ -529,7 +522,7 @@ fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
 # locations to predict
 xx=seq(0,1,0.04)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
-
+colour = rainbow(100)
 
 pr1=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
        param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
@@ -537,9 +530,9 @@ pr1=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
 pr2=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
        param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=2,mse=TRUE)
 
-par(mfrow=c(2,2))
+par(mfrow=c(2,3))
        
-       
+quilt.plot(coords,data[1,])       
 # simple kriging map prediction of the first variable
 image.plot(xx, xx, matrix(pr1$pred,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="First Simple coKriging")
@@ -548,7 +541,7 @@ image.plot(xx, xx, matrix(pr1$pred,ncol=length(xx)),col=colour,
 image.plot(xx, xx, matrix(pr1$mse,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="Std error")
  
- 
+ quilt.plot(coords,data[2,])  
  # simple kriging map prediction of the second variable
 image.plot(xx, xx, matrix(pr2$pred,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="Second Simple coKriging")

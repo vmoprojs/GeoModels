@@ -8,10 +8,8 @@
 ### This file contains a set of procedures
 ### for computing a covariance (tapered) matrix for a given
 ### space(time) covariance model.
-### Last change: 28/03/2019.
+### Last change: 28/03/2020.
 ####################################################
-
-
 
 ### decomposition of a square  matrix
 MatDecomp<-function(mtx,method)    {
@@ -71,7 +69,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     {
    
 #####################################################f
-    if(model %in% c(1,20))   ## gaussian case  or sinhgaussian case (sinh no implementerd)
+    if(model %in% c(1))   ## gaussian case  or sinhgaussian case (sinh no implementerd)
     {
       
         if(type=="Standard")  {
@@ -79,8 +77,6 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
         fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
-
-
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
           as.integer(ns),as.integer(NS),
@@ -97,11 +93,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
     if(!bivariate)                  {
         # Builds the covariance matrix:
-          varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
-          corr <- corr * nuisance['sill']
+          #varcov <- (nuisance['nugget'] + nuisance['sill']) * diag(dime)
+          varcov <-  diag(dime)
+         # corr <- corr * nuisance['sill']
+           corr <- ((1-nuisance['nugget'])*corr) 
           varcov[lower.tri(varcov)] <- corr
           varcov <- t(varcov)
-          varcov[lower.tri(varcov)] <- corr }
+          varcov[lower.tri(varcov)] <- corr 
+          varcov=varcov* nuisance['sill'] }
     if(bivariate)      {
           varcov<-diag(dime)
           varcov[lower.tri(varcov,diag=TRUE)] <- corr
@@ -130,14 +129,18 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
         corr=cr$corr
         if(!bivariate){
-             vcov <- corr*nuisance['sill']; vcov[vcov==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
+             
+           #  vcov <- corr*nuisance['sill']; vcov[vcov==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
+             vcov <-(1-nuisance['nugget'])*corr*nuisance['sill']; 
+             ssel=((1-nuisance['nugget'])*nuisance['sill'])
+             vcov[vcov==ssel] <- nuisance['sill']
+             
              varcov <- new("spam",entries=vcov*setup$taps,colindices=setup$ja,
                              rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))}
           else  {varcov <-new("spam",entries=corr*setup$taps,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2))) }              
          }
        }  
-
 
 ###############################################################
    if(model %in% c(2,11,19)){ #  binomial Gaussian type 1  and 2
@@ -450,18 +453,13 @@ if(model==12)   ##  student case
          cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
-        cc=cr$corr
-        cc=cc*(1-nuisance['nugget'])
-
+        cc=cr$corr*(1-nuisance['nugget'])
         nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
 
         sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
         CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
         corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
-        
         corr=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
-
-
   if(!bivariate) {
         # Builds the covariance matrix:
         varcov <-  diag(dime)
@@ -508,7 +506,7 @@ if(model==39)   ##  two piece bimodal case
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- corr   
         vv=as.numeric(nuisance['sill'])*MM/(gamma(0.5*nu)^2)
-        varcov=varcov*vv*nuisance['sill']
+        varcov=varcov*vv
         }
     ## todo
     #if(bivariate)      {
@@ -634,8 +632,6 @@ if(model==29)   ##  two piece gaussian case
  cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)     
-     
-
      #cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
      #  "integer","double","double","double","integer","integer"),        
      #  #corr=vector_dc("numeric", numpairstot), 
@@ -687,7 +683,6 @@ if(model==21)   ##  gamma case
           cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)      
-  
     # cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
     #   "integer","double","double","double","integer","integer"),        
     #   #corr=vector_dc("numeric", numpairstot), 
@@ -819,11 +814,9 @@ if(model==22)  {  ## Log Gaussian
         if(bivariate) fname <- "CorrelationMat_biv_dyn2"
         vvar=nuisance['sill']
         nuisance['sill']=1
-
             cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),
           as.integer(ns), as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)  
-
   #cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
   #     "integer","double","double","double","integer","integer"),        
   #     #corr=vector_dc("numeric", numpairstot), 

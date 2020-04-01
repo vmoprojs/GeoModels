@@ -10,10 +10,9 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 1/01/2020.
+### Last change: 1/05/2020.
 ####################################################
    
- 
 ### Procedures are in alphabetical order.
 
 ### Compute and plot the (estimated) covariance function and the variogram
@@ -71,8 +70,8 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     # Pratical range in the Gaussian case:
     PracRangeNorm <- function(corrmodel, lags, lagt, nuisance, numlags, numlagt, param, pract.range)
     { 
-        return(nuisance["nugget"]+nuisance["sill"]*CorrelationFct(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,CkModel(fitted$model),nuisance, param)
-            -(nuisance["nugget"]+nuisance["sill"]*(1-pract.range)))
+        return(nuisance["sill"]*(1-nuisance["nugget"])*CorrelationFct(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,CkModel(fitted$model),nuisance, param)
+            -(nuisance["sill"]*(1-pract.range)))
     
     }
 }
@@ -116,6 +115,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     gaussian <- model==1
     skewgausssian<- model==10
     gamma<- model==21
+    skewstudentT<- model==18
     studentT<- model==12||model==35
     weibull<- model==26
     twopieceT<- model==27
@@ -132,8 +132,8 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     poisson<- model==30||model==36
     loglogistic <- model==24
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh||twopiecebimodal||
-            twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh||twopiecebimodal||skewstudentT
+            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -212,7 +212,7 @@ if(!bivariate) {
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
-
+   #print(nui)
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param)
 
@@ -227,9 +227,11 @@ if(!bivariate) {
                         variogram22  <- correlation[(7*length(lags_m)+1):(8*length(lags_m))]
                            }
         else { 
-          
-        covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
-        variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
+          print(nuisance)
+        #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
+        covariance <- nuisance["sill"]*correlation*(1-nuisance["nugget"])
+        #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
+        variogram <-nuisance["sill"]*(1- correlation*(1-nuisance["nugget"]))
         
         }
     }
@@ -237,9 +239,9 @@ if(!bivariate) {
  if(skewgausssian) {    
             if(bivariate) {}
               else {
+              correlation=(1-nuisance['nugget'] )*correlation  
               vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;
               vs=(vv+sk2*(1-2/pi))
-              correlation=(1-nuisance['nugget'] )*correlation
               correlation[correlation>1]=1
               corr2=correlation^2;  
               cc=((2*sk2/pi)*(sqrt(1-corr2) + correlation*asin(correlation)-1) + correlation*vv)/(vv+sk2*(1-2/pi))
@@ -287,19 +289,15 @@ if(!bivariate) {
 ##########################################
    if(twopieceGauss)        { 
                         if(bivariate) {}
-                        else {                             
-                        cc=(1-as.numeric(nuisance["nugget"]))*correlation
-                        nu=1/as.numeric(nuisance['df']);sk=as.numeric(nuisance['skew'])
-                        vv=as.numeric(nuisance['sill'])
-                        corr2=cc^2;sk2=sk^2
-                        a1=Re(hypergeo::hypergeo(-0.5,-0.5 ,nu/2 ,corr2))
+                        else {        
+                        correlation=correlation*(1-nuisance['nugget'])
+                        corr2=sqrt(1-correlation^(2))
+                        sk=as.numeric(nuisance['skew']); sk2=sk^2
                         ll=qnorm((1-sk)/2)
-                        p11=pbivnorm::pbivnorm(ll,ll, rho = cc, recycle = TRUE)
-                        a3=3*sk2 + 2*sk + 4*p11 - 1
-                        MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
-                        KK=2*gamma((nu+1)/2)^2 / MM
-                        cc= KK*(a1*a3-4*sk2);
-                        vs= vv*((1+3*sk2) - 8*sk2*gamma((nu+1)/2)^2/gamma(nu/2)^2 )
+                        p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+                        KK=3*sk2+2*sk+ 4*p11 - 1
+                        cc=(2*((corr2 + correlation*asin(correlation))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   )
+                        vs= as.numeric(nuisance['sill'])*(1+3*sk2-8*sk2/pi)
                         covariance=vs*cc;variogram=vs*(1-cc) 
                         }
                   } 
@@ -323,13 +321,26 @@ if(!bivariate) {
 ##########################################
    if(studentT)        { if(bivariate) {}
                         else {
-                              nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               correlation=correlation*(1-nuisance['nugget'] )
+                              nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
-                              
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation)/(2*gamma(nu/2)^2)
-                              covariance=vs*cc;variogram=vs*(1-cc)  }
-                  } 
+                              covariance=vs*cc;variogram=vs*(1-cc) 
+                               }
+                  }
+##########################################  
+   if(skewstudentT)        { if(bivariate) {}
+                        else {
+                               correlation=correlation*(1-nuisance['nugget'] )
+                               nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
+                               sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
+                               CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
+                               corr2= (1/(-1+1/KK))*(  sqrt(1-correlation^2) + cc*asinh(correlation) - 1 )+(1-sk2)*correlation/(1-KK);
+                               cc=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
+                               vs=((nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)*as.numeric(nuisance['sill'])
+                               covariance=vs*cc;variogram=vs*(1-cc)
+                               }
+                  }
 ##########################################
   if(tukeyh)        { if(bivariate) {}
                         else {
@@ -337,7 +348,7 @@ if(!bivariate) {
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
                               vs=  (1-2*h)^(-1.5)     ## variance
-                 cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
+                              cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
                               covariance=vs*cc;variogram=vs*(1-cc)  
                              } 
                   }     

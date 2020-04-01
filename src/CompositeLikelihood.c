@@ -36,6 +36,56 @@ void CBessel(double *xxx, double *nuu, int *expscale,double *res, int *tipo)
 /******************************************************************************************/
 /******************************************************************************************/
 // Composite marginal (pariwise) log-likelihood for the spatial-temporal Gaussian model:
+/*
+void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0;
+    double corr,lags=0.0, lagt=0.0;
+    double  u=0.0, w=0.0,weights=1.0,bl;
+
+    double sill=nuis[1];
+    double nugget=nuis[0];
+    Rprintf("%f %f\n",sill,nuis);
+    if(nugget<0 || nugget>=1) {*res=LOW; return;}
+    // Computes the log-likelihood:
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                            corr=CorFct(cormod,lags, 0,par,t,v);
+                                u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];   
+                                if(!ISNAN(u)&&!ISNAN(w) ){
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+//bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+bl=log_biv_Norm((1-nugget)*corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
+                                     //  if(!R_FINITE(bl)) { bl=1;}
+                *res+= bl*weights;   
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+                        corr=CorFct(cormod,lags, lagt,par,t,v);
+                                u=data[(i+NS[t])];    
+                                w=data[(j+NS[v])];    
+                             if(!ISNAN(u)&&!ISNAN(w) ){
+                          // bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+                           bl=log_biv_Norm((1-nugget)*corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
+                *res+= bl*weights;  
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}*/
+
+
+// Composite marginal (pariwise) log-likelihood for the spatial-temporal Gaussian model:
 void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
 {
@@ -44,10 +94,13 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
     double  u=0.0, w=0.0,weights=1.0,bl;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr)
     //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
-   if(nuis[1]<0 || nuis[0]<0) {*res=LOW; return;}
+   //if(nuis[1]<0 || nuis[0]<0) {*res=LOW; return;}
+
+
     // Set nuisance parameters:
     double sill=nuis[1];
     double nugget=nuis[0];
+  //  Rprintf("%f\n",nugget);if(nugget<0 || nugget>=1) {*res=LOW; return;}
     // Computes the log-likelihood:
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -62,7 +115,7 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
                                 w=data[(j+NS[v])];   
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+bl=log_biv_Norm((1-nugget)*corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
                                      //  if(!R_FINITE(bl)) { bl=1;}
                 *res+= bl*weights;   
                                     }}}}
@@ -75,7 +128,7 @@ bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
                                 u=data[(i+NS[t])];    
                                 w=data[(j+NS[v])];    
                              if(!ISNAN(u)&&!ISNAN(w) ){
-                           bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+                           bl=log_biv_Norm((1-nugget)*corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
                 *res+= bl*weights;  
                                    
                              }}}}}}}
@@ -139,17 +192,17 @@ void Comp_Pair_Gauss_misp_T_st2(int *cormod, double *coordx, double *coordy, dou
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
 {
     int i=0, j=0,  t=0, v=0;
-    double corr,corr1, lags=0.0, lagt=0.0;
+    double corr, lags=0.0, lagt=0.0;
     double  df=0.0,u=0.0, w=0.0,weights=1.0,bl;
-    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr)
-    //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
-    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
-    // Set nuisance parameters:
-    df=1/nuis[0];
-    // Set nuisance parameters:
+
     double sill=nuis[2];   
     double nugget=nuis[1];
- 
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr)
+    //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
+  //  if(nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
+    // Set nuisance parameters:
+    df=1/nuis[0];
+
     // Computes the log-likelihood:
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -159,15 +212,16 @@ void Comp_Pair_Gauss_misp_T_st2(int *cormod, double *coordx, double *coordy, dou
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
            
                         if(lags<=maxdist[0]){
-                            corr=CorFct(cormod,lags, 0,par,t,v);
-                               if(df<170)corr1=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
-                                else       corr1=corr;//exp(log(df-2)+2*lgammafn(0.5*(df-1))-log(2)-2*lgammafn(df/2)+log(hypergeo(0.5,0.5, df/2,R_pow(corr,2)))+log(corr));
-    
-                                u=data[(i+NS[t])];      
+                            corr=CorFct(cormod,lags, 0,par,t,v)*(1-nugget);
+                            //if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+                           corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr));
+
+                 
+                               u=data[(i+NS[t])];      
                                 w=data[(j+NS[v])];   
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-bl=log_biv_Norm(corr1,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
                 *res+= bl*weights;   
                                     }}}}
                else {
@@ -175,14 +229,14 @@ bl=log_biv_Norm(corr1,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
          for(j=0;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]&&lagt<=maxtime[0]){
-                         corr=CorFct(cormod,lags, lagt,par,t,v);
-                          if(df<170) corr1=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
-                             else       corr1=corr;//exp(log(df-2)+2*lgammafn(0.5*(df-1))-log(2)-2*lgammafn(df/2)+log(hypergeo(0.5,0.5, df/2,R_pow(corr,2)))+log(corr));
-    
+                         corr=CorFct(cormod,lags, lagt,par,t,v)*(1-nugget);
+                     // if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+        corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr));
+
                                 u=data[(i+NS[t])];    
                                 w=data[(j+NS[v])];    
                              if(!ISNAN(u)&&!ISNAN(w) ){
-                           bl=log_biv_Norm(corr1,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,nugget);
+                           bl=log_biv_Norm(corr,u,w,mean[(i+NS[t])],mean[(j+NS[v])],sill,0);
                 *res+= bl*weights;  
                                    
                              }}}}}}}
@@ -197,13 +251,14 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
      double lags=0.0, lagt=0.0,weights=1.0,nugget,corr,corr2,mui,muj,bl,u=0.0, w=0.0;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 || CheckCor(cormod,par)==-2){*res=LOW; return;}
-   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+        nugget=nuis[0];
+  //if(nugget<0 || nugget>=1){*res=LOW; return;}
+   //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
     double **M;
         M= (double **) Calloc(N,double *);
     for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);} 
     double *dat;
     dat=(double *) Calloc(N,double);
-    nugget=nuis[0];
     // Computes the log-likelihood:
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -215,7 +270,7 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
                           u=data[(i+NS[t])];      
                                 w=data[(j+NS[v])];
                           if(!ISNAN(u)&&!ISNAN(w) ){
-                                      corr=CorFct(cormod,lags,0,par,0,0);
+                                      corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                              corr2=corr_pois(corr,mui, muj);
                                    
@@ -233,11 +288,9 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
     u=data[(i+NS[t])];      
                                 w=data[(j+NS[v])]; 
                            if(!ISNAN(u)&&!ISNAN(w)){
-              corr=CorFct(cormod,lags,lagt,par,0,0);
+              corr=CorFct(cormod,lags,lagt,par,0,0)*(1-nugget);
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                              corr2=corr_pois(corr,mui, muj);
-                                 
-
                             M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr2;M[1][0]= M[0][1];
                            dat[0]=u-mui;dat[1]=w-muj;
                                
@@ -259,8 +312,8 @@ void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coo
      double lags=0.0, lagt=0.0,weights=1.0,nugget,corr,mui,muj,bl,u=0.0, w=0.0;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
-   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
     nugget=nuis[0];
+     // if(nugget<0 || nugget>=1){*res=LOW; return;}
     // Computes the log-likelihood:
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -315,7 +368,7 @@ void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *c
     double sill=nuis[1];
     double nugget=nuis[0];
     double tail=nuis[2];
-      if( sill<0||tail<0||tail>0.5||nugget>=1||nugget<0){*res=LOW; return;}
+      if( sill<0||tail<0||tail>0.5){*res=LOW; return;}
 
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -364,7 +417,7 @@ void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt
     double nugget=nuis[1];
     double df=nuis[0];
 
-    if( sill<0||df<0||df>0.5||nugget>=1||nugget<0){*res=LOW; return;}
+    if( sill<0||df<0||df>0.5){*res=LOW; return;}
 
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -413,7 +466,7 @@ void  Comp_Pair_TWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, d
     sill=nuis[1];
     nugget=nuis[0];
 
-     if( fabs(eta)>1|| sill<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+     //if( fabs(eta)>1|| sill<0) {*res=LOW;  return;} 
   qq=qnorm((1-eta)/2,0,1,1,0);
 
       for(t=0;t<ntime[0];t++){
@@ -466,7 +519,7 @@ void  Comp_Pair_TWOPIECETukeyh_st2(int *cormod, double *coordx, double *coordy, 
     sill =nuis[1];
     nugget=nuis[0];
      qq=qnorm((1-eta)/2,0,1,1,0);
-         if( fabs(eta)>1 || sill<0 ||nugget>=1 || nugget<0 || tail<=0) {*res=LOW;  return;} 
+      //   if( fabs(eta)>1  || tail<=0) {*res=LOW;  return;} 
 
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -519,7 +572,7 @@ void  Comp_Pair_TWOPIECET_st2(int *cormod, double *coordx, double *coordy, doubl
     nugget=nuis[1];
     df=nuis[0];
        qq=qnorm((1-eta)/2,0,1,1,0);
-         if( fabs(eta)>1|| sill<0||df >0.5||df<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+       //  if( fabs(eta)>1|| sill<0||df >0.5||df<0) {*res=LOW;  return;} 
 
 
       for(t=0;t<ntime[0];t++){
@@ -670,11 +723,12 @@ void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
     int i=0, j=0,  t=0, v=0;
     double s1=0.0, s12=0.0, lags=0.0, lagt=0.0,weights=1.0;
     double det=0.0, u=0.0, u2=0.0, w=0.0, w2=0.0;
-      if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    // if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
     // Set nuisance parameters:
-    s1=nuis[0]+nuis[1];
+   // s1=nuis[0]+nuis[1];
+    s1=nuis[0];if(s1<0 || s1>1) {*res=LOW;  return;}
     // Computes the log-likelihood:
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -683,7 +737,8 @@ void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
          for(j=i+1;j<ns[t];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=maxdist[0]){
-                            s12=nuis[1]*CorFct(cormod,lags,0,par,t,v);
+                          //  s12=nuis[1]*CorFct(cormod,lags,0,par,t,v);
+                           s12=nuis[1]*CorFct(cormod,lags,0,par,t,v)*(1-s1);
                             det=R_pow(s1,2)-R_pow(s12,2);
                              u=data[(i+NS[t])]-mean[(i+NS[t])];
                                 w=data[(j+NS[v])]-mean[(j+NS[v])];
@@ -697,7 +752,8 @@ void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
          for(j=0;j<ns[v];j++){
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lagt<=maxtime[0] && lags<=maxdist[0]){
-                            s12=nuis[1]*CorFct(cormod,lags,lagt,par,t,v);
+                            //s12=nuis[1]*CorFct(cormod,lags,lagt,par,t,v);
+                             s12=nuis[1]*CorFct(cormod,lags,0,par,t,v)*(1-s1);
                             det=R_pow(s1,2)-R_pow(s12,2);
                                  u=data[(i+NS[t])]-mean[(i+NS[t])];
                                 w=data[(j+NS[v])]-mean[(j+NS[v])];
@@ -719,7 +775,7 @@ void Comp_Diff_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
 {
     int i=0, j=0,  t=0, v=0;
     double u,w,vario=0.0,lags=0.0, lagt=0.0,weights=1.0;
-       if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+       //if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
     //Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
     //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
     // Computes the log-likelihood:
@@ -760,7 +816,8 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
     
     int i=0,j=0,t=0,v=0;
     double bl,corr,zi,zj,lags,lagt,weights=1.0;
-      if(nuis[1]<0 || nuis[0]<0|| nuis[0]>1) {*res=LOW;  return;}
+    double nugget=nuis[0];
+     // if( nugget<0|| nugget>=1) {*res=LOW;  return;}
 
         for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -774,7 +831,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                                    bl=biv_skew((1-nuis[0])*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]);
+                                    bl=biv_skew((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]);
                              *res+= weights*log(bl);
                          }}}}
                     else {  
@@ -787,7 +844,7 @@ void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double
                                 zj=data[(j+NS[v])];
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
-   bl=biv_skew((1-nuis[0])*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]);
+   bl=biv_skew((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[1],nuis[2]);
                              *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -808,7 +865,8 @@ void Comp_Pair_TWOPIECEBIMODAL_st2(int *cormod, double *coordx, double *coordy, 
     double sill=nuis[2];
     double nugget=nuis[1];
     double df=nuis[0];
-    if( fabs(eta)>1|| sill<0||df >0.5||df<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+
+//if( fabs(eta)>1||df >0.5||df<0) {*res=LOW;  return;} 
 
            qq=qnorm((1-eta)/2,0,1,1,0); 
 
@@ -904,8 +962,8 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
     
     int i=0,j=0,t=0,v=0;
     double corr,zi,zj,lags,lagt,weights=1.0,bl=1.0;
- double sill=1-nuis[0];
-       if(nuis[2]<1||sill<0||sill>1) {*res=LOW;  return;}
+ double nugget=nuis[0];
+    //if(nuis[2]<1||nugget<0||nugget>=1) {*res=LOW;  return;}
 
     for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -919,8 +977,7 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                                  bl=biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
-                                 
+                                  bl=biv_gamma((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
                                     *res+= weights*log(bl);
                          }}}}
                      else {  
@@ -933,8 +990,7 @@ void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *co
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                                           bl=biv_gamma(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
-                                            
+                                           bl=biv_gamma((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
                                             *res+= weights*log(bl);
                                 }}}}
                 }}}
@@ -994,8 +1050,8 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
     
     int i=0,j=0,t=0,v=0;
     double corr,zi,zj,lags,lagt,weights=1.0,bl=0.0;
-  double sill=1-nuis[0];
-     if(nuis[2]<=0||sill<0||sill>1) {*res=LOW;  return;}
+  double nugget=nuis[0];
+     //if(nuis[2]<=0||nugget<0||nugget>=1) {*res=LOW;  return;}
 
     for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -1009,7 +1065,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,0,par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                                      bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                                      bl=biv_Weibull((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
 
                                       *res+= weights*log(bl);
                          }}}}
@@ -1023,7 +1079,7 @@ void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *
                                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                                     corr=CorFct(cormod,lags,lagt,par,0,0);
                                            if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
-                                         bl=biv_Weibull(sill*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
+                                         bl=biv_Weibull((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],nuis[2]);
            
                                       *res+= weights*log(bl);
                                 }}}}
@@ -1131,7 +1187,7 @@ void Comp_Pair_BinomTWOPIECEGauss_st2(int *cormod, double *coordx, double *coord
     double p1=0.0,p2=0.0;//probability of marginal success
     double psj=0.0;//probability of joint success
     double eta=nuis[2];
-    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+   // if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
     nuis[1]=1-nuis[0];
     // Computes the log-likelihood:
       for(t=0;t<ntime[0];t++){
@@ -1278,7 +1334,7 @@ void Comp_Pair_BinomnegTWOPIECEGauss_st2(int *cormod, double *coordx, double *co
     double p1=0.0,p2=0.0;//probability of marginal success
     double psj=0.0;//probability of joint success
       double eta=nuis[2];
-    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+    //if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
     nuis[1]=1-nuis[0];
     // Computes the log-likelihood:
       for(t=0;t<ntime[0];t++){
@@ -1424,15 +1480,15 @@ void Comp_Cond_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
     double det=0.0, u=0.0, u2=0.0, v=0.0, v2=0.0;
     // Checks the validity of the the nuisance and correlation parameters (nugget, sill and corr):
    // if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
-       if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+    
     // Set nuisance parameters:
-    s1=nuis[0]+nuis[1];//set nugget + sill
-
+    s1=nuis[0];
+   if(s1<0 || s1>1) {*res=LOW;  return;}
     for(i=0; i<(ncoord[0]-1);i++)
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
             if(lags<=maxdist[0]){
-                s12=nuis[1]*CorFct(cormod, lags, 0, par,0,0); //sill * corr
+                s12=nuis[1]*CorFct(cormod, lags, 0, par,0,0)*(1-s1); //sill * corr
                 det=R_pow(s1,2)-R_pow(s12,2);
                     u=data[i]-mean[i]; 
                     v=data[j]-mean[j]; 
@@ -1453,7 +1509,8 @@ void Comp_Diff_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
 {
   int i=0, j=0;
   double vario=0.0,lags=0.0,u,v,weights=1.0;
-     if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+     
+   //if(nuis[0]<0 || nuis[0]>1) {*res=LOW;  return;}
   // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
   //if(nuis[1]<0 || nuis[0],<=0 || CheckCor(cormod,par)==-2){ *res=LOW; return;}
 
@@ -1507,7 +1564,7 @@ void Comp_Pair_WrapGauss2(int *cormod, double *coordx, double *coordy, double *c
        // nuis[0]=0.0;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    // if(nuis[1]<0 || nuis[0]<=0 || CheckCor(cormod,par)==-2){*res=LOW; return;}
-       if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
+     //  if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
     // Set nuisance parameters:
  //set nugget + sill
     for(i=0;i<(ncoord[0]-1);i++)
@@ -1557,7 +1614,7 @@ void Comp_Pair_SkewGauss2(int *cormod, double *coordx, double *coordy, double *c
 {
     
     int i=0,j=0;double corr,zi,zj,lags,weights=1.0;
-         if(nuis[1]<0 || nuis[0]<0|| nuis[0]>1){*res=LOW;  return;}
+         if(nuis[0]<0|| nuis[0]>=1){*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
             for(j=(i+1); j<ncoord[0];j++){
                 lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1602,8 +1659,8 @@ void Comp_Pair_Gamma2(int *cormod, double *coordx, double *coordy, double *coord
 {
     
     int i,j;double corr,zi,zj,lags,weights=1.0,bl=1.0;
-    double sill=1-nuis[0];
-     if(nuis[2]<1||sill<0||sill>1) {*res=LOW;  return;}
+    double nugget=nuis[0];
+     if(nuis[2]<1) {*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
             for(j=(i+1); j<ncoord[0];j++){
                 lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1611,7 +1668,7 @@ void Comp_Pair_Gamma2(int *cormod, double *coordx, double *coordy, double *coord
                     zi=(data[i]); zj=(data[j]);
                       if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=CorFct(cormod,lags,0,par,0,0);
-                    bl=biv_gamma(sill*corr,zi,zj,mean[i],mean[j],nuis[2]);
+                    bl=biv_gamma((1-nugget)*corr,zi,zj,mean[i],mean[j],nuis[2]);
                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);        
                            
   *res+= weights*log(bl);
@@ -1782,10 +1839,10 @@ void Comp_Pair_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
     int i=0, j=0;
     double lags=0.0, weights=1.0,sill,nugget,corr,bl;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
-   if(nuis[1]<0 || nuis[0]<0){*res=LOW; return;}
+   //if(nuis[0]<0 || nuis[1]<0){*res=LOW; return;}
     // Set nuisance parameters:
     sill=nuis[1];nugget=nuis[0];
-    //if(sill<0||nugget<0) {*res=LOW;  return;}
+    //if(nugget<0||nugget>=1) {*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
  			lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -1793,7 +1850,8 @@ void Comp_Pair_Gauss2(int *cormod, double *coordx, double *coordy, double *coord
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
                      corr=CorFct(cormod,lags,0,par,0,0);
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                      bl=log_biv_Norm(corr,data[i],data[j],mean[i],mean[j],sill,nugget);
+                     // bl=log_biv_Norm(corr,data[i],data[j],mean[i],mean[j],sill,nugget);
+                      bl=log_biv_Norm((1-nugget)*corr,data[i],data[j],mean[i],mean[j],sill,0);
                         *res+= bl*weights;
                     }}}}            
     // Checks the return values
@@ -1930,7 +1988,7 @@ void Comp_Pair_BinomTWOPIECEGauss2(int *cormod, double *coordx, double *coordy, 
     double pi=0.0,pj=0.0;//probability of marginal success
     double psj=0.0;//probability of joint success
     double eta=nuis[2];
-    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+   // if( eta < -1 || eta > 1){*res=LOW; return;}
     nuis[1]=1-nuis[0]; // nuis[0] is the nugget
     //compute the composite log-likelihood:
     for(i=0; i<(ncoord[0]-1);i++){
@@ -1961,7 +2019,7 @@ void Comp_Pair_BinomnegTWOPIECEGauss2(int *cormod, double *coordx, double *coord
     double u,v,bl=0.0,lags=0.0,weights=1.0,ai=0.0,aj=0.0,ki=0.0,kj=0.0;
     double pi=0.0,pj=0.0,psj=0.0;//probability of marginal success
     double eta=nuis[2];
-    if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
+  //  if( eta < -1 || eta > 1 || nuis[0]>1 || nuis[0]<0){*res=LOW; return;}
     nuis[1]=1-nuis[0];
     //compute the composite log-likelihood:
     for(i=0; i<(ncoord[0]-1);i++){
@@ -2022,7 +2080,7 @@ void Comp_Pair_LogLogistic2(int *cormod, double *coordx, double *coordy, double 
   
     int i,j;double bl,corr,zi,zj,lags,weights=1.0,nugget=0.0;
     nugget=nuis[0];
-    if( nuis[2]<=2||nugget>=1||nugget<0.0 ) {*res=LOW;  return;}
+    //if( nuis[2]<=2) {*res=LOW;  return;}
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2072,7 +2130,7 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
     double lags=0.0, weights=1.0,nugget,corr,mui,muj,bl;
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
-   if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+   //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
     nugget=nuis[0];
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
@@ -2122,7 +2180,7 @@ double **M;
              //***********/
                     mui=exp(mean[i]);muj=exp(mean[j]);
 
-                     corr=CorFct(cormod,lags,0,par,0,0);
+                     corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
                     // corr2=corr*corr;
                     // z=2*sqrt(mui*muj)/(1-corr2);
                      
@@ -2149,8 +2207,8 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
     int i=0, j=0;
-    double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr2,corr3,df,bl;
-    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1){*res=LOW; return;}
+    double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr2,df,bl;
+    //if(nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1){*res=LOW; return;}
 
     df=1/nuis[0];
     nugget=nuis[1];
@@ -2171,13 +2229,15 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
-                     corr=CorFct(cormod,lags,0,par,0,0);
-         corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
-corr3=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
-(hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
+                     corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
+  if(df<170)                   
+        { corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
+          corr=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
+                                                 (hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
+}
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                          bl=log_biv_Norm(corr3,data[i],data[j],mean[i],mean[j],sill,nugget);
+                          bl=log_biv_Norm(corr,data[i],data[j],mean[i],mean[j],sill,0);
                         *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
@@ -2190,8 +2250,9 @@ void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double
 {
     int i=0, j=0;
     double lags=0.0, weights=1.0,corr,df=0.0,bl,sill;
+    double nugget=nuis[1];
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
-    if(nuis[1]<0 || nuis[2]<0 || nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
+   // if(nuis[0]>0.5 || nuis[0]<0){*res=LOW; return;}
     // Set nuisance parameters:
     df=1/nuis[0];
     sill=nuis[2];
@@ -2200,11 +2261,12 @@ void Comp_Pair_Gauss_misp_T2(int *cormod, double *coordx, double *coordy, double
       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
-                     corr=CorFct(cormod,lags,0,par,0,0);
-        if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
-       // else     corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-log(2)-2*lgammafn(df/2)+log(hypergeo(0.5,0.5, df/2,R_pow(corr,2)))+log(corr));
-         if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                     bl=log_biv_Norm(corr,data[i],data[j],mean[i],mean[j],sill,nuis[1]);
+                     corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
+        //if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
+        corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr));
+
+           if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                     bl=log_biv_Norm(corr,data[i],data[j],mean[i],mean[j],sill,0);
                        *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
@@ -2220,7 +2282,7 @@ void Comp_Pair_Tukeyh2(int *cormod, double *coordx, double *coordy, double *coor
     double sill=nuis[1];
     double nugget=nuis[0];
     double tail=nuis[2];
-      if( sill<0||tail<0||tail>0.5||nugget>=1||nugget<0){*res=LOW; return;}
+      if( sill<0||tail<0||tail>0.5){*res=LOW; return;}
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2246,7 +2308,7 @@ void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,do
     double sill=nuis[2];
     double nugget=nuis[1];
     double df=nuis[0];
-      if( sill<0||df<0||df>0.5||nugget>=1||nugget<0){*res=LOW; return;}
+      if( sill<0||df<0||df>0.5){*res=LOW; return;}
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2278,7 +2340,7 @@ void Comp_Pair_TWOPIECETukeyh2(int *cormod, double *coordx, double *coordy, doub
     nugget=nuis[0];
 
        qq=qnorm((1-eta)/2,0,1,1,0);
-         if( fabs(eta)>1 || sill<0 ||nugget>=1 || nugget<0 || tail<=0) {*res=LOW;  return;} 
+         //if( fabs(eta)>1  || tail<=0) {*res=LOW;  return;} 
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2310,7 +2372,7 @@ void Comp_Pair_TWOPIECEBIMODAL2(int *cormod, double *coordx, double *coordy, dou
     sill=nuis[2];
     nugget=nuis[1];
     df=nuis[0];
-    if( fabs(eta)>1|| sill<0||df >0.5||df<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+    //if( fabs(eta)>1||df >0.5||df<0) {*res=LOW;  return;} 
     
     qq=qnorm((1-eta)/2,0,1,1,0);         
     for(i=0;i<(ncoord[0]-1);i++){
@@ -2324,7 +2386,6 @@ void Comp_Pair_TWOPIECEBIMODAL2(int *cormod, double *coordx, double *coordy, dou
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                     /********************************************************/
                    bl=biv_two_piece_bimodal((1-nugget)*corr,zi,zj,sill,df,eta,p11,mean[i],mean[j]);
-                   ///Rprintf("%f %f %f %f %f %f -- %f %f \n",zi,zj,bl,eta,sill,mean[i],corr,p11);
                     /********************************************************/
                            *res+= weights*log(bl);
                 }}}}
@@ -2347,7 +2408,7 @@ void Comp_Pair_TWOPIECET2(int *cormod, double *coordx, double *coordy, double *c
     nugget=nuis[1];
     df=nuis[0];
        qq=qnorm((1-eta)/2,0,1,1,0);
-         if( fabs(eta)>1|| sill<0||df >0.5||df<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+       //  if( fabs(eta)>1|| sill<0||df >0.5||df<0) {*res=LOW;  return;} 
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2379,7 +2440,7 @@ void Comp_Pair_TWOPIECEGauss2(int *cormod, double *coordx, double *coordy, doubl
     sill=nuis[1];
     nugget=nuis[0];
        qq=qnorm((1-eta)/2,0,1,1,0);
-         if( fabs(eta)>1|| sill<0||nugget>=1||nugget<0) {*res=LOW;  return;} 
+         //if( fabs(eta)>1|| sill<0) {*res=LOW;  return;} 
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);

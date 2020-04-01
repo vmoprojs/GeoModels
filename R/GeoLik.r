@@ -360,13 +360,14 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
+        #if(nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         sill=nuisance['sill']
         #if(sill<0) return(llik)
         nuisance['sill']=1
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
         # Computes the correlation matrix:
-        cova <- corr*(1-nuisance['sill'])
+        cova <- corr*(1-nuisance['nugget'])
         #KK=exp(sill)/2
         # Computes the log-likelihood
         loglik_u <- do.call(what="LogNormDenStand_LG",
@@ -374,8 +375,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
             mdecomp=mdecomp,nuisance=nuisance,det=sum(1/(data)),sill=sill,setup=setup))
         return(loglik_u)
       }
-
-
+################################################################################################
    loglik_tukey2h <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
@@ -389,7 +389,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-                if(nuisance['tail']<0||nuisance['tail1']>0.5||nuisance['tail2']>0.5||nuisance['sill']<0) return(llik)
+        #if(nuisance['tail']<0||nuisance['tail1']>0.5||nuisance['tail2']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -400,6 +400,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
         return(loglik_u)
       }
+################################################################################################
     loglik_tukeyh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
@@ -413,7 +414,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-                if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['sill']<0) return(llik)
+       # if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -424,7 +425,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
         return(loglik_u)
       }
-   
+################################################################################################ 
 loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
     {
@@ -438,7 +439,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-                if(nuisance['tail']<0||nuisance['sill']<0) return(llik)
+        #if(nuisance['tail']<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -450,7 +451,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         return(loglik_u)
       }
 
-
+################################################################################################
    # Call to the objective functions:
         loglik_miss_skewT<- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
@@ -466,7 +467,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         nu=1/nuisance['df']; eta2=nuisance['skew']^2
-        if(nu<2||abs(nuisance['skew'])>1)  return(llik)
+        #if(nu<2||abs(nuisance['skew'])>1)  return(llik)
         w=sqrt(1-eta2);
         KK=2*eta2/pi
         D1=(nu-1)/2; D2=nu/2
@@ -480,7 +481,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
       }
-
+################################################################################################
     # Call to the objective functions:
     loglik_miss_T <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
@@ -496,12 +497,11 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         df=1/nuisance['df']
-         if(df<2)  return(llik)
+        #if(df<2)  return(llik)
          #if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
          #else      
          corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
-
         nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
@@ -509,7 +509,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         return(loglik_u)
     
       }
-
+################################################################################################
     # Call to the objective functions:
     loglik <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
@@ -525,9 +525,8 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-        #if(corr[1]==-2||is.nan(corr[1])) return(llik)
-        # Computes the correlation matrix:
-        cova <- corr*nuisance['sill']
+        cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
+        nuisance['nugget']=0
         # Computes the log-likelihood
         
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
@@ -535,8 +534,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         return(loglik_u)
       }
 
- 
-                          
+################################################################################################                     
      loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
       {

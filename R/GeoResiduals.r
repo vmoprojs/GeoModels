@@ -39,6 +39,11 @@ else dd=c(t(fit$data))
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(c(mu))
 
+
+
+
+
+
 ### 
 if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh", "Tukeyh","SinhAsinh","",
          "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
@@ -88,13 +93,15 @@ if(model %in% c("Gaussian","Logistic","Tukeyh","SinhAsinh", "Gaussian_misp_Stude
 
 
 
+
 if(model %in% c("SkewGaussian")) 
 {param['mean']=0;
  fit$param['skew']=as.numeric(param['skew'])/sqrt(vskew)
- fit$param['sill']=1#(sqrt(as.numeric(param['sill']))/sqrt(vskew))^2
+ fit$param['sill']=1
 }
 fit$param=fit$param[nm]
 fit$fixed=fit$fixed[nf]
+
 
 
 ### deleting NA
