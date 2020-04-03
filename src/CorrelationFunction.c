@@ -1986,7 +1986,6 @@ double CorFunWendhole(double lag,double scale)
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-
 // Computation of the upper (lower) triangular spatial correlation matrix: spatial case
 void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
  double *nuis, double *par,double *radius,int *ns, int *NS)
@@ -2001,120 +2000,35 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
     }}
   return;
 }
-
-void CorrelationMat_poi2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean,
- double *nuis, double *par,double *radius,int *ns, int *NS)
-{
-  int i=0,j=0,h=0;// check the paramaters range:
-  double lags=0.0,corr=0.0,mui,muj;
-  //if(nuis[1]<0 || nuis[2]<=0 || CheckCor(cormod,par)==-2){rho[0]=-2;return;}// compute the correlations:
-  //if(nuis[1]<0 || nuis[2]<=0){rho[0]=-2;return;}// compute the correlations:
-   
-     for(i=0;i<(ncoord[0]-1);i++){
-      for(j=(i+1);j<ncoord[0];j++){
-      //   for(i=0;i<(ncoord[0]);i++){
-      //for(j=i;j<ncoord[0];j++){
-        lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-    corr=CorFct(cormod,lags,0,par,0,0);
-     mui=exp(mean[i]);muj=exp(mean[j]);
-    rho[h]=sqrt(mui*muj)*corr_pois((1-nuis[0])*corr,mui, muj);
-       h++;
-    }}
-  return;
-}
-// Computation of the upper (lower) triangular spatial binomial type 1 covmatrix
-void CorrelationMat_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
-        int *n,double *nuis, double *par,double *radius, int *ns, int *NS)
+// Computation of the upper (lower) triangular spatial discrete  models
+void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
+        int *n,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double psj=0.0,lags=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
-    //if(nuis[1]<0 || nuis[2]<=0 || CheckCor(cormod,par)==-2){rho[0]=-2;return;}// compute the correlations:
-    //if(nuis[1]<0 || nuis[2]<=0){rho[0]=-2;return;}// compute the correlations:
-      for(i=0;i<(ncoord[0]-1);i++){
+        for(i=0;i<(ncoord[0]-1);i++){
       for(j=(i+1);j<ncoord[0];j++){
-    //     for(i=0;i<(ncoord[0]);i++){
-    //  for(j=i;j<ncoord[0];j++){
-        ai=mean[i];aj=mean[j];
+         ai=mean[i];aj=mean[j];
         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+   if(*model==14||*model==16||*model==2||*model==11){
+
         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
               p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-             rho[h]=n[0]*(psj-p1*p2);///sqrt((1-p1)*p2*(1-p2));
+      if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);
+      if(*model==14)       rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);      
+      if(*model==16)       rho[h]=0; 
+       }
+
+     if(*model==30)
+       {
+           ai=exp(mean[i]);aj=exp(mean[j]);
+           rho[h]=sqrt(ai*aj)*corr_pois((1-nuis[0])*CorFct(cormod,lags,0,par,0,0),ai, aj);
+
+       } 
             h++;
         }}
     return;
 }
-
-
-
-// Computation of the upper (lower) triangular spatial binomial type 2 covamtrix
-void CorrelationMat_binneg2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  
-  double *mean,int *n,double *nuis, double *par,double *radius, int *ns, int *NS)
-{
-    int i=0,j=0,h=0;// check the paramaters range:
-    double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
-      for(i=0;i<(ncoord[0]-1);i++){
-      for(j=(i+1);j<ncoord[0];j++){
-        lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-             ai=mean[i];aj=mean[j];
-             psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
-             p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-            rho[h]= corr_binomneg(n[0],p1,p2,psj);    
-            h++;
-        }}
-    return;
-}
-
-
-
-// Computation of the upper (lower) triangular spatial geom cov matrix
-void CorrelationMat_geom2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,
-  double *nuis, double *par,double *radius,int *ns, int *NS)
-{
-    int i=0,j=0,h=0;// check the paramaters range:
-    double  lags=0.0,psj=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0;
-         for(i=0;i<(ncoord[0]-1);i++){
-      for(j=(i+1);j<ncoord[0];j++){
-        lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-             ai=mean[i];aj=mean[j];
-             psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
-             p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-            rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-            h++;
-        }}
-    return;
-}
-
-// Computation of the upper (lower) triangular spatial tukey cov matrix
-void CorrelationMat_tukeygh2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, 
- double *nuis, double *par,double *radius,int *ns, int *NS)
-{
-  int i=0,j=0,h=0;// check the paramaters range:
-  double cc,lags=0.0,a=0.0,b=0.0,c=0.0,tm=0.0,sk2=0.0,consta=0.0,t1;
-    t1=1-nuis[4];
-    c=R_pow(t1,2) - R_pow(nuis[4],2);
-    sk2=R_pow(nuis[3],2);
-    if(nuis[3]==0) {consta= ( 2/(1-nuis[4]*(2))   -1)/sqrt(c) ;}
-    else {tm=(exp(sk2/(2*t1))-1)/(nuis[3]*sqrt(t1));
-          consta= ((exp(sk2 * 2/(1-2*nuis[4])) -
-               2* exp( sk2 *0.5)+1))/(sk2*sqrt(c)) - R_pow(tm,2);}
-
-     for(i=0;i<(ncoord[0]-1);i++){
-      for(j=(i+1);j<ncoord[0];j++){
-        lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-        cc=CorFct(cormod,lags,0,par,0,0);
-
-        a=(1+cc)/(1-nuis[4]*(1+cc));
-        b=0.5* (1-nuis[4]*(1-cc*cc));
-
-  if(nuis[3]==0)        rho[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  rho[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-
-    h++;
-    }}
-  return;
-}
-
-
 
 // Computation of the correlations for spatial tapering:
 void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
@@ -2124,7 +2038,30 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
   for(i=0;i<*npairs;i++) {rho[i]=CorFct(cormod,lags[i],0,par,0,0);}
   return;
 }
-
+// Computation of the correlations for spatial tapering:
+void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
+  int *ns, int *NS, int *n, double *mu,int  *model)
+{
+  int i=0;
+  double corr,p1,psj,aux;
+  for(i=0;i<*npairs;i++) {
+  if(*model==2||*model==11||*model==14||*model==16){
+      p1=pnorm(mu[i],0,1,1,0); 
+      psj=pbnorm(cormod,lags[i],0,mu[i],mu[i],nuis[0],1,par,0);
+      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p1);
+      if(*model==14)                  rho[i]=(psj-p1*p1)/((-psj+p1+p1)*p1*p1);      
+      if(*model==16)                  rho[i]=0; 
+       
+}
+    if(*model==30)
+       {
+          corr=CorFct(cormod,lags[i],0,par,0,0);
+          aux=exp(mu[i]);
+          rho[i]=aux*corr_pois((1-nuis[0])*corr,aux, aux);
+       }
+      }
+  return;
+}
 
 /************************************************************************************************/
 /************************************************************************************************/
@@ -2144,16 +2081,36 @@ void CorrelationMat_st_tap(double *rho,double *coordx, double *coordy, double *c
   double *par,double *radius, int *ns, int *NS)
 {
   int i=0;
-//if(nuis[1]<0 || nuis[2]<=0 ){rho[0]=-2;return;}
-//if(nuis[1]<0 || nuis[2]<=0 || CheckCor(cormod,par)==-2){rho[0]=-2;return;}
-
   for(i=0;i<*npairs;i++) {
       rho[i]=CorFct(cormod,lags[i],lagt[i],par,0,0);
   }
 return;
 }
 
-
+// Computation of the correlations for spatio-temporal tapering:
+void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
+  int *ns, int *NS, int *n, double *mu,int  *model)
+{
+  int i=0;
+  double corr,p1,psj,aux;
+  for(i=0;i<*npairs;i++) {
+  if(*model==2||*model==11||*model==14||*model==16){
+      p1=pnorm(mu[i],0,1,1,0); 
+      psj=pbnorm(cormod,lags[i],lagt[i],mu[i],mu[i],nuis[0],1,par,0);
+      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p1);
+      if(*model==14)                  rho[i]=(psj-p1*p1)/((-psj+p1+p1)*p1*p1);      
+      if(*model==16)                  rho[i]=0; 
+       
+}
+    if(*model==30)
+       {
+          corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+          aux=exp(mu[i]);
+          rho[i]=aux*corr_pois((1-nuis[0])*corr,aux, aux);
+       }
+      }
+  return;
+}
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
@@ -2192,138 +2149,58 @@ rho[h]=CorFct(cormod,lags,lagt,par,t,v);
   return;
 }
 
-// Computation of the upper (lower) triangular  correlation matrix:  geom spatial-temporal case
-void CorrelationMat_st_dyn_geom2(double *rho,double *coordx, double *coordy, double *coordt, 
-                    int *cormod,  double *mean,double *nuis, double *par,double *radius, int *ns, int *NS)
+// Computation of the upper (lower) triangular  correlation matrix for discrete models: spatial-temporal case
+void CorrelationMat_st_dyn_dis2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
+  double *nuis, double *par,double *radius, int *ns, int *NS, int *model)
 
 {
     int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
        double psj,ai,aj,p1,p2;
+
 for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[v];j++){
-    lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);            
+          if(*model==14||*model==16||*model==2||*model==11){
                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
                         psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                   rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-                        h++;}}
+      if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);                       //binomial
+      if(*model==14)                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);        //goemettric  
+      if(*model==16)                  rho[h]=0;                                       // negative binomial
+    }
+if(*model==30) {       //poisson
+           ai=exp(mean[i+ns[t]*t]);
+           aj=exp(mean[j+ns[t]*v]); 
+           rho[h]= sqrt(ai* aj)*corr_pois((1-nuis[0])*CorFct(cormod,lags,0,par,t,v),ai, aj);
+         }            
+  
+  h++;}}
           else {  
          lagt=fabs(coordt[t]-coordt[v]);
          for(j=0;j<ns[v];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                        ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
-                        psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-                        h++;}}
+            if(*model==14||*model==16||*model==2||*model==11){
+                         ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
+                         psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
+                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
+             
+             if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);                    //binomial
+             if(*model==14)                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);    //goemettric   
+             if(*model==16)                  rho[h]=0;                                   // negative binomial
+                }
+  if(*model==30) {          //poisson
+        ai=exp(mean[i+ns[v]*t]);
+        aj=exp(mean[j+ns[v]*v]); 
+          rho[h]= sqrt(ai* aj)*corr_pois((1-nuis[0])*CorFct(cormod,lags,lagt,par,t,v),ai, aj);
+
+  }
+
+ h++;}}
             }}}
     return;
-}
-
-// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st_dyn_bin2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
-  double *nuis, double *par,double *radius, int *ns, int *NS)
-
-{
-    int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
-       double psj,ai,aj,p1,p2;
-for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[v];j++){
- lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
-                        psj=pbnorm(cormod,lags,0,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);
-                        h++;}}
-            else {  
-         lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ns[v];j++){
-        
-          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                       ai=mean[i+ns[v]*t];aj=mean[j+ns[v]*v];
-                        psj=pbnorm(cormod,lags,lagt,ai,aj,nuis[0],nuis[1],par,0);
-                        p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-                        rho[h]=n[0]*(psj-p1*p2);
-                        h++;}}
-            }}}
-    return;
-}
-// Computation of the upper (lower) triangular  correlation matrix: spatial-temporal case
-void CorrelationMat_st_dyn_poi2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod,  double *mean,int *n,
-  double *nuis, double *par,double *radius, int *ns, int *NS)
-
-{
-    int i=0,j=0,t=0,v=0,h=0; double lags=0.0,lagt=0.0;
-       double mui,muj,corr;
-for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[v];j++){
- lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                         mui=exp(mean[i+ns[t]*t]);muj=exp(mean[j+ns[t]*v]);
-                        corr=CorFct(cormod,lags,0,par,t,v);
-                      rho[h]= sqrt(mui* muj)*corr_pois((1-nuis[0])*corr,mui, muj);
-                        h++;}}
-               else {  
-         lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ns[v];j++){
-        
-          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                       mui=exp(mean[i+ns[v]*t]);muj=exp(mean[j+ns[v]*v]);
-                               corr=CorFct(cormod,lags,lagt,par,t,v);
-                     rho[h]=sqrt(mui* muj)*corr_pois((1-nuis[0])*corr,mui, muj);
-                        h++;}}
-            }}}
-    return;
-}
-
-//###########################
-void CorrelationMat_st_dyn_tukeygh2(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,  double *nuis, double *par,double *radius,
-  int *ns, int *NS)
-{
-  int i=0,j=0,t=0,v=0,h=0; 
-   double lagt=0.0,cc,lags=0.0,a=0.0,b=0.0,c=0.0,tm=0.0,sk2=0.0,consta=0.0,t1;
-  t1=1-nuis[4];
-    c=R_pow(t1,2) - R_pow(nuis[4],2);
-    sk2=R_pow(nuis[3],2);
-    if(nuis[3]==0) {consta= ( 2/(1-nuis[4]*(2))   -1)/sqrt(c) ;}
-    else {tm=(exp(sk2/(2*t1))-1)/(nuis[3]*sqrt(t1));
-          consta= ((exp(sk2 * 2/(1-2*nuis[4])) -
-               2* exp( sk2 *0.5)+1))/(sk2*sqrt(c)) - R_pow(tm,2);}
-
-for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[t];j++){
-           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-         cc=CorFct(cormod,lags,0,par,t,v);
-       a=(1+cc)/(1-nuis[4]*(1+cc));
-        b=0.5* (1-nuis[4]*(1-cc*cc));
-
-  if(nuis[3]==0)        rho[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  rho[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-           h++;}}
-    else {  
-      lagt=fabs(coordt[t]-coordt[v]);
-         for(j=0;j<ns[v];j++){
-          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-     cc=CorFct(cormod,0,lagt,par,t,v);
-      a=(1+cc)/(1-nuis[4]*(1+cc));
-        b=0.5* (1-nuis[4]*(1-cc*cc));
-
-  if(nuis[3]==0)        rho[h]=(( a -2* b)/sqrt(c) )/consta;
-  else                  rho[h]=((exp(sk2 * a) -2* exp( sk2 *b)+1)/(sk2*sqrt(c)) - R_pow(tm,2))/consta;
-              h++;}}
-    }}}
-  return;
 }
 
 /************************************************************************************************/
@@ -2336,7 +2213,6 @@ for(t=0;t<ntime[0];t++){
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-
 
 // Computation of the upper (lower) triangular covariance matrix: bivariate case
 void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, 
@@ -2359,8 +2235,6 @@ void CorrelationMat_biv_dyn2(double *rho,double *coordx, double *coordy, double 
     }}}
   return;
 }
-
-
 // Computation of the upper (lower) triangular covariance matrix: bivariate case
 void CorrelationMat_biv_skew_dyn2(double *rho,double *coordx, double *coordy, double *coordt, int *cormod, 
  double *nuis, double *par,double *radius, int *ns,int *NS)
@@ -2398,9 +2272,6 @@ void CorrelationMat_biv_skew_dyn2(double *rho,double *coordx, double *coordy, do
     }}}
   return;
 }
-
-
-
 // Computation of the correlations for bivariate tapering:
 void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double *coordt,int *cormod,
  double *nuis, double *par,double *radius, int *ns,int *NS)
@@ -2411,7 +2282,6 @@ void CorrelationMat_biv_tap(double *rho, double *coordx, double *coordy, double 
     for(i=0;i<*npairs;i++) { rho[i]=CorFct(cormod,lags[i],0,par,first[i],second[i]);}
   return;
 }
-
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
