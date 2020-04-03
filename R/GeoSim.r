@@ -7,7 +7,7 @@
 ### This file contains a set of procedures
 ### for the simulation of Gaussian random fields and
 ### related functions.
-### Last change: 28/01/2019.old
+### Last change: 28/01/2019
 ####################################################
  
 
@@ -301,7 +301,7 @@ forGaussparam<-function(model,param,bivariate)
      
 #### computing correlation matrix  of the Gaussian random field
 ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
-                forGaussparam(model,param,bivariate), radius, FALSE,NULL,NULL,"Standard",X)
+                forGaussparam(model,param,bivariate), radius, sparse,NULL,NULL,"Standard",X)
     
 
     if(spacetime_dyn) ccov$numtime=1
@@ -326,9 +326,13 @@ KK=1;sel=NULL;ssp=double(dime)
                          ##varcov=gpuR::vclMatrix(varcov, type="float")
                          ##ss=gpuR::vclMatrix(ss, type="float")
                        }
+
     #### simulating with matrix decomposition using sparse or dense matrices
-    if(sparse) {  A=spam::as.spam(ccov$covmat);
-                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), A) )
+    if(sparse) {  
+                  if(spam::is.spam(ccov$covmat))
+                    simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmat) )
+                  else
+                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov$covmat)) )
                }
     else
     {

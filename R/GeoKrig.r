@@ -25,15 +25,18 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
                return(list(a=backsolve(U, backsolve(U, b, transpose = TRUE)),b=Inv))
              }
  if(covmatrix$sparse){ 
-               if(spam::is.spam(covmatrix))  U = try(spam::chol(covmatrix$covmatrix),silent=TRUE)
+             
+               if(spam::is.spam(covmatrix$covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
                else                    U = try(spam::chol(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
                if(class(U)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
-               Inv=spam::solve.spam(U)
+               #Inv=spam::chol2inv.spam(U)
+               Inv=0
               return(list(a=spam::backsolve(U, spam::forwardsolve(U, b)),b=Inv))
         }
     }
 ###################################### 
-######################################  
+########## START ##################### 
+###################################### 
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
@@ -84,6 +87,7 @@ GeoKrig<- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corr
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
      
+    
     covmatrix <- GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, 
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n, 
           param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,X=X) 
@@ -183,6 +187,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
 ## twopieceStudentT=27
 ## twopieceGaussian=29
 ## twopieceTukeyh=38
+## twopiecebimodal=39
 ## sihasin=20
 ## tukey=34
     ################################
@@ -217,7 +222,9 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                 }
    else {     
         cc=(1-as.numeric(covmatrix$param["nugget"]))*cc$corri
-        if(covmatrix$model %in% c(1,20,34))   { corri=cc;vv=as.numeric(covmatrix$param['sill'])} #gaussian tukey sas
+        if(covmatrix$model %in% c(1,20,34))   { #gaussian tukey sas 
+                                                vv=as.numeric(covmatrix$param['sill'])
+                                                corri=cc;} 
      
         if(covmatrix$model==10) {    #skew gaussian
                         corr2=cc^2
@@ -282,7 +289,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                                  ll=qnorm((1-sk)/2)
                                  p11=pbivnorm::pbivnorm(ll,ll, rho = cc, recycle = TRUE)
                                  corr2=cc^2;sk2=sk^2
-                                 a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+                                 a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
                                  a3=3*sk2 + 2*sk + 4*p11 - 1
                                  MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
                                  KK=2*gamma((nu+1)/2)^2 / MM
@@ -324,12 +331,13 @@ if(bivariate)  {
                           if(which==2)    vvar=covmatrix$param["sill_2"]+covmatrix$param["nugget_2"]
                }
 else    {
-    #####  computing mean and variances
+    #####  computing mean and variances for each model
      if(covmatrix$model==1)   {vvar= vv #gaussian
                                M=0 
                                }   
      if(covmatrix$model==10)  {vvar= vv+sk^2*(1-2/pi) ## skewgaus
-                               M=sk*sqrt(2/pi) }  
+                               M=sk*sqrt(2/pi) 
+                               }  
      if(covmatrix$model==12)  {vvar= vv*nu/(nu-2)    ## studentT
                                M=0      
                                }     
@@ -431,9 +439,10 @@ if(type_krig=='Simple'||type_krig=='simple')  {
 
    ####### 
       if(mse) {
-                aa=Xloc-krig_weights%*%X
-                AA=chol2inv(chol(crossprod(X,(MM$b) %*% X)))
-                bb=tcrossprod(aa%*%AA,aa)
+                #aa=Xloc-krig_weights%*%X
+                #AA=chol2inv(chol(crossprod(X,(MM$b) %*% X)))
+                #bb=tcrossprod(aa%*%AA,aa)
+                bb=0
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
 if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))  
         {vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%CC  + bb)) } ## simple variance  kriging predictor variance
@@ -511,10 +520,10 @@ if(type=="Tapering"||type=="tapering")  {
                  if(which==2) pp <- param$mean_2 + ww1    
                 }    
      if(mse) {
-         aa=Xloc-krig_weights_tap1%*%X
-         AA=chol2inv(chol(crossprod(X,(MM$b) %*% X)))
-         bb=tcrossprod(aa%*%AA,aa)
-
+         #aa=Xloc-krig_weights_tap1%*%X
+         #AA=chol2inv(chol(crossprod(X,(MM$b) %*% X)))
+         #bb=tcrossprod(aa%*%AA,aa)
+         bb=0
          vv <- diag(as.matrix(diag(vvar,dimat2) - 2*krig_weights_tap1%*%cc)
                             +krig_weights_tap1%*%covmatrix_true$covmatrix%*%t(krig_weights_tap1) + bb )      ## simple variance kriging tapering predictor variance
          vv2 <- diag(as.matrix(diag(vvar,dimat2) - krig_weights_tap1%*%cc_tap + bb))}

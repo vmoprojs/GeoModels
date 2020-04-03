@@ -282,7 +282,6 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
   int i=0,h=0,j=0,k=0, m=0,n=0;
   double dij=0.0;
   if(*istap){   // tapering case
-
       ia[0]=1;
   /******************************************************************************/
       if(grid){// spatial grid
@@ -305,9 +304,7 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
 		icount++;}}
 	for(i=0;i<ncoord[0];i++)
 	  ia[i+1]=ia[i+1]+ia[i];}
-      else{
-          
-          //no spatial grid
+      else{ //no spatial grid
 	for(i=0;i<ncoord[0];i++)
 	  for(j=0;j<ncoord[0];j++){
 	    dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -956,6 +953,7 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
            if(mlags[i]==NULL) {*ismal=0; return;}
            }
            }}
+
       if (ismem[0])   { Space_Dist(coordx,coordy,grid[0],ia,idx,ismal,ja,srange[1]);}
       if(!ismal[0]) return;
       }

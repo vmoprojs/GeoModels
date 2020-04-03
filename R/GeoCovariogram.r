@@ -227,7 +227,7 @@ if(!bivariate) {
                         variogram22  <- correlation[(7*length(lags_m)+1):(8*length(lags_m))]
                            }
         else { 
-          print(nuisance)
+      
         #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
         covariance <- nuisance["sill"]*correlation*(1-nuisance["nugget"])
         #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
@@ -309,7 +309,8 @@ if(!bivariate) {
                                  ll=qnorm((1-sk)/2)
                                  p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
                                  corr2=correlation^2;sk2=sk^2
-                                 a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+                                 #a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+                                 a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
                                  a3=3*sk2 + 2*sk + 4*p11 - 1
                                  MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
                                  KK=2*gamma((nu+1)/2)^2 / MM
@@ -355,17 +356,18 @@ if(!bivariate) {
 ##########################################
  if(gamma)        { if(bivariate) {}
                         else {
+                              correlation=correlation*(1-nuisance['nugget'] )
                               vs=2*exp(mm)^2/nuisance['shape']
-                              cc=((1-nuisance['nugget'] )*correlation)^2
+                              cc=correlation^2
                               covariance=vs*cc;variogram=vs*(1-cc)  }
                   }
 ##########################################
  if(weibull)        { if(bivariate) {} 
                         else {
+                        correlation=correlation*(1-nuisance['nugget'] )  
                         vs=exp(mm)^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
                         auxcorr= (gamma(1+1/nuisance['shape']))^2/((gamma(1+2/nuisance['shape']))-(gamma(1+1/nuisance['shape']))^2)
-                        cc=auxcorr*(Re(hypergeo::hypergeo(-1/nuisance['shape'], -1/nuisance['shape'], 1,((1-nuisance['nugget'] )*correlation)^2)) -1)
-                        
+                        cc=auxcorr*(Re(hypergeo::hypergeo(-1/nuisance['shape'], -1/nuisance['shape'], 1,correlation^2)) -1)
                         covariance=vs*cc;variogram=vs*(1-cc)  }
                     }
 ##########################################
@@ -375,8 +377,8 @@ if(!bivariate) {
                      sh=nuisance["shape"]
                      vs=exp(mm)^2*(2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
                      cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
-                                    (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,(1-nuisance['nugget'] )*correlation^2))*
-                                     Re(hypergeo::hypergeo( 1/sh,  1/sh, 1,(1-nuisance['nugget'] )*correlation^2)) -1)
+                                    (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,correlation^2))*
+                                     Re(hypergeo::hypergeo( 1/sh,  1/sh, 1,correlation^2)) -1)
                       covariance=vs*cc;variogram=vs*(1-cc)   }
                     }
 ##########################################
@@ -411,13 +413,14 @@ if(!bivariate) {
                    }
      if(poisson) {
                     if(bivariate) {}
-                    if(!bivariate) {          
+                    if(!bivariate) {   
+                           correlation=(1-nuisance['nugget'])*correlation   
+                           corr2=correlation^2    
                            vv=exp(mu);
-                           auxcorr=(1-nuisance['nugget'])*correlation
-                           z=2*vv/(1-auxcorr^2)
-                           correlation=auxcorr^2*(1-exp(-z)*(besselI(z,0)+besselI(z,1)))
-                           covariance=vv*correlation
-                           variogram=vv*(1-correlation)}
+                           z=2*vv/(1-corr2)
+                           cc=corr2*(1-exp(-z)*(besselI(z,0)+besselI(z,1)))
+                           covariance=vv*cc
+                           variogram=vv*(1-cc)}
                    }
 ##########################################
 ##########################################
