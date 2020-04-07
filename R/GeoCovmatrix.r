@@ -330,7 +330,6 @@ if(!bivariate)
       }
 
 }
-
 #################################################################################
 ################ models defined on the positive real line #######################
 #################################################################################
@@ -425,7 +424,7 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 ################################ start discrete #models ########
 ###############################################################
-if(model %in% c(2,11,30,16,14)){ #  binomial Gaussian type 1  and 2
+if(model %in% c(2,11,30,16,14)){ #  binomial (negative)Gaussian type , Poisson
 
 if(!bivariate){
 
@@ -435,11 +434,8 @@ if(!bivariate){
             sel=substr(names(nuisance),1,4)=="mean"
             mm=as.numeric(nuisance[sel]) 
             mu = X%*%mm
-            other_nuis=as.numeric(nuisance[!sel])   ##  or 0??  other nuis parameters (nugget sill skew df
-       
-              
-    if(type=="Standard")  {
-         
+            other_nuis=as.numeric(nuisance[!sel])   
+if(type=="Standard")  {
               cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
@@ -449,34 +445,28 @@ if(!bivariate){
                 varcov[lower.tri(varcov)] <- corr   
                 varcov <- t(varcov)
                 varcov[lower.tri(varcov)] <- corr     
-## updating the diagonal with variance  
-  if(model %in% c(2,11)) { pg=pnorm(mu); vv=pg*(1-pg)*n; diag(varcov)=vv } 
-  if(model %in% c(14))   { pg=pnorm(mu); diag(varcov)=(1-pg)/pg^2 }        
-  if(model %in% c(16))   { pg=pnorm(mu); diag(varcov)=n*(1-pg)/pg^2 }
-  if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
 }
 ############################
 ############################
  if(type=="Tapering")  {
-
-        MM=sqrt(mu%*%t(mu))
         tap <-new("spam",entries=setup$taps,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
-        mm=tap*MM
+        idx=spam::triplet(tap)$indices
 
         fname <- "CorrelationMat_dis_tap"
         if(spacetime) fname <- "CorrelationMat_st_dis_tap"
+
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
-           as.integer(NS),as.integer(min(n)),as.double(mm@entries),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-     
+           as.integer(NS),as.integer(min(n)),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
         varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
-        
-        if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
-       
-
         }
+            ## updating the diagonal with variance  
+  if(model %in% c(2,11)) { pg=pnorm(mu); vv=pg*(1-pg)*n; diag(varcov)=vv } 
+  if(model %in% c(14))   { pg=pnorm(mu); diag(varcov)=(1-pg)/pg^2 }        
+  if(model %in% c(16))   { pg=pnorm(mu); diag(varcov)=n*(1-pg)/pg^2 }
+  if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      
 }        
@@ -597,9 +587,9 @@ return(varcov)
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
    
     initparam$param=initparam$param[names(initparam$param)!='mean']
-   if(model %in% c(16,14,30,2,11,19)) {
-        if(sparse==TRUE) if(!spam::is.spam(covmatrix)) covmatrix=spam::as.spam(covmatrix)
-   } 
+   #if(model %in% c(16,14,30,2,11,19)) {
+   #     if(sparse==TRUE) if(!spam::is.spam(covmatrix)) covmatrix=spam::as.spam(covmatrix)
+   #} 
     if(type=="Tapering") sparse=TRUE
 
     # Delete the global variables:

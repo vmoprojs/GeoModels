@@ -1381,7 +1381,6 @@ double d2norm(double x, double y, double rho)
 
 double d2lognorm(double x, double y, double sill,double nugget, double mux,double muy,double rho)
 {
-  rho=(1-nugget)*rho;
   double KK=exp(sill/2);
   x=x*KK; y=y*KK;
   double res=0.0, q=0.0, omr=R_pow(sill,2)-R_pow(rho*sill,2);
@@ -1700,7 +1699,7 @@ double biv_wrapped (double alfa,double u, double v,double mi,double mj,double nu
     double x,y,s1=0.0,s12=0.0,quadr=0.0,det=0.0,wrap_gauss=0.0; // 5???
     //2*atan(mean[i])-M_PI
     x=u-2*atan(mi)-M_PI; y=v-2*atan(mj)-M_PI;
-    s1=nugget+sill;
+    s1=sill;
     s12=sill*corr; //sill * corr
     det=R_pow(s1,2)-R_pow(s12,2);
     double k1=-alfa,k2=-alfa;
@@ -1984,7 +1983,7 @@ double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double v
     u=zi-mi;
     v=zj-mj;
     u2=R_pow(u,2);v2=R_pow(v,2);
-    s1=vari+nugget;
+    s1=vari;
     s12=vari*corr;
     det=R_pow(s1,2)-R_pow(s12,2);
     dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));

@@ -284,7 +284,8 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
   if(*istap){   // tapering case
       ia[0]=1;
   /******************************************************************************/
-      if(grid){// spatial grid
+      if(grid)
+  {// spatial grid
      int icount=0,jcount=0;
 	for(i=0;i<*ncoordx;i++){
 	  for(j=0;j<*ncoordy;j++){
@@ -303,8 +304,10 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
 		jcount++;}
 		icount++;}}
 	for(i=0;i<ncoord[0];i++)
-	  ia[i+1]=ia[i+1]+ia[i];}
-      else{ //no spatial grid
+	  ia[i+1]=ia[i+1]+ia[i];
+} // end spatial grid
+
+else{ //no spatial grid
 	for(i=0;i<ncoord[0];i++)
 	  for(j=0;j<ncoord[0];j++){
 	    dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -312,12 +315,15 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
 	    if(dij) *minimdista=fmin(*minimdista,dij);
 	    if(dij<= thres){
 	      tlags[h]=dij;
+       /* tmm1[h]=mean[i]; tmm2[h]=mean[j];
+        tdat1[h]=data[i];  tdat2[h]=data[j]; */
 	      ja[h]=j+1;
 	      idx[h]=i*(ncoord[0])+j+1;
 	      ia[i+1]=ia[i+1]+1;
 	      h++;}}
 	for(i=0;i<ncoord[0];i++)
-	  ia[i+1]=ia[i+1]+ia[i];}
+	  ia[i+1]=ia[i+1]+ia[i];
+} //end spatial grid
     
 /******************************************************************************/
 /******************************************************************************/
@@ -328,7 +334,10 @@ void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
     //double *tlags;   //saving  distance for tapering
     *npairs=h;
     lags= (double *) Calloc(*npairs,double);
-    for(i=0;i<*npairs;i++)  {lags[i]=tlags[i];}
+    for(i=0;i<*npairs;i++)  {lags[i]=tlags[i];
+                                 /* mm1[h]=tmm1[h];mm2[h]=tmm2[h];
+                                  dat1[h]=tdat1[h];dat2[h]=tdat2[h];*/
+                             }
       Free(tlags);
     }  //end tapering
   else{  //no tapering
@@ -802,7 +811,6 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
                     if(res_sub[i]==coordt[f]){ns_sub[f]++;}
                 }
           for(k=0;k<nbetas;k++) {sX[j][k]=X[i][k];}
-                //Rprintf("x:%f y:%f sdata:%f i:%d j:%d \n",scoordx[j],scoordy[j],sdata[j],i,j);
                 j++;   
             }
         }
@@ -938,9 +946,10 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
    if(!isst[0]&&!isbiv[0]) {// spatial case
 
         if(istap[0]) {// tapering case
-           npairs[0]=pow(ncoord[0],2);
-           tlags=(double *) Calloc(*npairs,double);
-           if(tlags==NULL){*ismal=0; return;}}
+              npairs[0]=pow(ncoord[0],2);
+              tlags=(double *) Calloc(*npairs,double);
+              if(tlags==NULL){*ismal=0; return;}
+      }
       else { // no tapering case
            int i=0;
            npairs[0]=ncoord[0]*(ncoord[0]-1)*0.5;
@@ -952,7 +961,8 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
            mlags[i]=(double *) Calloc(ncoord[0],double);
            if(mlags[i]==NULL) {*ismal=0; return;}
            }
-           }}
+           }
+      }
 
       if (ismem[0])   { Space_Dist(coordx,coordy,grid[0],ia,idx,ismal,ja,srange[1]);}
       if(!ismal[0]) return;

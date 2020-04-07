@@ -231,7 +231,7 @@ if(!bivariate) {
         #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
         covariance <- nuisance["sill"]*correlation*(1-nuisance["nugget"])
         #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
-        variogram <-nuisance["sill"]*(1- correlation*(1-nuisance["nugget"]))
+        variogram <-nuisance["sill"]*(1-correlation*(1-nuisance["nugget"]))
         
         }
     }
@@ -309,8 +309,8 @@ if(!bivariate) {
                                  ll=qnorm((1-sk)/2)
                                  p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
                                  corr2=correlation^2;sk2=sk^2
-                                 #a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
-                                 a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
+                                 a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
+                                 #a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
                                  a3=3*sk2 + 2*sk + 4*p11 - 1
                                  MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
                                  KK=2*gamma((nu+1)/2)^2 / MM
@@ -350,7 +350,7 @@ if(!bivariate) {
                               sill=as.numeric(nuisance['sill'])
                               vs=  (1-2*h)^(-1.5)     ## variance
                               cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
-                              covariance=vs*cc;variogram=vs*(1-cc)  
+                              covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }     
 ##########################################

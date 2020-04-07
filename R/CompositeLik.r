@@ -48,6 +48,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
        # INTENT = c("r","r","r","r",
        #   "r","r","r","r","w","r","r","r","r","r","r","r"), 
        #             NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)$res
+       #print(result)
             # print(result)
          return(-result)
       }

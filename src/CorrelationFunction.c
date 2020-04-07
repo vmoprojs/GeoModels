@@ -2040,24 +2040,25 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
 }
 // Computation of the correlations for spatial tapering:
 void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
-  int *ns, int *NS, int *n, double *mu,int  *model)
+  int *ns, int *NS, int *n, double *mu1,double *mu2,int  *model)
 {
   int i=0;
-  double corr,p1,psj,aux;
+  double corr,p1,p2,psj,aux1,aux2;
   for(i=0;i<*npairs;i++) {
   if(*model==2||*model==11||*model==14||*model==16){
-      p1=pnorm(mu[i],0,1,1,0); 
-      psj=pbnorm(cormod,lags[i],0,mu[i],mu[i],nuis[0],1,par,0);
-      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p1);
-      if(*model==14)                  rho[i]=(psj-p1*p1)/((-psj+p1+p1)*p1*p1);      
+
+      psj=pbnorm(cormod,lags[i],0,mu1[i],mu2[i],nuis[0],nuis[1],par,0);
+      p1=pnorm(mu1[i],0,1,1,0);  p2=pnorm(mu2[i],0,1,1,0); 
+      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p2);
+      if(*model==14)                  rho[i]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);      
       if(*model==16)                  rho[i]=0; 
        
 }
     if(*model==30)
        {
           corr=CorFct(cormod,lags[i],0,par,0,0);
-          aux=exp(mu[i]);
-          rho[i]=aux*corr_pois((1-nuis[0])*corr,aux, aux);
+          aux1=exp(mu1[i]);aux2=exp(mu2[i]);
+          rho[i]=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2);
        }
       }
   return;
@@ -2089,24 +2090,24 @@ return;
 
 // Computation of the correlations for spatio-temporal tapering:
 void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
-  int *ns, int *NS, int *n, double *mu,int  *model)
+  int *ns, int *NS, int *n, double *mu1,double *mu2,int  *model)
 {
   int i=0;
-  double corr,p1,psj,aux;
+  double corr,p1,p2,psj,aux1,aux2;
   for(i=0;i<*npairs;i++) {
   if(*model==2||*model==11||*model==14||*model==16){
-      p1=pnorm(mu[i],0,1,1,0); 
-      psj=pbnorm(cormod,lags[i],lagt[i],mu[i],mu[i],nuis[0],1,par,0);
+      p1=pnorm(mu1[i],0,1,1,0); p2=pnorm(mu2[i],0,1,1,0); 
+      psj=pbnorm(cormod,lags[i],lagt[i],mu1[i],mu2[i],nuis[0],1,par,0);
       if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p1);
-      if(*model==14)                  rho[i]=(psj-p1*p1)/((-psj+p1+p1)*p1*p1);      
+      if(*model==14)                  rho[i]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);      
       if(*model==16)                  rho[i]=0; 
        
 }
     if(*model==30)
        {
           corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
-          aux=exp(mu[i]);
-          rho[i]=aux*corr_pois((1-nuis[0])*corr,aux, aux);
+          aux1=exp(mu1[i]);   aux2=exp(mu2[i]);
+          rho[i]=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2);
        }
       }
   return;
