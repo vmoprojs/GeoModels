@@ -70,7 +70,7 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
    
 #####################################################
 
-#print(model);print(type)
+
 if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
 {
   if(type=="Standard") {
@@ -79,7 +79,6 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
-
         cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
           as.integer(ns),as.integer(NS),
@@ -98,14 +97,6 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0  
 
       }
-
-     #   cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",
-     #  "integer","double","double","double","integer","integer"),         
-     #  corr=double(numpairstot),
-     #  coordx,coordy,coordt,corrmodel, nuisance,paramcorr,radius,ns,NS,
-     #        INTENT = c("w", "r", "r", "r", "r","r","r","r", "r", "r"),
-     #        NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
-
 
 }
      
@@ -324,7 +315,7 @@ if(!bivariate)
           varcov[lower.tri(varcov,diag=TRUE)] <- corr
         }
         if(type=="Tapering")  {
-          varcov <-new("spam",entries=corr,colindices=setup$ja,
+          varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
       }
@@ -470,13 +461,14 @@ if(type=="Standard")  {
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      
 }        
-
 ###############################################################
 ################################ end discrete #models #########
 ###############################################################
 
 return(varcov)
-    }
+}
+
+
   #############################################################################################
   #################### end internal function ##################################################
   #############################################################################################
@@ -497,23 +489,23 @@ return(varcov)
     unname(coordx);unname(coordy)}
     #if the covariance is compact supported  and option sparse is used
     #then set the code as a tapering and an object spam is returned
-    if(sparse) {
+if(sparse) {
     covmod=CkCorrModel(corrmodel)
     if(covmod %in% c(10,11,13,15,19,6,
                      63,64,65,66,67,68,
                      69,70,71,72,73,74,75,76,77,
-                     111,112,129,113,114,131,
+                     111,112,129,113,114,131,132,130,134,
                      115,116,120))
     {
       type="Tapering"
       if(bivariate){
       #taper="unit_matrix_biv"
-      if(covmod %in% c(111,113,115)) maxdist=c(param$scale,param$scale,param$scale) 
-      if(covmod %in% c(112,114,116)) maxdist=c(param$scale_1,param$scale_12,param$scale_2)
-      if(covmod %in% c(120,129,131)) maxdist=c(param$scale_1,0.5*(param$scale_1+param$scale_2),param$scale_2)  
+      if(covmod %in% c(111,113,115,130)) maxdist=c(param$scale,param$scale,param$scale) 
+      if(covmod %in% c(112,114,116,134)) maxdist=c(param$scale_1,param$scale_12,param$scale_2)
+      if(covmod %in% c(120,129,131,132)) maxdist=c(param$scale_1,0.5*(param$scale_1+param$scale_2),param$scale_2)  
       }
       if(spacetime)
-      {#taper="unit_matrix_st"
+      {
       maxdist=param$scale_s;maxtime=param$scale_t
        if(covmod==63||covmod==65||covmod==67) {  tapsep=c(param$power2_s,param$power_t,param$scale_s,param$scale_t,param$sep) }
        if(covmod==64||covmod==66||covmod==68) {  tapsep=c(param$power_s,param$power2_t,param$scale_s,param$scale_t,param$sep) }
@@ -532,15 +524,12 @@ return(varcov)
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
     # Initialising the parameters:
-
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
                            NULL, grid, NULL, maxdist, maxtime, model, n, 
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
-                           NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X)
-    
-    if(grid) cc=expand.grid(initparam$coordx,initparam$coordy)
-    else     cc=cbind(initparam$coordx,initparam$coordy)  
-
+                           NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X,FALSE)
+   
+    cc=cbind(initparam$coordx,initparam$coordy)  
 
     if(!spacetime_dyn) dime=initparam$numcoord*initparam$numtime 
     else               dime=sum(initparam$ns)
@@ -587,9 +576,7 @@ return(varcov)
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
    
     initparam$param=initparam$param[names(initparam$param)!='mean']
-   #if(model %in% c(16,14,30,2,11,19)) {
-   #     if(sparse==TRUE) if(!spam::is.spam(covmatrix)) covmatrix=spam::as.spam(covmatrix)
-   #} 
+    
     if(type=="Tapering") sparse=TRUE
 
     # Delete the global variables:

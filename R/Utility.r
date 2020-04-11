@@ -399,8 +399,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
   if(bivariate){
- # print(dim(X))
- # print(num_betas)
+
 
        if(num_betas[1]>1&&num_betas[2]>1){
   
@@ -983,7 +982,6 @@ if(!bivariate)      {
 
     if(bivariate)     
    {   
-   #print(num_betas)
      if(num_betas[1]==1&&num_betas[2]==1) {mm1='mean_1';mm2='mean_2'}
   else {mm1='mean_1';mm2='mean_2' 
         for(i in 1:(num_betas[1]-1)) mm1=c(mm1,paste("mean_1",i,sep=""))
@@ -1024,9 +1022,9 @@ if(!bivariate)      {
 
 
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
-                      likelihood,  maxdist, maxtime, model, n,  param, parscale,
+                      likelihood,  maxdist, maxtime, model, n, param, parscale,
                       paramrange, radius, start, taper, tapsep, type,
-                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,X)
+                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,X,memdist)
 {
     ### START Includes internal functions:
     replicates=1
@@ -1066,6 +1064,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     corrmodel<-CkCorrModel(corrmodel)
     bivariate <- CheckBiv(corrmodel); if(bivariate) coordt=c(1,2)
     spacetime <- CheckST(corrmodel)
+    isdyn=!is.null(coordx_dyn)
+
     if(!bivariate)
        {
         if(is.null(X))  {X=1;num_betas=1}
@@ -1079,6 +1079,15 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         { if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
             else  num_betas=c(ncol(X),ncol(X)) }}
     namesnuis <- NuisParam(model,bivariate,num_betas)
+
+
+    ltimes=length(coordt)
+
+    if(grid) { cc=as.matrix(expand.grid(coordx,coordy))
+               coordx=cc[,1];coordy=cc[,2]; 
+             }
+
+
     ### Set returning variables and initialize the model parameters:
     # Initialises the starting and fixed parameters' names
     error <- NULL
@@ -1097,33 +1106,42 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     ### START settings the data structure:
     # set the coordinates sizes:
 
+
+
     if(is.null(coordx_dyn))
     {
+
       if(is.null(coordy)){coordy <- coordx[,2]
                         coordx <- coordx[,1]}
-      # checks is the data are on regular grid:
-      if(grid) {numcoordx <- length(coordx)
-              numcoordy <- length(coordy)
-              numcoord <- numcoordx*numcoordy}
-      if(!grid) {
+
       numcoord <- numcoordx <- numcoordy <- length(coordx)
       if(bivariate && !is.null(nrow(coordx)) && !is.null(nrow(coordy))) {  #heterotopic case
-        numcoordx=nrow(coordx); numcoordy=nrow(coordy);numcoord=numcoordy+numcoordx}}
-      ns<-rep(numcoord,length(coordt))
+        numcoordx=nrow(coordx); 
+        numcoordy=nrow(coordy);
+        numcoord=numcoordy+numcoordx}
+      
+      ns<-rep(numcoord,ltimes)
     }
     else
     {
        env <- new.env()
        coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
+
        if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)
        ns=lengths(coordx_dyn)/2 
        coordx <- coords[,1]; coordy <- coords[,2]
        numcoord <- numcoordx <- numcoordy <- length(coordx)
-
     }
- 
+
+
+   if((spacetime||bivariate)&&is.null(coordx_dyn)) {coordx=rep(coordx,ltimes);coordy=rep(coordy,ltimes);}
+    
+    NS=cumsum(ns)
+    if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
+
+
     # initialize tapering variables:
-    tapering<-ia<-idx<-ja<-integer(1)
+    tapering=ia=idx=ja=colidx=rowidx=integer(1)
     nozero<-NULL
     tapmodel=NULL
     cutoff <- FALSE
@@ -1303,7 +1321,6 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 }
             namesstart <- names(start)
             numstart <- length(start)
-            #print(namesstart);print(namesparam)
             param[pmatch(namesstart,namesparam)] <- start
             }
         ### set the scale of the parameters:
@@ -1320,10 +1337,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if(is.null(winconst_t) || !is.numeric(winconst_t)) winconst_t <- 0
         if(is.null(winstp_t) || !is.numeric(winstp_t)) winstp_t <- 0
         ### Set the data format:
-        if(spacetime||bivariate){ # set the number of temporal realisations:
-            if(spacetime) numtime <- length(coordt)
+        if(spacetime||bivariate){ # setting spam indexes
+            if(spacetime) numtime <- ltimes
             if(bivariate) numtime <- 2
-            if(grid) data <- matrix(data, ncol=numcoord, nrow=numtime, byrow=TRUE)
+
                 if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
                 tapering<-1
                 idx<-integer((numcoord*numtime)^2)
@@ -1331,13 +1348,13 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 ia<-integer(numcoord*numtime+1)
                 tapmodel<-CkCorrModel(taper)
                               }}
-        else{
+        else{              #    setting spam indexes
             numtime <- 1
             coordt <- 0
-            if(grid) data <- matrix(data, ncol=numcoord, nrow=replicates, byrow=TRUE)
-            else data <- matrix(data, ncol=numcoord, nrow=replicates)
+            data <- matrix(data, ncol=numcoord, nrow=replicates)
             if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
                 tapering<-1
+                
                 idx<-integer((numcoord*numtime)^2)
                 ja<-integer((numcoord*numtime)^2)
                 ia<-integer(numcoord*numtime+1)
@@ -1357,9 +1374,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if(bivariate)  namessim <- c("mean_1","mean_2","scale",
                              namescorr[!namescorr=="scale"])  
 
-        if(spacetime) numtime <- length(coordt)
+        if(spacetime) numtime <- ltimes
         else {numtime <- 1; coordt <- 0}
         if(bivariate) numtime <- 2
+
         if((typereal=="Tapering"&&type=="Tapering")||(typereal=="Tapering1"&&type=="Tapering1")||(typereal=="Tapering2"&&type=="Tapering2")){
                 tapering<-1
                 idx<-integer((numcoord*numtime)^2)
@@ -1379,37 +1397,59 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     if(is.null(tapsep))  tapsep=c(0.5,0.5)
     else  {if(length(tapsep)==1) tapsep=c(tapsep,0)}
     mem=FALSE
-    if(tapering)  { mem=TRUE }   #### NB
-    if(bivariate) if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
-    if(bivariate) { if(is.na(srange[3])) srange[3]=srange[2];
+    if(tapering||memdist)  { mem=TRUE }   #### NB
+    if(mem&&!tapering)  
+      {        
+                nn=numcoord*numtime
+                if(spacetime&&isdyn)  nn=sum(ns)
+                colidx<-integer(nn*(nn-1)/2)
+                rowidx<-integer(nn*(nn-1)/2)
+      }
+    if(bivariate) {
+      if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
+      if(is.na(srange[3])) srange[3]=srange[2];
                   if(is.na(srange[4])) srange[4]=srange[2];}
+
     if(CheckSph(corrmodel))   radius=1
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
-    if(!is.null(coordx_dyn)) {dyn <- TRUE} else {dyn <- FALSE}
-    gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
+
+ gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
            as.integer(grid),ia=ia,idx=idx,
            isinit=isinit,ja=ja,as.integer(mem),as.integer(numcoord),as.integer(numcoordx), as.integer(numcoordy),
-           numpairs=numpairs,as.double(radius),as.integer(replicates),srange, as.double(tapsep), as.integer(spacetime),
+           numpairs=numpairs,as.double(radius),srange, as.double(tapsep), as.integer(spacetime),
            as.integer(numtime),trange,as.integer(tapering),as.integer(tapmodel),
-           as.integer(distance),as.integer(weighted),as.integer(dyn),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+           as.integer(distance),as.integer(weighted),
+           colidx=as.integer(colidx),rowidx=as.integer(rowidx),
+           as.integer(ns),as.integer(NS),as.integer(isdyn),
+           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
+## number  of selected pairs
+numpairs <- gb$numpairs
+## indexes for composite 
+    colidx=gb$colidx
+    rowidx=gb$rowidx
+    colidx <- colidx[1:numpairs]
+    rowidx  <- rowidx[1:numpairs]
+## indexes for sparse matrix
      idx <- gb$idx
      ja <- gb$ja
      ia <- gb$ia;
-     numpairs <- gb$numpairs
-     isinit <- gb$isinit
-     if(tapering)
-     { nozero <- numpairs/(numcoord*numtime)^2
+
+isinit <- gb$isinit
+    nozero <- numpairs/(numcoord*numtime)^2
        idx <- idx[1:numpairs]
        ja  <- ja[1:numpairs]
-     }
-    if(is.null(coordt)) coordt=1
+
+if(is.null(coordt)) coordt=1
   
     ### Returned list of objects:
-    return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,data=data,distance=distance,
+    return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
+                colidx = colidx ,rowidx=rowidx,
+                data=data,distance=distance,
                 error=error,flagcorr=flagcorr,flagnuis=flagnuis,fixed=fixed,likelihood=likelihood,
                 lower=paramrange$lower,model=model,n=n,namescorr=namescorr,namesfixed=namesfixed,
-                namesnuis=namesnuis,namesparam=namesparam,namessim=namessim,namesstart=namesstart,ns=ns,num_betas=num_betas,
+                namesnuis=namesnuis,namesparam=namesparam,namessim=namessim,namesstart=namesstart,ns=ns,NS=NS,
+                num_betas=num_betas,
                 numcoord=numcoord,numcoordx=numcoordx,numcoordy=numcoordy,
                 numfixed=numfixed,numpairs=numpairs,numparam=numparam,numparamcorr=numparamcorr,
                 numstart=numstart,numtime=numtime,param=param,setup=list(                ## setup is a list

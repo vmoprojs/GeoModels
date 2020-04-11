@@ -61,7 +61,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                            NULL, grid, 'None', maxdist,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL)
+                           'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)
     spacetime_dyn=NULL
     coordx=initparam$coordx;coordy=initparam$coordy;coordt=initparam$coordt                 
     # Checks if there are inconsistences:

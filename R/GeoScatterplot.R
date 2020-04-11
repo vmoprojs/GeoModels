@@ -38,7 +38,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
                            NULL, grid, 'None', maxdist,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL)
+                           'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)
 
 
     ### END -- Specific checks of the Empirical Variogram    

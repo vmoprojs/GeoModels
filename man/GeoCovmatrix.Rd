@@ -1,7 +1,7 @@
 \name{GeoCovmatrix}
 \alias{GeoCovmatrix}
 \encoding{UTF-8}
-\title{Spatial and Spatio-temporal (tapered) Covariance Matrix}
+\title{Spatial and Spatio-temporal Covariance Matrix of (non) Gaussian random fields}
 \description{
   The function computes the  covariance matrix associated to 
   a spatial or spatio-temporal or a bivariate spatial Gaussian or non Gaussian randomm field

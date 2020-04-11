@@ -21,6 +21,7 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
+
         cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
         as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
         return(cc$cr)
@@ -360,9 +361,9 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
         # Computes the vector of the correlations:
-        #if(nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
+        if(nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         sill=nuisance['sill']
-        #if(sill<0) return(llik)
+        if(sill<0) return(llik)
         nuisance['sill']=1
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
        ## if(corr[1]==-2||is.nan(corr[1])) return(llik)
@@ -473,8 +474,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         D1=(nu-1)/2; D2=nu/2
         CorSkew<-(2*eta2/(pi*w^2+eta2*(pi-2)))*(sqrt(1-corr^2)+corr*asin(corr)-1)+w^2*corr/(w^2+eta2*(1-2/pi))   
         corr3<-(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-eta2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,D2,corr^2))*((1-KK)*CorSkew+KK)-KK)
-        #print(sum(corr3>1))
-        # Computes the correlation matrix:
+     
         cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
        nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
@@ -505,7 +505,6 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
-      #print(loglik_u)
         return(loglik_u)
     
       }
@@ -682,7 +681,6 @@ hessian=FALSE
 if(varest) hessian=TRUE
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
-
 
 
 if(!onlyvar){   # performing optimization

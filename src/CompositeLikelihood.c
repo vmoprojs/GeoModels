@@ -37,8 +37,7 @@ void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *co
     double sill=nuis[1];
     double nugget=nuis[0];
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
-  //  Rprintf("%f\n",nugget);if(nugget<0 || nugget>=1) {*res=LOW; return;}
-    // Computes the log-likelihood:
+
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
@@ -306,7 +305,6 @@ void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coo
                           uu=(int) u;  ww=(int) w;
 
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
-                       // Rprintf("%f %f %d %d\n",log(bl),corr,uu,ww);
                        *res+= log(bl)*weights;
 
                                     }}}}
@@ -324,7 +322,6 @@ void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coo
                               uu=(int) u;  ww=(int) w;
 
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
-                       // Rprintf("%f %f %d %d\n",log(bl),corr,uu,ww);
                        *res+= log(bl)*weights;
                                    
                              }}}}}}}
@@ -2090,7 +2087,6 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       uu=(int) data[i];  ww=(int) data[j];
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj);
-                      //Rprintf("%f = %d %d --%f -- %f %f \n",bl,uu,ww,corr,mui,muj);
                       *res+= log(bl)*weights;
                     }}}}          
     // Checks the return values
@@ -2124,18 +2120,12 @@ double **M;
                     mui=exp(mean[i]);muj=exp(mean[j]);
 
                      corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
-                    // corr2=corr*corr;
-                    // z=2*sqrt(mui*muj)/(1-corr2);
-                     
-                    // if(z<700)corr1=corr2*(1-exp(-z)*(bessel_i(z,0,1)+bessel_i(z,1,1)));
-                    // else corr1=corr2*(1-(sqrt(2/(M_PI*z)))*(1+1/(8*z))); /// approx for large z
                       corr1=corr_pois(corr,mui, muj);
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                         M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
                         dat[0]=data[i]-mui;dat[1]=data[j]-muj;
                       
                       bl=dNnorm(N,M,dat);
-                     // Rprintf("%f %f %f \n",bl,corr,corr1);
                       *res+= log(bl)*weights;
                     }}}}   
    for(i=0;i<N;i++)  {Free(M[i]);}
@@ -2426,8 +2416,6 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
     //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
     if(  par[0]<0|| par[1]<0|| par[2]<0|| par[3]<0) {*res=LOW;  return;} 
 
-      //// Rprintf(" %f %f %f %f  \n",dista[1][1],dista[0][1],dista[1][0],dista[0][0]);
-
     // Computes the log-likelihood:
       weights=1;
   for(t=0;t<ntime[0];t++){
@@ -2439,37 +2427,39 @@ void Comp_Pair_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *c
           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);        
                         if(lags<=dista[t][v]){
                                   
+
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                             det=rhott*rhovv-R_pow(rhotv,2);
                             u=data[(i+NS[t])]-mean[(i+NS[t])];
                             w=data[(j+NS[v])]-mean[(j+NS[v])];
-     //Rprintf("%f %f\n",data[(i+NS[t])],mean[(i+NS[t])]);
+
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
                                     dens=-0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det);
                             
                                     *res+= dens*weights;
 
-                                }}}
-        }
+                                }
+                              }}  }
             else {  
          for(j=0;j<ns[v];j++){
          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                         if(lags<=dista[t][v]){
+
                             rhott=CorFct(cormod,0,0,par,t,t);
                             rhovv=CorFct(cormod,0,0,par,v,v);
                             rhotv=CorFct(cormod,lags,0,par,t,v);
                                det=rhott*rhovv-R_pow(rhotv,2);
                             u=data[(i+NS[t])]-mean[(i+NS[t])];
                             w=data[(j+NS[v])]-mean[(j+NS[v])];
-                   //  Rprintf("%f %f\n",data[(i+NS[t])],mean[(i+NS[t])]);
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                     if(*weigthed)   weights=CorFunBohman(lags,dista[t][v]);
                                      dens=-0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(u,2)+rhott*R_pow(w,2)-2*(u*w)*rhotv)/det);
                                     *res+= dens*weights;
-                                }}}}}}}
+                                }
+                              }}}}}}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }

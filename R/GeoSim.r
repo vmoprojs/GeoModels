@@ -7,7 +7,7 @@
 ### This file contains a set of procedures
 ### for the simulation of Gaussian random fields and
 ### related functions.
-### Last change: 28/01/2019
+### Last change: 28/04/2020
 ####################################################
  
 
@@ -80,20 +80,8 @@ forGaussparam<-function(model,param,bivariate)
         if(!bivariate) {if(is.null(dim(X))) {X=as.matrix(rep(1,numcoord*numtime))}}  ## in the case of no covariates
         if( bivariate) {if(is.null(dim(X))) {X=as.matrix(rep(1,ns[1]+ns[2]))}}
     
-        if(grid){
-            numcoordx=ccov$numcoordx; numcoordy=ccov$numcoordy
-            sim <- array(double(dime), c(numcoordx, numcoordy, numtime, 1))
-                if(!bivariate) da <- as.numeric(nuisance['mean'])+simd
-                else da <- c(rep(nuisance$mean_1,numcoord),rep(nuisance$mean_2,numcoord))+simd
-                l=0
-                for(k in 1:(numtime)) {
-                    sim[,,l+1,1]=da[seq(dime * l/numtime + 1,  dime * (l + 1)/numtime)]
-                    l=l+1 }
-              if(!spacetime&&!bivariate) {sim <- array(sim, c(numcoordx, numcoordy))}
-                else  sim <- array(sim, c(numcoordx, numcoordy, numcoord))
-        }
-        else{ 
-                if(!bivariate) {
+
+        if(!bivariate) {
                                sel=substr(names(nuisance),1,4)=="mean"; 
                                num_betas=sum(sel);mm=NULL
                                if(num_betas==1) mm=nuisance$mean
@@ -124,7 +112,7 @@ forGaussparam<-function(model,param,bivariate)
 
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
-          } 
+       #   } 
        
         return(sim)
     }
@@ -135,10 +123,10 @@ forGaussparam<-function(model,param,bivariate)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
-    #checkinput <- CkInput(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
-    #NULL, grid, NULL, NULL, NULL, model, n,  NULL, param,radius,
-    # NULL, NULL, NULL, "Standard", NULL, NULL, NULL,X)
-   # if(!is.null(checkinput$error)) stop(checkinput$error)
+    
+    if(grid) { xgrid=coordx;ygrid=coordy;
+               numxgrid=length(xgrid);numygrid=length(ygrid) }
+
     spacetime_dyn=FALSE
     ##############################################################################
     ##############################################################################
@@ -298,12 +286,10 @@ forGaussparam<-function(model,param,bivariate)
    if(bivariate)  dd=array(0,dim=c(dime,2,k))    
    cumu=NULL;#s=0 # for negative binomial  case
  #########################################
-     
+ 
 #### computing correlation matrix  of the Gaussian random field
 ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, sparse,NULL,NULL,"Standard",X)
-    
-
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
@@ -392,9 +378,9 @@ if(model %in% c("poisson","Poisson"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }
 
@@ -409,9 +395,9 @@ if(model %in% c("SkewGaussian","SkewGauss"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }
     #######################################
@@ -425,9 +411,9 @@ if(model %in% c("Binomial"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
     }
      #######################################
@@ -439,9 +425,9 @@ if(model %in% c("BinomialNeg"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim_bn)
                 else                       sim <- matrix(sim_bn, nrow=numtime, ncol=numcoord)
         }
-        else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim_bn, c(numcoordx, numcoordy)) 
-        else                        sim <- array(sim_bn, c(numcoordx, numcoordy, numtime)) 
+        else{
+        if(!spacetime&&!bivariate)  sim <- array(sim_bn, c(numxgrid,numygrid)) 
+        else                        sim <- array(sim_bn, c(numxgrid,numygrid, numtime)) 
         }}   
 
 ################################################
@@ -455,9 +441,9 @@ if(model %in% c("SkewStudentT"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }    
 ################################################        
@@ -470,9 +456,9 @@ if(model %in% c("StudentT"))   {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
-        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numxgrid,numygrid))
+        else                        sim <- array(aa, c(numxgrid,numygrid, numtime)) 
             }
         }
 ################################################
@@ -486,9 +472,9 @@ if(model %in% c("TwoPieceGaussian","TwoPieceGauss"))   {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
-        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numxgrid,numygrid))
+        else                        sim <- array(aa, c(numxgrid,numygrid, numtime)) 
             }
         }
 if(model %in% c("TwoPieceTukeyh"))   { 
@@ -502,9 +488,9 @@ if(model %in% c("TwoPieceTukeyh"))   {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
-        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numxgrid,numygrid))
+        else                        sim <- array(aa, c(numxgrid,numygrid, numtime)) 
             }
         }
 
@@ -523,9 +509,9 @@ if(model %in% c("TwoPieceBimodal"))   {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
-        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numxgrid,numygrid))
+        else                        sim <- array(aa, c(numxgrid,numygrid, numtime)) 
             }
         }
 ################################################
@@ -544,9 +530,9 @@ if(model %in% c("TwoPieceStudentT"))   {
                 if(!spacetime&&!bivariate) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(aa, c(numcoordx, numcoordy))
-        else                        sim <- array(aa, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(aa, c(numxgrid,numygrid))
+        else                        sim <- array(aa, c(numxgrid,numygrid, numtime)) 
             }
         }
 
@@ -566,9 +552,9 @@ if(model %in% c("LogLogistic","Logistic"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }
 
@@ -617,9 +603,9 @@ if(model %in% c("Gamma","Weibull"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }
     ######################################################
@@ -645,9 +631,9 @@ if(model %in% c("Beta","Kumaraswamy"))   {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
         }
     #######################################
@@ -660,7 +646,7 @@ if(model %in% c("Beta","Kumaraswamy"))   {
  #### simulation based on a transformation of ONE standard (bivariate) GRF ######
  ###########################################################
 
-if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2","SinhAsinh"))
+if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2","SinhAsinh"))
 {
   sim=c(sim)
   
@@ -697,9 +683,9 @@ if(model %in% c("LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2","SinhAsinh
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
         }
-         else{numcoordx=length(coordx);numcoordy=length(coordy);
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numcoordx, numcoordy))
-        else                        sim <- array(sim, c(numcoordx, numcoordy, numtime)) 
+         else{
+        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
 }
 

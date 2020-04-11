@@ -26,8 +26,8 @@
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
 
-
 #include <stdbool.h>
+
 
 
 //************************************** ST igam.c*****************************************
@@ -353,23 +353,23 @@ int *isst;//is a spatio-temporal random field?
 int *istap;//is tapering?
 double *lags;// vector of spatial distances for tapering
 double *lagt;// vector of temporal distance for tapering
-double **mlags;// vector of spatial distances
-double **mlagt;// vector of temporal distances
+//double **mlags;// vector of spatial distances
+//double **mlagt;// vector of temporal distances
 double *maxdist;// the threshould of the spatial distances
 double *maxtime;// the threshould of the temporal distances below which the pairs are considered
-double *maximdista;// the maximum spatial distance
-double *maximtime;// the maximum temporal distance
-double *minimdista; // the minimum spatial distance
-double *minimtime;// the minimum temporal distance
+//double *maximdista;// the maximum spatial distance
+//double *maximtime;// the maximum temporal distance
+//double *minimdista; // the minimum spatial distance
+//double *minimtime;// the minimum temporal distance
 int *ncoord;// number of total spatial coordinates
 int *ncoordx;// number of the first spatial coordinates
 int *ncoordy;// number of the second spatial coordinates
 int *npairs;// effective number of pairs
-int *nrep;// number of iid replicates of the random field
+//int *nrep;// number of iid replicates of the random field
 int *ntime;// number of times
 double *REARTH; // radius of the sphere
 double *tapsep; // parameter separability for space time quasi taper
-double *tlags;
+double *tlags; //double *mtlags;double *mtlagt;
 double *tlagt;
 int *tfirst;
 int *tsecond;
@@ -410,7 +410,7 @@ double bi_matern_bounds(double scale11,double scale22,double scale12,double nu11
 double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 
 double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
-
+double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int    r, int t, double mean_i, double mean_j);
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
@@ -1231,19 +1231,21 @@ void SetSampling_t(double *data,double *sdata, int nbetas,int npts,
 
 
 
-void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,
-      int *grid,int *ia,
+void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
           int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
-          int *npair, double *radius, int *replic,double *srange, double *sep,int *st, int *times,double *trange,
-          int *tap,int *tapmodel,int *tp,int *weighted, int *dyn);
+          int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
+          int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
+      int *ns, int *NS, int *dyn);
 
-void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
-        int *ismal,int *ja,double thres);
-
-void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,int *idx,int *ismal,int *ja,
-                    int *tapmodel,double *thres,double *thret);
+void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
+        int *ismal,int *ja,int *colidx,int *rowidx ,double thres);
 
 
+void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+                    int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres,double *thret);
+
+void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+                    int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres);
 /*----------------------------------------------------------------
 File name: Utility.c
 Description: procedures for the computation of useful quantities.

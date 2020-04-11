@@ -223,12 +223,12 @@ return;
 
 
 
-void RangeDist(double *max, double *min)
+/*void RangeDist(double *max, double *min)
 {
   *max=*maximdista;
   *min=*minimdista;
   return;
-}
+}*/
 
 
 double aux_euv_binomneg (int N, double p1,double p2,double p11)
@@ -274,198 +274,158 @@ double corr=0.0;
 /*************************************************************************************/
 /*************************************************************************************/
 /*************************************************************************************/
-// Computes the spatial distances on irregular and regural grid:
-void Space_Dist(double *coordx,double *coordy,int grid,int *ia,int *idx,
-		int *ismal,int *ja,double thres)
+// Computes the spatial distances 
+void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
+		int *ismal,int *ja,int *colidx,int *rowidx ,double thres) 
 
 {
-  int i=0,h=0,j=0,k=0, m=0,n=0;
+  int i=0,h=0,j=0;
   double dij=0.0;
+
+
+  /******************************************************************************/
   if(*istap){   // tapering case
       ia[0]=1;
-  /******************************************************************************/
-      if(grid)
-  {// spatial grid
-     int icount=0,jcount=0;
-	for(i=0;i<*ncoordx;i++){
-	  for(j=0;j<*ncoordy;j++){
-	    jcount=0;
-	    for(m=0;m<*ncoordx;m++)
-	      for(n=0;n<*ncoordy;n++){
-    dij=dist(type[0],coordx[m],coordx[i],coordy[n],coordy[j],*REARTH);
-		*maximdista=fmax(*maximdista, dij);
-		if(dij) *minimdista=fmin(*minimdista, dij);
-		if(dij<=thres){
-		  tlags[h]=dij;
-		  ja[h]=jcount+1;
-		  idx[h]=icount*(ncoord[0])+jcount+1;
-		  ia[icount+1]=ia[icount+1]+1;
-		  h++;}
-		jcount++;}
-		icount++;}}
-	for(i=0;i<ncoord[0];i++)
-	  ia[i+1]=ia[i+1]+ia[i];
-} // end spatial grid
-
-else{ //no spatial grid
 	for(i=0;i<ncoord[0];i++)
 	  for(j=0;j<ncoord[0];j++){
 	    dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-	    *maximdista=fmax(*maximdista, dij);
-	    if(dij) *minimdista=fmin(*minimdista,dij);
 	    if(dij<= thres){
 	      tlags[h]=dij;
-       /* tmm1[h]=mean[i]; tmm2[h]=mean[j];
-        tdat1[h]=data[i];  tdat2[h]=data[j]; */
 	      ja[h]=j+1;
 	      idx[h]=i*(ncoord[0])+j+1;
 	      ia[i+1]=ia[i+1]+1;
 	      h++;}}
 	for(i=0;i<ncoord[0];i++)
 	  ia[i+1]=ia[i+1]+ia[i];
-} //end spatial grid
-    
-/******************************************************************************/
-/******************************************************************************/
+}  //end tapering
+  /******************************************************************************/
+else{  //no tapering
+     h=0;
 
 
-/******************************************************************************/
-/******************************************************************************/
-    //double *tlags;   //saving  distance for tapering
-    *npairs=h;
-    lags= (double *) Calloc(*npairs,double);
-    for(i=0;i<*npairs;i++)  {lags[i]=tlags[i];
-                                 /* mm1[h]=tmm1[h];mm2[h]=tmm2[h];
-                                  dat1[h]=tdat1[h];dat2[h]=tdat2[h];*/
-                             }
-      Free(tlags);
-    }  //end tapering
-  else{  //no tapering
-	if(grid){// in case of a equispaced grid of coordinates:
-	  for(i=0;i<*ncoordx;i++){
-	    for(j=0;j<*ncoordy;j++){
-	         k=i* *ncoordx+j+1;
-
-	      for(m=i;m<*ncoordx;m++){
-		if(m==i) n=(j+1);
-		else n=0;
-		for(n=n;n<*ncoordy;n++){
-		  mlags[h][k]=dist(type[0],coordx[m],coordx[i],coordy[n],coordy[j],*REARTH);
-		  mlags[k][h]=mlags[h][k];
-		  *maximdista=fmax(*maximdista, mlags[h][k]);
-		  *minimdista=fmin(*minimdista, mlags[h][k]);
-		  k++;}};h++;}}
-		  }
-	else{// in case of an irregular grid of coordinates:
 	  for(i=0;i<(ncoord[0]-1);i++){
 	    for(j=(i+1);j<ncoord[0];j++){
-	      mlags[i][j]=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-	      mlags[j][i]=mlags[i][j];
-	      *maximdista=fmax(*maximdista,mlags[i][j]);
-	      *minimdista=fmin(*minimdista,mlags[i][j]);
-	      h++;}}}
 
-}
+      dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+  
+     if(dij<= thres){
 
+        tlags[h]=dij;
+        colidx[h]=i;  rowidx[h]=j; 
+        h++;}
+	      }}
+
+   }
+ // saving  spatial distances   
+    *npairs=h;
+    lags= (double *) Calloc(*npairs,double);
+    for(i=0;i<*npairs;i++)  lags[i]=tlags[i];  
+     Free(tlags);
 	return;
 }
 
 
 
 // Computes the spatial-temporal distances on regular and irregular grid:
-void SpaceTime_Dist(int biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,int *idx,int *ismal,int *ja,
-                    int *tapmodel,double *thres,double *thret)
+void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+                    int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres,double *thret)
 {
-  int i=0,cc=0,j=0,h=0,k=0,m=0,n=0,t=0,v=0;
-  if (*istap) {// tapering case
+  int i=0,cc=0,j=0,h,k=0,t=0,v=0;
+  double dij=0.0,dtv=0.0;
+
+
+  if (*istap) {// start tapering case
+
   double *thre,*c_supp;
   c_supp=(double *) R_alloc(2, sizeof(double));   // vector of compact support in space time tapering
   thre=(double *)   R_alloc(2, sizeof(double));
   thre[0]=thres[1];thre[1]=thret[1];
-
-  double **csu;                                   //2x2 matrix of compact support in bivariate tapering
-  if ( (csu=(double **) R_alloc(ntime[0],sizeof(double *))) != NULL )
-   {
-                  for(i = 0; i < ntime[0]; i++) if ( (csu[i] = (double *) R_alloc(ntime[0], sizeof(double))) == NULL )  Rprintf("Allocazione fallita");
-                  csu[0][0]=thres[1];csu[0][1]=thres[2];csu[1][0]=thres[2];csu[1][1]=thres[3];
-   }
-
-  double dij=0.0,dtv=0.0;
-  int count=0;
-  if(*grid){   // it doesn't work
-    int icount=0,jcount=0;
-          ia[0] = 1;
-          for(i=0;i<ncoord[0];i++){
-          for(t=0;t<*ntime;t++){
-          cc=0;
-          for(j=0;j<ncoord[0];j++){
-          jcount=0;
-            for(v=0;v<*ntime;v++){
-               dtv=fabs(coordt[t]-coordt[v]);
-               *maximtime=fmax(*maximtime, dtv);
-               if(dtv) *minimtime=fmin(*minimtime, dtv);
-
-	      for(m=0;m<*ncoordx;m++){
-	      for(n=0;n<*ncoordy;n++){
-		dij=dist(type[0],coordx[m],coordx[i],coordy[n],coordy[j],*REARTH);
-		*maximdista=fmax(*maximdista, dij);
-		if(dij) *minimdista=fmin(*minimdista, dij);
-                Comp_supp(c_supp,tapmodel, dij, dtv,thre);
-       
-              if((dij<=c_supp[0]||is_equal(dij,c_supp[0]))&&(dtv<=c_supp[1]||is_equal(dtv,c_supp[1]))){
-               
-                               tlags[count]=dij;
-                               tlagt[count]=dtv;
-                               idx[count] =(icount * (*ntime) * (*ntime) * ncoord[0]) +  (t*  ncoord[0] *  *ntime) +  (1+v+ *ntime * jcount);
-                               ja[count]=1+v+(*ntime) * jcount;
-                               cc=cc+1;
-                               count = count +1 ;}
-                }
-                jcount++;}}
-                icount++;}
-                ia[k+1]=ia[k]+cc;
-                k=k+1;}}
-     }
-else{
+  
+  h=0;
 
  if(isst[0]){  // space time case
-
         ia[0] = 1;
-for(t=0;t<*ntime;t++){
-  for(i=0;i<ncoord[0];i++){
+        for(t=0;t<*ntime;t++){
+        for(i=0;i<ncoord[0];i++){
           cc=0;
            for(v=0;v<*ntime;v++){
                dtv=fabs(coordt[t]-coordt[v]);
-               *maximtime=fmax(*maximtime, dtv);
-               if(dtv) *minimtime=fmin(*minimtime, dtv);
           for(j=0;j<ncoord[0];j++){
           dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-          *maximdista=fmax(*maximdista, dij);
-          if(dij) *minimdista=fmin(*minimdista, dij);
                 Comp_supp(c_supp,tapmodel, dij, dtv,thre);
-                  
-                  if((dij<c_supp[0]||is_equal(dij,c_supp[0]))&&(dtv<c_supp[1] ||  is_equal(dtv,c_supp[1]))){
-                              // Rprintf("%f %f %f %f %f %f\n",dtv,dij,c_supp[0],c_supp[1],thre[0],thre[1]);      
-                               tlags[count]=dij;
-                               tlagt[count]=dtv;
-                               idx[count] =(t * (ncoord[0]) * (ncoord[0]) * ntime[0]) +  (i*  ntime[0] *  *ncoord) +  (1+j+ *ntime * v);
-                               ja[count]=1+j+(*ncoord) * v;
+                  if((dij<c_supp[0]||is_equal(dij,c_supp[0]))&&(dtv<c_supp[1] ||  is_equal(dtv,c_supp[1]))){     
+                               tlags[h]=dij;
+                               tlagt[h]=dtv;
+                               idx[h] =(t * (ncoord[0]) * (ncoord[0]) * ntime[0]) +  (i*  ntime[0] *  *ncoord) +  (1+j+ *ntime * v);
+                               ja[h]=1+j+(*ncoord) * v;
                                cc=cc+1;
-                               count = count +1 ;
+                               h = h +1 ;
                 }}}
                 ia[k+1]=ia[k]+cc;
                 k=k+1;}}
-         }   // end space time case
-     if(isbiv[0]) {    //bivariate case
+   }   // end space time case
+}    // end tapering case
+
+  else {   // no tapering
+  h=0;
+        
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           dij=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                      if(dij<=thres[1]){
+                          tlags[h]=dij;tlagt[h]=0;
+                 
+                           colidx[h]=i+NS[t];  rowidx[h]=j+NS[v];
+                          h++;
+                                    }}}
+               else {
+          dtv=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           dij=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                          if(dij<=thres[1] && dtv<=thret[1]){
+                            tlags[h]=dij;tlagt[h]=dtv;
+                           colidx[h]=i+NS[t];  rowidx[h]=j+NS[v];  
+                           h++; 
+                             }}}}}}    
+}  // end no tapering case
+
+    *npairs=h;
+    lags= (double *) Calloc(*npairs,double);
+    lagt= (double *) Calloc(*npairs,double);
+    for(i=0;i<*npairs;i++)  
+        {lags[i]=tlags[i];lagt[i]=tlagt[i];  }
+     Free(tlags); Free(tlagt);   
+
+  return;
+}
+
+
+/*********************************************************************************************/
+/*********************************************************************************************/
+
+// Computes the spatial  distances bivariate case
+void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+                    int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres)
+{
+  int i=0,cc=0,j=0,k=0,t=0,v=0;
+  double dij=0.0;
+  
+      int count=0;
+
+  if (*istap) {// start tapering case
+
+
        ia[0] = 1;
    for(t=0;t<*ntime;t++){
-   for(i=0;i<ncoord[0];i++){
+   for(i=0;i<ncoord[0];i++){  //for(i=0;i<ns[t];i++){
           cc=0;
-           for(v=0;v<*ntime;v++){
-             for(j=0;j<ncoord[0];j++){
+           for(v=0;v<*ntime;v++){  
+             for(j=0;j<ncoord[0];j++){   //  for(j=0;j<ns[v];j++){
                     dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                    *maximdista=fmax(*maximdista, dij);
-                    if(dij<=csu[t][v]){
+                    if(dij<=dista[t][v]){
                   if(j<i)  {tfirst[count]=v;tsecond[count]=t;}
                   else     {tfirst[count]=t;tsecond[count]=v;}
                                tlags[count]=dij;
@@ -476,87 +436,55 @@ for(t=0;t<*ntime;t++){
                 }}}
                 ia[k+1]=ia[k]+cc;
                 k=k+1;}}
-         /* ia[0] = 1;
-          for(i=0;i<ncoord[0];i++){
-          for(t=0;t<ntime[0];t++){
-          cc=0;
-          for(j=0;j<ncoord[0];j++){
-          dij=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-          *maximdista=fmax(*maximdista, dij);
-          if(dij) *minimdista=fmin(*minimdista, dij);
-          for(v=0;v<ntime[0];v++){
-              if(dij<=csu[t][v]){
-                  if(j<i)  {tfirst[count]=v;tsecond[count]=t;}
-                  else     {tfirst[count]=t;tsecond[count]=v;}
-                               tlags[count]=dij;
-                               idx[count] =(i * ntime[0] * ntime[0] * ncoord[0]) +  (t*  ncoord[0] *  ntime[0]) +  (1+v+ ntime[0] * j);
-                               ja[count]=1+v+ntime[0] * j;
-                               cc=cc+1;
-                               count = count +1 ;
-                }}}
-                ia[k+1]=ia[k]+cc;
-                k=k+1;}}*/
-       }}
-  *npairs=count;
-  if(!isst[0]&&!isbiv[0]) { lags=(double *) Calloc(count,double);
-                            for(i=0;i<count;i++) { lags[i]=tlags[i];} Free(tlags);}
-  else {
-  if(isst[0]){
-  lags=(double *) Calloc(count,double);
-  lagt=(double *) Calloc(count,double);
-  for(i=0;i<count;i++) { lags[i]=tlags[i];lagt[i]=tlagt[i];}
-  Free(tlagt);Free(tlags);}
 
-  if(isbiv[0]){  //saving indices for the bivariate case
-    first =(int *)  Calloc(count,int);
-    second=(int *)  Calloc(count,int);
-    lags=(double *) Calloc(count,double);
-    //lagt=(double *) Calloc(count,double);
-    for(i=0;i<count;i++) { lags[i]=tlags[i];first[i]=tfirst[i];second[i]=tsecond[i];}
-    Free(tlags);Free(tfirst);Free(tsecond);
-     }
-  }}    // end tapering case
+}    // end tapering case
 
   else {   // no tapering
+        count=0;
 
-      // Computes the spatial distances:
-      if(*grid){// in case of a equispaced grid of coordinates:
-        for(i=0;i<*ncoordx;i++){
-	    for(j=0;j<*ncoordy;j++){
-	         k=i* *ncoordx+j+1;
-	      for(m=i;m<*ncoordx;m++){
-		if(m==i) n=(j+1);
-		else n=0;
-		for(n=n;n<*ncoordy;n++){
-		  mlags[h][k]=dist(type[0],coordx[m],coordx[i],coordy[n],coordy[j],*REARTH);
-		  mlags[k][h]=mlags[h][k];
-		  *maximdista=fmax(*maximdista, mlags[h][k]);
-		  *minimdista=fmin(*minimdista, mlags[h][k]);
-		  k++;}};h++;}}
-		  }
-      else{// in case of an irregular grid of coordinates:
-	for(i=0;i<ncoord[0];i++)
-	  for(j=(i+1);j<ncoord[0];j++){
-	    mlags[i][j]=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-	    mlags[j][i]=mlags[i][j];
-	    *maximdista=fmax(*maximdista,mlags[i][j]);
-	    *minimdista=fmin(*minimdista,mlags[i][j]);}}
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){    
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
 
-  // Computes the temporal distances:
-  if(isst[0]){
-  for(t=0;t<ntime[0];t++)
-    for(v=(t+1);v<ntime[0];v++){
-      mlagt[t][v]=fabs(coordt[t]-coordt[v]);
-      mlagt[v][t]=mlagt[t][v];
-      *maximtime=fmax(*maximtime,mlagt[t][v]);
-      *minimtime=fmin(*minimtime,mlagt[t][v]);}}
-  }
+          dij=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);        
+                        if(dij<=dista[t][v]){
 
+                           tlags[count]=dij;
+                           colidx[count]=i+NS[t];  rowidx[count]=j+NS[v];
+                           tfirst[count]=t;tsecond[count]=v;
+
+                           count++;
+                                }
+        }}
+             else {  
+         for(j=0;j<ns[v];j++){
+         dij=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(dij<=dista[t][v]){
+
+                            tlags[count]=dij;
+                           colidx[count]=i+NS[t];  rowidx[count]=j+NS[v];
+                           tfirst[count]=t;tsecond[count]=v;
+                           count++;
+                                 }}}}}}
+}  // end no tapering case
+
+
+  *npairs=count;
+  first =(int *)  Calloc(count,int);
+  second=(int *)  Calloc(count,int);
+  lags=(double *) Calloc(count,double);
+  for(i=0;i<count;i++) { lags[i]=tlags[i];
+                         first[i]=tfirst[i];
+                         second[i]=tsecond[i];}
+   Free(tlags);Free(tfirst);Free(tsecond);
   return;
 }
 
-
-
+/*********************************************************************************************/
+/*********************************************************************************************/
+/*********************************************************************************************/
 
 // comp support function:
 void Comp_supp(double *c_supp,int *cormod, double h,double u, double *par)
@@ -701,12 +629,11 @@ double logfac(int n)
     if(n<=170)
     {
     for(i=1; i<=n; i++) factorial *= i; 
-  // Rprintf("%d %f\n",n,log(factorial));
     return(log(factorial));
     }
     else 
       {
-       // Rprintf("%d %f\n",n,stirling(n));
+  
         return(stirling(n));}
 }
 
@@ -806,8 +733,6 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
                 
                 for(f=0;f<ntime[0];f++)
                 {
-                    // count space locations per time in a space sub window
-                    //Rprintf("res_sub[i]:%f  coordt[f]:%f\n",res_sub[i],coordt[f]);
                     if(res_sub[i]==coordt[f]){ns_sub[f]++;}
                 }
           for(k=0;k<nbetas;k++) {sX[j][k]=X[i][k];}
@@ -832,6 +757,8 @@ void SetSampling_st(double *data,double *sdata,int *ncoord,int *ntime, int nbeta
        for(f=0;f<nbetas;f++) sX[p][f]=X[j][f];
 
         p++;
+
+
     }}
   return;
 }  
@@ -868,45 +795,53 @@ void SetSampling_biv(double *coordx, double *coordy, double *data, int n, int *n
            (ymin<coordy[i]||is_equal(ymin,coordy[i]))&&
            (ymax>coordy[i]||is_equal(ymax,coordy[i]))){
             scoordx[j]=coordx[i];scoordy[j]=coordy[i];
-            sdata[f]=data[n* *nrep    + *ntime*i];
+            sdata[f]=data[n     + *ntime*i];
             f++;
-            sdata[f]=data[n* *nrep+ 1 + *ntime*i];
+            sdata[f]=data[n+ 1 + *ntime*i];
             f++;
             j++; }}
     *npts = j;
     return;
 }
-      
+
+
+
 // Set the global variables for the spatial and spatial-temporal fitting:
 void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
 		  int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
-		  int *npair,double *radius,int *replic,double *srange, double *sep,int *st, int *times,double *trange,
-		  int *tap,int *tapmodel,int *tp,int *weighted,int *dyn)
+		  int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
+		  int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
+      int *ns, int *NS, int *dyn)
 {
   //Spatial settings: //Spatial settings:
   maxdist=(double *) Calloc(3,double);//spatial threshould
   if(maxdist==NULL) {*ismal=0; return;}
-  maximdista=(double *) Calloc(1,double); //maximum spatial distance
-  if(maximdista==NULL) {*ismal=0; return;}
-  *maximdista=0;
-  minimdista=(double *) Calloc(1,double); //minimum spatial distance
-  if(minimdista==NULL) {*ismal=0; return;}
-  *minimdista=-LOW;
+
+  maxtime=(double *) Calloc(1,double);//temporal threshold
+    if(maxtime==NULL) {*ismal=0; return;}
+
+   ntime=(int *) Calloc(1,int);//number of times
+    if(ntime==NULL) {*ismal=0; return;}
+    *ntime=*times;
+
+/**********************************/
   ncoord=(int *) Calloc(2,int);//number of total spatial coordinates
   if(ncoord==NULL) {*ismal=0; return;}
   ncoord[0]=*nsite;
+
   ncoordx=(int *) Calloc(1,int);//number of the first spatial coordinates
   if(ncoordx==NULL) {*ismal=0; return;}
   *ncoordx=*nsitex;
   ncoordy=(int *) Calloc(1,int);//number of the second spatial coordinates
   if(ncoordy==NULL) {*ismal=0; return;}
   *ncoordy=*nsitey;
+/************************/
   npairs=(int *) Calloc(1,int);//effective number of pairs
   if(npairs==NULL) {*ismal=0; return;}
 
   isbiv=(int *) Calloc(1,int);//is a bivariate random field?
   if(isbiv==NULL) {*isbiv=0; return;}
-  isbiv[0]=biv[0];  //set the bivariate flag
+  isbiv[0]=biv[0];  
 
   ismem=(int *) Calloc(1,int);//is distances computed using memory allocation
   if(ismem==NULL) {*ismal=0; return;}
@@ -914,209 +849,190 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
 
   isst=(int *) Calloc(1,int);//is a spatio-temporal random field?
   if(isst==NULL) {*ismal=0; return;}
-  isst[0]=st[0];  //set the spatio-temporal flag
+  isst[0]=st[0]; 
     
+   
+  cdyn=(int *) Calloc(1,int);//dynamic coords
+  if(dyn==NULL) {*cdyn=0; return;}
+  cdyn[0]=dyn[0]; 
 
-  cdyn=(int *) Calloc(1,int);//is a spatio-temporal random field?
-  //if(dyn==0) {*cdyn=0; return;}
-  cdyn[0]=dyn[0];  //set the spatio-temporal flag
 
+ 
   istap=(int *) Calloc(1,int);//is tapering?
   if(istap==NULL) {*ismal=0; return;}
-  istap[0]=tap[0];//set the tapering flag
-  //set the total number of pairs
-  //Random field replications:
-  nrep=(int *) Calloc(1,int);//number of iid replicates of the random field
-  if(nrep==NULL) {*ismal=0; return;}
+  istap[0]=tap[0];
+
 
   type=(int *) Calloc(1,int);//type of distance
   if(type==NULL) {*ismal=0; return;}
 
-  REARTH=(double *) Calloc(1,double);//type of distance
+  REARTH=(double *) Calloc(1,double);//radius of hearth
     if(REARTH==NULL) {*ismal=0; return;}
+
+  tapsep=(double *) Calloc(5,double);
+           if(tapsep==NULL){*ismal=0; return;}
+
 
   *REARTH=*radius;
   *type=*tp;
-  *nrep=*replic;
-    
-  //  if(!grid) {if(biv&&(*nsite!=*nsitex)) {ncoord[0]=*ncoordx;ncoord[1]=*ncoordy;} }//heterotopic casse
-
-  // Computes the spatial or spatial-temporal distances
-  // and the minima and maxima of these distances:
-   if(!isst[0]&&!isbiv[0]) {// spatial case
-
-        if(istap[0]) {// tapering case
-              npairs[0]=pow(ncoord[0],2);
-              tlags=(double *) Calloc(*npairs,double);
-              if(tlags==NULL){*ismal=0; return;}
-      }
-      else { // no tapering case
-           int i=0;
-           npairs[0]=ncoord[0]*(ncoord[0]-1)*0.5;
-           //allocating matrix of spatial distances
-           if(ismem[0]){
-           mlags= (double **) Calloc(ncoord[0],double *);
-           if(mlags==NULL) {*ismal=0; return;}
-           for(i=0;i<ncoord[0];i++){
-           mlags[i]=(double *) Calloc(ncoord[0],double);
-           if(mlags[i]==NULL) {*ismal=0; return;}
-           }
-           }
-      }
-
-      if (ismem[0])   { Space_Dist(coordx,coordy,grid[0],ia,idx,ismal,ja,srange[1]);}
-      if(!ismal[0]) return;
-      }
-     else { //spatio temporal case or bivariate case
-    maxtime=(double *) Calloc(1,double);//temporal threshold
-    if(maxtime==NULL) {*ismal=0; return;}
-    maximtime=(double *) Calloc(1,double);//maximum temporal distance
-    if(maximtime==NULL) {*ismal=0; return;}
-    minimtime=(double *) Calloc(1,double);//minimum temporal distance
-    if(minimtime==NULL) {*ismal=0; return;}
-    ntime=(int *) Calloc(1,int);//number of times
-    if(ntime==NULL) {*ismal=0; return;}
-    *ntime=*times;
-    *maximtime=0;// set the initial maximum time
-    *minimtime=-LOW;// set the initial minimum time
-    if(istap[0]) {// tapering case
-           npairs[0]=pow(ncoord[0]*ntime[0],2);
-    tlags=(double *) Calloc(*npairs,double);
-    if(tlags==NULL){*ismal=0; return;}
-    if(isst[0])    { //spatio temporal case
-                           tlagt=(double *) Calloc(*npairs,double);
-                           if(tlagt==NULL){*ismal=0; return;}
-                           }
-    if(isbiv[0])         { //bivariate case
-                           tfirst=(int *) Calloc(*npairs,int);
-                           if(tfirst==NULL){*ismal=0; return;}
-                           tsecond=(int *) Calloc(*npairs,int);
-                           if(tsecond==NULL){*ismal=0; return;}
-           }
-           tapsep=(double *) Calloc(5,double);
-           if(tapsep==NULL){*ismal=0; return;}
-           tapsep[0]=sep[0];tapsep[1]=sep[1];tapsep[2]=sep[2];tapsep[3]=sep[3];tapsep[4]=sep[4];
-           if(tapsep[0]==1) tapsep[0]=0.99999999;
-           }
-      else {  // no tapering
-             int i=0;
-             npairs[0]=(ncoord[0]*ntime[0])*(ncoord[0]*ntime[0]-1)*0.5;
-          // allocates the matrix of temporal distances:
-          if(isst[0]) {
-             //memory allocation of matrix temporal distances
-             if(mem[0]){
-             mlagt= (double **) Calloc(ntime[0],double *);
-             if(mlagt==NULL) {*ismal=0; return;}
-             for(i=0;i<*ntime;i++){
-             mlagt[i]=(double *) Calloc(ntime[0],double);
-             if(mlagt[i]==NULL) {*ismal=0; return;}}
-             }}
-           if(mem[0])   {
-             mlags= (double **) Calloc(ncoord[0],double *);
-             if(mlags==NULL) {*ismal=0; return;}
-             for(i=0;i<ncoord[0];i++){
-             mlags[i]=(double *) Calloc(ncoord[0],double);
-             if(mlags[i]==NULL) {*ismal=0; return;}
-             }}}
-         if (ismem[0])   { SpaceTime_Dist(biv[0],coordx,coordy,coordt,grid,ia,idx,ismal,ja,tapmodel,srange,trange);}
-     //Set the range of the temporal intervals:
-     trange[0]=*minimtime;maxtime[0]=*maximtime;
-     
-     if(trange[1]!=0) {
-         if(trange[1]>=*minimtime && trange[1]<=*maximtime)
-                        maxtime[0]=trange[1];}
-     else trange[1]=maxtime[0];
-     if(istap[0]&&trange[1]>=*maximtime) maxtime[0]=trange[1];
-    }
-  // Set the range of the spatial distances:
-  srange[0]=*minimdista;
-  maxdist[0]=*maximdista;
-  if(!isbiv[0]) {
-      if(srange[1]!=0) {
-       if(srange[1]>=*minimdista && srange[1]<=*maximdista)  maxdist[0]=srange[1];}
-       else srange[1]=maxdist[0];
-     if(istap[0]&&srange[1]>=*maximdista) maxdist[0]=srange[1];
-      }
-  else     {
-             int i=0;
-             if(srange[1]!=0 && srange[2]!=0 && srange[3]!=0){
-             if(srange[1]>=*minimdista && srange[1]<=*maximdista && srange[2]>=*minimdista && srange[2]<=*maximdista && srange[3]>=*minimdista && srange[3]<=*maximdista)
-             { maxdist[0]=srange[1];maxdist[1]=srange[2];maxdist[2]=srange[3];  }
-             else  {maxdist[0]=*maximdista;maxdist[1]=maxdist[0];maxdist[2]=maxdist[0];}
-             }
-             else
-             { srange[1]=maxdist[0];maxdist[1]=maxdist[0];maxdist[2]=maxdist[0];}
-      
-             dista= (double **) Calloc(ntime[0],double *);
-             if(dista==NULL) {*ismal=0; return;}
-             for(i=0;i<ntime[0];i++){
-             dista[i]=(double *) Calloc(ntime[0],double);
-             if(dista[i]==NULL) {*ismal=0; return;}
-              }
-              dista[0][0]=maxdist[0];dista[0][1]=maxdist[1];dista[1][0]=dista[0][1];dista[1][1]=maxdist[2];
-             }
-  npair[0]=npairs[0];
-   if(!ismem[0]) {
+  
+ // case of not saving distances
+  if(!ismem[0]) {
                    if(srange[1]) maxdist[0]=srange[1];
                    else maxdist[0]=-LOW;
+
                    if(isst[0]){ if(trange[1]) maxtime[0]=trange[1];
                                 else maxtime[0]=-LOW;
                        }
-                   if(isbiv[0]){  if(srange[1]) maxdist[0]=srange[1];
+                   if(isbiv[0]){  
+                                   int i=0;
+                                   dista= (double **) Calloc(ntime[0],double *);
+                                   if(dista==NULL) {*ismal=0; return;}
+                                   for(i=0;i<ntime[0];i++){
+                                   dista[i]=(double *) Calloc(ntime[0],double);
+                                   if(dista[i]==NULL) {*ismal=0; return;}}
+                                  
+                                  if(srange[1]) maxdist[0]=srange[1];
                                   else maxdist[0]=-LOW;
                                   if(srange[2]) maxdist[1]=srange[2];
                                   else maxdist[1]=-LOW;
                                   if(srange[3]) maxdist[2]=srange[3];
                                   else maxdist[2]=-LOW;
-                                  dista[0][0]=maxdist[0];dista[0][1]=maxdist[1];dista[1][0]=dista[0][1];dista[1][1]=maxdist[2];
-                  
-                       
-                    }}
+                                  dista[0][0]=maxdist[0];dista[0][1]=maxdist[1];dista[1][0]=dista[0][1];dista[1][1]=maxdist[2];  
+                    }
+                  return;    // return here for the not  saving distance  
+                } // end not saving distances
+  else 
+  {     // start  saving distances
+  /***********************************************************/  
+if(!isst[0]&&!isbiv[0]) {// spatial case
+  
+       // settting compact support
+        if(srange[1]) maxdist[0]=srange[1];
+        else maxdist[0]=-LOW;    
+      if(istap[0])  // tapering case
+           {
+              npairs[0]=pow(ncoord[0],2);
+              tlags=(double *) Calloc(*npairs,double);
+              if(tlags==NULL){*ismal=0; return;}
+           }  // end tapering case
+      else { // distances composite likelihood 
+           npairs[0]=ncoord[0]*(ncoord[0]-1)*0.5;
+           tlags= (double *) Calloc(*npairs,double *);
+           if(tlags==NULL) {*ismal=0; return;}
+           } // end  no tapering case
 
+ // computing spatial distances and indexes      
+ Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
+      if(!ismal[0]) return;
+  /***********************************************************/  
+}  // end spatial case
+else { //spatio temporal case or bivariate case
+       int qq=ncoord[0]*ntime[0];
+       
+    // setting compact supports for space-time and bivariate case
+       if(isst[0]){ 
+            if(srange[1]) maxdist[0]=srange[1];
+                 else maxdist[0]=-LOW;
+            if(trange[1]) maxtime[0]=trange[1];
+                else maxtime[0]=-LOW; 
+        }
+       if(isbiv[0])              {
+                                   int i=0;
+                                   dista= (double **) Calloc(ntime[0],double *);
+                                   if(dista==NULL) {*ismal=0; return;}
+                                   for(i=0;i<ntime[0];i++){
+                                   dista[i]=(double *) Calloc(ntime[0],double);
+                                   if(dista[i]==NULL) {*ismal=0; return;}}
+                                  
+                                  if(srange[1]) maxdist[0]=srange[1];
+                                  else maxdist[0]=-LOW;
+                                  if(srange[2]) maxdist[1]=srange[2];
+                                  else maxdist[1]=-LOW;
+                                  if(srange[3]) maxdist[2]=srange[3];
+                                  else maxdist[2]=-LOW;
+                                  dista[0][0]=maxdist[0];dista[0][1]=maxdist[1];dista[1][0]=dista[0][1];dista[1][1]=maxdist[2]; 
+                                  }
+     if(istap[0])  // tapering case
+        {
+
+          // allocating vectors
+           npairs[0]=pow(qq,2);
+           tlags=(double *) Calloc(*npairs,double);
+           if(tlags==NULL){*ismal=0; return;}
+         
+         if(isst[0])    { //spatio temporal case
+                           tlagt=(double *) Calloc(*npairs,double);
+                           if(tlagt==NULL){*ismal=0; return;}
+                           }
+         if(isbiv[0])         { //bivariate case
+                           tfirst=(int *) Calloc(*npairs,int);
+                           if(tfirst==NULL){*ismal=0; return;}
+                           tsecond=(int *) Calloc(*npairs,int);
+                           if(tsecond==NULL){*ismal=0; return;}
+                              }
+           tapsep[0]=sep[0];tapsep[1]=sep[1];tapsep[2]=sep[2];tapsep[3]=sep[3];tapsep[4]=sep[4];
+           if(tapsep[0]==1) tapsep[0]=0.99999999;
+       }  // end tapering
+else {  // distance for composite likelihood
+              
+               if(isst[0])  npairs[0]=qq*(qq-1)*0.5;
+               if(isbiv[0]) npairs[0]=qq*(qq-1)*0.5;
+
+             tlags= (double *) Calloc(*npairs,double *);
+            if(tlags==NULL) {*ismal=0; return;}
+          // allocates the matrix of temporal distances:
+          if(isst[0]) {
+             //memory allocation of matrix temporal distances
+             tlagt= (double *) Calloc(*npairs,double *);
+             if(tlagt==NULL) {*ismal=0; return;}
+            
+                     }
+          if(isbiv[0]) {
+            tfirst=(int *) Calloc(*npairs,int);
+            if(tfirst==NULL){*ismal=0; return;}
+            tsecond=(int *) Calloc(*npairs,int);
+            if(tsecond==NULL){*ismal=0; return;}
+                      }
+       }
+if(isst[0])  SpaceTime_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
+                                        ns,NS,colidx,rowidx,srange,trange);
+if(isbiv[0]) SpaceBiv_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
+                                     ns,NS,colidx,rowidx,srange);
+  if(!ismal[0]) return;
+ } //end spatio temporal case or bivariate case
+
+
+  npair[0]=npairs[0];
   return;
-  }
+     }
+}
 
 void DeleteGlobalVar()
 {
+
   int i=0;
   // Delete all the global variables:
-  Free(maxdist);Free(minimdista);Free(maximdista);
-  Free(ncoordx);Free(ncoordy);Free(npairs);
-  Free(nrep);Free(type);Free(REARTH);
-  if(!isst[0]&&!isbiv[0]) {  //spatial case
-      if(istap[0])    Free(lags); //tapering case
-      else         {
-           if(ismem[0]){  for(i=0;i<ncoord[0];i++)  Free(mlags[i]);
-                          Free(mlags);}
-           }
-      }
-  else   {    // temporal or bivariate case
-  Free(maxtime);Free(maximtime);Free(minimtime);
-  if(istap[0]) {// tapering case}
+  Free(maxdist);Free(maxtime);
+  Free(ncoordx);Free(ncoordy); Free(ncoord);
+  Free(npairs);
+  Free(type);Free(REARTH);
+  Free(tapsep);
+  if(isbiv[0])for(i=0;i<ntime[0];i++)  Free(dista[i]);
+  Free(dista);
+  Free(ntime);
+  if(ismem[0]) {
            Free(lags);
-           if(isst[0])     Free(lagt);
-           if(isbiv[0])         {
-                Free(first);
-                Free(second);
-                }
-           }
-  else { // not tapering
-           if(isst[0]) {  if(ismem[0]){ for(i=0;i<ntime[0];i++)  Free(mlagt[i]);
-                                        Free(mlagt);
-                                        for(i=0;i<ncoord[0];i++)  Free(mlags[i]);
-                                        Free(mlags);
-           }}}
-           Free(tapsep);
-           }
-  if(isbiv[0]) {for(i=0;i<ntime[0];i++)  Free(dista[i]);
-                Free(dista);
-                }
-  Free(ntime);Free(ncoord);
+           if(isst[0])    {Free(lagt);}
+           if(isbiv[0])   {Free(first);Free(second);}
+  }
+
   Free(isbiv); Free(istap);
   Free(isst);Free(ismem);
   Free(cdyn);
   return;
 }
+
 
 
 
@@ -1141,7 +1057,6 @@ void cumvec(int *ns,int *res,int len)
     {
         sum += ns[i-1];
         res[i] = sum;
-        //Rprintf("cumvec: %d res %d\n",sum,ns[i-1]);
     }
 }
 

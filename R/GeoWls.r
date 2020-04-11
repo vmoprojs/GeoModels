@@ -48,7 +48,7 @@ print.GeoWLS <- function(x, digits = max(3, getOption("digits") - 3), ...)
 WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                     likelihood, maxdist, maxtime, model, n, param, parscale,
                     paramrange, radius, start, taper, tapsep, type, varest, vartype,
-                    weighted, winconst,winconst_t, winstp_t, winstp,X)
+                    weighted, winconst,winconst_t, winstp_t, winstp,X,memdist)
   {
     # Determines the range of the parameters for a given correlation
     SetRangeParam <- function(namesparam, numparam)
@@ -153,7 +153,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                            grid, likelihood, maxdist, maxtime, model, n, 
                            param, parscale, paramrange, radius,  start, taper, tapsep,
                            "GeoWLS", type, varest, vartype,
-                           weighted, winconst,winconst_t, winstp_t, winstp, X)
+                           weighted, winconst,winconst_t, winstp_t, winstp, X, memdist)
 
     
   
@@ -339,7 +339,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
     initparam <- StartParam(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance, "Fitting", fixed, grid,
     'None', maxdist, maxtime,  model, NULL,  NULL,
                            parscale, optimizer=='L-BFGS-B', radius, start,NULL,  NULL,
-                           'GeoWLS', 'GeoWLS', FALSE, 'SubSamp', FALSE, 1, 1,1,1, NULL)
+                           'GeoWLS', 'GeoWLS', FALSE, 'SubSamp', FALSE, 1, 1,1,1, NULL,0)
     if(!is.null(initparam$error))
       stop(initparam$error)
      coordx=initparam$coordx

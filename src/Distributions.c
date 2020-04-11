@@ -1368,6 +1368,17 @@ void integr_pt(double *x, int n, void *ex)
 }
 
 
+// bivariate of Gaussian bivariate rf
+double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second)
+{
+double rhott,rhovv,rhotv,det,dens;
+rhott=CorFct(cormod,0,0,par,first,first);
+rhovv=CorFct(cormod,0,0,par,second,second);
+rhotv=CorFct(cormod,dij,0,par,first,second);
+det=rhott*rhovv-R_pow(rhotv,2);
+dens=-0.5*(2*log(2*M_PI)+log(det)+(rhovv*R_pow(data1,2)+rhott*R_pow(data2,2)-2*(data1*data2)*rhotv)/det);
+return dens;
+}
 
 
 // compute  bivariate normal standard pdf:
@@ -3578,7 +3589,6 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
                        q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));
                           if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1, rho2*auxi);
                                                
-                // Rprintf("%f %f %d %d %f\n",q1,regularized1F1(n,t+m+n+k+1,rho2*auxi),n,t+m+n+k+1,rho2*auxi);
                         term= exp(aux2-aux3+aux4+log(q1));
                             if((fabs(term)<1e-10||!R_finite(term))  ) {break;}
                         value =value+ term;
@@ -3756,7 +3766,7 @@ if(r>0&&t>0)
 if(r>t) dens=Prt(corr,r,t,mean_i,mean_j);
 if(t>r) dens=Prt(corr,t,r,mean_j,mean_i);
 }
-//Rprintf("%f %f %d %d %f %f \n",log(dens),corr,r,t,mean_i,mean_j);
+
 return(dens);
 
 }

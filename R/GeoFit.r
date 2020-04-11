@@ -18,7 +18,7 @@
 GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=NULL,
-                          maxtime=NULL, method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+                          maxtime=NULL, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
                           optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
@@ -36,7 +36,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     optimizer=gsub("[[:blank:]]", "",optimizer)
     likelihood=gsub("[[:blank:]]", "",likelihood)
     type=gsub("[[:blank:]]", "",type)
-
+    if(!is.logical(memdist)) memdist=FALSE
  
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
@@ -56,7 +56,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist, maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
-                         type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X)#31
+                         type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X,memdist)#32
 
 
     if(!is.null(initparam$error))   stop(initparam$error)
@@ -97,7 +97,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                initparam$upper,initparam$ns,unname(initparam$X))
 
     # Composite likelihood:
-    if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')
+    if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2'){
+  
+    if(!memdist)
           fitted <- CompLik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
@@ -107,7 +109,19 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    unname(initparam$X),sensitivity)
-   
+    if(memdist)
+        fitted <- CompLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+                                   coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
+                                   initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
+                                   initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
+                                   initparam$namescorr,initparam$namesnuis,#19
+                                   initparam$namesparam,initparam$numparam,initparam$numparamcorr,optimizer,onlyvar,parallel,
+                                   initparam$param,initparam$spacetime,initparam$type,#27
+                                   initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
+                                   initparam$winconst_t,initparam$winstp_t,initparam$ns,
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx)
+      }
+
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)
     if(initparam$bivariate) numtime=2

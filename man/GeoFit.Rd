@@ -10,13 +10,14 @@
   variances. Moreover the function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distance="Eucl",
-            fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',  local=c(1,1),lower=NULL, 
-            maxdist=NULL, maxtime=NULL, method="cholesky", model='Gaussian',
-            n=1, onlyvar=FALSE ,optimizer='Nelder-Mead', parallel=FALSE, radius=6371, sensitivity=FALSE,
-            sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL,type='Pairwise',
-            upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL,
-            winstp=NULL,winconst_t=NULL, winstp_t=NULL,X=NULL)
+GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
+      fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
+      lower=NULL,maxdist=NULL,
+      maxtime=NULL, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+      optimizer='Nelder-Mead', parallel=FALSE,
+      radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
+      type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
+      winconst_t=NULL, winstp_t=NULL,X=NULL)
 }
 
 \arguments{
@@ -62,6 +63,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL,coordx_dyn=NULL, corrmodel, distan
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal separation considered in the composite or tapered likelihood
     computation (see \bold{Details}).}
+        \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
+      are computed before  the optmization. }
    \item{method}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
     The other possible choices is \code{svd}.}   
   \item{model}{String; the type of RF and therefore the densities associated to the likelihood
