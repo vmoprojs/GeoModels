@@ -85,7 +85,6 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
           
       }
-
    if(type=="Tapering")  {
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
@@ -97,8 +96,7 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0  
 
       }
-
-}
+    }
      
 if(model %in% c(1))   ## gaussian case  
 {  
@@ -113,7 +111,7 @@ if(bivariate){}
 if(model==9)  {  ## TukeyGH
 
 if(!bivariate)   {             
-             corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
+          corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
           h=nuisance['tail']
           g=nuisance['skew']
   if(!g&&!h) { as.numeric(nuisance['sill']) } 
@@ -180,9 +178,8 @@ if(!bivariate)
     sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
     CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
     corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
-
-corr = CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
-vv = as.numeric(nuisance['sill'])*((nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
+    corr = CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
+    vv = as.numeric(nuisance['sill'])*((nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
 }
 if(bivariate){}
 }
@@ -191,20 +188,25 @@ if(bivariate){}
     { 
 if(!bivariate)
 {
-
  corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
- vv=nuisance['sill']
- nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
+ nu=as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew'])
+ delta=as.numeric(nuisance['shape'])
+ alpha=2*(delta+1)/nu
+ nn=2^(1-alpha/2)
+
  ll=qnorm((1-sk)/2)
  p11=pbivnorm::pbivnorm(ll,ll, rho = corr, recycle = TRUE)
  corr2=corr^2;sk2=sk^2
- a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
- #a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))#*(1-corr2)^(nu/2+1)
+ 
+
+
+ a1=Re(hypergeo::hypergeo(-1/alpha ,-1/alpha,nu/2,corr2))
  a3=3*sk2 + 2*sk + 4*p11 - 1
- MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
- KK=2*gamma((nu+1)/2)^2 / MM
- corr= KK*(a1*a3-4*sk2)
- vv=as.numeric(nuisance['sill'])*MM/(gamma(0.5*nu)^2)
+
+ MM=(2^(2/alpha)*(gamma(nu/2 + 1/alpha))^2) 
+ vari=2^(2/alpha)*(gamma(nu/2 + 2/alpha))*gamma(nu/2)* (1+3*sk2) - sk2*2^(2/alpha+2)*gamma(nu/2+1/alpha)^2 
+ corr= MM*(a1*a3-4*sk2)/vari
+ vv=as.numeric(nuisance['sill'])*vari/(nn^(2/alpha)*gamma(nu/2)^2)
 }
 
 if(bivariate){}
@@ -216,7 +218,6 @@ if(model==27)   ##  two piece student case case
 {
           corr=cr$corr*(1-as.numeric(nuisance['nugget']))
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-
           corr2=corr^2;sk2=sk^2
           a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
           a2=corr*asin(corr) + (1-corr2)^(0.5)
@@ -237,7 +238,6 @@ if(model==38)   ##  two piece tukey h  case
 {
           corr=cr$corr*(1-as.numeric(nuisance['nugget']))
           tail=as.numeric(nuisance['tail']); sk=as.numeric(nuisance['skew'])
-
           corr2=corr^2;sk2=sk^2;
           gg2=(1-(1-corr2)*tail)^2
           xx=corr2/gg2
@@ -260,7 +260,6 @@ if(model==29)   ##  two piece gaussian case
 {
           corr=cr$corr*(1-as.numeric(nuisance['nugget']))
           sk=as.numeric(nuisance['skew']);
-
           corr2=sqrt(1-corr^2); sk2=sk^2
           ll=qnorm((1-sk)/2)
           p11=pbivnorm::pbivnorm(ll,ll, rho = corr, recycle = TRUE)
@@ -278,7 +277,7 @@ if(model==10)  {  ##  skew Gaussian case
               corr=cr$corr*(1-as.numeric(nuisance['nugget']))
               sk=as.numeric(nuisance['skew'])
               corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
-              corr=((2*sk2/pi)*(sqrt(1-corr2) + corr*asin(cr$corr)-1) + corr*vv)/(vv+sk2*(1-2/pi));
+              corr=(2*sk2/pi)*(sqrt(1-corr2) + corr*asin(cr$corr)-1)/(pi*vv+sk2*(pi-2))  + (corr*vv)/(vv+sk2*(1-2/pi));
               vv=nuisance['sill']+nuisance['skew']^2*(1-2/pi)
      }
       if(bivariate){}
@@ -329,11 +328,12 @@ if(model==21)   ##  gamma case
     {
       if(!bivariate) {
          corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+         corr=corr^2   ### gamma correlation
          sel=substr(names(nuisance),1,4)=="mean"
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm   ## mean function
          vv=exp(mu)^2 * 2/nuisance['shape']
-         corr=corr^2   ### gamma correlation
+      
         }
      if(bivariate){}     
 }
@@ -342,14 +342,12 @@ if(model==26)   ##  weibull case
     {
 
         if(!bivariate) {
-
          corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
          sh=nuisance['shape']
          sel=substr(names(nuisance),1,4)=="mean"
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm
          vv=exp(mu)^2 * (gamma(1+2/sh)/gamma(1+1/sh)^2-1)
-           
          # weibull correlations   
         bcorr=    gamma(1+1/sh)^2/(gamma(1+2/sh)-gamma(1+1/sh)^2)                
         corr=bcorr*((1-corr^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,corr^2))-1) 
@@ -361,9 +359,8 @@ if(model==26)   ##  weibull case
     {
 
        if(!bivariate) {
-      corr=cr$corr*(1-as.numeric(nuisance['nugget']))
-      sh=nuisance['shape']
-         
+         corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+         sh=nuisance['shape']
          sel=substr(names(nuisance),1,4)=="mean"
          mm=as.numeric(nuisance[sel]) 
          mu = X%*%mm   ## mean  function
@@ -421,7 +418,6 @@ if(!bivariate){
 
             fname <-"CorrelationMat_dis2"
             if(spacetime) fname <- "CorrelationMat_st_dyn_dis2"
-
             sel=substr(names(nuisance),1,4)=="mean"
             mm=as.numeric(nuisance[sel]) 
             mu = X%*%mm

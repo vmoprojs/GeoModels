@@ -26,8 +26,8 @@
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
 
-#include <stdbool.h>
 
+#include <stdbool.h>
 
 
 //************************************** ST igam.c*****************************************
@@ -419,6 +419,7 @@ double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, doubl
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
+double biv_gamma_gen(double corr,double zi,double zj,double mui, double muj, double shape,double n);
 double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2);
 
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
@@ -434,7 +435,7 @@ double corr_binomneg (int N, double p1,double p2,double p11);
 double biv_poisbin (int NN,  int u, int v, double p01,double p10,double p11);
 double biv_poisbinneg(int NN, int u, int v, double p01,double p10,double p11);
 
-double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double eta,
+double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double delta,double eta,
              double p11,double mui,double muj);
 
 double cor_pois(double rho,double mi,double mj);
@@ -884,7 +885,7 @@ double  wendintegral(double x, double *param);
 
 double pbnorm(int *cormod, double h, double u, double lim1, double lim2, double nugget, double var,double *par, double thr);
 double phalf_gauss (double z);
-double pbnorm22(double lim1,double lim2,double corr,double nugget);
+double pbnorm22(double lim1,double lim2,double corr);
 double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, double u1,double u2, 
                  double *nuis, double *par, double thr);
 double pbhalf_gauss (double zi,double zj,double rho,double nugget);
@@ -1251,6 +1252,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

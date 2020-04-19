@@ -240,11 +240,10 @@ if(!bivariate) {
             if(bivariate) {}
               else {
               correlation=(1-nuisance['nugget'] )*correlation  
-              vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;
+              vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;corr2=correlation^2;  
+              cc=((2*sk2/pi)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + correlation*vv)/(vv+sk2*(1-2/pi))
+              
               vs=(vv+sk2*(1-2/pi))
-              correlation[correlation>1]=1
-              corr2=correlation^2;  
-              cc=((2*sk2/pi)*(sqrt(1-corr2) + correlation*asin(correlation)-1) + correlation*vv)/(vv+sk2*(1-2/pi))
               covariance=vs*cc;variogram=vs*(1-cc) }
                    }
 ##########################################
@@ -304,19 +303,21 @@ if(!bivariate) {
 ##########################################
  if(twopiecebimodal)        { if(bivariate) {}
                         else {                            
-                                 correlation=correlation*(1-nuisance['nugget'] )
-                                 nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-                                 ll=qnorm((1-sk)/2)
-                                 p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
-                                 corr2=correlation^2;sk2=sk^2
-                                 a1=Re(hypergeo::hypergeo(-0.5,-0.5,nu/2,corr2))
-                                 #a1=Re(hypergeo::hypergeo(nu/2+0.5,nu/2+0.5,nu/2,corr2))*(1-corr2)^(nu/2+1)
-                                 a3=3*sk2 + 2*sk + 4*p11 - 1
-                                 MM=nu*(1+3*sk2)*gamma(nu/2)^2-8*sk2*gamma(0.5*(nu+1))^2
-                                 KK=2*gamma((nu+1)/2)^2 / MM
-                                 cc= KK*(a1*a3-4*sk2)
-                                 vs=as.numeric(nuisance['sill'])*MM/(gamma(0.5*nu)^2)
-                                 covariance=vs*cc; variogram=vs*(1-cc)
+                                  correlation=correlation*(1-nuisance['nugget'] )
+                                  nu=as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew'])
+                                  delta=as.numeric(nuisance['shape'])
+                                  alpha=2*(delta+1)/nu
+                                  nn=2^(1-alpha/2)
+                                  ll=qnorm((1-sk)/2)
+                                  p11=pbivnorm::pbivnorm(ll,ll, rho = correlation, recycle = TRUE)
+                                  corr2=correlation^2;sk2=sk^2
+                                  a1=Re(hypergeo::hypergeo(-1/alpha ,-1/alpha,nu/2,corr2))
+                                  a3=3*sk2 + 2*sk + 4*p11 - 1
+                                  MM=(2^(2/alpha)*(gamma(nu/2 + 1/alpha))^2) 
+                                  vari=2^(2/alpha)*(gamma(nu/2 + 2/alpha))*gamma(nu/2)* (1+3*sk2) - sk2*2^(2/alpha+2)*gamma(nu/2+1/alpha)^2 
+                                  cc= MM*(a1*a3-4*sk2)/vari
+                                  vs=as.numeric(nuisance['sill'])*vari/(nn^(2/alpha)*gamma(nu/2)^2)
+                                  covariance=vs*cc; variogram=vs*(1-cc)
                                }
                             }
 ##########################################
@@ -510,7 +511,7 @@ if(!bivariate) {
                 lines(lags_m, covariance,...)
                 if(show.range) abline(v=Range)}
             else{
-                plot(lags_m, covariance, type='l', ylim=c(min(covariance),
+                plot(lags_m, covariance, type='l', ylim=c(0,
                      max(covariance)), main="Spatial covariance",
                      xlab="Distance", ylab="Covariance",...)
                 if(show.range) abline(v=Range)}}
@@ -638,7 +639,7 @@ if(!bivariate) {
 
                 bnds[1] <- min(bnds[1], min(vario$variograms))
                 bnds[2] <- max(bnds[2], max(vario$variograms))
-                plot(lags_m, variogram, type='l',  ylim=c(bnds[1],bnds[2]),
+                plot(lags_m, variogram, type='l',  ylim=c(0,bnds[2]),
                      main=vario.main,xlab="Distance",
                      ylab=vario.ylab,...)
                 points(vario$centers, vario$variograms,...)

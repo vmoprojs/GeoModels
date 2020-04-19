@@ -50,7 +50,7 @@ err=data_to_pred-pr$pred
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
-print(i)
+#print(i)
 i=i+1
 }}
 ############################################################
@@ -108,7 +108,7 @@ err=data_to_pred-pr$pred
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
-print(i)
+#print(i)
 i=i+1
 }                
 } ## end bivariate
@@ -159,7 +159,7 @@ err=c(data_to_pred)-c(pr$pred)
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
-print(i)
+#print(i)
 i=i+1
 }
 

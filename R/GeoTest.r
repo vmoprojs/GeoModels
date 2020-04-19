@@ -180,9 +180,7 @@ StatiTest <- function(df, model1, model2, statistic)
       if(statistic=='Wald'){
 
               theta <- model1$param[namesparam]-model2$fixed[namesparam]
-              varcov <- model1$varcov[namesparam,namesparam]# Restricted variance-covariance matrix
-              # print(varcov)
-             #  print(solve(varcov))
+              varcov <- model1$varcov[namesparam,namesparam]
               W <- t(theta)%*%solve(varcov)%*%theta
               nu <- df}
        if(statistic=="Wilks"){

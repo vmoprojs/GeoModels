@@ -14,7 +14,7 @@ Description: This package provides a set of procedures for a) simulation and est
  Gaussian and some non Gaussian Random fields can be analyzed using the  GeoModels package. Among them,   Weibull, logGaussian, skewGaussian, T, binomial, negative
  binomial  and circular  random fields can be analyzed.
 Imports: methods,
-Suggests: actuar, spam, scatterplot3d,  dfoptim, dotCall64, fields, mapproj, gpuR, limma, gsl, optimParallel, parallel, pbivnorm, plot3D, sn, shape, GoFKernel, numDeriv, hypergeo, sphereplot, ucminf, VGAM
+Suggests: actuar, spam, pracma, scatterplot3d,  dfoptim, dotCall64, fields, mapproj, gpuR, limma, gsl, optimParallel, parallel, pbivnorm, zipfR, plot3D, sn, shape, numDeriv, hypergeo, sphereplot, ucminf, VGAM
 License: GPL (>= 2)
 URL: https://vmoprojs.github.io/GeoModels-page/ 
 Repository: GitHub

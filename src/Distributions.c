@@ -1432,32 +1432,28 @@ double KK1,KK2,KK3,rr;
 }
 
 
-/*********** bivariate bimodal********************/ 
-double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double eta,
+double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nu,double delta,double eta,
              double p11,double mui,double muj)
 {
-double res;  
-double nu=1/nuu;
+double res;
+double alpha=2*(delta+1)/nu;
 double etamas=1+eta;
 double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
 
+double nn=R_pow(2,1-alpha/2);
 
 if(zi>=mui&&zj>=muj)
-{res=          (zistd*zjstd*p11/R_pow(etamos,4))*biv_chisqu2(rho,R_pow(zistd/etamos,2),R_pow(zjstd/etamos,2),nu);  }
+{res=          (R_pow(zistd*zjstd,alpha-1)*p11/R_pow(etamos,2*alpha))*biv_gamma_gen(rho,R_pow(zistd/etamos,alpha),R_pow(zjstd/etamos,alpha),0,0,nu,nn);  }
 if(zi>=mui&&zj<muj)
-{res=-zistd*zjstd*(1-eta-2*p11)/(R_pow(etamos,2)*R_pow(etamas,2))*biv_chisqu2(rho,R_pow(zistd/etamos,2),R_pow(zjstd/etamas,2),nu);}
+{res=R_pow(-zistd*zjstd,alpha-1)*(1-eta-2*p11)/(R_pow(etamos,alpha)*R_pow(etamas,alpha))*biv_gamma_gen(rho,R_pow(zistd/etamos,alpha),R_pow(-zjstd/etamas,alpha),0,0,nu,nn);}
 if(zi<mui&&zj>=muj)
-{res=-zistd*zjstd*(1-eta-2*p11)/(R_pow(etamos,2)*R_pow(etamas,2))*biv_chisqu2(rho,R_pow(zistd/etamas,2),R_pow(zjstd/etamos,2),nu);}
+{res=R_pow(-zistd*zjstd,alpha-1)*(1-eta-2*p11)/(R_pow(etamos,alpha)*R_pow(etamas,alpha))*biv_gamma_gen(rho,R_pow(-zistd/etamas,alpha),R_pow(zjstd/etamos,alpha),0,0,nu,nn);}
 if(zi<mui&&zj<muj)
-{res=     (zistd*zjstd*(p11+eta)/R_pow(etamas,4))*biv_chisqu2(rho,R_pow(zistd/etamas,2),R_pow(zjstd/etamas,2),nu);}
-return(4*res/sill);
+{res=     (R_pow(zistd*zjstd,alpha-1)*(p11+eta)/R_pow(etamas,2*alpha))*biv_gamma_gen(rho,R_pow(-zistd/etamas,alpha),R_pow(-zjstd/etamas,alpha),0,0,nu,nn);}
+return(R_pow(alpha,2)*res/sill);
 }
-
-
-
-
 
 
 
@@ -1486,26 +1482,20 @@ double asy_log_besselI(double z,double nu)
 }
 
 
+
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape)
 {
-    double res1=0.0,ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
-    k=pow(gammafn(1+1/shape),-1);
+    double ui=0.0, uj=0.0,z=0.0,a=0.0,A=0.0,k=0.0,res=0.0,B=0.0;double ci=exp(mui);double cj=exp(muj);;
+    k=R_pow(gammafn(1+1/shape),-1);
     ui=zi/ci;uj=zj/cj;
         a=1-R_pow(corr,2);
-        z=2*fabs(corr)*pow(ui*uj,shape/2)*pow(k,-shape)/a;
-        A=pow(shape,2)*pow(k,-2*shape)*pow(ui*uj,shape-1)/a;
-        B= exp(-pow(k,-shape)*(pow(ui,shape)+pow(uj,shape))/a);
-        if(z<700) 
-               res=A*B*bessel_i(z,0,1)/(ci*cj);
-        else{
-               B=-pow(k,-shape)*(pow(ui,shape)+pow(uj,shape))/a;
-               res1=(log(A)+B-(log(ci)+log(cj))) + asy_log_besselI(z,0);
-               res=exp(res1);
-             }
-    return(res);
+        z=2*fabs(corr)*R_pow(ui*uj,shape/2)*R_pow(k,-shape)/a;
+        A=2*log(shape)  +  (-2*shape)*log(k) + (shape-1)*log(ui*uj) - log(a);
+        B= -R_pow(k,-shape)*(R_pow(ui,shape)+pow(uj,shape))/a;
+               res=A+B+ log(bessel_i(z,0,2))+z  - (mui+muj);
+       
+    return(exp(res));
 }
-
-
 
 /*******************************************/
 
@@ -1527,26 +1517,55 @@ return(sum*K);
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
 {
-    double res1=0.0,a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;
+    double a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;
     double ci=zi/exp(mui);double cj=zj/exp(muj);
     double gam = gammafn(shape/2);
-        a=1-R_pow(corr,2);  
+    a=1-R_pow(corr,2);
 
-        z=shape*fabs(corr)*sqrt((ci)*(cj))/a;
-
-        A=R_pow((ci)*(cj),shape/2-1) * R_pow(z/2,1-shape/2) ; ///ok
-        C= exp(-shape*((ci)+(cj))/(2*a));//ok
-        B=gam*R_pow(a,shape/2)*R_pow(2,shape)*R_pow(shape,-shape);  
-        D=bessel_i(z,shape/2-1,1); //ok
-        if(z<700) 
-             res=(A*C*D)/(exp(muj)*exp(muj)*B);
-        else{
-            C=-shape*((ci)+(cj))/(2*a);
-            res1=log(A)+C-(mui-muj-log(B))+asy_log_besselI(z,shape/2-1);
-            res=exp(res1);
-        }
-        return(res);
+    if(corr){
+        z=shape*fabs(corr)*sqrt(ci*cj)/a;
+        A=(shape/2-1)*log(ci*cj) -shape*(ci+cj)/(2*a); ///ok
+        C=(1-shape/2)*log(z/2); //ok
+        B=log(gam)+(shape/2)*log(a)+shape*log(2)-shape*log(shape);  
+        D=log(bessel_i(z,shape/2-1,2))+z; //ok
+        res=(A+C+D)-(mui+muj+B);
+        return(exp(res));
+       }
+    else
+    {
+        B=(R_pow((shape/(2*exp(mui))),shape/2)*R_pow(zi,shape/2-1)*exp(-(shape*ci/(2))))/gam;
+        C=(R_pow((shape/(2*exp(muj))),shape/2)*R_pow(zj,shape/2-1)*exp(-(shape*cj/(2))))/gam;
+        res=B*C;    
+    }
+return(res);
 }
+
+
+double biv_gamma_gen(double corr,double zi,double zj,double mui, double muj, double shape,double n)
+{
+    double a=0.0,A=0.0,D=0.0,z=0.0,res=0.0,B=0.0,C=0.0;
+    double ci=zi/exp(mui);double cj=zj/exp(muj);
+    double gam = gammafn(shape/2);
+    a=1-R_pow(corr,2);  
+   if(corr){
+        z=n*fabs(corr)*sqrt(ci*cj)/a;
+        A=(shape/2-1)*log(ci*cj) -n*(ci+cj)/(2*a); ///ok
+        C=(1-shape/2)*log(z/2); //ok
+        B=log(gam)+(shape/2)*log(a)+shape*log(2)-shape*log(n);  
+        D=log(bessel_i(z,shape/2-1,2))+z; //ok
+        res=(A+C+D)-(mui+muj+B);
+        return(exp(res));
+    }
+    else
+    {
+        B=(R_pow((n/(2*exp(mui))),shape/2)*R_pow(zi,shape/2-1)*exp(-(n*ci/(2))))/gam;
+        C=(R_pow((n/(2*exp(muj))),shape/2)*R_pow(zj,shape/2-1)*exp(-(n*cj/(2))))/gam;
+        res=B*C;    
+    }
+return(res);
+}
+
+
 /*******************************
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
 {
@@ -3301,16 +3320,14 @@ double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shap
 return(res);
 }
 
-/***********************************************************************************/
-/************ functions for binomial or negative binomial  two piece *********/
-/***********************************************************************************/
+
 /***********************************************************************************/
 /************ functions for binomial or negative binomial  two piece *********/
 /***********************************************************************************/
 
-double pbnorm22(double lim1,double lim2,double corr,double nugget)
+double pbnorm22(double lim1,double lim2,double corr)
 {
-    double  lowe[2]  = {0,0}, uppe[2] = {lim1,lim2}, corre[1] = {(1-nugget)*corr};
+    double  lowe[2]  = {0,0}, uppe[2] = {lim1,lim2}, corre[1] = {corr};
     double  value;
     int     infin[2] = {0,0};
     value            = F77_CALL(bvnmvn)(lowe,uppe,infin,corre); 
@@ -3321,8 +3338,8 @@ double pbnorm22(double lim1,double lim2,double corr,double nugget)
 double pbhalf_gauss(double zi,double zj,double rho,double nugget)
 {
   double dens = 0;
-  dens = pbnorm22(zi,zj,rho,nugget) + pbnorm22(-zi,-zj,rho,nugget) -
-              pbnorm22(-zi,zj,rho,nugget) - pbnorm22(zi,-zj,rho,nugget);
+  dens = pbnorm22(zi,zj,(1-nugget)*rho) + pbnorm22(-zi,-zj,(1-nugget)*rho) -
+              pbnorm22(-zi,zj,(1-nugget)*rho) - pbnorm22(zi,-zj,(1-nugget)*rho);
   return(dens); 
 }
 /****** cdf univariate two-piece gaussian distribution *****/
@@ -3350,7 +3367,7 @@ double pbnorm_two_piece(int *cormod, double h, double u,
     g_eta   = (1 - eta)/2;
     q_g_eta = qnorm(g_eta,0,1,1,0);
     corr    = CorFct(cormod,h,u,par,0,0);
-    p11     = pbnorm22(q_g_eta,q_g_eta,corr,nugget);
+    p11     = pbnorm22(q_g_eta,q_g_eta,(1-nugget)*corr);
     etamas = 1+eta;
     etamos = 1-eta;
     if(xi  <= 0 & xj <= 0) dens = (1 + pbhalf_gauss(-xi/etamas,-xj/etamas,corr,nugget) - phalf_gauss(-xi/etamas) - phalf_gauss(-xj/etamas)) * ( 1 + p11 - 2*pnorm(q_g_eta,0,1,1,0) );

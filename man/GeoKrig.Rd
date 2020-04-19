@@ -408,7 +408,7 @@ fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
              optimizer="nlminb", start=start,fixed=fixed, model = model)
                     
 # locations to predict
-xx=seq(0,1,0.03)
+xx=seq(0,1,0.05)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
@@ -465,7 +465,7 @@ set.seed(3)
 param=as.list(c(fit$param,fit$fixed))
 
 # locations to predict
-xx=seq(0,1,0.04)
+xx=seq(0,1,0.05)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
 times_to_pred=1:2

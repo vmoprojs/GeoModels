@@ -4,7 +4,7 @@
 \title{Spatio (temporal) neighborhood selection for local kriging.}
 \description{
 The procedure select a spatio (temporal) neighborhood for  
-a given spatial (temporal) location.
+ given spatial (temporal) locations.
 }
 
 \usage{
@@ -54,12 +54,12 @@ GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, distanc
 
 \value{
   Returns a list  containing the following informations:
-  \item{coordx}{A matrix of  the  coordinates of the computed spatial neighborhood;}
+  \item{coordx}{A list  of  the  matrix coordinates of the computed spatial neighborhood ;}
   \item{coordt}{A vector  of the computed temporal neighborhood;}
-  \item{data}{The vector of data associated with the spatio  (temporal) neighborhood;}
+  \item{data}{A list  of the vector of data associated with the spatio  (temporal) neighborhood;}
   \item{distance}{The type of spatial distance;}
-  \item{numcoord}{The number of location sites of the spatial neighborhood;}
-  \item{numtime}{The number of instants of the temporal neighborhood;}
+  \item{numcoord}{The vector of numbers of location sites involved the spatial neighborhood;}
+  \item{numtime}{The vector of numbers of temporal insttants involved the temporal neighborhood;}
   \item{radius}{The radius of the sphere if coordinates are passed in lon/lat format;}
   \item{spacetime}{\code{TRUE} if spatio-temporal and \code{FALSE} if spatial RF;}
   \item{X}{The matrix of spatio  (temporal) covariates associated with the computed spatio  (temporal) neighborhood;}
@@ -78,7 +78,7 @@ library(GeoModels)
 #### Example: spatial local kriging ######
 ##########################################
 set.seed(7)
-coords=cbind(runif(100),runif(100))
+coords=cbind(runif(500),runif(500))
 
 param=list(nugget=0,mean=0,scale=0.2,sill=1,
             power2=4,smooth=1)
@@ -86,8 +86,8 @@ param=list(nugget=0,mean=0,scale=0.2,sill=1,
 data_all = GeoSim(coordx=coords, corrmodel="GenWend", 
                          param=param)$data
 
-##location to predict
-loc_to_pred=matrix(c(0.5,0.5),1,2)
+##two location to predict
+loc_to_pred=matrix(c(0.3,0.5,0.7,0.2),2,2)
 
 loc_kri=GeoNeighborhood(data_all, coordx=coords,  
                   loc=loc_to_pred,maxdist=0.15)
@@ -95,12 +95,22 @@ loc_kri=GeoNeighborhood(data_all, coordx=coords,
 ## global kriging 
 pr_all=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="GenWend",
                 param=param,mse=TRUE, data=data_all)
-## local kriging 
-pr_loc=GeoKrig(loc=loc_to_pred,coordx=loc_kri$coordx,corrmodel="GenWend",
-                param=param,mse=TRUE, data=loc_kri$data)
 
-pr_all$pred;pr_loc$pred
-pr_all$mse;pr_loc$mse
+## local kriging at first location
+pr_loc1=GeoKrig(loc=loc_to_pred[1,],coordx=loc_kri$coordx[[1]],corrmodel="GenWend",
+                param=param,mse=TRUE, data=loc_kri$data[[1]])
+
+## local kriging at second location
+pr_loc2=GeoKrig(loc=loc_to_pred[2,],coordx=loc_kri$coordx[[2]],corrmodel="GenWend",
+                param=param,mse=TRUE, data=loc_kri$data[[2]])
+
+
+pr_all$pred; 
+
+pr_loc1$pred;pr_loc2$pred;
+
+pr_all$mse
+pr_loc1$mse; pr_loc2$mse
 
 
 ###################################################
@@ -111,7 +121,7 @@ set.seed(78)
 coords=cbind(runif(100),runif(100))
 coordt=seq(0,4,0.25)
 
-param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.5/3,sill=1)
+param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
 
 data_all = GeoSim(coordx=coords, coordt=coordt,corrmodel="Exp_Exp", 
                          param=param)$data
@@ -121,6 +131,7 @@ time=2
 
 loc_kri=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
                   loc=loc_to_pred,maxdist=0.4,maxtime=2.5)
+
 ## global kriging 
 pr_all=GeoKrig(loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,
                 corrmodel="Exp_Exp",

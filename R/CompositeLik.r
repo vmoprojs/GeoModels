@@ -30,26 +30,14 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
 
+       # print(other_nuis)
+
         result <- .C(as.character(fan),as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt), as.double(data), 
                    as.integer(n),as.double(paramcorr), as.integer(weigthed), 
                    res=double(1),as.double(c(X%*%mm)),as.double(0),as.double(other_nuis),
                     as.integer(ns),as.integer(NS),as.integer(local),as.integer(GPU),
                     PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res   
-       # result <- dotCall64::.C64(as.character(fan), 
-       #              SIGNATURE = c(
-       #  "integer","double","double","double","double",
-       #  "integer","double","integer",
-       #   "double","double","double","double",    
-       #    "integer","integer","integer","integer"),
-       # corrmodel,coordx,coordy,coordt, data, 
-       #            n,paramcorr, weigthed, 
-       #            res=double(1),c(X%*%mm),as.double(0),other_nuis,
-       #             ns,NS,local,GPU,
-       # INTENT = c("r","r","r","r",
-       #   "r","r","r","r","w","r","r","r","r","r","r","r"), 
-       #             NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)$res
-       #print(result)
-            # print(result)
+    
          return(-result)
       }
      comploglik_biv <- function(param,coordx, coordy ,coordt, corrmodel, data, fixed, fan, n, namescorr, namesnuis,namesparam,weigthed,X,ns,NS,GPU,local)
