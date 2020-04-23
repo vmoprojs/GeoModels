@@ -226,7 +226,8 @@ if(model==27)   ##  two piece student case case
           a3=3*sk2 + 2*sk + 4*p11 - 1
           KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
           corr= KK*(a1*a2*a3-4*sk2);
-          vv=nuisance['sill']*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
+          ttemp=gamma(0.5*(nu-1))/gamma(0.5*nu)
+          vv=as.numeric(nuisance['sill'])*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*gamma(ttemp)^2)
 }
 
 if(bivariate){}
@@ -277,7 +278,7 @@ if(model==10)  {  ##  skew Gaussian case
               corr=cr$corr*(1-as.numeric(nuisance['nugget']))
               sk=as.numeric(nuisance['skew'])
               corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
-              corr=(2*sk2/pi)*(sqrt(1-corr2) + corr*asin(cr$corr)-1)/(pi*vv+sk2*(pi-2))  + (corr*vv)/(vv+sk2*(1-2/pi));
+              corr=(2*sk2)*(sqrt(1-corr2) + corr*asin(corr)-1)/(pi*vv+sk2*(pi-2)) + (corr*vv)/(vv+sk2*(1-2/pi))
               vv=nuisance['sill']+nuisance['skew']^2*(1-2/pi)
      }
       if(bivariate){}

@@ -26,8 +26,8 @@
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
 
-
 #include <stdbool.h>
+
 
 
 //************************************** ST igam.c*****************************************
@@ -421,7 +421,7 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma_gen(double corr,double zi,double zj,double mui, double muj, double shape,double n);
 double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2);
-
+double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2);
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill);
@@ -469,6 +469,7 @@ double marg_pois(int n,double x,double p);
 double marg_geom(int x,double p);
 
 double corr_pois(double rho,double mi,double mj);
+double corr_tukeygh(double rho,double eta,double tail,double mu, double vv);
 double corr_pois1(double rho,double lambda1,double lambda2);
 
 double marg_p(double categ_0,double psm,int *model,int n);

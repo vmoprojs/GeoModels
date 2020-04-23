@@ -1514,6 +1514,20 @@ else {res0=sum;}
 return(sum*K);
 }
 
+double corr_tukeygh(double rho,double eta,double tail,double mu, double vv)
+{
+double rho2,a,eta2,tail2,u,A1,A2,A3,cova;
+rho2=rho*rho;
+eta2=eta*eta;
+tail2=tail*tail;
+u=1-tail;
+a=1+rho;
+A1=exp(a*eta2/(1-tail*a));
+A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
+A3=eta2*sqrt(u*u- rho2*tail*tail);
+cova=(A1-A2+1)/A3-mu*mu;
+return(cova/vv);
+}
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
 {
@@ -3300,6 +3314,28 @@ if(zi<mui&&zj<muj)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
 return(res/sill);
 }
+
+
+
+double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2)
+{
+  double ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0,p3;
+ ki=1-zi; kj=1-zj;
+   double aa=0.5*(shape1+shape2);
+if(rho) {
+  rho2=rho*rho;
+
+    p1=pow(zi*zj,shape1/2-1)*pow(ki*kj,shape2/2-1);
+    p3=exp(2*lgammafn(aa)-(2*lgammafn(shape1/2)+2*lgammafn(shape2/2)-aa*log(1-rho2)));
+    p2= appellF4(aa,aa,shape1/2,shape2/2,rho2*zi*zj,rho2*ki*kj);
+  res=p1*p2*p3;
+} else  {p1=pow(zi,shape1/2-1)*pow(ki,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
+         p2=pow(zj,shape1/2-1)*pow(kj,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
+         res=p1*p2;}
+return(res);
+}
+
+
 
 
 

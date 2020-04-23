@@ -95,7 +95,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     else(if(bivariate) X=rbind(X,X))
 
   
-    fname <- NULL; hessian <- FALSE
+    fname <- NULL; hessian <- FALSE 
 
     if(all(model==1,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss'
     if(all(model==1,likelihood==3,type==1)) fname <- 'Comp_Diff_Gauss'
@@ -130,7 +130,9 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
                                               if(varest & vartype==2) hessian <- TRUE}    
    if(all(model==26,likelihood==1,type==2)){ fname <- 'Comp_Cond_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}                                       
+                                              if(varest & vartype==2) hessian <- TRUE}    
+    if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
+                                              if(varest & vartype==2) hessian <- TRUE}                                   
     if(all(model==24,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogLogistic'
                                               if(varest & vartype==2) hessian <- TRUE}     
     if(all(model==25,likelihood==3,type==2)){ fname <- 'Comp_Pair_Logistic'
@@ -154,6 +156,8 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
     if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukey2h' 
                                               if(varest & vartype==2) hessian <- TRUE} 

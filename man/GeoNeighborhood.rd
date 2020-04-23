@@ -75,7 +75,7 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 \examples{
 library(GeoModels)
 ##########################################
-#### Example: spatial local kriging ######
+#### Example: spatial neighborhood  ######
 ##########################################
 set.seed(7)
 coords=cbind(runif(500),runif(500))
@@ -86,62 +86,44 @@ param=list(nugget=0,mean=0,scale=0.2,sill=1,
 data_all = GeoSim(coordx=coords, corrmodel="GenWend", 
                          param=param)$data
 
-##two location to predict
+##two locations 
 loc_to_pred=matrix(c(0.3,0.5,0.7,0.2),2,2)
 
-loc_kri=GeoNeighborhood(data_all, coordx=coords,  
-                  loc=loc_to_pred,maxdist=0.15)
+neigh=GeoNeighborhood(data_all, coordx=coords,  
+                  loc=loc_to_pred,maxdist=0.075)
 
-## global kriging 
-pr_all=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="GenWend",
-                param=param,mse=TRUE, data=data_all)
-
-## local kriging at first location
-pr_loc1=GeoKrig(loc=loc_to_pred[1,],coordx=loc_kri$coordx[[1]],corrmodel="GenWend",
-                param=param,mse=TRUE, data=loc_kri$data[[1]])
-
-## local kriging at second location
-pr_loc2=GeoKrig(loc=loc_to_pred[2,],coordx=loc_kri$coordx[[2]],corrmodel="GenWend",
-                param=param,mse=TRUE, data=loc_kri$data[[2]])
-
-
-pr_all$pred; 
-
-pr_loc1$pred;pr_loc2$pred;
-
-pr_all$mse
-pr_loc1$mse; pr_loc2$mse
-
+# two Neighborhoods 
+neigh$coordx
+# associated data
+neigh$data
 
 ###################################################
-#### Example: spatio temporal  local kriging ######
+#### Example: spatio temporal spatial neighborhood#  
 ###################################################
 
 set.seed(78)
-coords=cbind(runif(100),runif(100))
+coords=matrix(runif(10),5,2)
 coordt=seq(0,4,0.25)
 
 param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
 
 data_all = GeoSim(coordx=coords, coordt=coordt,corrmodel="Exp_Exp", 
                          param=param)$data
-##location to predict
-loc_to_pred=matrix(c(0.5,0.5),1,2)
-time=2
+##  two location to predict
+loc_to_pred=matrix(runif(4),2,2)
+## three temporal instants to predict
+time=c(1,2,3)
 
-loc_kri=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
-                  loc=loc_to_pred,maxdist=0.4,maxtime=2.5)
+plot(coords,xlim=c(0,1),ylim=c(0,1))
+points(loc_to_pred,pch=20)
 
-## global kriging 
-pr_all=GeoKrig(loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,
-                corrmodel="Exp_Exp",
-                param=param,mse=TRUE, data=data_all)
-## local kriging 
-pr_loc=GeoKrig(loc=loc_to_pred,time=time,coordx=loc_kri$coordx,
-              coordt=loc_kri$coordt,corrmodel="Exp_Exp",
-                param=param,mse=TRUE, data=loc_kri$data)
+neigh=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
+                  loc=loc_to_pred,time=time,maxdist=0.6,maxtime=0.5)
 
-pr_all$pred;pr_loc$pred
-pr_all$mse;pr_loc$mse
+# first spatio-temporal neighborhoods 
+# with  associated data
+neigh$coordx[[1]]
+neigh$coordt[[1]]
+neigh$data[[1]]
 
 }

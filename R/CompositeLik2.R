@@ -115,6 +115,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==33,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
+                                              if(varest & vartype==2) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
                                               if(varest & vartype==2) hessian <- TRUE}    
    if(all(model==26,likelihood==1,type==2)){ fname <- 'Comp_Cond_Weibull'
@@ -142,6 +144,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukey2h' 
                                               if(varest & vartype==2) hessian <- TRUE} 
