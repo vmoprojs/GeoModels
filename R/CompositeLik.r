@@ -8,7 +8,7 @@
 ### This file contains a set of procedures
 ### for maximum composite-likelihood fitting of
 ### random fields.
-### Last change: 28/08/2019.
+### Last change: 28/04/2020.
 ####################################################
 
 ### Optim call for Composite log-likelihood maximization

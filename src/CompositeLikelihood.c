@@ -2184,37 +2184,33 @@ void Comp_Pair_Gauss_misp_SkewT2(int *cormod, double *coordx, double *coordy, do
 {
     int i=0, j=0;
     double lags=0.0, weights=1.0,sill,nugget,skew,corr,corr2,df,bl;
-    //if(nuis[0]>0.5 || nuis[0]<0||fabs(nuis[3])>1){*res=LOW; return;}
 
-    df=1/nuis[0];
+
+ df=1/nuis[0];
     nugget=nuis[1];
     sill=nuis[2];
     skew=nuis[3];
     //auxuliary variables
-    double D1=(df-1)/2;
+   double D1=(df-1)/2;
     double D2=df/2;
-    double skew2=R_pow(skew,2);
-    double w=1-skew2;
-    double KK=2*skew2/M_PI;
 
     double MM=sqrt(df)*gammafn(D1)*skew/(sqrt(M_PI)*gammafn(D2));
-    double FF=sill*(df/(df-2)-MM*MM);
+    double FF=(df/(df-2)-MM*MM);
+
+     
+     if( df<0||df>0.5||fabs(skew)>1||sill<0||nugget<0||nugget>=1){*res=LOW; return;}
 
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
       lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
             if(lags<=maxdist[0]){
                   if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
-                     corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
-  if(df<170)                   
-        { corr2=(2*skew2/(M_PI*w+skew2*(M_PI-2)))*(sqrt(1-corr*corr)+corr*asin(corr)-1)+w*corr/(w+skew2*(1-2/M_PI));
-          corr=(M_PI*(df-2)*R_pow(gammafn(D1),2)/(2*(M_PI*R_pow(gammafn(D2),2)-skew2*(df-2)*R_pow(gammafn(D1),2))))*
-                                                 (hypergeo(0.5,0.5,D2,R_pow(corr,2))*((1-KK)*corr2+KK)-KK);
-}
-
-                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                          bl=log_biv_Norm(corr,data[i],data[j],mean[i]+sqrt(sill)*MM,
-                                                               mean[j]+sqrt(sill)*MM,sill*FF,0);
+                         corr=CorFct(cormod,lags,0,par,0,0)*(1-nugget);
+           
+                         corr2= corr_skewt(corr,df,skew);
+                         if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                          bl=log_biv_Norm(corr2,data[i],data[j],mean[i]+sqrt(sill)*MM,
+                                                                mean[j]+sqrt(sill)*MM,sill*FF,0);
                         *res+= bl*weights;
                     }}}}            
     if(!R_FINITE(*res))  *res = LOW;
@@ -2283,15 +2279,18 @@ void Comp_Pair_Gauss_misp_Tukeygh2(int *cormod, double *coordx, double *coordy, 
                          double *nuis,int *ns,int *NS, int *GPU,int *local)
 {
     int i,j;double bl,corr,corr2,zi,zj,lags,weights=1.0,eta,tail,sill,nugget,mu,vv,eta2,u;
-    eta  = nuis[2];  //skewness parameter
+      eta  = nuis[2];  //skewness parameter
     tail = nuis[3];  //tail parameter
     sill =nuis[1];
     nugget=nuis[0];
+
     eta2=eta*eta;
     u=1-tail;
     mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
-    vv=(exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*sqrt(1-2*tail))-mu*mu;
-     if(sill<0||nugget<0||nugget>=1||tail<0||tail>0.5) {*res=LOW;  return;} 
+    vv=((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
+                           sqrt(1-2*tail))-mu*mu);
+    
+         if(sill<0||nugget<0||nugget>=1||tail<0||tail>0.5) {*res=LOW;  return;} 
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2299,7 +2298,7 @@ void Comp_Pair_Gauss_misp_Tukeygh2(int *cormod, double *coordx, double *coordy, 
                 zi=data[i];zj=data[j];
                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=(1-nugget)*CorFct(cormod,lags,0,par,0,0);
-                    corr2=corr_tukeygh(corr,eta,tail,mu,vv);
+                    corr2=corr_tukeygh(corr,eta,tail);
                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]); 
                 bl=log_biv_Norm(corr2,data[i],data[j],mean[i]+sqrt(sill)*mu,mean[j]+sqrt(sill)*mu,sill*vv,0);  
                     *res+= weights*bl;

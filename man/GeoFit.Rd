@@ -392,6 +392,7 @@ Rf with marginal counts data
                           If no spatial distance is specified then it is NULL;}
   \item{message}{Extra message passed from the numerical routines;}
   \item{model}{The density associated to the likelihood objects;}
+   \item{missp}{True if a misspecified  Gaussian model is ued in  the composite likelihhod;}
   \item{n}{The number of trials in a binominal RF;the number of successes in a  negative Binomial RFs;} 
   \item{ns}{The number of (different) location sites in the bivariate case;} 
    \item{nozero}{In the case of tapered likelihood  the percentage of non zero values in the covariance matrix.

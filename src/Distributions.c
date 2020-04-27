@@ -1499,6 +1499,28 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 /*******************************************/
 
+
+
+double psi(int i, int j, double p1, double p2, double p12){
+    double aux= p1 + p2 - p12;
+    if(i==0 || j==0){return 0;}
+    if(i==1 && j==1){return (1-p2)/(p2*(p1-p12))-p2*(1-aux)/(pow(aux,2)*(p1-p12))+(p2-p12)/(pow(aux,2)*p1) ;}
+    double aux1= (psi( i-1, j-1, p1, p2, p12)*p12+psi( i, j-1, p1, p2, p12)*(p1-p12)+psi( i-1, j, p1, p2, p12)*(p2-p12))/aux;
+    double aux2= ( (i-p2/aux)/p2 + (j-p1/aux)/p1 )/aux;
+    double aux3= (2-aux)/pow(aux,2);
+    return aux1+aux2+aux3;
+}
+
+double cov_binom_neg(int m,double p11,double p1, double p2) {
+
+double a;
+if(p11==p1&&p11==p2) a=m*sqrt((1-p1)*(1-p2)/(p1*p1*p2*p2));
+else    
+ a=psi( m, m, p1, p2, p11)- R_pow(m,2)/(p1*p2);
+return(a);
+}
+
+
 double corr_pois(double rho,double mi,double mj)
 {
 int r=0; double res0=0.0,sum=0.0;
@@ -1514,20 +1536,42 @@ else {res0=sum;}
 return(sum*K);
 }
 
-double corr_tukeygh(double rho,double eta,double tail,double mu, double vv)
-{
-double rho2,a,eta2,tail2,u,A1,A2,A3,cova;
-rho2=rho*rho;
-eta2=eta*eta;
-tail2=tail*tail;
-u=1-tail;
-a=1+rho;
-A1=exp(a*eta2/(1-tail*a));
-A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
-A3=eta2*sqrt(u*u- rho2*tail*tail);
-cova=(A1-A2+1)/A3-mu*mu;
-return(cova/vv);
+double corr_tukeygh(double rho,double eta,double tail)
+{        
+double mu,rho2,a,eta2,tail2,u,A1,A2,A3,cova,vari;
+                  rho2=rho*rho;
+                  tail2=tail*tail;
+                  eta2=eta*eta; 
+                  u=1-tail;
+                  a=1+rho;
+                  A1=exp(a*eta2/(1-tail*a));
+                  A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
+                  A3=eta2*sqrt(u*u- rho2*tail2);
+                  mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
+                  cova=((A1-A2+1)/A3-mu*mu);
+                  vari=((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
+                  sqrt(1-2*tail))-mu*mu);
+return(cova/vari);
 }
+
+double corr_skewt(double corr,double df,double skew)
+{
+
+double w,corr1,skew2,CorSkew,nu,l,y;
+skew2=skew*skew;
+nu=df;
+l=df/2; 
+w=sqrt(1-skew2);
+y=corr;
+if(df<170){
+CorSkew=(2*skew2/(M_PI*w*w+skew2*(M_PI-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+skew2*(1-2/M_PI)) ;
+corr1=(M_PI*(nu-2)*R_pow(gammafn((nu-1)/2),2)/(2*(M_PI*R_pow(gammafn(nu/2),2)-skew2*(nu-2)*R_pow(gammafn((nu-1)/2),2))))*
+(hypergeo(0.5,0.5,l,y*y)*((1-2*skew2/M_PI)*CorSkew+2*skew2/M_PI)-2*skew2/M_PI);}
+else {corr1=corr;}
+return(corr1);
+}
+
+
 
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape)
 {

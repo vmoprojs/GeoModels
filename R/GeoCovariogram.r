@@ -334,11 +334,13 @@ if(!bivariate) {
                         else {
                                correlation=correlation*(1-nuisance['nugget'] )
                                nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-                               sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
-                               CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
-                               corr2= (1/(-1+1/KK))*(  sqrt(1-correlation^2) + cc*asinh(correlation) - 1 )+(1-sk2)*correlation/(1-KK);
-                               cc=CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
-                               vs=((nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)*as.numeric(nuisance['sill'])
+                               sill=as.numeric(nuisance['sill'])
+                               skew2=sk*sk;l=nu/2; f=(nu-1)/2; w=sqrt(1-skew2);y=correlation;
+                               CorSkew=(2*skew2/(pi*w*w+skew2*(pi-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+skew2*(1-2/pi)) ;
+                               cc=(pi*(nu-2)*gamma(f)^2/(2*(pi*gamma(l)^2-skew2*(nu-2)*gamma(f)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,l,y*y))
+                                *((1-2*skew2/pi)*CorSkew+2*skew2/pi)-2*skew2/pi);
+                               mm=sqrt(nu)*gamma(f)*sk/(sqrt(pi)*gamma(l));
+                               vs=sill*(nu/(nu-2)-mm*mm);
                                covariance=vs*cc;variogram=vs*(1-cc)
                                }
                   }
@@ -358,7 +360,7 @@ if(!bivariate) {
                         else {
                               correlation=correlation*(1-nuisance['nugget'] )
                               rho=correlation
-                              h=as.numeric(nuisance['tail'])
+                              tail=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
                               eta=as.numeric(nuisance['skew'])
                               rho2=rho*rho; eta2=eta*eta; tail2=tail*tail;

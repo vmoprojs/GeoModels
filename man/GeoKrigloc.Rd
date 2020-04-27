@@ -9,10 +9,10 @@ the function computes optimal linear prediction and associated mean square error
 for the Gaussian and non Gaussian case using a spatial (temporal) neighborhood
 }
 \usage{
-GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
-        maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, radius=6371, sparse=FALSE, 
-        time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, 
-        which=1, X=NULL,Xloc=NULL)
+GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
+           loc, maxdist=NULL, maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
+           param, radius=6371, sparse=FALSE, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, 
+           which=1, X=NULL,Xloc=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -43,10 +43,8 @@ GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, d
     of non-equispaced spatial sites (irregular grid).}
   \item{loc}{A numeric (\eqn{n \times 2}{n x 2})-matrix (where
     \code{n} is the number of spatial sites) giving 2-dimensions of spatial coordinates to be predicted.}
-  \item{maxdist}{Numeric; an optional positive value indicating the maximum
-    spatial compact support in the case of covariance tapering kriging.}
-  \item{maxtime}{Numeric; an optional positive value indicating the maximum
-    temporal compact support in the case of covasriance tapering kriging.}
+  \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood.}
+  \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood.}
      \item{method}{String; the type of matrix decomposition used in the simulation. Default is \code{cholesky}. 
      The other possible choices is \code{svd}.}
     \item{n}{Numeric; the number of trials in a binomial random fields.

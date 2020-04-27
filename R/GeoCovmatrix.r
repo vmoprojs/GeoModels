@@ -98,7 +98,7 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
       }
     }
      
-if(model %in% c(1))   ## gaussian case  
+if(model==1)   ## gaussian case  
 {  
   if(!bivariate)
      {
@@ -112,29 +112,40 @@ if(model==9)  {  ## TukeyGH
 
 if(!bivariate)   {             
           corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
-          h=nuisance['tail']
-          g=nuisance['skew']
-  if(!g&&!h) { as.numeric(nuisance['sill']) } 
+          h=as.numeric(nuisance['tail'])
+          g=as.numeric(nuisance['skew'])
+          ss=as.numeric(nuisance['sill']) 
+
+  if(!g&&!h) { vv=ss } 
 
   if(g&&!h){  #  
-              aa=( -exp(g^2)+exp(g^2*2))*g^(-2)
               varcov <-  diag(dime)
+              aa=( -exp(g^2)+exp(g^2*2))*g^(-2)
               corr <- (( -exp(g^2)+exp(g^2*(1+corr)))*g^(-2))/aa
-              vv=  aa*as.numeric(nuisance['sill']) 
+              vv=  aa*ss
               } 
    if(!g&&h){ ##
-              aa=(1-2*h)^(-1.5) # variance
               varcov <-  diag(dime)
+              aa=(1-2*h)^(-1.5) # variance
               corr <- corr/(aa*( (1-h)^2-h^2*corr^2 )^(1.5))
-              vv=aa*as.numeric(nuisance['sill'])
+              vv=aa*ss
                } 
 
   if(h&&g){ # ok
               varcov <-  diag(dime)
-              aa=(exp(g^2*(2)/(1-h*2))-2*exp(1/((1-h)^2-h^2)*(g^2/2))+1)/(g^2*((1-h)^2-h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2
-              corr <-((exp(g^2*(1+corr)/(1-h*(1+corr)))-2*exp((1-h*(1-corr^2))/((1-h)^2-h^2*corr^2)*(g^2/2))+1)/(g^2*((1-h)^2-corr^2*h^2)^(0.5))-((exp(g^2/(2*(1-h)))-1)/(g*(1-h)^0.5))^2) /aa
-              vv=aa*as.numeric(nuisance['sill']) 
-
+                  rho=corr; rho2=rho*rho;
+                  tail2=tail*tail
+                  tail=h; eta=g
+                  eta2=eta*eta; u=1-tail;a=1+rho;
+                  A1=exp(a*eta2/(1-tail*a));
+                  A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
+                  A3=eta2*sqrt(u*u- rho2*tail2)
+                  mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
+                  cova=ss*((A1-A2+1)/A3-mu*mu)
+                  vari=ss*((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
+                           sqrt(1-2*tail))-mu*mu);
+                  corr <-cova/vari
+                  vv=vari 
             }      
 }
 
@@ -147,7 +158,7 @@ if(model==34)  {  ## TukeyH
 if(!bivariate)    {             
        corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
     h=nuisance['tail']
-   if(!h)    vv=as.numeric(nuisance['sill']) 
+   if(!h)     vv=as.numeric(nuisance['sill']) 
    if(h){     aa=(1-2*h)^(-1.5) # variance
               varcov <-  diag(dime)
               corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/aa
@@ -170,16 +181,17 @@ if(bivariate){}
 ############################################################### 
   if(model==18)   ##  skew student case 
     { 
-if(!bivariate)
+     if(!bivariate)
 {
     corr=cr$corr*(1-as.numeric(nuisance['nugget'])) 
-    vv=nuisance['sill']
+
     nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
-    sk2=sk^2; KK=2*sk2/pi; D1=(nu-1)/2;D2=nu/2;
-    CC=(pi*(nu-2)*gamma(D1)^2) /(2*( pi*gamma(D2)^2 *(1+sk2) - sk2*(nu-2)*gamma(D1)^2) );
-    corr2= (1/(-1+1/KK))*(  sqrt(1-cc^2) + cc*asinh(cc) - 1 )+(1-sk2)*cc/(1-KK);
-    corr = CC*( Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,cc^2)) * ((1+sk2*(1-2/pi))*corr2 + KK)-KK )
-    vv = as.numeric(nuisance['sill'])*((nu)/(nu-2)  -    (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)
+    skew2=sk*sk;l=nu/2; f=(nu-1)/2; w=sqrt(1-skew2);y=corr;
+    CorSkew=(2*skew2/(pi*w*w+skew2*(pi-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+skew2*(1-2/pi)) ;
+    mm=sqrt(nu)*gamma(f)*sk/(sqrt(pi)*gamma(l));
+    corr=(pi*(nu-2)*gamma(f)^2/(2*(pi*gamma(l)^2-skew2*(nu-2)*gamma(f)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,l,y*y))
+                                *((1-2*skew2/pi)*CorSkew+2*skew2/pi)-2*skew2/pi);
+    vv=as.numeric(nuisance['sill'])*(nu/(nu-2)-mm*mm);
 }
 if(bivariate){}
 }
@@ -443,17 +455,18 @@ if(type=="Standard")  {
 
         fname <- "CorrelationMat_dis_tap"
         if(spacetime) fname <- "CorrelationMat_st_dis_tap"
-
         cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
           as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
            as.integer(NS),as.integer(min(n)),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+    
         varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
+
             ## updating the diagonal with variance  
   if(model %in% c(2,11)) { pg=pnorm(mu); vv=pg*(1-pg)*n; diag(varcov)=vv } 
-  if(model %in% c(14))   { pg=pnorm(mu); diag(varcov)=(1-pg)/pg^2 }        
-  if(model %in% c(16))   { pg=pnorm(mu); diag(varcov)=n*(1-pg)/pg^2 }
+  if(model %in% c(14))   { pg=pnorm(mu); vv=  (1-pg)/pg^2; diag(varcov)=vv }       
+  if(model %in% c(16))   { pg=pnorm(mu); vv=n*(1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      

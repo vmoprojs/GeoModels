@@ -180,8 +180,8 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
 {  
 ## gaussian=1 
 ## skew gaussian=10   
-## student =12
-## skewstudent =18
+## student =12  
+## skewstudent =18 
 ## gamma=21 
 ## weibull=26
 ## loglogistic=24
@@ -246,15 +246,16 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
 
            if(covmatrix$model==18) # skew student T
                          {
-                        vv=as.numeric(covmatrix$param['sill']) 
-                        nu=1/as.numeric(covmatrix$param['df'])
-                        sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
-                        w=sqrt(1-sk2)
-                        KK=2*sk2/pi
-                        D1=(nu-1)/2;D2=nu/2;
-                        corr2=(2*sk2/(pi*w^2+sk2*(pi-2)))*(sqrt(1-cc^2)+cc*asin(cc)-1)+w^2*cc/(w^2+sk2*(1-2/pi))  
-                        corri=(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-sk2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,nu/2,cc^2))*((1-KK)*corr2+KK)-KK) 
-                      }
+
+                  vv=as.numeric(covmatrix$param['sill']) 
+                  nu=1/as.numeric(covmatrix$param['df']); 
+                  sk=as.numeric(covmatrix$param['skew'])
+
+                  sk2=sk*sk;l=nu/2; f=(nu-1)/2; w=sqrt(1-sk2);y=cc;
+                  CorSkew=(2*sk2/(pi*w*w+sk2*(pi-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+sk2*(1-2/pi)) ;
+                  corri=(pi*(nu-2)*gamma(f)^2/(2*(pi*gamma(l)^2-sk2*(nu-2)*gamma(f)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,l,y*y))
+                                *((1-2*sk2/pi)*CorSkew+2*sk2/pi)-2*sk2/pi);
+                                       }
          if(covmatrix$model==27) {  # two piece StudenT
                         nu=1/as.numeric(covmatrix$param['df']);sk=as.numeric(covmatrix$param['skew'])
                         vv=as.numeric(covmatrix$param['sill'])
@@ -343,13 +344,13 @@ else    {
                                M=0      
                                }     
      if(covmatrix$model==18)  { #skew student T
-                               D1=(nu-1)/2;D2=nu/2;
-                               vvar= (nu/(nu-2) -  (nu*sk2/pi)*(gamma(D1)/gamma(D2))^2)  #skew stuuden t
-                               M=sqrt(vv*nu/pi)*sk*gamma(0.5*(nu-1))/gamma(0.5*nu)
+                              D1=(nu-1)*0.5; D2=nu*0.5;
+                              M=sqrt(vv)*sqrt(nu)*gamma(D1)*sk/(sqrt(pi)*gamma(D2));
+                              vvar=vv*(nu/(nu-2)-M*M);
                                }
      if(covmatrix$model==27)  { # two piece studentT
                               ttemp=gamma(0.5*(nu-1))/gamma(0.5*nu)
-                              vvar= vv*(nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(ttemp)^2)
+                              vvar= vv*(nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*gamma(ttemp)^2
                               M= - sqrt(vv)*2*sk*sqrt(nu/pi)*ttemp
                               } 
      if(covmatrix$model==29)  {vvar= vv*((1+3*sk2) - 8*sk2/pi ) # two piece Gaussian
@@ -401,7 +402,7 @@ krig_weights = t(MM$a)
 if(type_krig=='Simple'||type_krig=='simple')  {  
       if(!bivariate) {  ## space and spacetime simple kringing
                ###################################################
-               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))   ####gaussian, StudenT, two piece  skew gaussian bimodal
+               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37))   ####gaussian, StudenT, two piece  skew gaussian bimodal
               {
                      pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
               }
@@ -545,7 +546,7 @@ if(type=="Tapering"||type=="tapering")  {
 ###################### binomial  binomial negative and poisson #####################################
 ####################################################################################################################################
 
-if(covmatrix$model %in% c(2,11,14,19,30))
+if(covmatrix$model %in% c(2,11,14,19,30,16))
 {  
      if(type=="Standard"||type=="standard") {
 
@@ -555,8 +556,9 @@ if(covmatrix$model %in% c(2,11,14,19,30))
      kk=0
      if(covmatrix$model==2||covmatrix$model==11) kk=min(n)
      if(covmatrix$model==19) kk=min(nloc)
+     if(covmatrix$model==16) kk=n
 ## ojo que es la covarianza
-if(covmatrix$model %in% c(2,11,14,19))
+if(covmatrix$model %in% c(2,11,14,16,19))
     ## Computing correlation between the locations to predict and the locations observed
     ccorr=.C('Corr_c_bin',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
@@ -614,6 +616,15 @@ if(covmatrix$model %in% c(30))
               pp = (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2) }
             else{}   #tood
             if(mse) vvar=(1-k1)/k1^2   ### variance (possibly no stationary)
+                
+          }
+           if(covmatrix$model==16){    ###negative  binomial
+         p0=pnorm(mu0); pmu=pnorm(mu) 
+            if(!bivariate) ## space and spacetime
+            { k1=c(p0);k2=c(pmu); 
+              pp = n*(1-k1)/k1 + krig_weights %*% (c(dataT)-n*(1-k2)/k2) }
+            else{}   #tood
+            if(mse) vvar=n*(1-k1)/k1^2   ### variance (possibly no stationary)
                 
           }
 

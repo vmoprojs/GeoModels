@@ -1,4 +1,5 @@
-GeoCV=function(fit, K=100, n.fold=0.05, sparse=FALSE, which=1,seed=1)
+GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,
+                          maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)
 {
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
@@ -16,13 +17,14 @@ if(K>10000) stop("K is  too large")
 if(bivariate)
    {if(!(which==1||which==2))
           stop("which must be 1 or 2")}
-
+if(local) if(is.null(maxdist)) stop("maxdist for local kriging is missing")
 i=1
 print(paste("Starting iteration from 1 to",K," ..."))
+space=!spacetime&&!bivariate
 ############################################################
 ########### spatial case ###################################
 ############################################################
-if(!spacetime&&!bivariate)
+if(space)
 {
 N=length(fit$data)
 coords=cbind(fit$coordx,fit$coordy)
@@ -41,18 +43,23 @@ if(!is.null(X)) {
 # data and coord to predict
 data_to_pred  = data[-sel_data]
 loc_to_pred   = coords[-sel_data,]
-pr=GeoKrig(data=datanew, coordx=coordsnew,  
-	       corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
-	          model=fit$model, n=fit$n, #ok
-           param=as.list(c(fit$param,fit$fixed)), 
-           radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+if(!local) pr=GeoKrig(data=datanew, coordx=coordsnew,  
+	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+	            model=fit$model, n=fit$n, #ok
+              param=as.list(c(fit$param,fit$fixed)), 
+               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+if(local) pr=GeoKrigloc(data=datanew, coordx=coordsnew,  
+              corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+              model=fit$model, n=fit$n, #ok
+              maxdist=maxdist,
+              param=as.list(c(fit$param,fit$fixed)), 
+               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 err=data_to_pred-pr$pred
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
-#print(i)
-i=i+1
-}}
+i=i+1} ##end while
+}
 ############################################################
 ########### spatial bivariate case ###################################
 ############################################################

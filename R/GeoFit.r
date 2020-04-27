@@ -121,7 +121,13 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx)
       }
-
+     ##misspecified models
+    missp=FALSE 
+    if(model=="Gaussian_misp_Tukeygh"){model="Tukeygh";missp=TRUE}
+    if(model=="Gaussian_misp_Poisson"){model="Poisson";missp=TRUE}
+    if(model=="Gaussian_misp_StudentT"){model="StudentT";missp=TRUE}
+    if(model=="Gaussian_misp_SkewStudentT"){model="SkewStudentT";missp=TRUE}
+    ##################
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)
     if(initparam$bivariate) numtime=2
@@ -159,6 +165,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          score = fitted$score,
                          maxdist =maxdist,
                          maxtime = maxtime,
+                         missp=missp,
                          radius = radius,
                          spacetime = initparam$spacetime,
                          stderr = fitted$stderr,
@@ -178,6 +185,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
 print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   {
+
     if(x$likelihood=='Full'){
         method <- 'Likelihood'
         if(x$type=="Tapering") {claic <- "CLAIC";clbic <- "CLBIC";}
@@ -185,27 +193,31 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
       }
     else{
         method <- 'Composite-Likelihood'; claic <- 'CLAIC';clbic <- 'CLBIC';}
+  missp=""
+  if(x$missp) missp="misspecified"
   if(x$model=='Gaussian'||x$model=='Gauss'){ process <- 'Gaussian';model <- 'Gaussian'}
   if(x$model=='Gamma') { process <- 'Gamma'; model <- 'Gamma'}
-    if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
+  if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
-    if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian '}
-     if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
-  if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian '}
-    if(x$model=='Gaussian_misp_Tukeygh') { process <- 'Tukeygh'; model <- 'Misspecified Tukeygh '}
-    if(x$model=='Gaussian_misp_SkewStudentT') { process <- 'SkewStudentT'; model <- 'Misspecified Gaussian '}
+  if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian Poisson '}
+  if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
+  if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}
+  if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
+  if(x$model=='Gaussian_misp_Tukeygh') { process <- 'Tukeygh'; model <- 'Misspecified Gaussian Tukeygh '}
+  if(x$model=='Tukeygh') { process <- 'Tukeygh'; model <- 'Tukeygh '}
+  if(x$model=='Gaussian_misp_SkewStudentT') { process <- 'SkewStudentT'; model <- 'Misspecified Gaussian   SkewStudentT '}
+  if(x$model=='SkewStudentT') { process <- 'SkewStudentT'; model <- 'SkewStudentT'}
   if(x$model=='Logistic') { process <- 'Logistic'; model <- 'Logistic'}
-    if(x$model=='Tukeyh') { process <- 'Tukeyh'; model <- 'Tukeyh'}
+  if(x$model=='Tukeyh') { process <- 'Tukeyh'; model <- 'Tukeyh'}
   if(x$model=='Gamma2'){ process <- 'Gamma2'; model <- 'Gamma2'}
   if(x$model=='LogGauss'||x$model=='LogGaussian'){ process <- 'Log Gaussian'; model <- 'LogGaussian'}
   if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'Skew Gaussian';model <- 'SkewGaussian'}
-  if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
   if(x$model=='TwoPieceStudentT'){ process <- 'TwoPiece StudentT';model <- 'TwoPieceStudentT'}
   if(x$model=='TwoPieceTukeyh'){ process <- 'TwoPiece Tukeyh';model <- 'TwoPieceTukeyh'}
   if(x$model=='TwoPieceGaussian'||x$model=='TwoPieceGauss'){ process <- 'TwoPiece Gaussian';model <- 'TwoPieceGaussian'}
   if(x$model=='SinhAsinh'){ process <- 'SinhAsinh'; model <- 'SinhAsinh'}    
   if(x$model=='Wrapped'){ process <- 'Wrapped'; model <- 'Wrapped'}
-    if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}
+  if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}
   if(x$model=='Binomial'){ process <- 'Binomial';model <- 'Binomial'}
   if(x$model=='Kumaraswamy'){ process <- 'Kumaraswamy';model <- 'Kumaraswamy'}
   if(x$model=='Beta'){ process <- 'Beta';model <- 'Beta'}
@@ -218,9 +230,8 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='PoisBinNeg'){ process <- 'Poisson NegBinomial';model <- 'PoisBinNeg'}    
   if(x$bivariate){ biv <- 'bivariate';x$numtime=1}
   else { biv <- 'univariate'}                       
-
     cat('\n##################################################################')
-    cat('\nMaximum', method, 'Fitting of', process, 'Random Fields\n')
+    cat('\nMaximum', missp, method, 'Fitting of', process, 'Random Fields\n')
     cat('\nSetting:', x$likelihood, method, '\n')
     cat('\nModel:', model, '\n')
     cat('\nType of the likelihood objects:', x$type, x$method,'\n')

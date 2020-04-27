@@ -432,6 +432,8 @@ double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11);
 double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11);
 double aux_euv_binomneg (int N, double p1,double p2,double p11);
 double corr_binomneg (int N, double p1,double p2,double p11);
+double psi(int i, int j, double p1, double p2, double p12);
+double cov_binom_neg(int m,double p11,double p1, double p2);
 double biv_poisbin (int NN,  int u, int v, double p01,double p10,double p11);
 double biv_poisbinneg(int NN, int u, int v, double p01,double p10,double p11);
 
@@ -469,7 +471,8 @@ double marg_pois(int n,double x,double p);
 double marg_geom(int x,double p);
 
 double corr_pois(double rho,double mi,double mj);
-double corr_tukeygh(double rho,double eta,double tail,double mu, double vv);
+double corr_tukeygh(double rho,double eta,double tail);
+double corr_skewt(double corr,double df,double skew);
 double corr_pois1(double rho,double lambda1,double lambda2);
 
 double marg_p(double categ_0,double psm,int *model,int n);

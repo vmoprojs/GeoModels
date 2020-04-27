@@ -23,11 +23,12 @@ else dd=c(t(fit$data))
 N= length(dd)
 probabilities= (1:N)/(N+1)
 
+q_e=quantile(dd,probabilities)
 #######################################
 #######################################
 if(model %in% c("Gaussian")) {
   q_t=qnorm(probabilities)
-  q_e=quantile(dd,probabilities)
+
   plot(q_t,q_e,main="Gaussian qq-plot",xlab=xlab,ylab=ylab)
   #qqnorm(dd,main="Gaussian qq-plot",xlab=xlab,ylab=ylab)
 }
@@ -36,25 +37,29 @@ if(model %in% c("SkewGaussian"))
 {
    omega=as.numeric(sqrt((pp["skew"]^2 + pp["sill"])/pp["sill"]))
    alpha=as.numeric(pp["skew"]/pp["sill"]^0.5)
-
    q_t=sn::qsn(probabilities,xi=0,omega= as.numeric(omega),alpha= as.numeric(alpha))  
-   q_e=quantile(dd,probabilities)
   plot(q_t,q_e,main="Skew Gaussian qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
 if(model%in%c("StudentT","Gaussian_misp_StudentT")) 
 {
   q_t=qt(probabilities,df=as.numeric(round(1/pp["df"])))
-  q_e=quantile(dd,probabilities)
   plot(q_t,q_e,main="t qq-plot",xlab=xlab,ylab=ylab)
       #limma::qqt(dd,df=as.numeric(round(1/pp["df"])),main="t qq-plot",xlab=xlab,ylab=ylab)
+}
+#######################################
+if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT")) 
+{
+  alpha=as.numeric(pp["skew"])
+  nu=as.numeric(round(1/pp["df"]))
+  q_t=sn::qst(probabilities, xi=0, omega=1, alpha=alpha, nu=nu)
+  plot(q_t,q_e,main="skewt qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
 if(model %in% c("Weibull"))
 {
    shape=pp["shape"]
    q_t=qweibull(probabilities,shape=shape,scale=1/(gamma(1+1/shape )))
-   q_e=quantile(dd,probabilities)
    plot(q_t,q_e, main ="Weibull qq-plot ",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -62,7 +67,6 @@ if(model %in% c("Gamma"))
 {
    shape=pp["shape"]
    q_t=qgamma(probabilities,shape=shape/2,rate=shape/2)
-   q_e=quantile(dd,probabilities)
    plot(q_t,q_e, main ="Gamma qq-plot ",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -70,7 +74,6 @@ if(model %in% c("LogGaussian"))
 {
    SS=pp["sill"]; mm=pp["mean"]
    q_t = qlnorm(probabilities, mm/exp(SS/2), sqrt(SS/exp(SS)))
-   q_e=quantile(dd,probabilities)
    plot(q_t,q_e,xlab=xlab,ylab=ylab,main = "LogGaussian qq-plot")
 }
 #######################################
@@ -88,7 +91,6 @@ if(model %in% c("SinhAsinh"))
 tail = as.numeric(pp["tail"])
 skew = as.numeric(pp["skew"])
 q_t=sinh(1/tail * asinh(qnorm(probabilities))+skew/tail)
-q_e=quantile(dd,probabilities)
 plot(q_t,q_e,main="Sas qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -97,7 +99,14 @@ if(model %in% c("Tukeyh"))
 tail = as.numeric(pp["tail"])
 uu=qnorm(probabilities)
 q_t=uu*exp(0.5*tail*uu^2)
-q_e=quantile(dd,probabilities)
+plot(q_t,q_e,main="Tukey-h qq-plot",xlab=xlab,ylab=ylab)
+}
+#######################################
+if(model %in% c("Tukeygh","Gaussian_misp_Tukeygh")) 
+{
+tail = as.numeric(pp["tail"]);skew = as.numeric(pp["skew"]);
+uu=qnorm(probabilities)
+q_t=(exp(skew*uu)-1)*exp(0.5*tail*uu^2)/skew
 plot(q_t,q_e,main="Tukey-h qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -115,7 +124,6 @@ qtpGaussian = function(x,skew){
 }
 skew = as.numeric(pp["skew"])
 q_t =qtpGaussian(probabilities,skew)
-q_e=quantile(dd,probabilities)
 plot(q_t,q_e,main="Two-Piece Gaussian qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -140,7 +148,6 @@ delta= as.numeric(pp["shape"])
 f = function(x) ptpbimodal(x,skew = skew,delta=delta,df=df)
 f.inv = GoFKernel::inverse(f,lower = -4,upper = 4)
 q_t = sort(as.numeric(lapply(probabilities,f.inv)))
-q_e=quantile(dd,probabilities)
 plot(q_t,q_e,main="Two-Piece Bimodal qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -159,7 +166,6 @@ qtpt = function(x,skew,df){
 skew = as.numeric(pp["skew"])
 df   = 1/as.numeric(pp["df"])
 q_t =qtpt(probabilities,skew,df)
-q_e=quantile(dd,probabilities)
 plot(q_t,q_e,main="Two-Piece Student qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
@@ -184,7 +190,6 @@ qtptukey = function(x,skew,tail){
 skew= as.numeric(pp["skew"])
 tail= as.numeric(pp["tail"])
 q_t =qtptukey(probabilities,skew,tail)
-q_e=quantile(dd,probabilities)
 plot(q_t,q_e,main="Two-Piece Tukey-h qq-plot",xlab=xlab,ylab=ylab)
 }
 ########################################

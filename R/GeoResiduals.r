@@ -35,41 +35,17 @@ mu=fit$X%*%beta2
 #################################
 if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
-### 
+
+
+###  positive multiplicative models
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(c(mu))
-
-
-
-
-
-
-### 
-if(model %in% c("Gaussian","Logistic","TwoPieceGaussian","TwoPieceTukeyh", "Tukeyh","SinhAsinh",
-         "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
-         "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
+### additive  models  on the real line
+if(model %in% c("Gaussian","SkewGaussian","Logistic", 
+               "Tukeyh","SinhAsinh","Tukeygh","Gaussian_misp_Tukeygh",
+               "StudentT",  "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT","SkewStudentT",
+               "TwoPieceGaussian","TwoPieceTukeyh","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
 res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
-###
-if(model %in% c("SkewGaussian"))  
-{
-#vskew=as.numeric(param['sill']) + as.numeric(param['skew'])^2
-vskew=as.numeric(param['sill'])
-res1=(dd-c(mu))/sqrt(vskew)
-}
-
-#if(model %in% c("Gaussian_misp_StudentT"))  
-#{vv=param['sill']*(1/param['df']-2)/(1/param['df'])
-#res1=(dd-c(mu))/sqrt(vv)
-#}
-
-#if(model %in% c("Gaussian_misp_SkewStudentT"))
-#{
-
-#df=1/param['df']
-#kk=(df/(df-2)-(df*gamma(0.5*(df-1))^2*param['skew']^2)/(pi*gamma(df/2)^2))
-#vv=param['sill']/kk
-#res1=(dd-c(mu - sqrt(param['sill'])*sqrt(df)*gamma(0.5*(df-1))*param['skew']/(sqrt(pi)*gamma(df/2))))/sqrt(vv)
-#}
 
 
 #if(binomial or binomialneg or geom or bernoulli)
@@ -87,34 +63,32 @@ fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
-if(model %in% c("Gaussian","Logistic","Tukeyh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT",
+if(model %in% c("Gaussian","Logistic","Tukeyh","Tukeygh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_Tukeygh",
          "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh","TwoPieceBimodal"))
 {fit$param['sill']=1;fit$param['mean']=0}
 
 
-
-
-
 if(model %in% c("SkewGaussian")) 
 {param['mean']=0;
- fit$param['skew']=as.numeric(param['skew'])/sqrt(vskew)
+ fit$param['skew']=as.numeric(param['skew'])/sqrt(as.numeric(param['sill']))
  fit$param['sill']=1
 }
+
+if(model %in% c("Gaussian_misp_SkewStudentT","SkewStudentT")) 
+{param['mean']=0;
+ fit$param['skew']=as.numeric(param['skew'])
+ fit$param['df']= fit$param['df']
+ fit$param['sill']=1
+}
+
+
 fit$param=fit$param[nm]
 fit$fixed=fit$fixed[nf]
-
-
 
 ### deleting NA
 fit$param=fit$param[!is.na(fit$param)]
 fit$fixed=fit$fixed[!is.na(fit$fixed)]
 
-
-
-#if(model %in% c("Gaussian_misp_StudentT","StudentT")) 
-#{
-#     fit$param['df']=as.numeric(param['df'])
-#}
 
 ### formatting data
 if(fit$spacetime) 
@@ -212,6 +186,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          score = fit$score,
                          maxdist =fit$maxdist,
                          maxtime = fit$maxtime,
+                         missp=fit$missp,
                          radius = fit$radius,
                          spacetime = fit$spacetime,
                          stderr = fit$stderr,

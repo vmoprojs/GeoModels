@@ -28,74 +28,60 @@ GeoNeighborhood = function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
     else     coords=cbind(coordx,coordy)  
     }
 
-############### total dimension #####
-NN=nrow(coords);
+############### total spatial dimension #####
 Nloc=nrow(loc)
-
 #####################################
 sel_tt=NULL
 colnames(loc)=NULL;colnames(coords)=NULL;
-a_s=rbind(loc,coords)
-## type of dist
-if(distance=="Eucl") dd_s=as.matrix(dist(a_s))
-if(distance=="Geod") dd_s=fields::rdist.earth(a_s,miles=F,R=radius)
-if(distance=="Chor") dd_s=2*sin(fields::rdist.earth(a_s,miles=F,R=radius)/2)
-space=!spacetime#&!bivariate
-
+space=!spacetime
+##################################################################################
 ## spatial
 if(space){
- sel=dd_s<maxdist
- ss=matrix((sel)[1:(Nloc),(Nloc+1):(NN+Nloc)],nrow=Nloc,ncol=NN)
  sel_ss=list()
  data_sel=list()
  XX=list()
- numpoints=double(Nloc)
+ numpoints=list()
+  out= fields::fields.rdist.near( coords,loc, delta=maxdist)
+  out$ind=matrix(out$ind,ncol=2)
+  ## checkinf if  there is at leas one empty neigh...
  for(i in 1:Nloc)
  {
- sel_ss[[i]]=coords[ss[i,],]
- numpoints[i]=nrow(sel_ss[[i]])
- data_sel[[i]]=data[ss[i,]]
- if(!is.null(X)) XX[[i]]=X[ss[i,],]
+   ss=(as.numeric(out$ind[,2]==i))
+   a=out$ind[,1]*ss; sel=a[a>0]
+   sel_ss[[i]]=coords[sel,]
+   numpoints[[i]]=nrow(sel_ss[[i]])
+   data_sel[[i]]=data[sel]
+   if(!is.null(X)) XX[[i]]=X[sel,]
 }
  #if(dim(as.matrix(sel_ss,nrow=dimat2))[1]==0) stop("spatial distance for local kringing is too small")
 }
-## space-time
+#####################################################################################
 if(spacetime)
 {
-  ## spatial  part
 
-  sel1=dd_s<maxdist
-  ss=matrix((sel1)[1:(Nloc),(Nloc+1):(NN+Nloc)],nrow=Nloc,ncol=NN)
-  sel_ss=list()
-  data_sel1=X_sel1=list()
+NN=nrow(coords)
+TT=length(coordt)
+Nloc=nrow(loc)
+Tloc=length(time)
+
+out_s<- fields::fields.rdist.near( coords,loc, delta=maxdist)
+out_s$ind=matrix(out_s$ind,ncol=2)
+out_t<- fields::fields.rdist.near( coordt,time, delta=maxtime)
+out_t$ind=matrix(out_t$ind,ncol=2)
+
+sel_ss=numpoints=data_sel=sel_tt=list()
   
-  
-  for(i in 1:Nloc)  {sel_ss[[i]]=coords[ss[i,],];  
-                    data_sel1[[i]]=as.matrix(data[,ss[i,]])
-                     if(!is.null(X)) X_sel1[[i]]=as.matrix(X[,ss[i,]])
-                    }
-  ######## temporal  part
-  TT=length(coordt)
-  Tloc=length(time)
-  
-  a_t=c(time,coordt);
-  dd_t=as.matrix(dist(a_t))
-  sel2=dd_t<maxtime
-  tt=matrix((sel2)[1:(Tloc),(Tloc+1):(TT+Tloc)],nrow=Tloc,ncol=TT)
-  sel_tt=list()
-  numtime=double(Tloc)
-   for(i in 1:Tloc)  sel_tt[[i]]=coordt[which(tt[i,]>0)]
-XX=list()
-k=1
-data_sel=list()
-numtime=numpoints=double(Nloc*Tloc)
-for(i in 1:Nloc){
-for(j in 1:Tloc){
-data_sel[[k]]=as.matrix(data_sel1[[i]][which(tt[j,]>0),])
- numtime[k]=nrow(data_sel[[k]])
- numpoints[k]=ncol(data_sel[[k]])
- XX[[k]]=
-k=k+1
+  k=1
+ for(i in 1:Nloc){
+   ss=(as.numeric(out_s$ind[,2]==i))
+   a=out_s$ind[,1]*ss; sel_s=a[a>0]
+   sel_ss[[i]]=matrix(coords[sel_s,],ncol=2)
+  for(j in 1:Tloc){
+    tt=(as.numeric(out_t$ind[,2]==j))
+    b=out_t$ind[,1]*tt; sel_t=b[b>0]
+   sel_tt[[j]]=coordt[sel_t]
+ data_sel[[k]]=data[sel_t,sel_s]
+ k=k+1
 }}
 
 

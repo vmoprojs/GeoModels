@@ -428,8 +428,8 @@ if(model %in% c("SkewGaussian","SkewGauss"))   {
 if(model %in% c("SkewStudentT"))   { 
      sim=NULL
      for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
-        aa= sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
-        sim=mm+sqrt(vv)*(aa/sqrt(rowSums(sim)/(k-2)))
+        bb= sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
+        aa=mm+sqrt(vv)*(bb/sqrt(rowSums(sim)/(k-2)))
         }    
 ################################################        
 if(model %in% c("StudentT"))   { 
@@ -614,10 +614,10 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
         }      
 #################################################################################
  if(model %in% c("Tukeygh"))   { 
-     if(!sk && !tl) sim= mm+sqrt(vv)*sim
+     if(!sk && !tl) sim= mm+sqrt(vv)* sim
      if(!sk && tl)  sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)
      if(!tl && sk)  sim= mm+sqrt(vv)* (exp(sk*sim)-1)/sk
-     if(tl&&sk)     sim=mm+sqrt(vv)*(exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk        
+     if(tl&&sk)     sim= mm+sqrt(vv)* (exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk        
     }
 ############################################################################## 
   if(model %in% c("Tukeyh"))   { 
@@ -632,11 +632,7 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
       sim= mm+sqrt(vv)*(aa*bb)
    } 
 #########################################
-  if (model %in% c("SinhAsinh")) 
-    { 
-      trans=sinh( (1/tl)*(asinh(sim)+sk))
-      sim=mm+sqrt(vv)*trans
-    }
+  if (model %in% c("SinhAsinh")) sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk))
  ### formatting data
   if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

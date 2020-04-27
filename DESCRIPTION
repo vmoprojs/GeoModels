@@ -4,8 +4,7 @@ Date: 2018-01-15
 Title: A Package for Geostatistical Gaussian and non Gaussian Data Analysis
 Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
                      email = "moreno.bevilacqua@uv.cl"),
-              person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl"),
-              person("Christian", "Caamaño", role = "aut",email = "chcaaman@ubiobio.cl"))
+              person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl"))
 Author: Moreno Bevilacqua [aut, cre],
   Víctor Morales-Onate [aut]
 Maintainer: Moreno Bevilacqua <moreno.bevilacqua@uv.cl>
