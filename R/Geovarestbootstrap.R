@@ -13,7 +13,7 @@
 ####################################################
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",
-  lower=NULL, upper=NULL, seed=1)
+  lower=NULL, upper=NULL,memdist=TRUE, seed=1)
 {
 
 k=1;res=NULL;#H=list();
@@ -34,7 +34,7 @@ data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
 
 estimation=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   lower=lower,upper=upper,
+   lower=lower,upper=upper,memdist=memdist,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,

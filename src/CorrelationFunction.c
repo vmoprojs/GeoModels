@@ -3483,7 +3483,7 @@ double Variogram(int *cormod, double h, double u, double nugget, double var, dou
 
 // Vector of spatio-temporal correlations:
 void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u)
+                     double *nuis,double *par, double *u,int *N)
 {
   int i,j,t=0;
   double ai=0.0,aj=0.0,p1=0.0,p2=0.0,psj=0.0;
@@ -3492,15 +3492,8 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
       if(*model==1||*model==10||*model==12||*model==21||*model==30||*model==36||*model==18||
       *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38
       ||*model==39||*model==41||*model==35||*model==37||*model==9||*model==41) 
-
-      rho[t]=CorFct(cormod, h[i], u[j], par,0,0);  // gaussian 
-      //if(*model==12)                      rho[t]=R_pow(CorFct(cormod, h[i], u[j], par,0,0),2);  // chisq case
-     // if(*model==10)  // skew gaussian case
-      //{
-      //    cc=CorFct(cormod,h[i], u[j],par,0,0);
-      //    rho[t]=((2*R_pow(nuis[3],2)/M_PI)*(sqrt(1-cc*cc) + cc*asin(cc)-1) + cc*nuis[2])/(nuis[2]+R_pow(nuis[3],2)*(1-2/M_PI));
-     // }
-      /***************************************/
+                                    rho[t]=CorFct(cormod, h[i], u[j], par,0,0);   
+           /***************************************/
       if(*model==2||*model==11||*model==19||*model==14||*model==16)   // binomial  type I or  II or geometric case
       {
           ai=mean[i];aj=mean[j];
@@ -3509,7 +3502,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
 
           if(*model==2||*model==11||*model==19) rho[t]=(psj-p1*p2)/sqrt(p1*p2*(1-p1)*(1-p2));  // binomyal type I II
           if(*model==14)                        rho[t]= ((psj-p1*p2)/((-psj+p1+p2)*p1*p2))/(sqrt((1-p1)*(1-p2))/(p1*p2));  //covar12/sqrt(var1var2)
-          if(*model==16)                        rho[t]=cov_binom_neg(1,psj,p1,p2)/sqrt(1*(1-p1)*(1-p2)*R_pow(p1,-2)*R_pow(p2,-2));
+          if(*model==16)                        rho[t]=cov_binom_neg(N[0],psj,p1,p2)/(N[0]* sqrt((1-p1)*(1-p2))/(p1*p2));
       }
       /***************************************/
       t++;}
@@ -3520,7 +3513,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
 
 // Vector of spatio-temporal correlations:
 void VectCorrelation_biv(double *rho, double *vario,int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u)
+                     double *nuis,double *par, double *u,int *N)
 {
     int i,j,p,t=0;
     for(j=0;j<2;j++)

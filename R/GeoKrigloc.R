@@ -10,8 +10,12 @@ GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, co
 
 ## X and more stuuffs..
 spacetime=FALSE
+bivariate=FALSE
 if(!is.null(coordt)) spacetime=TRUE
-space=!spacetime
+if(!is.null(dim(data))) if(nrow(data)==2&&is.null(coordt)) bivariate=TRUE
+
+
+space=!spacetime&&!bivariate
 
 coords=coordx
 if(!is.null(coordy)){
@@ -21,6 +25,7 @@ if(!is.null(coordy)){
 
 Nloc=nrow(loc)
 Tloc=length(time)
+if(bivariate)  Tloc=1
 
 
 #####################################################################
@@ -31,6 +36,7 @@ if(space){
          for(i in 1: Nloc)
           {
             pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
+                X=neigh$X,
                 model=model, param=param,mse=mse, data=neigh$data[[i]])
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
@@ -47,19 +53,34 @@ if(spacetime)
          for(i in 1: Nloc){
           for(j in 1: Tloc){
             pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],
+               X=neigh$X,
              corrmodel=corrmodel,distance=distance, model=model, param=param,mse=mse, data=neigh$data[[k]])
             res1=c(res1,pr$pred)
             res2=c(res2,pr$mse)
             k=k+1
           }}
 }
-#if(bivariate)
-#{}
+if(bivariate)
+{ 
+neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,bivariate=TRUE)
+        res1=res2=NULL
+         for(i in 1: Nloc)
+          {
+            pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
+                X=neigh$X,which=which,
+                model=model, param=param,mse=mse, data=neigh$data[[i]])
+                res1=c(res1,pr$pred)
+                res2=c(res2,pr$mse)
+          }
+}
 varpred=NULL
-if(space)     {pred=c(res1);
-              if(mse) varpred=c(res2)}
-if(spacetime) {pred=matrix(res1,ncol=Nloc,nrow=Tloc);
-               if(mse) varpred=matrix(res2,ncol=Nloc,nrow=Tloc)}
+  if(spacetime||bivariate) {
+            pred=matrix(t(res1),nrow=Tloc,ncol=Nloc);
+            varpred=matrix(c(res2),nrow=Tloc,ncol=Nloc);
+    } 
+  else{pred=c(res1);varpred=c(res2)}
+              
+
 if(Tloc==1)  {c(pred);c(varpred)}
     # Return the objects list:
     Kg = list(  #  bivariate=bivariate,

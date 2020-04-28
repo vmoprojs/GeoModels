@@ -8,8 +8,8 @@ The procedure select a spatio (temporal) neighborhood for
 }
 
 \usage{
-GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, distance="Eucl", grid=FALSE, 
-                  loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
+               distance="Eucl", grid=FALSE, loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -31,6 +31,7 @@ GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, distanc
   \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
        containing dynamical (in time) spatial coordinates. Optional argument, the default is \code{NULL}
     }
+   \item{bivariate}{If TRUE then data  is considered as spatial  bivariate data.}
   \item{distance}{String; the name of the spatial distance. The default
     is \code{Eucl}, the euclidean distance. See the Section
     \bold{Details}  of \code{\link{GeoFit}}.}
@@ -125,5 +126,23 @@ neigh=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
 neigh$coordx[[1]]
 neigh$coordt[[1]]
 neigh$data[[1]]
+
+###################################################
+#### Example: bivariate  spatial neighborhood #####  
+###################################################
+
+set.seed(78)
+coords=matrix(runif(100),50,2)
+
+param=list(mean_1=0,mean_2=0,scale=0.12,smooth=0.5,
+           sill_1=1,sill_2=1,nugget_1=0,nugget_2=0,pcol=0.5)
+
+data_all = GeoSim(coordx=coords,corrmodel="Bi_matern_sep",
+                 param=param)$data
+##  two location to predict
+loc_to_pred=matrix(runif(4),2,2)
+
+neigh=GeoNeighborhood(data_all, coordx=coords,bivariate=TRUE,
+                  loc=loc_to_pred,maxdist=0.1)
 
 }

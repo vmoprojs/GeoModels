@@ -12,8 +12,10 @@
      \item{K}{The number of iterations in cross-validation.}
        \item{n.fold}{Numeric; the percentage of data to be deleted (and predicted) in the cross-validation procedure.}
        \item{local}{Logical; If local is TRUE, then local kriging is performed. The default is FALSE.}
-         \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood.}
-       \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood.}
+         \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood
+         if local kriging is performed.}
+       \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood
+       if local kriging is performed.}
        \item{sparse}{Logical; if \code{TRUE} kriging is computed with sparse matrices algorithms 
           using spam package. Default is FALSE. It should be used with compactly supported covariances.} 
       \item{which}{Numeric; In the case of bivariate (tapered) cokriging it indicates which variable to predict.
@@ -22,9 +24,12 @@
      different models in terms  of n-fold  kriging cross-validation must be performed using the same seed}
 }
 
-\value{  
-  Returns numeric vectors of root mean squared error (RMSE) and 
-  mean absolute errror (MAE) 
+\value{
+  Returns an object  containing the following informations:
+  \item{predicted}{A list  of  the predicted values   in the CV procedure;}
+  \item{data_to_pred}{A list  of  the data to predict  in the CV procedure;}
+   \item{mae}{The vector of mae in the CV procedure;}
+  \item{rmse}{The vector of rmse in the CV procedure;}
 }
 
 

@@ -48,18 +48,18 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
         return(p$rho)
     }
                
-    CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param)
+    CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param,N)
     {
        if(!bivariate) {
                              p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
                              as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model),as.double(nuisance),as.double(param),
-                             as.double(lagt), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                             as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
                              cc=p$corr
                     }
         else    {
                              p=.C('VectCorrelation_biv', corr=double(numlags*4),vario=double(numlags*4), as.integer(corrmodel), as.double(lags),
                              as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
-                             as.double(lagt), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                             as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
                              cc=c(p$corr,p$vario)   
 
                     }
@@ -70,7 +70,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     # Pratical range in the Gaussian case:
     PracRangeNorm <- function(corrmodel, lags, lagt, nuisance, numlags, numlagt, param, pract.range)
     { 
-        return(nuisance["sill"]*(1-nuisance["nugget"])*CorrelationFct(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,CkModel(fitted$model),nuisance, param)
+        return(nuisance["sill"]*(1-nuisance["nugget"])*CorrelationFct(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,CkModel(fitted$model),nuisance, param,fitted$n)
             -(nuisance["sill"]*(1-pract.range)))
     
     }
@@ -127,12 +127,13 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     binomial <- model==11
     binomial2 <- model==19
     geom <- model==14
+    binomialneg<-model==16
     tukeyh<- model ==34
     poisson<- model==30||model==36
     loglogistic <- model==24
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||geom||tukeyh||twopiecebimodal||skewstudentT
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||geom||tukeyh||twopiecebimodal||skewstudentT
             ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-3
     # lags associated to empirical variogram estimation
@@ -214,7 +215,7 @@ if(!bivariate) {
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
    #print(nui)
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
-                                     CkModel(fitted$model), nui,param)
+                                     CkModel(fitted$model), nui,param,fitted$n)
 
     # Gaussian random field:
     if(gaussian){
@@ -423,12 +424,13 @@ if(!bivariate) {
                      }
                   }
    #                   
-   if(binary||binomial||binomial2||geom) {
+   if(binary||binomial||binomial2||geom||binomialneg) {
                     if(bivariate) {}
                     if(!bivariate) {          
                            pp=pnorm(mu)
                            if(binary||binomial||binomial2) vv=min(fitted$n)*pp*(1-pp)
                            if(geom)             vv=(1-pp)/pp^2;
+                           if(binomialneg)      vv=(fitted$n)*(1-pp)/pp^2;
                            covariance=vv*correlation
                            variogram=vv*(1-correlation)}
                    }
@@ -624,6 +626,7 @@ if(!bivariate) {
             if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(poisson) vvv=exp(mm['mean'])
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
+            if(binomialneg)     vvv= fitted$N*(1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
             if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)

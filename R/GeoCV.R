@@ -21,6 +21,8 @@ if(local) if(is.null(maxdist)) stop("maxdist for local kriging is missing")
 i=1
 print(paste("Starting iteration from 1 to",K," ..."))
 space=!spacetime&&!bivariate
+
+dtp=pred=list()
 ############################################################
 ########### spatial case ###################################
 ############################################################
@@ -36,6 +38,7 @@ sel_data = sample(1:N,round(N*(1-n.fold)))
 # data and coord used for prediction
 datanew   = data[sel_data]
 coordsnew = coords[sel_data,]
+
 if(!is.null(X)) {
                 X=fit$X[sel_data,]
                 Xloc=fit$X[-sel_data,]
@@ -43,6 +46,8 @@ if(!is.null(X)) {
 # data and coord to predict
 data_to_pred  = data[-sel_data]
 loc_to_pred   = coords[-sel_data,]
+
+dtp[[i]]=data_to_pred
 if(!local) pr=GeoKrig(data=datanew, coordx=coordsnew,  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
 	            model=fit$model, n=fit$n, #ok
@@ -53,7 +58,8 @@ if(local) pr=GeoKrigloc(data=datanew, coordx=coordsnew,
               model=fit$model, n=fit$n, #ok
               maxdist=maxdist,
               param=as.list(c(fit$param,fit$fixed)), 
-               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+              radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+pred[[i]]=pr$pred
 err=data_to_pred-pr$pred
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
@@ -102,6 +108,7 @@ if(which==2) {
 datanew=list();datanew[[1]]=data1;datanew[[2]]=d2;
 coordsnew=list();coordsnew[[1]]=coords1;coordsnew[[2]]=cc2;
             }
+dtp[[i]]=data_to_pred
 #####################################
 pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
 	       corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
@@ -109,7 +116,7 @@ pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
            param=as.list(c(fit$param,fit$fixed)), 
            radius=fit$radius, sparse=sparse,   time=NULL, 
              which=which, X=X,Xloc=Xloc) #ok    
-
+pred[[i]]=pr$pred
 err=data_to_pred-pr$pred  
    
 N2=length(err)
@@ -169,11 +176,7 @@ mae= c(mae,      sum(abs(err))/N2)
 #print(i)
 i=i+1
 }
-
-
-
-
 } ## end spacetime
 
-return(list(rmse=rmse,mae=mae))
+return(list(rmse=rmse,mae=mae,predicted=pred,data_to_pred=dtp))
 }

@@ -1,5 +1,5 @@
-GeoNeighborhood = function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, distance="Eucl", grid=FALSE, 
-                  loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+GeoNeighborhood = function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
+                  distance="Eucl", grid=FALSE, loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 {
   XX=NULL
   numtime=1
@@ -7,19 +7,20 @@ GeoNeighborhood = function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
   sel_tt=1
   if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
   if(!is.matrix(loc))   stop("loc parameter must be a matrix")
+  if(!is.logical(bivariate))   stop("bivariate must be logical")
     #if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")
   spacetime=FALSE
   corrmodel="Exponential"
   
   if(!is.null(coordt)) {spacetime=TRUE;corrmodel="Exp_Exp"}
   if(spacetime) if(!is.vector(time))  stop("time parameter is missing")
-  checkinput = CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
-                             NULL, grid, 'Marginal', maxdist, maxtime, 'Gaussian', 1,
-                              'Nelder-Mead', NULL, radius, NULL, NULL, NULL, 
-                          'Pairwise', FALSE, 'SubSamp', FALSE, X)
-  if(!is.null(checkinput$error)) stop(checkinput$error)
-  spacetime_dyn=FALSE
-  if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
+ # checkinput = CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
+ #                            NULL, grid, 'Marginal', maxdist, maxtime, 'Gaussian', 1,
+ #                             'Nelder-Mead', NULL, radius, NULL, NULL, NULL, 
+ #                         'Pairwise', FALSE, 'SubSamp', FALSE, X)
+ # if(!is.null(checkinput$error)) stop(checkinput$error)
+  dyn=FALSE
+  if(!is.null(coordx_dyn))  dyn=TRUE
     
 ## handling spatial coordinates
     if(is.null(coordy)) coords=as.matrix(coordx)
@@ -33,14 +34,12 @@ Nloc=nrow(loc)
 #####################################
 sel_tt=NULL
 colnames(loc)=NULL;colnames(coords)=NULL;
-space=!spacetime
+space=!spacetime&&!bivariate
 ##################################################################################
 ## spatial
 if(space){
- sel_ss=list()
- data_sel=list()
- XX=list()
- numpoints=list()
+ sel_ss=data_sel=numpoints=XX=list()
+
   out= fields::fields.rdist.near( coords,loc, delta=maxdist)
   out$ind=matrix(out$ind,ncol=2)
   ## checkinf if  there is at leas one empty neigh...
@@ -83,9 +82,31 @@ sel_ss=numpoints=data_sel=sel_tt=list()
  data_sel[[k]]=data[sel_t,sel_s]
  k=k+1
 }}
-
-
 }
+
+#####################################################################################
+if(bivariate)
+{
+NN=nrow(coords)
+Nloc=nrow(loc)
+if(dyn) coords=rbind(coords,coords)
+
+out<- fields::fields.rdist.near( coords,loc, delta=maxdist)
+out$ind=matrix(out$ind,ncol=2)
+
+sel_ss=numpoints=data_sel=sel_tt=XX=list()
+
+ for(i in 1:Nloc){
+   ss=(as.numeric(out$ind[,2]==i))
+   a=out$ind[,1]*ss; sel=a[a>0]
+   sel_ss[[i]]=coords[sel,]
+   numpoints[[i]]=ncol(sel_ss[[i]])
+   data_sel[[i]]=matrix(data[,sel],nrow=2)
+   if(!is.null(X)) XX[[i]]=X[c(sel,2*sel),]
+                }
+}
+
+if(length(XX)==0) XX=NULL
 return(list(data=data_sel,coordx=sel_ss,coordt=sel_tt,distance=distance, 
       numpoints=numpoints,numtime=numtime,radius=radius,spacetime=spacetime,X=XX))
 } 

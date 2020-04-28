@@ -25,8 +25,8 @@
 #define MAXLGM 2.556348e305
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
-
 #include <stdbool.h>
+
 
 
 
@@ -680,9 +680,9 @@ void GradVarioFct(double vario, int *cormod, double *eps, int *flag,
           double *grad, double lag, double *par, double tsep);
 void TapVectCorrelation(double *rho,int *cormod,double *tdists,int *ntdists,double *nuis,double *par);
 void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u);
+                     double *nuis,double *par, double *u,int *N);
 void VectCorrelation_biv(double *rho, double *vario,int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u);
+                     double *nuis,double *par, double *u,int *N);
 
 
 double Variogram(int *cormod, double h, double u, double nugget, double var, double *par);
@@ -1256,8 +1256,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
-
 
 
 

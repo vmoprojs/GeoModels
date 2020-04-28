@@ -165,7 +165,6 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     ###############################################################
     if((spacetime||bivariate)&&spacetime_dyn) dataT=t(unlist(data)) 
     else dataT=t(data)
-
     if(bivariate){ X11=X[1:covmatrix$ns[1],]
                    X22=X[(covmatrix$ns[1]+1):(covmatrix$ns[1]+covmatrix$ns[2]),]               
                    if(!is.null(Xloc))
@@ -609,16 +608,7 @@ if(covmatrix$model %in% c(30))
           if(mse)    vvar=nloc*p0*t(1-p0) ### variance (possibly no stationary)   
           }
          ##########################################################
-       if(covmatrix$model==14){    ###geometric
-         p0=pnorm(mu0); pmu=pnorm(mu) 
-            if(!bivariate) ## space and spacetime
-            { k1=c(p0);k2=c(pmu); 
-              pp = (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2) }
-            else{}   #tood
-            if(mse) vvar=(1-k1)/k1^2   ### variance (possibly no stationary)
-                
-          }
-           if(covmatrix$model==16){    ###negative  binomial
+       if(covmatrix$model==14||covmatrix$model==16){    ###geometric or negative binomial
          p0=pnorm(mu0); pmu=pnorm(mu) 
             if(!bivariate) ## space and spacetime
             { k1=c(p0);k2=c(pmu); 
