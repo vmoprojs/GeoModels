@@ -64,6 +64,8 @@ forGaussparam<-function(model,param,bivariate)
    }  
      if(model %in% c("Beta",'Kumaraswamy'))  {
      if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
+      #    if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
+     if(!bivariate) param[which(names(param) %in% c("shape1","shape2","min","max"))] <- NULL
      if(bivariate)  {}
    }  
      if(model %in% c("StudentT"))  {
@@ -576,7 +578,8 @@ if(model %in% c("Beta","Kumaraswamy"))   {
     while(i<=round(param$shape1))  {sim1=cbind(sim1,dd[,,i]^2);i=i+1}
     while(i<=(round(param$shape1)+round(param$shape2)))  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
     aa=rowSums(sim1)
-    sim=aa/(aa+rowSums(sim2))  
+    #sim=aa/(aa+rowSums(sim2)) 
+   sim=param$min + (param$max-param$min)*aa/(aa+rowSums(sim2))  
     }
      if(model=="Kumaraswamy")
     {
@@ -584,7 +587,8 @@ if(model %in% c("Beta","Kumaraswamy"))   {
     while(i<=4)  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
     aa=rowSums(sim1)
     sim=aa/(aa+rowSums(sim2)) 
-    sim=(1-(1-sim)^(1/param$shape1))^(1/param$shape2)
+   # sim=( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
+    sim=param$min + (param$max-param$min)*( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
     }   
          if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

@@ -945,7 +945,8 @@ if(!bivariate)      {
       return(param)} 
    
       if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
-      param <- c(mm, 'nugget', 'sill','shape1','shape2')
+      #param <- c(mm, 'nugget', 'sill','shape1','shape2')
+      param <- c(mm, 'nugget', 'sill','shape1','shape2','min','max')
       return(param)}     
   # Skew Gaussian univariate random field:
    if((model %in% c('SkewGaussian','SkewGauss','TwoPieceGaussian','TwoPieceGauss',
@@ -1172,7 +1173,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(model %in% c(18,20,27,37,38,40,41))      nuisance <- c(0,nuisance,0)
                             if(model %in% c(39))      nuisance <- c(0,0,nuisance,0)
                            if(model %in% c(21,24,12,26,34,35))   nuisance <- c(0,nuisance)
-                           if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
+                           #if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
+                           if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance,0,0)
                        }
      if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
@@ -1222,7 +1224,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              if(model %in% c(21,24,12,26,34,35))  nuisance=c(nuisance,1) 
              if(model %in% c(18,20,27,37,38,40,41))     nuisance=c(1,nuisance,1) 
              if(model %in% c(39))     nuisance=c(1,1,nuisance,1) 
-            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
+          #  if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
+            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1,1,1)  
              }
     if(bivariate) {
             if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
@@ -1250,7 +1253,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              if(model %in% c(21,24,12,26,34,35))  nuisance=c(nuisance,1,1) 
              if(model %in% c(18,20,27,37,38,40,41))     nuisance=c(1,nuisance,1) 
               if(model %in% c(39))     nuisance=c(1,1,nuisance,1) 
-            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
+            #if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)
+            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1,1,1)  
 
             }
          }
@@ -1405,8 +1409,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
       {        
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
-                colidx<-integer(nn*(nn-1)/2)
-                rowidx<-integer(nn*(nn-1)/2)
+                colidx<-rowidx<-integer(nn*(nn-1)/2)
+                #rowidx<-integer(nn*(nn-1)/2)
       }
     if(bivariate) {
       if(!srange[1]&&!srange[2])  srange=c(srange,0,0)

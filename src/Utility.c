@@ -747,11 +747,11 @@ void SetSampling_s(double *coordx, double *coordy, double *data, int *npts, int 
 
 // Determine (for the sub-sampling procedure) the sub-coordinates and
 // the sub-data given spatial data, coordinates and an interval:
-void SetSampling_st(double *data,double *sdata,int *ncoord,int *ntime, int nbetas,
+void SetSampling_st(double *data,double *sdata,int *ncoordss,int *ntime, int nbetas,
         int wint,int k, double **sX,double **X)
 {
   int i=0,j=0,p=0,f=0;
-  for(i=0;i<(*ncoord);i++){
+  for(i=0;i<(*ncoordss);i++){
     for(j=(k+(ntime[0]*i));j<(k+wint+(ntime[0]*i));j++) {
         sdata[p]=data[j];
        for(f=0;f<nbetas;f++) sX[p][f]=X[j][f];
@@ -825,7 +825,10 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
     *ntime=*times;
 
 /**********************************/
-  ncoord=(int *) Calloc(2,int);//number of total spatial coordinates
+  ncoord=(int *) Calloc(1,int);//number of total spatial coordinates
+
+   // ncoord=(int *) R_alloc(1, sizeof(int));
+
   if(ncoord==NULL) {*ismal=0; return;}
   ncoord[0]=*nsite;
 
@@ -837,6 +840,7 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   *ncoordy=*nsitey;
 /************************/
   npairs=(int *) Calloc(1,int);//effective number of pairs
+  //npairs=(int *) R_alloc(1, sizeof(int));
   if(npairs==NULL) {*ismal=0; return;}
 
   isbiv=(int *) Calloc(1,int);//is a bivariate random field?
@@ -851,17 +855,13 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   if(isst==NULL) {*ismal=0; return;}
   isst[0]=st[0]; 
     
-   
   cdyn=(int *) Calloc(1,int);//dynamic coords
   if(dyn==NULL) {*cdyn=0; return;}
   cdyn[0]=dyn[0]; 
 
-
- 
   istap=(int *) Calloc(1,int);//is tapering?
   if(istap==NULL) {*ismal=0; return;}
   istap[0]=tap[0];
-
 
   type=(int *) Calloc(1,int);//type of distance
   if(type==NULL) {*ismal=0; return;}
@@ -871,7 +871,6 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
 
   tapsep=(double *) Calloc(5,double);
            if(tapsep==NULL){*ismal=0; return;}
-
 
   *REARTH=*radius;
   *type=*tp;
@@ -906,20 +905,26 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   {     // start  saving distances
   /***********************************************************/  
 if(!isst[0]&&!isbiv[0]) {// spatial case
-  
-       // settting compact support
+           // settting compact support
         if(srange[1]) maxdist[0]=srange[1];
         else maxdist[0]=-LOW;    
       if(istap[0])  // tapering case
            {
-              npairs[0]=pow(ncoord[0],2);
+              npairs[0]=(int)(ncoord[0]*ncoord[0]);
               tlags=(double *) Calloc(*npairs,double);
               if(tlags==NULL){*ismal=0; return;}
            }  // end tapering case
-      else { // distances composite likelihood 
-           npairs[0]=ncoord[0]*(ncoord[0]-1)*0.5;
+      else { // distances composite likelihood  
+
+
+           *npairs=*ncoord *(int) ((*ncoord-1)/2);
+
+   //Rprintf("sdds22 %ld  %d %d %d %d\n",*npairs,npairs[0],*ncoord * (int)((*ncoord-1)/2),ncoord[0], *ncoord);
+
            tlags= (double *) Calloc(*npairs,double *);
+           //  tlags=(double *) R_alloc(*npairs, sizeof(double));
            if(tlags==NULL) {*ismal=0; return;}
+               //   Rprintf("hhk%d",ncoord[0]);
            } // end  no tapering case
 
  // computing spatial distances and indexes      
@@ -957,7 +962,7 @@ else { //spatio temporal case or bivariate case
         {
 
           // allocating vectors
-           npairs[0]=pow(qq,2);
+           npairs[0]=(int)(qq*qq);
            tlags=(double *) Calloc(*npairs,double);
            if(tlags==NULL){*ismal=0; return;}
          
@@ -976,8 +981,8 @@ else { //spatio temporal case or bivariate case
        }  // end tapering
 else {  // distance for composite likelihood
               
-               if(isst[0])  npairs[0]=qq*(qq-1)*0.5;
-               if(isbiv[0]) npairs[0]=qq*(qq-1)*0.5;
+               if(isst[0])  npairs[0]=qq*(int)((qq-1)*0.5);
+               if(isbiv[0]) npairs[0]=qq*(int)((qq-1)*0.5);
 
              tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
@@ -1014,7 +1019,8 @@ void DeleteGlobalVar()
   int i=0;
   // Delete all the global variables:
   Free(maxdist);Free(maxtime);
-  Free(ncoordx);Free(ncoordy); Free(ncoord);
+  Free(ncoordx);Free(ncoordy); 
+  Free(ncoord);
   Free(npairs);
   Free(type);Free(REARTH);
   Free(tapsep);

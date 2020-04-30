@@ -3372,9 +3372,11 @@ return(res/sill);
 
 
 
-double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2)
+double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double max)
 {
   double ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0,p3;
+  double dd=max-min;
+  zi=(zi-min)/dd;zj=(zj-min)/dd;
  ki=1-zi; kj=1-zj;
    double aa=0.5*(shape1+shape2);
 if(rho) {
@@ -3387,28 +3389,31 @@ if(rho) {
 } else  {p1=pow(zi,shape1/2-1)*pow(ki,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
          p2=pow(zj,shape1/2-1)*pow(kj,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
          res=p1*p2;}
-return(res);
+return(res/R_pow(dd,2));
 }
 
 
 
 
 
-double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2)
+double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double  max)
 {
   double xx=0.0,yy=0.0,ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0;
+    double dd=(max-min);
+  zi=(zi-min)/dd;zj=(zj-min)/dd;
+
  ki=1-pow(zi,shape2); kj=1-pow(zj,shape2);
-//if(rho) {
+if(rho) {
   rho2=rho*rho;
   xx=rho2*pow(ki*kj,shape1);
   yy=rho2*(1-pow(ki,shape1))*(1-pow(kj,shape1));
   p1=pow(shape1*shape2,2)*pow(zi*zj,shape2-1)*pow(ki*kj,shape1-1)*pow(1-rho2,2);
-    p2= appellF4(2,2,1,1,xx,yy);
-  res=p1*p2;
+  p2= appellF4(2,2,1,1,xx,yy);
+  res=p1*p2;}
 /*} else  {p1=shape1*shape2*pow(zi,shape2-1)* pow(ki,shape1-1);
          p2=shape1*shape2*pow(zj,shape2-1)* pow(kj,shape1-1);
          res=p1*p2;}*/
-return(res);
+return(res/R_pow(dd,2));
 }
 
 

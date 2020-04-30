@@ -440,7 +440,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-        #if(nuisance['tail']<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
+        if(nuisance['tail']<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
