@@ -1242,6 +1242,7 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
           int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
       int *ns, int *NS, int *dyn);
 
+
 void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
         int *ismal,int *ja,int *colidx,int *rowidx ,double thres);
 
@@ -1256,6 +1257,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

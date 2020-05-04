@@ -22,12 +22,16 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
 
+       
         cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
         as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+        #cc=dotCall64::.C64(corrmat,
+         # SIGNATURE = c("double","double","double","double", "integer","double","double","double","integer","integer"),  
+         #            cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
+          #INTENT =    c("rw","r","r","r","r","r","r", "r", "r","r"),
+          #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
         return(cc$cr)
     }
-    
-
     ### START Defining the objective functions
 ######### Restricted log-likelihood for multivariate normal density:
     LogNormDenRestr <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)

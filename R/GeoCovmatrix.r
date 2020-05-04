@@ -14,7 +14,8 @@
 ### decomposition of a square  matrix
 MatDecomp<-function(mtx,method)    {
         if(method=="cholesky")  {
-            mat.decomp <- try(chol(mtx), silent=TRUE)
+            #mat.decomp <- try(chol(mtx), silent=TRUE)
+            mat.decomp <- try(Rfast::cholesky(mtx,parallel=TRUE))
             if (inherits(mat.decomp , "try-error")) return (FALSE)
         }
         if(method=="svd")      {
@@ -79,19 +80,32 @@ if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22))
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
-        cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
-          as.integer(ns),as.integer(NS),
-          PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-          
+    
+         corr=double(numpairstot)
+      #  cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
+      #    as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
+      #    as.integer(ns),as.integer(NS),
+      #    PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),  
+    corr=corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,radius,ns,NS,
+ INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
       }
+###############################################################
    if(type=="Tapering")  {
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
-        cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
-           as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+       
+       corr=double(numpairs)
+        #cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
+        #  as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
+        #   as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),  
+     corr=corr, coordx,coordy,coordt,corrmodel,nuisance, paramcorr,radius,ns,NS,
+  INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
+
      ## deleting correlation equual  to 1 because there are problems  with hipergeometric function
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0  
 
@@ -436,10 +450,20 @@ if(!bivariate){
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   
 if(type=="Standard")  {
-              cr=.C(fname, corr=double(numpairstot),  as.double(coordx),as.double(coordy),as.double(coordt),
-              as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-              as.integer(ns), as.integer(NS),as.integer(model),
-              PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+  corr=double(numpairstot)
+            
+         #     cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
+         #     as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+         #     as.integer(ns), as.integer(NS),as.integer(model),
+         #     PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+  cr=dotCall64::.C64(fname,SIGNATURE = 
+       c("double","double","double","double",  "integer","double","integer","double","double","double","integer","integer","integer"),  
+        corr=corr, coordx,coordy,coordt,corrmodel,c(mu), min(n),other_nuis,paramcorr,radius,ns,NS,model,
+  INTENT = c("w","r","r","r","r","r","r","r", "r", "r","r", "r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
+
+
      corr=cr$corr # ojo que corr en este caso es una covarianza y ya va con el nugget
                 varcov <-  diag(dime) 
                 varcov[lower.tri(varcov)] <- corr   
@@ -455,10 +479,19 @@ if(type=="Standard")  {
 
         fname <- "CorrelationMat_dis_tap"
         if(spacetime) fname <- "CorrelationMat_st_dis_tap"
-        cr=.C(fname,  corr=double(numpairs), as.double(coordx),as.double(coordy),as.double(coordt),
-          as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
-           as.integer(NS),as.integer(min(n)),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+         corr=double(numpairs)
+
+   #     cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
+  #      as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
+  #         as.integer(NS),as.integer(min(n)),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
     
+      cr=dotCall64::.C64(fname,SIGNATURE = 
+         c("double","double","double","double","integer","double","double","double","integer","integer","integer","double","double","integer"),  
+        corr=corr, coordx,coordy,coordt,corrmodel,other_nuis,paramcorr,radius,ns,NS,min(n),mu[idx[,1]],mu[idx[,2]],model,
+  INTENT = c("w","r","r","r","r","r","r","r", "r", "r","r", "r", "r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
+
+
         varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
@@ -590,7 +623,10 @@ if(sparse) {
     if(type=="Tapering") sparse=TRUE
 
     # Delete the global variables:
-    .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+               .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
+
+
     if(initparam$bivariate)   initparam$numtime=2
     # Return the objects list:
     CovMat <- list(bivariate =  initparam$bivariate,

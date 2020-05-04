@@ -1,9 +1,8 @@
 
 
-GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
-               maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, radius=6371, sparse=FALSE, 
-               time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, 
-               which=1, X=NULL,Xloc=NULL)
+GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,max.points=NULL,
+              maxdist=NULL,maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, radius=6371, sparse=FALSE, 
+               time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, which=1, X=NULL,Xloc=NULL)
 
 
 {
@@ -31,12 +30,12 @@ if(bivariate)  Tloc=1
 #####################################################################
 if(space){
          ### computing spatial neighborhood
-         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist)
+         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,max.points=max.points,maxdist=maxdist)
          res1=res2=NULL
          for(i in 1: Nloc)
           {
             pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
-                X=neigh$X,
+                X=neigh$X[[i]],
                 model=model, param=param,mse=mse, data=neigh$data[[i]])
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
@@ -46,14 +45,14 @@ if(space){
 if(spacetime)
 {  
        ### computing spatio-temporal neighborhood
-         neigh=GeoNeighborhood(data, coordx=coords,coordt=coordt,distance=distance,
+         neigh=GeoNeighborhood(data, coordx=coords,coordt=coordt,distance=distance,max.points=max.points,
                   loc=loc,time=time,maxdist=maxdist,maxtime=maxtime)
          res1=res2=NULL
          k=1
          for(i in 1: Nloc){
           for(j in 1: Tloc){
             pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],
-               X=neigh$X,
+               X=neigh$X[[i]],
              corrmodel=corrmodel,distance=distance, model=model, param=param,mse=mse, data=neigh$data[[k]])
             res1=c(res1,pr$pred)
             res2=c(res2,pr$mse)
@@ -62,11 +61,11 @@ if(spacetime)
 }
 if(bivariate)
 { 
-neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,bivariate=TRUE)
+neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,max.points=max.points,bivariate=TRUE)
         res1=res2=NULL
          for(i in 1: Nloc)
           {
-            pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
+            pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
                 X=neigh$X,which=which,
                 model=model, param=param,mse=mse, data=neigh$data[[i]])
                 res1=c(res1,pr$pred)

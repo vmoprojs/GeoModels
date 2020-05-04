@@ -4,12 +4,12 @@
 \title{Spatio (temporal) neighborhood selection for local kriging.}
 \description{
 The procedure select a spatio (temporal) neighborhood for  
- given spatial (temporal) locations.
+ given spatial (temporal) locations using  the \code{LKDist} function of package LatticeKrig.
 }
 
 \usage{
 GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
-               distance="Eucl", grid=FALSE, loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+               distance="Eucl", grid=FALSE, loc, max.points=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -40,6 +40,7 @@ GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivaria
     of non-equispaced spatial sites (irregular grid).}
   \item{loc}{A (\eqn{1 \times 2}{1 x 2})-matrix  giving the spatial coordinate
      of the location for which a neighborhood is computed .}
+    \item{max.points}{See \code{max.points} option in the function  \code{LKDist} of LattticeKrig package.}
  \item{maxdist}{Numeric; a positive value indicating the maximum
     spatial distance considered in the spatial neighborhood
     selection.}
@@ -78,7 +79,7 @@ library(GeoModels)
 ##########################################
 #### Example: spatial neighborhood  ######
 ##########################################
-set.seed(7)
+set.seed(75)
 coords=cbind(runif(500),runif(500))
 
 param=list(nugget=0,mean=0,scale=0.2,sill=1,
@@ -87,24 +88,29 @@ param=list(nugget=0,mean=0,scale=0.2,sill=1,
 data_all = GeoSim(coordx=coords, corrmodel="GenWend", 
                          param=param)$data
 
+plot(coords)
 ##two locations 
 loc_to_pred=matrix(c(0.3,0.5,0.7,0.2),2,2)
 
+points(loc_to_pred,pch=20)
 neigh=GeoNeighborhood(data_all, coordx=coords,  
-                  loc=loc_to_pred,maxdist=0.075)
+                  loc=loc_to_pred,maxdist=0.15)
 
 # two Neighborhoods 
 neigh$coordx
+points(neigh$coordx[[1]],pch=20,col="red")
+points(neigh$coordx[[2]],pch=20,col="blue")
 # associated data
 neigh$data
+
 
 ###################################################
 #### Example: spatio temporal spatial neighborhood#  
 ###################################################
 
 set.seed(78)
-coords=matrix(runif(10),5,2)
-coordt=seq(0,4,0.25)
+coords=matrix(runif(80),40,2)
+coordt=seq(0,6,0.25)
 
 param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
 
@@ -119,7 +125,7 @@ plot(coords,xlim=c(0,1),ylim=c(0,1))
 points(loc_to_pred,pch=20)
 
 neigh=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
-                  loc=loc_to_pred,time=time,maxdist=0.6,maxtime=0.5)
+                  loc=loc_to_pred,time=time,maxdist=0.4,maxtime=0.25)
 
 # first spatio-temporal neighborhoods 
 # with  associated data
@@ -131,7 +137,7 @@ neigh$data[[1]]
 #### Example: bivariate  spatial neighborhood #####  
 ###################################################
 
-set.seed(78)
+set.seed(79)
 coords=matrix(runif(100),50,2)
 
 param=list(mean_1=0,mean_2=0,scale=0.12,smooth=0.5,
@@ -143,6 +149,11 @@ data_all = GeoSim(coordx=coords,corrmodel="Bi_matern_sep",
 loc_to_pred=matrix(runif(4),2,2)
 
 neigh=GeoNeighborhood(data_all, coordx=coords,bivariate=TRUE,
-                  loc=loc_to_pred,maxdist=0.1)
+                  loc=loc_to_pred,maxdist=0.25)
+
+plot(coords)
+points(loc_to_pred,pch=20)
+points(neigh$coordx[[1]],col="red",pch=20)
+points(neigh$coordx[[2]],col="red",pch=20)
 
 }

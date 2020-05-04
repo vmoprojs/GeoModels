@@ -283,7 +283,7 @@ quilt.plot(x, y, data,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n), main="Data")
 fixed=list(nugget=nugget,power2=4,sill=1)
 start=list(mean=0,scale=scale)
 # Maximum pairwise likelihood fitting :
-fit = GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,
+fit = GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,memdist=FALSE,
                     likelihood='Marginal', type='Pairwise',maxdist=0.03,
                     optimizer="BFGS", start=start,fixed=fixed)
                     
@@ -313,7 +313,7 @@ model="Weibull"
 
 corrmodel = "GenWend"  
 # Define the spatial-coordinates of the points:
-NN=800
+NN=700
 coords=cbind(runif(NN),runif(NN))
 ## matrix covariates
 a0=rep(1,NN)
@@ -336,22 +336,22 @@ param=list(shape=shape,nugget=nugget,mean=mean,mean1=mean1,
   scale=scale,sill=sill,power2=power2,smooth=smooth)
 
 data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
-                model=model,sparse=TRUE,X=X)$data
+                model=model,X=X)$data
 
 #####starting and fixed parameters
 fixed=list(nugget=nugget,power2=power2,smooth=smooth,sill=sill)
 start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 
 ## estimation with pairwise likelihood
-maxdist=0.1
+maxdist=0.05
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
               maxdist=maxdist,likelihood="Marginal",type="Pairwise",
-              optimizer="BFGS",start=start,fixed=fixed, model = model)
+              start=start,fixed=fixed, model = model)
 ## computing residuals              
 res=GeoResiduals(fit2)
 
 # locations to predict
-xx=seq(0,1,0.025)
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging for residuals
@@ -379,9 +379,9 @@ image.plot(xx, xx, mapmse,
 
 ###############################################################
 model="StudentT"
-df=7
+df=5
 corrmodel = "Wend0"  
-nsel=700
+nsel=600
 coords=cbind(runif(nsel),runif(nsel))
 
 mean = 0
@@ -391,10 +391,10 @@ power2=4
 scale = 0.2
  
 # Starting value for the estimated parameters
-set.seed(3132)
+set.seed(32)
 param=list(nugget=nugget,mean=mean, scale=scale,sill=sill,df=1/df,power2=power2)
 data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
-     model=model,sparse=TRUE)$data
+     model=model)$data
 
 fixed=list(nugget=nugget,power2=4,df=1/df)
 start=list(mean=mean, scale=scale,sill=sill)
@@ -403,12 +403,12 @@ upper=list(mean=I, scale=I,sill=I)
 lower=list(mean=-I, scale=0,sill=0)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-             maxdist=0.03,likelihood="Marginal",type="Pairwise",
+             maxdist=0.04,likelihood="Marginal",type="Pairwise",
              lower=lower,upper=upper,
              optimizer="nlminb", start=start,fixed=fixed, model = model)
                     
 # locations to predict
-xx=seq(0,1,0.05)
+xx=seq(0,1,0.04)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
@@ -430,8 +430,8 @@ image.plot(xx, xx, map_t,
 
 model="Gaussian"
 # Define the spatial-coordinates of the points:
-x = runif(80, 0, 1)
-y = runif(80, 0, 1)
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
 coords=cbind(x,y)
 times=1:8
 
@@ -461,11 +461,10 @@ fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel
 ### with estimated double exponential correlation.
 ###
 ###############################################################
-set.seed(3)
 param=as.list(c(fit$param,fit$fixed))
 
 # locations to predict
-xx=seq(0,1,0.05)
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
 times_to_pred=1:2
@@ -473,13 +472,14 @@ times_to_pred=1:2
 pr=GeoKrig(loc=loc_to_pred,time=times_to_pred,coordx=coords,coordt=times,
        corrmodel=corrmodel, param=param,data=data,mse=TRUE)
 
-par(mfrow=c(2,2))
-zlim=c(-2.5,2.5)
+par(mfrow=c(2,3))
+#zlim=c(-2.5,2.5)
 colour = rainbow(100)
 
 for(i in 1:2) {
+quilt.plot(coords,data[i,] ,col=colour,main = paste(" data  at Time=" , i))   
 image.plot(xx, xx, matrix(pr$pred[i,],ncol=length(xx)),col=colour,
-           zlim=zlim, main = paste(" Kriging Time=" , i),ylab="")
+        main = paste(" Kriging Time=" , i),ylab="")
 image.plot(xx, xx, matrix(pr$mse[i,],ncol=length(xx)),col=colour,
            main = paste("Std err Time=" , i),ylab="")
 }

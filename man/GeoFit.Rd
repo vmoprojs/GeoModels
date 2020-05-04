@@ -12,8 +12,8 @@
 \usage{
 GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
       fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-      lower=NULL,maxdist=NULL,
-      maxtime=NULL, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+      lower=NULL,maxdist=Inf,
+      maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE,
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 

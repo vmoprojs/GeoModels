@@ -3779,7 +3779,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
     double pr0,q2, term1 =0, value1 = 0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,m=0, iter=1000;
+    int n,m=0, iter=2000;
     n= r-t;
         while(m<=iter){
 

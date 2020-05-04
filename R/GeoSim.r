@@ -323,7 +323,6 @@ KK=1;sel=NULL;ssp=double(dime)
                          ##varcov=gpuR::vclMatrix(varcov, type="float")
                          ##ss=gpuR::vclMatrix(ss, type="float")
                        }
-
     #### simulating with matrix decomposition using sparse or dense matrices
     if(sparse) {  
                   if(spam::is.spam(ccov$covmat))

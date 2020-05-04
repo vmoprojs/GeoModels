@@ -31,12 +31,19 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
-          result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
-                   as.integer(n),as.double(paramcorr), as.integer(weigthed), 
-                   res=double(1),as.double(MM[colidx]),as.double(MM[rowidx]),
-                    as.double(other_nuis),
-                    as.integer(local),as.integer(GPU),
-                    PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res   
+        res=double(1)
+       # result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
+       #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
+       #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
+       #             as.double(other_nuis),
+       #             as.integer(local),as.integer(GPU),
+       #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res  
+
+        result=dotCall64::.C64(as.character(fan),
+          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
+                        corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,
+          INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
          return(-result)
       }
 
@@ -56,13 +63,18 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
         X1=as.matrix(X[1:ns[1],]);X2=as.matrix(X[(ns[1]+1):(ns[2]+ns[1]),]); 
         other_nuis=as.numeric(nuisance[!sel]) 
         MM=c(X1%*%mm1,X2%*%mm2)
-
-        result <-  .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
-                 as.integer(n),as.double(paramcorr), as.integer(weigthed), 
-                   res=double(1),as.double(MM[colidx]),as.double(MM[rowidx]),
-                    as.double(other_nuis),
-                    as.integer(local),as.integer(GPU),
-                    PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res
+        res=double(1)
+       # result <-  .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
+       #          as.integer(n),as.double(paramcorr), as.integer(weigthed), 
+       #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
+       #             as.double(other_nuis),
+       #             as.integer(local),as.integer(GPU),
+      #            PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res
+        result=dotCall64::.C64(as.character(fan),
+          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
+                        corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,
+          INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
         return(-result)
       }
 

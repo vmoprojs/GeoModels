@@ -1144,7 +1144,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     # initialize tapering variables:
     tapering=ia=idx=ja=colidx=rowidx=integer(1)
     nozero<-NULL
-    tapmodel=NULL
+    tapmodel=0
     cutoff <- FALSE
     distance<-CheckDistance(distance)
 
@@ -1420,23 +1420,47 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     if(CheckSph(corrmodel))   radius=1
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
 
- gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
-           as.integer(grid),ia=ia,idx=idx,
-           isinit=isinit,ja=ja,as.integer(mem),as.integer(numcoord),as.integer(numcoordx), as.integer(numcoordy),
-           numpairs=numpairs,as.double(radius),srange, as.double(tapsep), as.integer(spacetime),
-           as.integer(numtime),trange,as.integer(tapering),as.integer(tapmodel),
-           as.integer(distance),as.integer(weighted),
-           colidx=as.integer(colidx),rowidx=as.integer(rowidx),
-           as.integer(ns),as.integer(NS),as.integer(isdyn),
-           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+# gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
+#           as.integer(grid),ia=ia,idx=idx,
+#           isinit=isinit,ja=ja,as.integer(mem),as.integer(numcoord),as.integer(numcoordx), as.integer(numcoordy),
+#           numpairs=numpairs,as.double(radius),srange, as.double(tapsep), as.integer(spacetime),
+#           as.integer(numtime),trange,as.integer(tapering),as.integer(tapmodel),
+#           as.integer(distance),as.integer(weighted),
+#           colidx=as.integer(colidx),rowidx=as.integer(rowidx),
+#           as.integer(ns),as.integer(NS),as.integer(isdyn),
+#           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+
+ gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
+         "integer","double","double","double","integer", "integer","integer",  #7
+         "integer","integer","integer","integer", "integer","integer", #6
+         "integer","double","double","double", "integer",  #5
+         "integer","double", "integer","integer","integer","integer", #6
+         "integer","integer", # 2
+         "integer","integer","integer"),  # 3
+     bivariate, coordx, coordy, coordt,grid,ia=ia,idx=idx,  #7
+           isinit=isinit,ja=ja, mem, numcoord, numcoordx,  numcoordy, #6
+           numpairs=numpairs, radius,srange,  tapsep,  spacetime, #5
+            numtime,trange, tapering, tapmodel,distance, weighted, #6
+           colidx= colidx,rowidx= rowidx, # 2
+            ns, NS, isdyn, #3
+ INTENT = c("r","r","r","r","r","w","w", #7
+            "rw","w", "rw", "r", "r", "r", #6
+           "rw", "r", "rw", "r", "r", #5
+             "r",  "rw", "r", "r", "r", "r", #6
+             "w", "w",#2
+             "r", "r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
 
 ## number  of selected pairs
 numpairs <- gb$numpairs
 ## indexes for composite 
     colidx=gb$colidx
     rowidx=gb$rowidx
+    #print(length(colidx))
     colidx <- colidx[1:numpairs]
     rowidx  <- rowidx[1:numpairs]
+   #  print(length(colidx))
 ## indexes for sparse matrix
      idx <- gb$idx
      ja <- gb$ja

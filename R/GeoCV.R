@@ -1,4 +1,4 @@
-GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,
+GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,max.points=NULL,
                           maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)
 {
 
@@ -56,9 +56,10 @@ if(!local) pr=GeoKrig(data=datanew, coordx=coordsnew,
 if(local) pr=GeoKrigloc(data=datanew, coordx=coordsnew,  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
               model=fit$model, n=fit$n, #ok
-              maxdist=maxdist,
+              max.points=max.points,maxdist=maxdist,
               param=as.list(c(fit$param,fit$fixed)), 
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+
 pred[[i]]=pr$pred
 err=data_to_pred-pr$pred
 N2=length(err)
@@ -110,12 +111,21 @@ coordsnew=list();coordsnew[[1]]=coords1;coordsnew[[2]]=cc2;
             }
 dtp[[i]]=data_to_pred
 #####################################
-pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
+if(!local) pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
 	       corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
 	          model=fit$model, n=fit$n, #ok
            param=as.list(c(fit$param,fit$fixed)), 
            radius=fit$radius, sparse=sparse,   time=NULL, 
-             which=which, X=X,Xloc=Xloc) #ok    
+             which=which, X=X,Xloc=Xloc) #ok  
+
+if(local) pr=GeoKrigloc(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
+         corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+            model=fit$model, n=fit$n, #ok
+           max.points=max.points, maxdist=maxdist,
+           param=as.list(c(fit$param,fit$fixed)), 
+           radius=fit$radius, sparse=sparse,   time=NULL, 
+             which=which, X=X,Xloc=Xloc) #ok  
+
 pred[[i]]=pr$pred
 err=data_to_pred-pr$pred  
    

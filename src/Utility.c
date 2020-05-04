@@ -807,6 +807,12 @@ void SetSampling_biv(double *coordx, double *coordy, double *data, int n, int *n
 
 
 // Set the global variables for the spatial and spatial-temporal fitting:
+/*
+void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int64_t *ia,
+      int64_t *idx,int64_t *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
+      int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
+      int *tap,int *tapmodel,int *tp,int *weighted, int64_t *colidx,int64_t *rowidx, 
+      int *ns, int *NS, int *dyn)*/
 void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
 		  int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
 		  int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,

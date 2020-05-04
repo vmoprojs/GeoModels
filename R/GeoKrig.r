@@ -56,6 +56,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 ###################################### 
 ###################################### 
     #### number of points to predict
+     if(is.null(time)) time=0
     numloc = nrow(loc); tloc = length(time);
     if(!tloc)  tloc = 1
     locx = loc[,1];locy = loc[,2]
@@ -205,15 +206,30 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                      }
 
     if((type=="Standard"||type=="standard")) {
-         ## Computing gaussian CORRELATIONS between the locations to predict and the locations observed
-        cc=.C('Corr_c',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-        as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-        as.integer(numloc),as.integer(tloc),as.integer(covmatrix$ns),
-        as.integer(NS),
-        as.integer(covmatrix$numtime),as.double(corrparam),
-        as.integer(covmatrix$spacetime),
-        as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-        as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+        
+        corri=double(dimat*dimat2)
+         #Computing gaussian CORRELATIONS between the locations to predict and the locations observed
+     #  cc=.C('Corr_c',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),as.integer(corrmodel),
+     #   as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
+     #   as.integer(numloc),as.integer(tloc),as.integer(covmatrix$ns),as.integer(NS),
+     #   as.integer(covmatrix$numtime),as.double(corrparam),as.integer(covmatrix$spacetime),
+     #   as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
+    #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+
+  cc=dotCall64::.C64('Corr_c',
+    SIGNATURE = c("double","double","double","double", "integer", #5
+                   "integer","double","double","integer","integer",
+                   "integer","integer","integer","integer","double",
+                   "integer","integer","double","integer","integer","double"), 
+   corri=corri,ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
+         0, locx , locy , covmatrix$numcoord ,numloc ,
+         tloc , covmatrix$ns , NS ,covmatrix$numtime , corrparam ,
+         covmatrix$spacetime ,covmatrix$bivariate , time , distance , which-1 , covmatrix$radius ,
+ INTENT = c("rw","r","r","r","r",
+            "r","r","r","r","r",
+            "r","r","r","r","r",
+            "r","r","r","r","r","r"),
+        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
 
         ####  transforming gaussian correlations depending on the (non)Gaussian  model
    if(bivariate){ 
@@ -372,11 +388,6 @@ else    {
 ########################################################################################
 ##### multiplying the  correlations for the variance
          CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
-
-         #print(CC)
-         #print(as.matrix(covmatrix$covmatrix))
-
-     
 #### updating mean
         if(!bivariate){
 
@@ -451,24 +462,25 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                 #AA=chol2inv(chol(crossprod(X,(MM$b) %*% X)))
                 #bb=tcrossprod(aa%*%AA,aa)
                 bb=0
+BB= krig_weights%*%CC
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
 if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))  
-        {vv=diag(as.matrix(diag(vvar,dimat2) - krig_weights%*%CC  + bb)) } ## simple variance  kriging predictor variance
+        {vv=diag(as.matrix(diag(vvar,dimat2) - BB  + bb)) } ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) 
-       { vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)- krig_weights%*%CC + bb))}
+       { vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)- BB + bb))}
 #weibull
 if(covmatrix$model %in% c(26)) 
            {vv=emuloc^2*diag(as.matrix(diag( gamma(1+2/covmatrix$param["shape"])/gamma(1+1/covmatrix$param["shape"])^2-1,dimat2)   
-                                                - krig_weights%*%CC+ bb))}
+                                                - BB+ bb))}
 #loglogistic          
 if(covmatrix$model %in% c(24)) 
            {vv=emuloc^2*diag(as.matrix(diag((2*covmatrix$param['shape']*sin(pi/covmatrix$param['shape'])^2/
-                       (pi*sin(2*pi/covmatrix$param['shape']))-1),dimat2) - krig_weights%*%CC + bb))}
+                       (pi*sin(2*pi/covmatrix$param['shape']))-1),dimat2) - BB + bb))}
 
 if(covmatrix$model==1&&logGausstemp)
        {vv =    exp(muloc + covmatrix$param['sill']/2)^2 *  
-                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(krig_weights%*%CC+ bb))) }
+                               diag(as.matrix(diag(exp(vvar),dimat2) - exp(BB+ bb))) }
                }     # end if(mse)   
 }               
 
@@ -557,26 +569,34 @@ if(covmatrix$model %in% c(2,11,14,19,30,16))
      if(covmatrix$model==19) kk=min(nloc)
      if(covmatrix$model==16) kk=n
 ## ojo que es la covarianza
-if(covmatrix$model %in% c(2,11,14,16,19))
+if(covmatrix$model %in% c(2,11,14,16,19,30))
+{
+  corri=double(dimat*dimat2)
     ## Computing correlation between the locations to predict and the locations observed
-    ccorr=.C('Corr_c_bin',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
+    ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
     as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
     as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
     as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
     as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-    
-if(covmatrix$model %in% c(30))
-      ccorr=.C('Corr_c_poi',corri=double(dimat*dimat2), as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-    as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-    as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-    as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),as.double(c(mu0)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
-    as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-    as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
- 
-    corri=ccorr$corri
 
-        ##################inverse of cov matrix##############################################
+#     ccorr=dotCall64::.C64('Corr_c_bin',
+ #   SIGNATURE = c("double","double","double","double", "integer","integer",  #6
+ #                  "double","double","integer","integer","integer",        #5
+ #                  "integer","integer","integer","integer","integer","double", #6
+ #                  "double", "double","integer","integer","double","integer","integer","double"),  #8
+ #  corri=corri,  ccc[,1], ccc[,2], covmatrix$coordt,corrmodel,0,
+ #   locx, locy,covmatrix$numcoord,numloc,covmatrix$model,
+ #   tloc,kk,covmatrix$ns,NS,covmatrix$numtime, c(mu0),
+ #    other_nuis, corrparam,covmatrix$spacetime, bivariate, time,distance,which-1, covmatrix$radius,
+#INTENT = c("rw","r","r","r","r","r",
+     #       "r","r","r","r","r",
+    #        "r","r","r","r","r","r",
+   #        "r","r","r","r","r","r","r","r"),
+   #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+ }   
+    corri=ccorr$corri
+ ##################inverse of cov matrix##############################################
         if(!bivariate) cc = matrix(corri,nrow=dimat,ncol=dimat2)
         else           {}
         MM=getInv(covmatrix,cc)

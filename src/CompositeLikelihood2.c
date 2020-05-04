@@ -426,6 +426,7 @@ void Comp_Pair_Pois2mem(int *cormod, double *data1,double *data2,int *NN,
     double nugget=nuis[0];
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
+  // Rprintf("%d   \n",npairs[0]);
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
@@ -433,6 +434,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj);
+
                       *res+= log(bl)*weights;
                     }}        
     // Checks the return values
@@ -450,7 +452,7 @@ void Comp_Pair_Gauss_misp_Pois2mem(int *cormod, double *data1,double *data2,int 
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
+M= (double **) Calloc(N,double *);
     for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
     
     double *dat;

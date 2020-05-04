@@ -1,5 +1,5 @@
 GeoNeighborhood = function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
-                  distance="Eucl", grid=FALSE, loc, maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+                  distance="Eucl", grid=FALSE, loc, max.points=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 {
   XX=NULL
   numtime=1
@@ -35,16 +35,54 @@ Nloc=nrow(loc)
 sel_tt=NULL
 colnames(loc)=NULL;colnames(coords)=NULL;
 space=!spacetime&&!bivariate
+
+##################################################################
+
+#  if(distance=="Geod"||distance=="Chor")
+#{
+#   coords_p=coords
+#   loc_p=loc
+#   prj=mapproj::mapproject(coords_p[,1], coords_p[,2], projection="sinusoidal") 
+#   coords_p=radius*cbind(prj$x,prj$y)
+#   prjloc=mapproj::mapproject(loc_p[,1], loc_p[,2], projection="sinusoidal")
+#   loc_p=radius*cbind(prjloc$x,prjloc$y)
+#   if(is.null(kk))  kk = min(10, nrow(coords_p))
+#out=RANN::nn2(data=coords_p, query = loc_p,k=kk[1],searchtype = c("radius"), radius = maxdist)
+#}
+#if(is.null(kk)) kk=Nloc^2
+myDistance=distance
+  if(myDistance=="Geod")
+{
+  myDistance<- "GreatCircle"
+  attr(myDistance, which<- "Radius")<-  radius
+  out<- LatticeKrig::LKDist(coords,loc,delta=maxdist,distance.type=myDistance,
+       max.points = max.points,mean.neighbor =50)
+}
+ if(myDistance=="Chor")
+{
+  myDistance<- "Chordal"
+  attr(myDistance, which<- "Radius")<-  radius
+  out<- LatticeKrig::LKDist(coords,loc,delta=maxdist,distance.type=myDistance,
+    max.points = max.points,mean.neighbor =50)
+}
+
+  if(myDistance=="Eucl")
+{
+  myDistance<- "Euclidean"
+  out<- LatticeKrig::LKDist(coords,loc,delta=maxdist,distance.type=myDistance,
+    max.points = max.points,mean.neighbor =50)
+}
+
+
+#}
 ##################################################################################
 ## spatial
 if(space){
  sel_ss=data_sel=numpoints=XX=list()
-
-  out= fields::fields.rdist.near( coords,loc, delta=maxdist)
-  out$ind=matrix(out$ind,ncol=2)
   ## checkinf if  there is at leas one empty neigh...
  for(i in 1:Nloc)
  {
+   #ss=out$nn.idx[i,];sel=ss[ss>0]
    ss=(as.numeric(out$ind[,2]==i))
    a=out$ind[,1]*ss; sel=a[a>0]
    sel_ss[[i]]=coords[sel,]
@@ -58,26 +96,28 @@ if(space){
 if(spacetime)
 {
 
-NN=nrow(coords)
-TT=length(coordt)
 Nloc=nrow(loc)
 Tloc=length(time)
+TT=length(coordt)
+#out_t=RANN::nn2(coordt, query = time,searchtype = c("radius"), radius = maxtime)
 
-out_s<- fields::fields.rdist.near( coords,loc, delta=maxdist)
-out_s$ind=matrix(out_s$ind,ncol=2)
-out_t<- fields::fields.rdist.near( coordt,time, delta=maxtime)
-out_t$ind=matrix(out_t$ind,ncol=2)
+coordt1=cbind(coordt,rep(0,TT))
+time1=cbind(time,rep(0,Tloc))
+out_t<- LatticeKrig::LKDist(coordt1,time1,delta=maxtime,distance.type="Euclidean",
+    max.points =max.points,mean.neighbor =50)
 
 sel_ss=numpoints=data_sel=sel_tt=list()
-  
-  k=1
+k=1
+
  for(i in 1:Nloc){
-   ss=(as.numeric(out_s$ind[,2]==i))
-   a=out_s$ind[,1]*ss; sel_s=a[a>0]
+   #ss=out$nn.idx[i,];sel_s=ss[ss>0]
+   ss=(as.numeric(out$ind[,2]==i))
+   a=out$ind[,1]*ss; sel_s=a[a>0]
    sel_ss[[i]]=matrix(coords[sel_s,],ncol=2)
   for(j in 1:Tloc){
-    tt=(as.numeric(out_t$ind[,2]==j))
-    b=out_t$ind[,1]*tt; sel_t=b[b>0]
+    #tt=out_t$nn.idx[j,];sel_t=tt[tt>0]
+   tt=(as.numeric(out_t$ind[,2]==j))
+   b=out_t$ind[,1]*tt; sel_t=b[b>0]
    sel_tt[[j]]=coordt[sel_t]
  data_sel[[k]]=data[sel_t,sel_s]
  k=k+1
@@ -87,17 +127,14 @@ sel_ss=numpoints=data_sel=sel_tt=list()
 #####################################################################################
 if(bivariate)
 {
-NN=nrow(coords)
 Nloc=nrow(loc)
 if(dyn) coords=rbind(coords,coords)
-
-out<- fields::fields.rdist.near( coords,loc, delta=maxdist)
-out$ind=matrix(out$ind,ncol=2)
 
 sel_ss=numpoints=data_sel=sel_tt=XX=list()
 
  for(i in 1:Nloc){
-   ss=(as.numeric(out$ind[,2]==i))
+  # ss=out$nn.idx[i,];sel=ss[ss>0]
+  ss=(as.numeric(out$ind[,2]==i))
    a=out$ind[,1]*ss; sel=a[a>0]
    sel_ss[[i]]=coords[sel,]
    numpoints[[i]]=ncol(sel_ss[[i]])

@@ -17,8 +17,8 @@
 
 GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-                         lower=NULL,maxdist=NULL,
-                          maxtime=NULL, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+                         lower=NULL,maxdist=Inf,
+                          maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
                           optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
@@ -134,7 +134,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     dimat <- initparam$numcoord*numtime#
     if(is.null(dim(initparam$X)))  initparam$X=as.matrix(rep(1,dimat))
     # Delete the global variables:
-    .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) #if(mem)
+    .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,

@@ -7,10 +7,11 @@
 For a  given set of  spatial location sites and temporal instants,
 the function computes optimal linear prediction and associated mean square error 
 for the Gaussian and non Gaussian case using a spatial (temporal) neighborhood
+computed using the  function \code{\link{GeoNeighborhood}}
 }
 \usage{
 GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
-           loc, maxdist=NULL, maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
+           loc, max.points=NULL, maxdist=NULL, maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
            param, radius=6371, sparse=FALSE, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, 
            which=1, X=NULL,Xloc=NULL)
 }
@@ -43,6 +44,7 @@ GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, d
     of non-equispaced spatial sites (irregular grid).}
   \item{loc}{A numeric (\eqn{n \times 2}{n x 2})-matrix (where
     \code{n} is the number of spatial sites) giving 2-dimensions of spatial coordinates to be predicted.}
+  \item{max.points}{See \code{max.points} option in the function  \code{LKDist} of LattticeKrig package.}
   \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood.}
   \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood.}
      \item{method}{String; the type of matrix decomposition used in the simulation. Default is \code{cholesky}. 
@@ -211,14 +213,14 @@ image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),col=colour,
 require(GeoModels)
 require(fields)
 set.seed(78)
-coords=cbind(runif(100),runif(100))
+coords=cbind(runif(50),runif(50))
 coordt=seq(0,5,0.25)
 corrmodel="Exp_Exp"
 param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
 
 data = GeoSim(coordx=coords, coordt=coordt,corrmodel="Exp_Exp", 
                          param=param)$data
-##  two location to predict
+##  four location to predict
 loc_to_pred=matrix(runif(8),4,2)
 ## three temporal instants to predict
 time=c(0.5,1.2,3.7)
@@ -227,11 +229,72 @@ time=c(0.5,1.2,3.7)
 pr=GeoKrig(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
   model="Gaussian", param= param, mse=TRUE)
 pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
-  maxdist=0.15,maxtime=1.5,model="Gaussian", param= param, mse=TRUE)
+  maxdist=0.15,maxtime=0.5,model="Gaussian", param= param, mse=TRUE)
 
-###  full and local prediction 
-#pr$pred
-#pr_loc$pred
+##  full and local prediction 
+pr$pred
+pr_loc$pred
+
+
+############################################################
+### Example 7. Bivariate local cokriging  ##################
+############################################################
+require(GeoModels)
+require(fields)
+# Define the spatial-coordinates of the points:
+set.seed(128)
+x = runif(200, 0, 1)
+y = runif(200, 0, 1)
+coords=cbind(x,y)
+
+param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
+          nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
+          
+data = GeoSim(coordx=coords, corrmodel="Bi_matern_sep", param=param)$data
+
+fixed=list(nugget_1=0,nugget_2=0,smooth=0.5,mean_1=0,mean_2=0)
+start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
+      pcol=cor(data[1,],data[2,]))
+# Maximum Composite likelihood fitting of the random field:
+fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
+        likelihood="Marginal",type="Pairwise",maxdist=0.1,
+        optimizer="BFGS", start=start,fixed=fixed)
+
+neigh=GeoNeighborhood(data, coordx=coords,bivariate=TRUE,
+                  loc=loc_to_pred,maxdist=0.25)
+
+# locations to predict
+
+xx=seq(0,1,0.025)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
+
+pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
+       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+
+pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,
+       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+
+par(mfrow=c(2,2))
+
+colour = rainbow(100)
+zlim=c(-2.6,2.6)
+# simple kriging map prediction
+image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
+           zlim=zlim,xlab="",ylab="",
+           main="CoKriging with Bivariate Matern model")
+
+# simple kriging MSE map prediction variance
+image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
+           xlab="",ylab="",main="Std error")
+
+# simple  kriging map prediction
+image.plot(xx, xx, matrix(pr_loc$pred,ncol=length(xx)),col=colour,
+           zlim=zlim,xlab="",ylab="",main="Local CoKriging with Bivariate Matern model")
+
+# simple kriging MSE map prediction variance
+image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),col=colour,
+           xlab="",ylab="",main="Std error")
+
 
 }
 \keyword{Composite}
