@@ -3,7 +3,7 @@ GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,max.points=NULL,
 {
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
-print("Cross-validation  kriking can be time consuming ...")
+print("Cross-validation  kriging can be time consuming ...")
 if(ncol(fit$X)==1) {X=Xloc=NULL}
 mae=rmse=NULL
 space_dyn=FALSE
@@ -23,6 +23,7 @@ print(paste("Starting iteration from 1 to",K," ..."))
 space=!spacetime&&!bivariate
 
 dtp=pred=list()
+
 ############################################################
 ########### spatial case ###################################
 ############################################################
@@ -36,25 +37,23 @@ set.seed(round(seed))
 while(i<=K){
 sel_data = sample(1:N,round(N*(1-n.fold)))  
 # data and coord used for prediction
-datanew   = data[sel_data]
-coordsnew = coords[sel_data,]
 
 if(!is.null(X)) {
                 X=fit$X[sel_data,]
                 Xloc=fit$X[-sel_data,]
                 }
 # data and coord to predict
-data_to_pred  = data[-sel_data]
-loc_to_pred   = coords[-sel_data,]
+data_to_pred  = fit$data[-sel_data]
 
 dtp[[i]]=data_to_pred
-if(!local) pr=GeoKrig(data=datanew, coordx=coordsnew,  
-	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
+	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
 	            model=fit$model, n=fit$n, #ok
               param=as.list(c(fit$param,fit$fixed)), 
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
-if(local) pr=GeoKrigloc(data=datanew, coordx=coordsnew,  
-              corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+
+if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
+              corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
               model=fit$model, n=fit$n, #ok
               max.points=max.points,maxdist=maxdist,
               param=as.list(c(fit$param,fit$fixed)), 

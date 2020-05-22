@@ -42,7 +42,7 @@ estimation=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fi
    vartype='SubSamp', weighted=FALSE, 
    taper=fit$taper, tapsep=fit$tapsep, method="cholesky",onlyvar=FALSE)
 
-if(estimation$convergence=="Successful"){
+if(estimation$convergence=='Successful'){
   #print((estimation$param))
 res=rbind(res,estimation$param)
 print(k)

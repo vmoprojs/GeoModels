@@ -135,9 +135,7 @@ ptpbimodal = function(x,skew,delta,df){
   ll=1:length(x)
   sel1=I(x<0)*ll
   sel2=I(x>=0)*ll
-  x1=x[sel1]
-  x2=x[sel2]
-  print(x1)
+  x1=x[sel1];x2=x[sel2];
   pp1=(0.5*(1+skew)*as.numeric(zipfR::Igamma(df/2,nn*(-x1)^(alpha)/(2*((1+skew)^(alpha))),lower=FALSE))/(gamma(df/2)))
   pp2=(0.5*(skew+1)+(0.5*(1-skew)*as.numeric(zipfR::Igamma(df/2,nn*(x2)^(alpha)/(2*((1-skew)^(alpha))),lower=TRUE))/(gamma(df/2))))
   return(c(pp1,pp2))

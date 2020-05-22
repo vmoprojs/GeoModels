@@ -138,7 +138,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
                              if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                     *res+= weights*log(biv_skew((1-nuis[0])*corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2]));
+                     *res+= weights*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nuis[0]));
                  }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -447,35 +447,37 @@ void Comp_Pair_Gauss_misp_Pois2mem(int *cormod, double *data1,double *data2,int 
  double *nuis, int *GPU,int *local)
 {
     int i=0,N=2;
-    double weights=1.0,corr,corr1,mui,muj,bl;
+    double  weights=1.0,corr,corr1,mui,muj,bl;
     double nugget=nuis[0];
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-M= (double **) Calloc(N,double *);
+        M= (double **) Calloc(N,double *);
     for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
     
     double *dat;
     dat=(double *) Calloc(N,double);
-    nugget=nuis[0];
     for(i=0;i<npairs[0];i++){
-if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+        
+                  if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
              //***********/
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
                      corr=CorFct(cormod,lags[i],0,par,0,0)*(1-nugget);
                       corr1=corr_pois(corr,mui, muj);
-                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                         M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr1;M[1][0]= M[0][1];
-                        dat[0]=data2[i]-mui;dat[1]=data2[i]-muj;
+                        dat[0]=data1[i]-mui;dat[1]=data2[i]-muj;
+                      
                       bl=dNnorm(N,M,dat);
                       *res+= log(bl)*weights;
-                    }} 
+                    }}  
    for(i=0;i<N;i++)  {Free(M[i]);}
     Free(M);         
     // Checks the return values
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
+
 
 /*********************************************************/
 void Comp_Pair_Gauss_misp_SkewT2mem(int *cormod, double *data1,double *data2,int *NN, 
@@ -527,9 +529,9 @@ void Comp_Pair_Gauss_misp_T2mem(int *cormod, double *data1,double *data2,int *NN
      for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
-                     corr=CorFct(cormod,lags[i],0,par,0,0)*(1-nugget);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
         //if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
-        corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr));
+        if(fabs(corr)>0)  corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
 
            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                      bl=log_biv_Norm(corr,data1[i],data2[i],mean1[i],mean2[i],sill*df/(df-2),0);
@@ -612,8 +614,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                   bl=biv_T((1-nugget)*corr,(zi-mean1[i])/sqrt(sill),
-                                            (zj-mean2[i])/sqrt(sill),df)/sill;
+                   bl=biv_T(corr,(zi-mean1[i])/sqrt(sill),
+                                            (zj-mean2[i])/sqrt(sill),df,nugget)/sill;
                              *res+= weights*log(bl);
                 }}
 
@@ -638,9 +640,8 @@ void Comp_Pair_TWOPIECETukeyh2mem(int *cormod, double *data1,double *data2,int *
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 zi=data1[i];zj=data2[i];
-
-                    corr=CorFct(cormod,lags[i],0,par,0,0);
-                      p11=pbnorm(cormod,lags[i],0,qq,qq,nugget,1,par,0);
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+                      p11=pbnorm22(qq,qq,corr);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]); 
                     bl=biv_two_pieceTukeyh((1-nugget)*corr,zi,zj,sill,eta,tail,p11,mean1[i],mean2[i]);  
                     *res+= weights*log(bl);
@@ -667,10 +668,11 @@ void Comp_Pair_TWOPIECET2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
-                      p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                      p11=pbnorm22(qq,qq,corr);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                     /********************************************************/
-                    bl=biv_two_pieceT((1-nugget)*corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i]);
+                    bl=biv_two_pieceT(corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i],nugget);
+  //Rprintf("%f- %f- %f %f %f %f %f %f %f %f %f  \n",lags[i],corr,eta,sill,zi,zj,df,eta,p11,mean1[i],mean2[i]);
                     /********************************************************/
                            *res+= weights*log(bl);
                 }}
@@ -697,7 +699,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     corr=CorFct(cormod,lags[i],0,par,0,0);
                       //p11=pbnorm(cormod,lags[i],0,qq,qq,nugget,1,par,0);
 
-                      p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                      p11=pbnorm22(qq,qq,corr);
                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                     bl=biv_two_pieceGaussian((1-nugget)*corr,zi,zj,sill,eta,p11,mean1[i],mean2[i]);
                     *res+= weights*log(bl);
@@ -727,7 +729,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 zi=data1[i];zj=data2[i];
                 if(!ISNAN(zi)&&!ISNAN(zj) ){
                     corr=CorFct(cormod,lags[i],0,par,0,0);
-                        p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                        p11=pbnorm22(qq,qq,corr);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                     /********************************************************/
                    bl=biv_two_piece_bimodal((1-nugget)*corr,zi,zj,sill,df,delta,eta,p11,mean1[i],mean2[i]);
@@ -813,7 +815,7 @@ void Comp_Pair_T_st2mem(int *cormod, double *data1,double *data2,int *NN,
                                 zj=data2[i];
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-   bl=biv_T((1-nugget)*corr,(zi-mean1[i])/sqrt(sill),(zj-mean2[i])/sqrt(sill),df)/sill;
+   bl=biv_T(corr,(zi-mean1[i])/sqrt(sill),(zj-mean2[i])/sqrt(sill),df,nugget)/sill;
                              *res+= weights*log(bl);
  
                 }}
@@ -837,9 +839,9 @@ void Comp_Pair_Gauss_misp_T_st2mem(int *cormod, double *data1,double *data2,int 
 
     for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0)*(1-nugget);
+                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                             //if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
-               corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr));
+             if(fabs(corr)>0)  corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
                                u=data1[i];      
                                 w=data2[i];   
                                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
@@ -867,9 +869,8 @@ void Comp_Pair_Gauss_misp_Pois_stmem(int *cormod, double *data1,double *data2,in
     dat=(double *) Calloc(N,double);
      for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                          u=data1[i];      
-                                w=data2[i];
-                                      corr=CorFct(cormod,lags[i],lagt[i],par,0,0)*(1-nugget);
+                          u=data1[i];      w=data2[i];
+                      corr= (1-nugget) * CorFct(cormod,lags[i],lagt[i],par,0,0);
                             mui=exp(mean1[i]);muj=exp(mean2[i]);
                              corr2=corr_pois(corr,mui, muj);
                                    
@@ -897,13 +898,14 @@ void Comp_Pair_Pois_st2mem(int *cormod, double *data1,double *data2,int *NN,
     // Computes the log-likelihood:
   for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                          u=data1[i];      
-                                w=data2[i];
-                                      corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
-                            mui=exp(mean1[i]);muj=exp(mean2[i]);
+                          u=data1[i];      w=data2[i];
+                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                     mui=exp(mean1[i]);
+                     muj=exp(mean2[i]);
                           uu=(int) u;  ww=(int) w;
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
-                                   if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
+                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
 
                                     }}
@@ -993,7 +995,7 @@ for(i=0;i<npairs[0];i++){
                                 zj=data2[i];
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                        p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                        p11=pbnorm22(qq,qq,corr);
   bl=biv_two_pieceGaussian((1-nugget)*corr,zi,zj,sill,eta,p11,mean1[i],mean2[i]);
         
                            *res+= weights*log(bl);
@@ -1028,7 +1030,7 @@ for(i=0;i<npairs[0];i++){
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                   if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                       // p11=pbnorm(cormod,lags[i],lagt[i],qq,qq,nugget,1,par,0);
-                        p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                        p11=pbnorm22(qq,qq,corr);
                          bl=biv_two_pieceTukeyh((1-nugget)*corr,zi,zj,sill,eta,tail,p11,mean1[i],mean2[i]);  
         
                            *res+= weights*log(bl);
@@ -1061,8 +1063,8 @@ for(i=0;i<npairs[0];i++){
                                 zj=data2[i];
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                        p11=pbnorm22(qq,qq,(1-nugget)*corr);
-                         bl=biv_two_pieceT((1-nugget)*corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i]);  
+                        p11=pbnorm22(qq,qq,corr);
+                         bl=biv_two_pieceT(corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i],nugget);  
         
                            *res+= weights*log(bl);
 
@@ -1087,6 +1089,7 @@ void Comp_Pair_PoisbinGauss_st2mem(int *cormod, double *data1,double *data2,int 
 
      for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+              corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                 //psj=pbnorm(cormod,lags[i],lagt[i],mean1[i],mean2[i],nuis[0],1,par,0);
                 p11=pbnorm22(mean1[i],mean2[i],(1-nugget)*corr);
                 p1=pnorm(mean1[i],0,1,1,0);
@@ -1263,7 +1266,7 @@ void Comp_Pair_SkewGauss_st2mem(int *cormod, double *data1,double *data2,int *NN
                                 zj=data2[i];
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                                    bl=biv_skew((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2]);
+                                    bl=biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nugget);
                              *res+= weights*log(bl);
                          }}
     if(!R_FINITE(*res))*res = LOW;
@@ -1490,7 +1493,7 @@ void Comp_Pair_TWOPIECEBIMODAL_st2mem(int *cormod, double *data1,double *data2,i
                             zi=data1[i];zj=data2[i];
                                 corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                 //p11=pbnorm(cormod,lags[i],lagt[i],qq,qq,nugget,1,par,0);
-                                p11=pbnorm22(qq,qq,(1-nugget)*corr);
+                                p11=pbnorm22(qq,qq,corr);
                                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                                 bl=biv_two_piece_bimodal((1-nugget)*corr,zi,zj,sill,df,delta,eta,p11,mean1[i],mean2[i]);
                              *res+= weights*log(bl);

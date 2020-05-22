@@ -256,8 +256,8 @@ forGaussparam<-function(model,param,bivariate)
      
     npoi=1
 ################################# how many random fields ################
-    if(model %in% c("LogGaussian")) k=1 
-    if(model %in% c("SkewGaussian","SkewGauss","Weibull","TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh")) k=2 
+    if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1 
+    if(model %in% c("Weibull")) k=2 
     if(model %in% c("LogLogistic","Logistic")) k=4 
     if(model %in% c("Binomial"))   k=round(n)
     if(model %in% c("Geometric","BinomialNeg")){ k=99999;
@@ -297,17 +297,57 @@ forGaussparam<-function(model,param,bivariate)
    if(bivariate)  dd=array(0,dim=c(dime,2,k))    
    cumu=NULL;#s=0 # for negative binomial  case
  #########################################
- 
+
 #### computing correlation matrix  of the Gaussian random field
+if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
+               "TwoPieceStudentT","TwoPieceGaussian")) { nugget=param$nugget;param$nugget=0}
+ #print(forGaussparam(model,param,bivariate))
 ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, sparse,NULL,NULL,"Standard",X)
+
+
+if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
+               "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
+{ 
+
+  II=diag(nrow(ccov$covmatrix)); 
+  II[lower.tri(II)] <- (1-nugget); 
+  II <- t(II); 
+  II[lower.tri(II)] <- (1-nugget)
+  ccov_with_nug=ccov$covmatrix*II
+}
+
     if(spacetime_dyn) ccov$numtime=1
     numcoord=ccov$numcoord;numtime=ccov$numtime;
     dime<-numcoord*numtime
     xx=double(dime)
-    varcov<-ccov$covmat;  ######covariance matrix!!
+
 ######################################################### 
 KK=1;sel=NULL;ssp=double(dime)
+
+if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
+               "TwoPieceStudentT","TwoPieceGaussian"))
+{ 
+  ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
+  if(sparse) {  
+                  if(spam::is.spam(ccov_with_nug))
+                    simD=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime),ccov_with_nug) )
+                  else
+                  simD=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov_with_nug)) )
+               }
+    else
+    {
+        decompvarcov <- MatDecomp(ccov_with_nug,method)
+        if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
+        sqrtvarcov <- MatSqrt(decompvarcov,method)
+       if(!is.null(GPU)) simD=(gpuR::crossprod(sqrtvarcov,ss))# []
+       else simD=crossprod(sqrtvarcov,ss)
+    }
+
+      ccov1=ccov
+      ccov1$covmatrix=ccov_with_nug
+       simDD<-RFfct1(ccov1,dime,param[ccov$namesnuis],param,simD,ccov$X,ns)
+}
 
 
   while(KK<=npoi) { 
@@ -325,14 +365,14 @@ KK=1;sel=NULL;ssp=double(dime)
                        }
     #### simulating with matrix decomposition using sparse or dense matrices
     if(sparse) {  
-                  if(spam::is.spam(ccov$covmat))
-                    simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmat) )
+                  if(spam::is.spam(ccov$covmatrix))
+                    simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmatrix) )
                   else
-                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov$covmat)) )
+                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov$covmatrix)) )
                }
     else
     {
-        decompvarcov <- MatDecomp(varcov,method)
+        decompvarcov <- MatDecomp(ccov$covmatrix,method)
         if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
         sqrtvarcov <- MatSqrt(decompvarcov,method)
        if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))# []
@@ -342,8 +382,6 @@ KK=1;sel=NULL;ssp=double(dime)
     nuisance<-param[ccov$namesnuis]
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
     ####################################
-    #####formatting simulation #########
-
     sim<-RFfct1(ccov,dime,nuisance,param,simd,ccov$X,ns)
     ####################################
     ####### starting cases #############
@@ -421,7 +459,8 @@ if(model %in% c("SkewGaussian","SkewGauss","SkewStudentT","StudentT","TwoPieceGa
 
 
 if(model %in% c("SkewGaussian","SkewGauss"))   {
-        if(!bivariate) aa=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2]
+        #if(!bivariate) aa=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2] t(sim)
+         if(!bivariate) aa=mm+sk*abs(dd[,,1])+sqrt(vv)*t(simDD)
         if(bivariate)  {aa=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
                                   mm[2]+sk[2]*abs(dd[,,1][,2])+sqrt(vv[2])*dd[,,2][,2])}
         }
@@ -429,28 +468,32 @@ if(model %in% c("SkewGaussian","SkewGauss"))   {
 if(model %in% c("SkewStudentT"))   { 
      sim=NULL
      for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
-        bb= sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
+        #bb= sk*abs(dd[,,k-1])+dd[,,k]*sqrt(1-sk^2)
+        bb= sk*abs(dd[,,k-1])+sqrt(1-sk^2)*t(simDD)
         aa=mm+sqrt(vv)*(bb/sqrt(rowSums(sim)/(k-2)))
         }    
 ################################################        
 if(model %in% c("StudentT"))   { 
      sim=NULL
      for(i in 1:(k-1))  sim=cbind(sim,dd[,,i]^2)
-        aa=mm+sqrt(vv)*(c(dd[,,k])/sqrt(rowSums(sim)/(k-1)))
+        #aa=mm+sqrt(vv)*(c(dd[,,k])/sqrt(rowSums(sim)/(k-1)))
+        aa=mm+sqrt(vv)*(c(t(simDD))/sqrt(rowSums(sim)/(k-1)))
         }
 ################################################
-if(model %in% c("TwoPieceGaussian","TwoPieceGauss"))   { 
-        sim=dd[,,1]
-        discrete=dd[,,2] 
+if(model %in% c("TwoPieceGaussian"))   { 
+       # sim=dd[,,1]
+        sim=t(simDD)
+        discrete=dd[,,1] 
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
         aa=mm+sqrt(vv)*(abs(sim)*discrete)
         }
 ################################################ 
 if(model %in% c("TwoPieceTukeyh"))   { 
-        sim=dd[,,1]
+        #sim=dd[,,1]
+        sim=t(simDD)
         sim=sim*exp(tl*sim^2/2)
-        discrete=dd[,,2] 
+        discrete=dd[,,1] 
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
         aa=mm+sqrt(vv)*(abs(sim)*discrete)
@@ -472,7 +515,8 @@ if(model %in% c("TwoPieceStudentT"))   {
      sim=NULL
      for(i in 1:(k-2))  sim=cbind(sim,dd[,,i]^2)
 
-        aa=(c(dd[,,k-1])/sqrt(rowSums(sim)/(k-2)))
+        #aa=(c(dd[,,k-1])/sqrt(rowSums(sim)/(k-2)))
+        aa=(c(t(simDD))/sqrt(rowSums(sim)/(k-2)))
         pp=qnorm((1-sk)/2)
         discrete=dd[,,k] 
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;

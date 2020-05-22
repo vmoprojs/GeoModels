@@ -1989,13 +1989,15 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,corr=0.0;
+
         for(i=0;i<(ncoord[0]-1);i++){
       for(j=(i+1);j<ncoord[0];j++){
-         ai=mean[i];aj=mean[j];
+        
         dd=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
         corr=CorFct(cormod,dd,0,par,0,0);
 
    if(*model==14||*model==16||*model==2||*model==11){
+     ai=mean[i];aj=mean[j];
        // psj=pbnorm(cormod,dd,0,ai,aj,nuis[0],nuis[1],par,0);
         psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
               p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2007,7 +2009,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
      if(*model==30)
        {
            ai=exp(mean[i]);aj=exp(mean[j]);
-           rho[h]=sqrt(ai*aj)*corr_pois(corr,ai, aj);
+           rho[h]=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj);
 
        } 
             h++;
@@ -2194,6 +2196,7 @@ if(*model==30) {       //poisson
         aj=exp(mean[j+ns[v]*v]); 
           rho[h]= sqrt(ai* aj)*corr_pois((1-nuis[0])*corr,ai, aj);
 
+
   }
 
  h++;}}
@@ -2359,13 +2362,20 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                        // compute the covariance!
                     if(*model==2||*model==11||*model==19) cc[h]=n[0]*(psj-p1*p2);//binomial
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
-                   if(*model==16)           cc[h]=cov_binom_neg(n[0],psj,p1,p2);
+                   if(*model==16)          
+                   { 
+                   
+                    cc[h]=cov_binom_neg(n[0],psj,p1,p2);
+                   //  Rprintf("%f %f  %f %f %f %f  %f%d\n",cc[h],dis,psj,ai,aj,p1,p2);
+
+                   }
                  }
-              if(*model==30)
+              if(*model==30)   //poisson
               {
                         ai=exp(mean[i]);
                         aj=exp(mean[j]);
                        cc[h]=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); 
+                       //  Rprintf("%f %f %f %f--%f\n",cc[h],ai,aj,nuis[0],corr_pois((1-nuis[0])*corr,ai, aj));
               }
                /*****************************************************************/  
                     h++;}}
@@ -2373,10 +2383,8 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
            
       }
 if(*spt) {
-      int i=0,j=0,h=0;
-     int t=0,v=0;double dit=0.0;
-    double dis=0.0,p1=0.0,p2=0.0,psj=0.0,ai=0.0,aj=0.0,corr=0.0;
-    
+      int i=0,j=0,h=0,t=0,v=0;
+    double dit=0.0,dis=0.0,p1=0.0,p2=0.0,psj=0.0,ai=0.0,aj=0.0,corr=0.0;
         for(j=0;j<(*nloc);j++){
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){

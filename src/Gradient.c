@@ -679,10 +679,10 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
     double sill=nuis[nbetas+2];
     double skew=nuis[nbetas+3];
 
-    double rho1=(1-nugget)*rho;
+    double rho1=rho;
     double qq=qnorm((1-skew)/2,0,1,1,0);
     double p11=pbnorm(cormod,lag,lagt,qq,qq,nugget,1,par,0);
-    double ff=log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai,aj));
+    double ff=log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai,aj,nugget));
  //Rprintf("%d %d %d %d %d %d %f %f %f %f\n",nbetas,flag[0],flag[1],flag[2],flag[3],flag[4],df,nugget,sill,skew);
 /*
   // Derivativve of the difference respect with the mean*/
@@ -693,26 +693,26 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai_d,aj_d)) - ff)/delta; 
+   grad[i]=(log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai_d,aj_d,nugget)) - ff)/delta; 
    i++; }
 }  
 // Derivvativve of the difference respect with df*/
   if(flag[nbetas]==1) { 
     delta=sqrt(EPS)*df; 
-    grad[i]=(log(biv_two_pieceT(rho1,u,v,sill,df+delta,skew,p11,ai,aj)) - ff)/delta;
+    grad[i]=(log(biv_two_pieceT(rho1,u,v,sill,df+delta,skew,p11,ai,aj,nugget)) - ff)/delta;
     i++; 
   }
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas+1]==1) {   
     delta=sqrt(EPS)*nugget; 
     p11d=pbnorm(cormod,lag,lagt,qq,qq,nugget+delta,1,par,0);
-    grad[i]=(log(biv_two_pieceT((1-(nugget+delta))*rho,u,v,sill,df,skew,p11d,ai,aj)) - 
+    grad[i]=(log(biv_two_pieceT(rho,u,v,sill,df,skew,p11d,ai,aj,nugget+delta)) - 
              ff)/delta;
     i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*sill;
-    grad[i]=(log(biv_two_pieceT(rho1,u,v,sill+delta,df,skew,p11,ai,aj)) - ff)/delta; 
+    grad[i]=(log(biv_two_pieceT(rho1,u,v,sill+delta,df,skew,p11,ai,aj,nugget)) - ff)/delta; 
     i++; 
   }
   /* Derivvativve of the difference respect with skew*/  
@@ -720,7 +720,7 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
     delta=sqrt(EPS)*skew;
     qqd=qnorm((1-(skew+delta))/2,0,1,1,0);
     p11d=pbnorm(cormod,lag,lagt,qqd,qqd,nugget,1,par,0);
-    grad[i]=(log(biv_two_pieceT(rho,u,v,sill,df,skew+delta,p11d,ai,aj)) - ff)/delta; 
+    grad[i]=(log(biv_two_pieceT(rho,u,v,sill,df,skew+delta,p11d,ai,aj,nugget)) - ff)/delta; 
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
@@ -731,7 +731,7 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
        p11d=pbnorm(cormod,lag,lagt,qq,qq,nugget,1,parC,0);
-      grad[kk+i]=(log(biv_two_pieceT((1-nugget)*rhod,u,v,sill,df,skew,p11d,ai,aj)) - 
+      grad[kk+i]=(log(biv_two_pieceT(rhod,u,v,sill,df,skew,p11d,ai,aj,nugget)) - 
                   ff)/delta;
     kk++;}
       h++;
@@ -756,8 +756,8 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  double df=nuis[nbetas];
  double nugget=nuis[nbetas+1];
  double sill=nuis[nbetas+2];
- double rho1=(1-nugget)*rho;
- double ff=log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill );
+ double rho1=rho;
+ double ff=log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df,nugget)/sill);
 /*
   // Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
@@ -767,22 +767,22 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_T(rho1,(u-ai_d)/sill,(v-aj_d)/sill,df)/sill) - ff)/delta; 
+   grad[i]=(log(biv_T(rho1,(u-ai_d)/sill,(v-aj_d)/sill,df,nugget)/sill) - ff)/delta; 
    i++; }
 }
   if(flag[nbetas]==1) { 
     delta=sqrt(EPS)*df; 
-    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df+delta)/sill)- ff)/delta;
+    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df+delta,nugget)/sill)- ff)/delta;
     i++; 
   }
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas+1]==1) { delta=sqrt(EPS)*nugget; 
-      grad[i]=(log(biv_T((1-(nugget+delta))*rho,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill) - ff)/delta;
+      grad[i]=(log(biv_T(rho,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df,nugget+delta)/sill) - ff)/delta;
     i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*sill; 
-    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill+delta),(v-aj)/sqrt(sill+delta),df)/(sill+delta)) -ff )/delta;
+    grad[i]=(log(biv_T(rho1,(u-ai)/sqrt(sill+delta),(v-aj)/sqrt(sill+delta),df,nugget)/(sill+delta)) -ff )/delta;
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
@@ -795,7 +795,7 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
        
-           grad[kk+i]=(log(biv_T((1-nugget)*rhod,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df)/sill) 
+           grad[kk+i]=(log(biv_T(rhod,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df,nugget)/sill) 
             - ff)/delta;
     kk++;}
       h++;
@@ -1030,23 +1030,23 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai_d,aj_d,sill,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
+   grad[i]=(log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
    i++; }
 }  
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas]==1) {  delta=sqrt(EPS)*nugget;
-    grad[i]=(log(biv_skew((1-(nugget+delta))*rho,u,v,ai,aj,sill+delta,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew,nugget+delta)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
     i++; 
   }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
-    grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill+delta,skew)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
     i++; 
   }
     if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*skew;
-    grad[i]=(log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew+delta)) - log(biv_skew((1-nugget)*rho,u,v,ai,aj,sill,skew)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill,skew+delta,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
@@ -1059,7 +1059,7 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
        
-      grad[kk+i]=(log(biv_skew(rhod,u,v,ai,aj,sill,skew)) - log(biv_skew(rho,u,v,ai,aj,sill,skew)))/delta;
+      grad[kk+i]=(log(biv_skew(rhod,u,v,ai,aj,sill,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta;
     kk++;}
       h++;
     }

@@ -442,7 +442,7 @@ double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double n
 
 double cor_pois(double rho,double mi,double mj);
 double e_n(int k,double x);
-double biv_skew(double corr,double zi,double zj,double mi,double mj,double vari,double skew);
+double biv_skew(double corr,double zi,double zj,double mi,double mj,double vari,double skew,double nugget);
 
 double biv_sinh(double corr,double zi,double zj,double mi,double mj,double skew,double tail,double vari);
 //bivariate skew gaussian bivariate  distribution
@@ -864,7 +864,7 @@ double cdf_norm2(double lim1,double lim2,double a11,double a12, double a22);
 double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari, double nugget);
 
 double d2norm(double x, double y, double rho);
-
+double d22norm(double x, double y,double v11,double v22,double v12);
 double d2lognorm(double x, double y, double sill,double nugget, double mux,double muy,double rho);
 
 double dNnorm(int N,double **M, double *dat);
@@ -1179,9 +1179,9 @@ double logfac(int n);
 
 /*for bivariate t distributions*/
 double Poch(int q,int n);
-double biv_T(double rho,double zi,double zj,double nuu);
+double biv_T(double rho,double zi,double zj,double nuu,double nugget);
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,double p11,
-  double mui,double muj);
+  double mui,double muj,double nugget);
 /**********************************************/
 double biv_half_Gauss(double rho,double zi,double zj);
 double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,double p11,
