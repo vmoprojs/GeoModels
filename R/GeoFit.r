@@ -37,6 +37,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     likelihood=gsub("[[:blank:]]", "",likelihood)
     type=gsub("[[:blank:]]", "",type)
     if(!is.logical(memdist)) memdist=FALSE
+    if(!is.null(X)) X=as.matrix(X)
  
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,

@@ -78,7 +78,7 @@ forGaussparam<-function(model,param,bivariate)
 ##############################################################################
 ########### for Gaussian and non Gaussian RF obtained using Gaussian RF ######
 ##############################################################################
-     RFfct1<- function(ccov,dime,nuisance,param,simd,X,ns)
+     RFfct1<- function(ccov,dime,nuisance,simd,X,ns)  
     {
         numcoord=ccov$numcoord; numtime=ccov$numtime;grid=ccov$grid;
         spacetime=ccov$spacetime;bivariate=ccov$bivariate
@@ -300,14 +300,15 @@ forGaussparam<-function(model,param,bivariate)
 
 #### computing correlation matrix  of the Gaussian random field
 if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
-               "TwoPieceStudentT","TwoPieceGaussian")) { nugget=param$nugget;param$nugget=0}
- #print(forGaussparam(model,param,bivariate))
+               "TwoPieceStudentT","TwoPieceGaussian")) 
+     { nugget=param$nugget;param$nugget=0}  ### ojo!!
+
 ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
                 forGaussparam(model,param,bivariate), radius, sparse,NULL,NULL,"Standard",X)
 
-
+## a realization  with nugget
 if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
-               "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
+               "TwoPieceStudentT","TwoPieceGaussian"))
 { 
 
   II=diag(nrow(ccov$covmatrix)); 
@@ -318,9 +319,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 }
 
     if(spacetime_dyn) ccov$numtime=1
-    numcoord=ccov$numcoord;numtime=ccov$numtime;
-    dime<-numcoord*numtime
-    xx=double(dime)
+  numcoord=ccov$numcoord;numtime=ccov$numtime;
+  dime<-numcoord*numtime
+  xx=double(dime)
 
 ######################################################### 
 KK=1;sel=NULL;ssp=double(dime)
@@ -346,7 +347,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
       ccov1=ccov
       ccov1$covmatrix=ccov_with_nug
-       simDD<-RFfct1(ccov1,dime,param[ccov$namesnuis],param,simD,ccov$X,ns)
+       #simDD<-RFfct1(ccov1,dime,param[ccov$namesnuis],param,simD,ccov$X,ns)
+             if(!spacetime&&!bivariate) simDD <- c(simD)
+            else simDD <- matrix(simD, nrow=ccov1$numtime, ncol=ccov1$numcoord,byrow=TRUE)
 }
 
 
@@ -363,7 +366,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
                          ##varcov=gpuR::vclMatrix(varcov, type="float")
                          ##ss=gpuR::vclMatrix(ss, type="float")
                        }
-    #### simulating with matrix decomposition using sparse or dense matrices
+    #### simulating with matrix decomposition using sparse or dense matrices without nugget!
     if(sparse) {  
                   if(spam::is.spam(ccov$covmatrix))
                     simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmatrix) )
@@ -382,7 +385,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
     nuisance<-param[ccov$namesnuis]
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
     ####################################
-    sim<-RFfct1(ccov,dime,nuisance,param,simd,ccov$X,ns)
+    sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
     ####################################
     ####### starting cases #############
     ####################################

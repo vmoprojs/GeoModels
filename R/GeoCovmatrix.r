@@ -173,12 +173,23 @@ if(!bivariate)    {
     hr=as.numeric(nuisance['tail1'])
     hl=as.numeric(nuisance['tail2'])
 
-   x1=((1-hl)^2-(hl*corr)^2)^(3/2)
-   x2=((1-hr)^2-(hr*corr)^2)^(3/2)
-   p1=corr/(2*x1);p2=corr/(2*x2)
+x1=1-(1-corr^2)*hr
+x2=(1-hr)^2-(corr*hr)^2
+y1=1-(1-corr^2)*hl
+y2=(1-hl)^2-(corr*hl)^2
+g=1-hl-hr+(1-corr^2)*hl*hr
+h1=sqrt(1-corr^2/(x1^2))+(corr/x1)*asin(corr/x1)
+h2=sqrt(1-corr^2/(y1^2))+(corr/y1)*asin(corr/y1)
+
+h3=sqrt(1-corr^2/(x1*y1))+sqrt(corr^2/(x1*y1))*asin(sqrt(corr^2/(x1*y1)))
+p1=x1*h1/(2*pi*(x2)^(3/2))+corr/(4*(x2)^(3/2))
+p2=y1*h2/(2*pi*(y2)^(3/2))+corr/(4*(y2)^(3/2))
+p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
+
+
    mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
    vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
-   corr=(p1+p2)/vv1
+   corr=(p1+p2+2*p3-mm^2)/vv1
   vv=as.numeric(nuisance['sill'])* vv1
        }
 if(bivariate){}
@@ -476,6 +487,7 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 if(model %in% c(2,11,30,16,14)){ #  binomial (negative)Gaussian type , Poisson
 
+
 if(!bivariate){
 
             fname <-"CorrelationMat_dis2"
@@ -486,11 +498,15 @@ if(!bivariate){
             other_nuis=as.numeric(nuisance[!sel])   
 if(type=="Standard")  {
   corr=double(numpairstot)
-            
+           
               cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+    
+      
+
 
   #cr=dotCall64::.C64(fname,SIGNATURE = 
    #    c("double","double","double","double",  "integer","double","integer","double","double","double","integer","integer","integer"),  

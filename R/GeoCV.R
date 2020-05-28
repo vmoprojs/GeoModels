@@ -59,7 +59,7 @@ if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],
               param=as.list(c(fit$param,fit$fixed)), 
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
-pred[[i]]=pr$pred
+pred[[i]]=as.numeric(pr$pred)
 err=data_to_pred-pr$pred
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
@@ -125,7 +125,7 @@ if(local) pr=GeoKrigloc(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coo
            radius=fit$radius, sparse=sparse,   time=NULL, 
              which=which, X=X,Xloc=Xloc) #ok  
 
-pred[[i]]=pr$pred
+pred[[i]]=as.numeric(pr$pred)
 err=data_to_pred-pr$pred  
    
 N2=length(err)

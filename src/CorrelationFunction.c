@@ -1985,10 +1985,12 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 }
 // Computation of the upper (lower) triangular spatial discrete  models
 void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
-        int *n,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
+        int *nn,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
 {
     int i=0,j=0,h=0;// check the paramaters range:
     double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,corr=0.0;
+
+
 
         for(i=0;i<(ncoord[0]-1);i++){
       for(j=(i+1);j<ncoord[0];j++){
@@ -2001,9 +2003,13 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
        // psj=pbnorm(cormod,dd,0,ai,aj,nuis[0],nuis[1],par,0);
         psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
               p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-      if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);
+      if(*model==2||*model==11)       rho[h]=nn[0]*(psj-p1*p2);
       if(*model==14)       rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);      
-      if(*model==16)       rho[h]=cov_binom_neg(n[0],psj,p1,p2); 
+      if(*model==16)       
+      {
+        //Rprintf("%d %f  %f  %f \n",nn[0],psj,p1,p2);
+        rho[h]=cov_binom_neg(nn[0],psj,p1,p2); }
+
        }
 
      if(*model==30)
@@ -2025,7 +2031,7 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
   for(i=0;i<*npairs;i++) {rho[i]=CorFct(cormod,lags[i],0,par,0,0);}
   return;
 }
-// Computation of the correlations for spatial tapering:
+// Computation of the correlations for kringing with  sparse matrix:
 void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
   int *ns, int *NS, int *n, double *mu1,double *mu2,int  *model)
 {
@@ -2341,7 +2347,7 @@ double dis=0.0;
 
 ///compute the covariance btwen loc to predict and locaton sites for binomial and geometric RF
 void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
-                int *model,int *tloc,double *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
+                int *model,int *tloc,int *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
     
    
@@ -2365,6 +2371,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                    if(*model==16)          
                    { 
                    
+
                     cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    //  Rprintf("%f %f  %f %f %f %f  %f%d\n",cc[h],dis,psj,ai,aj,p1,p2);
 
@@ -3506,7 +3513,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
       if(*model==2||*model==11||*model==19||*model==14||*model==16)   // binomial  type I or  II or geometric case
       {
           ai=mean[i];aj=mean[j];
-
+          //Rprintf("%f\n",nuis[0]);
           psj=pbnorm22(ai,aj,(1-nuis[0])*CorFct(cormod, h[i], u[j], par,0,0));
           //psj=pbnorm(cormod,h[i],u[j],ai,aj,nuis[0],nuis[1],par,0);
           p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);

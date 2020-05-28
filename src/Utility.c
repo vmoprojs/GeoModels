@@ -320,7 +320,7 @@ else{  //no tapering
     *npairs=h;
     lags= (double *) Calloc(*npairs,double);
     for(i=0;i<*npairs;i++)  lags[i]=tlags[i];  
-     Free(tlags);
+     //Free(tlags);
 	return;
 }
 
@@ -397,7 +397,7 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
     lagt= (double *) Calloc(*npairs,double);
     for(i=0;i<*npairs;i++)  
         {lags[i]=tlags[i];lagt[i]=tlagt[i];  }
-     Free(tlags); Free(tlagt);   
+    // Free(tlags); Free(tlagt);   
 
   return;
 }
@@ -478,7 +478,7 @@ void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx
   for(i=0;i<count;i++) { lags[i]=tlags[i];
                          first[i]=tfirst[i];
                          second[i]=tsecond[i];}
-   Free(tlags);Free(tfirst);Free(tsecond);
+  // Free(tlags);Free(tfirst);Free(tsecond);
   return;
 }
 
@@ -912,8 +912,10 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   /***********************************************************/  
 if(!isst[0]&&!isbiv[0]) {// spatial case
            // settting compact support
+
         if(srange[1]) maxdist[0]=srange[1];
-        else maxdist[0]=-LOW;    
+        else maxdist[0]=-LOW;   
+          
       if(istap[0])  // tapering case
            {
               npairs[0]=(int)(ncoord[0]*ncoord[0]);
@@ -923,11 +925,10 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
       else { // distances composite likelihood  
 
 
-           *npairs=*ncoord *(int) ((*ncoord-1)/2);
-
+           *npairs= (int)( *ncoord * (*ncoord-1)/2);
    //Rprintf("sdds22 %ld  %d %d %d %d\n",*npairs,npairs[0],*ncoord * (int)((*ncoord-1)/2),ncoord[0], *ncoord);
-
            tlags= (double *) Calloc(*npairs,double *);
+           // Rprintf("%f %f   %d %d\n",srange[1],maxdist[0],npairs[0],*npairs);
            //  tlags=(double *) R_alloc(*npairs, sizeof(double));
            if(tlags==NULL) {*ismal=0; return;}
                //   Rprintf("hhk%d",ncoord[0]);
@@ -935,6 +936,7 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
 
  // computing spatial distances and indexes      
  Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
+ Free(tlags);
       if(!ismal[0]) return;
   /***********************************************************/  
 }  // end spatial case
@@ -987,8 +989,8 @@ else { //spatio temporal case or bivariate case
        }  // end tapering
 else {  // distance for composite likelihood
               
-               if(isst[0])  npairs[0]=qq*(int)((qq-1)*0.5);
-               if(isbiv[0]) npairs[0]=qq*(int)((qq-1)*0.5);
+               if(isst[0])  npairs[0]=(int)(qq*(qq-1)*0.5);
+               if(isbiv[0]) npairs[0]=(int)(qq*(qq-1)*0.5);
 
              tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
@@ -1006,10 +1008,12 @@ else {  // distance for composite likelihood
             if(tsecond==NULL){*ismal=0; return;}
                       }
        }
-if(isst[0])  SpaceTime_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
+if(isst[0])  {SpaceTime_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
                                         ns,NS,colidx,rowidx,srange,trange);
-if(isbiv[0]) SpaceBiv_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
+               Free(tlags); Free(tlagt);}
+if(isbiv[0]) {SpaceBiv_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
                                      ns,NS,colidx,rowidx,srange);
+               Free(tlags);Free(tfirst);Free(tsecond);}
   if(!ismal[0]) return;
  } //end spatio temporal case or bivariate case
 

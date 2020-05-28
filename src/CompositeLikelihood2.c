@@ -431,6 +431,7 @@ void Comp_Pair_Pois2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                    // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj);

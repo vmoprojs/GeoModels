@@ -89,7 +89,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
      
-    
+     
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, 
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n, 
           param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,X=X) 
@@ -561,6 +561,7 @@ if(type=="Tapering"||type=="tapering")  {
 ###################### binomial  binomial negative and poisson #####################################
 ####################################################################################################################################
 
+
 if(covmatrix$model %in% c(2,11,14,19,30,16))
 {  
      if(type=="Standard"||type=="standard") {
@@ -578,12 +579,12 @@ if(covmatrix$model %in% c(2,11,14,19,30,16))
 if(covmatrix$model %in% c(2,11,14,16,19,30))
 {
   corri=double(dimat*dimat2)
- 
+
     ## Computing correlation between the locations to predict and the locations observed
     ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
     as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-    as.double(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),
+    as.integer(kk),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),
     as.double(rep(c(mu),dimat2)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
     as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
     as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)

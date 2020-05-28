@@ -50,7 +50,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                
     CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param,N)
     {
-       if(!bivariate) {
+       if(!bivariate) { 
                              p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
                              as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model),as.double(nuisance),as.double(param),
                              as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
@@ -129,11 +129,12 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     binomialneg<-model==16
     tukeyh<- model ==34
+    tukeyh2<- model ==4
     poisson<- model==30||model==36
     loglogistic <- model==24
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||geom||tukeyh||twopiecebimodal||skewstudentT
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||geom||tukeyh||tukeyh2||twopiecebimodal||skewstudentT
             ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-3
     # lags associated to empirical variogram estimation
@@ -171,6 +172,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
         sel=substr(names(nuisance),1,4)=="mean"
         mm=nuisance[sel]
         nuisance=nuisance[!sel]
+
         }
       if(bivariate){
         param <- c(fitted$fixed,fitted$param)[CorrelationPar(CkCorrModel(fitted$corrmodel))]
@@ -209,7 +211,9 @@ if(!bivariate) {
     corrmodel <- CkCorrModel(fitted$corrmodel)
 
      nui=nuisance
-     nui['sill']=1;nui['nugget']=0
+     nui['sill']=1;
+if(!(binomial||geom||binomialneg||poisson)) nui['nugget']=0
+else                                        nui['nugget']=nuisance['nugget']
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
@@ -355,6 +359,26 @@ if(!bivariate) {
                               vs=  (1-2*h)^(-1.5)     ## variance
                               cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
+                             } 
+                  } 
+    if(tukeyh2)        { if(bivariate) {}
+                        else {
+                              correlation=correlation*(1-nuisance['nugget'] )
+                              hr=as.numeric(nuisance['tail1']); hl=as.numeric(nuisance['tail2'])
+                              sill=as.numeric(nuisance['sill'])
+                              corr=correlation
+                              x1=1-(1-corr^2)*hr; x2=(1-hr)^2-(corr*hr)^2
+                              y1=1-(1-corr^2)*hl; y2=(1-hl)^2-(corr*hl)^2
+                              g=1-hl-hr+(1-corr^2)*hl*hr
+                              h1=sqrt(1-corr^2/(x1^2))+(corr/x1)*asin(corr/x1);h2=sqrt(1-corr^2/(y1^2))+(corr/y1)*asin(corr/y1)
+                              h3=sqrt(1-corr^2/(x1*y1))+sqrt(corr^2/(x1*y1))*asin(sqrt(corr^2/(x1*y1)))
+                              p1=x1*h1/(2*pi*(x2)^(3/2))+corr/(4*(x2)^(3/2)); p2=y1*h2/(2*pi*(y2)^(3/2))+corr/(4*(y2)^(3/2))
+                              p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
+                              mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                              vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                              cc=(p1+p2+2*p3-mm^2)/vs
+
+                          covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }   
 ##########################################
@@ -631,6 +655,10 @@ if(!bivariate) {
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
             if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)
+            if(tukeyh2)  { hr=nuisance["tail1"];hl=nuisance["tail2"];
+                           mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                           vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                         }
      
             ########
             if(plagt){
