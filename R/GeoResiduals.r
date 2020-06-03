@@ -37,6 +37,7 @@ if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
 
 
+
 ###  positive multiplicative models
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(c(mu))
@@ -45,7 +46,7 @@ if(model %in% c("Gaussian","SkewGaussian","Logistic",
                "Tukeyh","SinhAsinh","Tukeygh","Gaussian_misp_Tukeygh",
                "StudentT",  "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT","SkewStudentT",
                "TwoPieceGaussian","TwoPieceTukeyh","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
-res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))
+{res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))}
 
 
 #if(binomial or binomialneg or geom or bernoulli)

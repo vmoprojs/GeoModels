@@ -254,24 +254,6 @@ double hy1f1p(double a, double b, double x, double *err)
     return (sum);
 }
 
-
-/*                                                     hy1f1a()        */
-/* asymptotic formula for hypergeometric function:
- *
- *        (    -a
- *  --    ( |z|
- * |  (b) ( -------- 2f0( a, 1+a-b, -1/x )
- *        (  --
- *        ( |  (b-a)
- *
- *
- *                                x    a-b                     )
- *                               e  |x|                        )
- *                             + -------- 2f0( b-a, 1-a, 1/x ) )
- *                                --                           )
- *                               |  (a)                        )
- */
-
 double hy1f1a(double a, double b, double x, double *err)
 
 {
@@ -766,124 +748,143 @@ void igam_call(double *a,double *x,double *res)
     *res = igam(*a,*x);
 }
 
-double igam(a, x)
-double a, x;
+double igam(double a, double x)
 {
     double absxma_a;
-    
-    /* Check zero integration limit first */
-    if (x == 0)
-        return (0.0);
-    
-    if ((x < 0) || (a <= 0)) {
-        //sf_error("gammainc", SF_ERROR_DOMAIN, NULL);
-       // printf("gammainc  SF_ERROR_DOMAIN\n");
-        return (NAN);
+
+    if (x < 0 || a < 0) {
+       // sf_error("gammainc", SF_ERROR_DOMAIN, NULL);
+        return NPY_NAN;
+    } else if (a == 0) {
+        if (x > 0) {
+            return 1;
+        } else {
+            return NPY_NAN;
+        }
+    } else if (x == 0) {
+        /* Zero integration limit */
+        return 0;
+    } else if (!R_finite(a)) {
+        if (!R_finite(x)) {
+            return NPY_NAN;
+        }
+        return 0;
+    } else if (!R_finite(x)) {
+        return 1;
     }
-    
+
     /* Asymptotic regime where a ~ x; see [2]. */
     absxma_a = fabs(x - a) / a;
     if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
-        return asymptotic_series(a, x, IGAM);
+    return asymptotic_series(a, x, IGAM);
     } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
-        return asymptotic_series(a, x, IGAM);
+    return asymptotic_series(a, x, IGAM);
     }
-    
+
     if ((x > 1.0) && (x > a)) {
-        return (1.0 - igamc(a, x));
+    return (1.0 - igamc(a, x));
     }
-    
+
     return igam_series(a, x);
 }
+
+
 
 
 double igamc(double a, double x)
 {
     double absxma_a;
-    
-    if ((x < 0) || (a <= 0)) {
-        //sf_error("gammaincc", SF_ERROR_DOMAIN, NULL);
-        //printf("gammainc  SF_ERROR_DOMAIN\n");
-        return (NAN);
-    } else if (x == 0) {
-        return 1;
-    } else if (isinf(x)) {
-        return 0.0;
+
+    if (x < 0 || a < 0) {
+    //sf_error("gammaincc", SF_ERROR_DOMAIN, NULL);
+    return NPY_NAN;
+    } else if (a == 0) {
+        if (x > 0) {
+        return 0;
+    } else {
+        return NPY_NAN;
     }
-    
+    } else if (x == 0) {
+    return 1;
+    } else if (!R_finite(a)) {
+    if (!R_finite(x)) {
+        return NPY_NAN;
+    }
+    return 1;
+    } else if (!R_finite(x)) {
+    return 0;
+    }
+
     /* Asymptotic regime where a ~ x; see [2]. */
     absxma_a = fabs(x - a) / a;
     if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
-        return asymptotic_series(a, x, IGAMC);
+    return asymptotic_series(a, x, IGAMC);
     } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
-        return asymptotic_series(a, x, IGAMC);
+    return asymptotic_series(a, x, IGAMC);
     }
-    
+
     /* Everywhere else; see [2]. */
     if (x > 1.1) {
-        if (x < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_continued_fraction(a, x);
-        }
-    } else if (x <= 0.5) {
-        if (-0.4 / log(x) < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_series(a, x);
-        }
+    if (x < a) {
+        return 1.0 - igam_series(a, x);
     } else {
-        if (x * 1.1 < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_series(a, x);
-        }
+        return igamc_continued_fraction(a, x);
+    }
+    } else if (x <= 0.5) {
+    if (-0.4 / log(x) < a) {
+        return 1.0 - igam_series(a, x);
+    } else {
+        return igamc_series(a, x);
+    }
+    } else {
+    if (x * 1.1 < a) {
+        return 1.0 - igam_series(a, x);
+    } else {
+        return igamc_series(a, x);
+    }
     }
 }
-
 
 
 
 double igam_fac(double a, double x)
 {
     double ax, fac, res, num;
-    
+
     if (fabs(a - x) > 0.4 * fabs(a)) {
-        ax = a * log(x) - x - lgam(a);
-        if (ax < -MAXLOG) {
-            //sf_error("igam", SF_ERROR_UNDERFLOW, NULL);
-            //printf("gammainc  SF_ERROR_DOMAIN\n");
-            return 0.0;
-        }
-        return exp(ax);
+    ax = a * log(x) - x - lgam(a);
+    if (ax < -MAXLOG) {
+       // sf_error("igam", SF_ERROR_UNDERFLOW, NULL);
+        return 0.0;
     }
-    
+    return exp(ax);
+    }
+
     fac = a + lanczos_g - 0.5;
     res = sqrt(fac / exp(1)) / lanczos_sum_expg_scaled(a);
-    
+
     if ((a < 200) && (x < 200)) {
-        res *= exp(a - x) * pow(x / fac, a);
+    res *= exp(a - x) * pow(x / fac, a);
     } else {
-        num = x - a - lanczos_g + 0.5;
-        res *= exp(a * log1pmx(num / fac) + x * (0.5 - lanczos_g) / fac);
+    num = x - a - lanczos_g + 0.5;
+    res *= exp(a * log1pmx(num / fac) + x * (0.5 - lanczos_g) / fac);
     }
-    
+
     return res;
 }
 
-
 /* Compute igamc using DLMF 8.9.2. */
-double igamc_continued_fraction(double a, double x)
+ double igamc_continued_fraction(double a, double x)
 {
     int i;
     double ans, ax, c, yc, r, t, y, z;
     double pk, pkm1, pkm2, qk, qkm1, qkm2;
-    
+
     ax = igam_fac(a, x);
     if (ax == 0.0) {
-        return 0.0;
+    return 0.0;
     }
-    
+
     /* continued fraction */
     y = 1.0 - a;
     z = x + y + 1.0;
@@ -893,67 +894,70 @@ double igamc_continued_fraction(double a, double x)
     pkm1 = x + 1.0;
     qkm1 = z * x;
     ans = pkm1 / qkm1;
-    
+
     for (i = 0; i < MAXITER; i++) {
-        c += 1.0;
-        y += 1.0;
-        z += 2.0;
-        yc = y * c;
-        pk = pkm1 * z - pkm2 * yc;
-        qk = qkm1 * z - qkm2 * yc;
-        if (qk != 0) {
-            r = pk / qk;
-            t = fabs((ans - r) / r);
-            ans = r;
-        }
-        else
-            t = 1.0;
-        pkm2 = pkm1;
-        pkm1 = pk;
-        qkm2 = qkm1;
-        qkm1 = qk;
-        if (fabs(pk) > big) {
-            pkm2 *= biginv;
-            pkm1 *= biginv;
-            qkm2 *= biginv;
-            qkm1 *= biginv;
-        }
-        if (t <= MACHEP) {
-            break;
-        }
+    c += 1.0;
+    y += 1.0;
+    z += 2.0;
+    yc = y * c;
+    pk = pkm1 * z - pkm2 * yc;
+    qk = qkm1 * z - qkm2 * yc;
+    if (qk != 0) {
+        r = pk / qk;
+        t = fabs((ans - r) / r);
+        ans = r;
     }
-    
+    else
+        t = 1.0;
+    pkm2 = pkm1;
+    pkm1 = pk;
+    qkm2 = qkm1;
+    qkm1 = qk;
+    if (fabs(pk) > big) {
+        pkm2 *= biginv;
+        pkm1 *= biginv;
+        qkm2 *= biginv;
+        qkm1 *= biginv;
+    }
+    if (t <= MACHEP) {
+        break;
+    }
+    }
+
     return (ans * ax);
 }
 
-
 /* Compute igam using DLMF 8.11.4. */
-double igam_series(double a, double x)
+ double igam_series(double a, double x)
 {
     int i;
     double ans, ax, c, r;
-    
+
     ax = igam_fac(a, x);
     if (ax == 0.0) {
-        return 0.0;
+    return 0.0;
     }
-    
+
     /* power series */
     r = a;
     c = 1.0;
     ans = 1.0;
-    
+
     for (i = 0; i < MAXITER; i++) {
-        r += 1.0;
-        c *= x / r;
-        ans += c;
-        if (c <= MACHEP * ans) {
-            break;
-        }
+    r += 1.0;
+    c *= x / r;
+    ans += c;
+    if (c <= MACHEP * ans) {
+        break;
     }
-    
+    }
+
     return (ans * ax / a);
 }
+
+
+
+
 
 
 /* Compute igamc using DLMF 8.7.3. This is related to the series in
@@ -965,20 +969,21 @@ double igamc_series(double a, double x)
     double fac = 1;
     double sum = 0;
     double term, logx;
-    
+
     for (n = 1; n < MAXITER; n++) {
-        fac *= -x / n;
-        term = fac / (a + n);
-        sum += term;
-        if (fabs(term) <= MACHEP * fabs(sum)) {
-            break;
-        }
+    fac *= -x / n;
+    term = fac / (a + n);
+    sum += term;
+    if (fabs(term) <= MACHEP * fabs(sum)) {
+        break;
     }
-    
+    }
+
     logx = log(x);
     term = -expm1(a * logx - lgam1p(a));
     return term - exp(a * logx - lgam(a)) * sum;
 }
+
 
 
 /* Compute igam/igamc using DLMF 8.12.3/8.12.4. */
@@ -1546,7 +1551,8 @@ return(a);
 
 double corr_pois(double rho,double mi,double mj)
 {
-if(fabs(rho)<1e-32){return(0.0);}
+if( (rho>(1-1e-5)) &&  rho<=1){return(1.0);}
+if(fabs(rho)<1e-12){return(0.0);}
     else{
 int r=0; double res0=0.0,sum=0.0;
 double rho2=rho*rho;
@@ -3783,85 +3789,85 @@ double  binomialCoeff(int n, int k)
 
 double Prt(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= pow(corr,2);
-    double prt,q1,q2,term =0, term1 =0, value = 0, value1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
+    double prt,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,k=0,m=0, iter=1000;
+    int n,k=0,m=0, iter1=4000, iter2=4000;
     n= r-t;
-        while(m<=iter){
-
-            aux= m*(log(rho2)-log(1-rho2)); 
-            aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
-             // q2=regularized1F1(n+1,t+m+n+1,rho2*auxi);     // it doesn't work
-            q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
-            if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
-           
-            term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
-             if((fabs(term1)<1e-10||!R_finite(term1))  ) {break;}
-            value1 =value1+ term1;
-                for(k=0;k<=iter;k++){
+        while(m<=iter1){
+            res0=0.0;
+                for(k=0;k<=iter2;k++){
                         aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
                         aux3= lgammafn(m+1)+lgammafn(t);
                         aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
-                           //q1=regularized1F1(n,t+m+n+k+1, rho2*auxi); // it doesn't work
-                       q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));
-                          if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1, rho2*auxi);
-                                               
+                        q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));  
+                        if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1,rho2*auxi);                     
                         term= exp(aux2-aux3+aux4+log(q1));
-                            if((fabs(term)<1e-10||!R_finite(term))  ) {break;}
-                        value =value+ term;     
+                      if(!R_finite(term))   {break;}
+                       sum =sum+ term;     
+                         if((fabs(sum-res0)<1e-15)  ) {break;}
+                  else {res0=sum;}
             }
+        aux= m*(log(rho2)-log(1-rho2)); 
+        aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
+        q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
+        if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
+        term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
+        if(!R_finite(term1))   {break;}
+           sum1 =sum1+ term1;     
+                         if((fabs(sum1-res00)<1e-15)  ) {break;}
+                         else {res00=sum1;}
       
         m++;
     }
 
-     prt= exp(-auxi+log(value1))- exp(-auxi+log(value));
+     prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
    //  if(!R_finite(prt)) prt=1e-320;
+    //  if(prt<1e-320) prt=1e-320;
      ///if(prt<=0) prt=0;
-    return(fabs(prt));
+    return(prt);
 }
-
-
 
 //*****************************************************************************/
 
 double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= pow(corr,2);    
-    double prr, term, term1=0.0, term2=0.0, term3=0.0;
-    double value = 0, value1 = 0, value2 = 0, value3 = 0 ;
+    double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
+    double sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
     int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int iter=1000;
+    int iter1=1000;  int iter2=1000;
 
-    while(k<iter){
-
-term1 = pow(rho2,k)*                exp(lgammafn(r+k) + log(igam(r+k,      auxi))+log(igam(r+k,      auxj))-lgammafn(k+1)-lgammafn(r));
-term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(lgammafn(r+k) + log(igam(r+k, rho2*auxi))+log(igam(r+k,      auxj))-lgammafn(k+1)-lgammafn(r));
-term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(lgammafn(r+k) + log(igam(r+k,      auxi))+log(igam(r+k, rho2*auxj))-lgammafn(k+1)-lgammafn(r));
-
-//if((fabs(term1)<1e-10&&fabs(term2)<1e-10&&fabs(term3)<1e-10)||(!R_finite(term1))||(!R_finite(term2)||(!R_finite(term3)))) {break;}      
-      value1 =value1+ term1;
-      value2 =value2+ term2;
-      value3 =value3+ term3;
-
-      m=0;
-      while(m<iter){
-                  term=(1-rho2)*R_pow(rho2,k+m)*
-                       exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
-                  
-                  if((fabs(term)<1e-10)||!R_finite(term)  ) {break;}
-                  value =value+term;
-                
-                  m++;     
+    while(k<iter1){
+//+++++++++++++++++++++++++++++++++++++++//
+      m=0; res0=0.0;
+      while(m<iter2){
+                      //Rprintf("%d %d\n",m,k);      
+term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
+        if((fabs(term)<1e-10)||!R_finite(term))   {break;}
+        sum =sum+term;
+                  m++;    
                  }
-                
-          k++;       
+//+++++++++++++++++++++++++++++++++++++++//
+        aa=lgammafn(k+1)+lgammafn(r); bb=lgammafn(r+k);
+        cc=igam(r+k,      auxi);  dd=igam(r+k,      auxj);
+
+term1 = pow(rho2,k)*                exp(bb + log(cc)                  +log(dd)-aa);
+term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bb + log(igam(r+k, rho2*auxi))+log(dd)-aa);
+term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bb + log(cc)                  +log(igam(r+k, rho2*auxj))-aa);
+
+if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
+      sum1 =sum1+ term1;
+      sum2 =sum2+ term2+term3;
+
+            if((fabs(sum1-res00)<1e-15)&&(fabs(sum2-res11)<1e-15)  ) {break;}
+                  else {res00=sum1;res11=sum2;}
+          k++;      
       }
-    prr= R_pow((1-rho2),r)*(- value1 + value2 + value3 + value);
-  //   if(!R_finite(prr)) prr=1e-320;
-    return(fabs(prr));
+    prr= R_pow((1-rho2),r)*(- sum1 + sum2  + sum);//Rprintf("%d %d\n",m,k); 
+    return(prr);
    
 }
 
@@ -3869,52 +3875,52 @@ term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(lgammafn(r+k) + log(igam(r+k,      auxi)
 double Pr0(double corr,int r, int t, double mean_i, double mean_j){
 
 
-    double rho2= pow(corr,2);
-    double pr0,q2, term1 =0, value1 = 0,aux=0, aux1=0;
+    double rho2= pow(corr,2),term=0.0;
+    double pr0,q2, res0 =0.0, sum = 0.0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,m=0, iter=1000;
+    int n,m=0, iter=5000;
     n= r-t;
         while(m<=iter){
-
             aux= m*(log(rho2)-log(1-rho2)); 
             aux1= (m+n)*log(mean_i);
             q2=exp(log(hyperg(n,m+n+1, rho2*auxi))-lgammafn(m+n+1));         
-            //if(!R_finite(q2)) q2=aprox_reg_1F1(n,m+n+1,rho2*auxi);
-                        
-            term1= exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
-            value1 =value1+ term1;
-
-       if((fabs(term1)<1e-10||!R_finite(term1))  ) {break;}
+            term=exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
+                   if(!R_finite(term))   {break;}
+            sum=sum+term;
+            if((fabs(sum-res0)<1e-15) ) {break;}
+             else {res0=sum;}
         m++;
     }
 
-     pr0= exp(-mean_i+n*log(mean_i)-lgammafn(n+1))-exp(-auxi+log(value1)) ;
+     pr0= exp(-mean_i+n*log(mean_i)-lgammafn(n+1))-exp(-auxi+log(sum)) ;
+     //  if(pr0<1e-320) pr0=1e-320;
      //if(!R_finite(pr0)) pr0=1e-320;
     return(pr0);
 
 }
-
 
 /*******************************************************************************/
 double P00(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= R_pow(corr,2);
     int k = 0;
-    double p00,sum = 0.0,term;
+    double p00,sum = 0.0,res0=0.0,term=0.0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    while(k<2000){
-              term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
-              if(fabs(term)<1e-10||!R_finite(term))  {break;}
+    while(k<5000){
+             term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
+                 if(!R_finite(term))   {break;}
              sum =sum+term;
+             if((fabs(sum-res0)<1e-15 )) {break;}
+             else {res0=sum;}
         k++;}
     p00 = -1+ exp(-mean_i)+ exp(-mean_j)+(1-rho2)*sum;
-      // if(!R_finite(p00)) p00=1e-320;
-    return(fabs(p00));
+    //  Rprintf("%f %d %d-- %f \n",p00,r,t,  corr);
+     //  if(p00<1e-320) p00=1e-320;
+    return(p00);
    
 }
-
 
 
 void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res)
@@ -3926,7 +3932,7 @@ void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,d
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j)
 {
 double dens;
-if(corr){
+if(fabs(corr)>1e-6){
   if(r==t)
   {    if(r==0) dens=P00(corr,r,r,mean_i,mean_j);
        if(r>0)  dens=Prr(corr,r,r,mean_i,mean_j);

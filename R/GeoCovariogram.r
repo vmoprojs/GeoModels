@@ -212,7 +212,7 @@ if(!bivariate) {
 
      nui=nuisance
      nui['sill']=1;
-if(!(binomial||geom||binomialneg||poisson)) nui['nugget']=0
+if(!(binomial||geom||binomialneg)) nui['nugget']=0
 else                                        nui['nugget']=nuisance['nugget']
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance

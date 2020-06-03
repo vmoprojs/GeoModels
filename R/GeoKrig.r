@@ -615,6 +615,8 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
         else           {}
 
 
+
+
         MM=getInv(covmatrix,cc)  #compute (\Sigma^-1) %*% cc
         krig_weights = t(MM$a)
 ######################################################################################

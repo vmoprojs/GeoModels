@@ -435,7 +435,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj);
-
+// Rprintf("%d %d %f %f--%f %f \n",uu,ww,muj,corr,log(bl),bl);
                       *res+= log(bl)*weights;
                     }}        
     // Checks the return values
