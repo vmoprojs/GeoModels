@@ -1528,14 +1528,16 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
 
 /*******************************************/
 
+/*******************************************/
+
 double psi(int i, int j, double p1, double p2, double p12){
     double aux= p1 + p2 - p12;
-    if(i==0 || j==0){return 0;}
+    if(i==0 || j==0){return 0.0;}
     if(i==1 && j==1){return (p1+p2-p1*p2)/(p2*p1*aux);}
     double aux1= (psi( i-1, j-1, p1, p2, p12)*p12+psi( i, j-1, p1, p2, p12)*(p1-p12)+psi( i-1, j, p1, p2, p12)*(p2-p12))/aux;
     double aux2= ( (i-p2/aux)/p2 + (j-p1/aux)/p1 )/aux;
     double aux3= (2-aux)/pow(aux,2);
-    return aux1+aux2+aux3;
+    return(aux1+aux2+aux3);
 }
 
 double cov_binom_neg(int m,double p11,double p1, double p2) {
