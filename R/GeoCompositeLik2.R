@@ -225,7 +225,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,data1=data1,data2=data2, fixed=fixed,
                               fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
-                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=hessian)
+                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE)
       if(optimizer=='L-BFGS-B'&&parallel){
         ncores=max(1, parallel::detectCores() - 1)
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
@@ -236,7 +236,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                                data1=data1,data2=data2,fixed=fixed,fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
-                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=hessian)
+                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
          }
@@ -244,14 +244,43 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
         CompLikelihood <- optim(par=param, fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                            control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000),data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=hessian, method='BFGS',n=n,namescorr=namescorr,
+                              hessian=FALSE, method='BFGS',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
 
       if(optimizer=='Nelder-Mead')
         CompLikelihood <- optim(par=param, fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
           control=list( reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=hessian, method='Nelder-Mead',n=n,namescorr=namescorr,
+                              hessian=FALSE, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
+
+   if(optimizer=='Nelder-Mead2'){
+      CompLikelihood <-pracma::fminsearch(x0=param,fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
+         data1=data1,data2=data2, fixed=fixed, fan=fname,n=n,namescorr=namescorr, #lower=lower,upper=upper,
+                                 namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,minimize = TRUE,
+                                tol = 1e-08, maxiter = 100000)
+      
+         
+   # fmsfundata <- structure( list(colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  data1=data1,data2=data2, 
+    #                        fixed=fixed, fan=fname,
+     #                       n=n,namescorr=namescorr,
+      #                            namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, 
+       #                           local=local,GPU=GPU), class='optimbase.functionargs')
+       #   nm <- neldermead::neldermead()
+       #   nm <- neldermead::neldermead.set(nm,'numberofvariables',length(param))
+        #  nm <- neldermead::neldermead.set(nm,'costfargument',fmsfundata)
+        #  nm <- neldermead::neldermead.set(nm,'function',comploglik2)
+        #  nm <- neldermead::neldermead.set(nm,'x0',optimbase::transpose(param))
+         # nm <- neldermead::neldermead.set(nm,'verbose',FALSE)
+         # nm <- neldermead::neldermead.set(nm,'storehistory',TRUE)
+         # nm <- neldermead::neldermead.set(nm,'verbosetermination',FALSE)
+        #  nm <- neldermead::neldermead.set(nm,'method','box')
+        #  nm <- neldermead::neldermead.set(nm,'boundsmin',lower)
+        #  nm <- neldermead::neldermead.set(nm,'boundsmax',upper)
+        #  CompLikelihood <- neldermead::neldermead.search(nm)
+
+
+      #print(CompLikelihood)
+    }
 
     if(optimizer=='nmk')
       CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik2, control = list(maxfeval=100000,tol=1e-10),
@@ -266,7 +295,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     }
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f=comploglik2,p=param,steptol = 1e-4, colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
-                               fan=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               fan=fname,hessian=FALSE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                iterlim=100000, weigthed=weigthed,X=X, local=local,GPU=GPU)
   
     if(optimizer=='nlminb')
@@ -296,7 +325,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
       if(length(param)>1) {   
     if(optimizer=='L-BFGS-B'&&!parallel){
       CompLikelihood <- optim(param,comploglik_biv2, control=list(pgtol=1e-14, maxit=100000),
-                              method='L-BFGS-B',hessian=hessian,lower=lower, upper=upper,
+                              method='L-BFGS-B',hessian=FALSE,lower=lower, upper=upper,
                                colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                               data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
@@ -321,19 +350,19 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               fan=fname,  n=n, namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
                               weigthed=weigthed,X=X,local=local,GPU=GPU, 
                               lower=lower,upper=upper,
-                              hessian=hessian)
+                              hessian=FALSE)
               parallel::setDefaultCluster(cl=NULL)
               parallel::stopCluster(cl)
          }
       if(optimizer=='BFGS')
       CompLikelihood <- optim(param,comploglik_biv2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, control=list(
                               reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=hessian, method='BFGS',n=n,
+                              hessian=FALSE, method='BFGS',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,local=local,GPU=GPU)
    if(optimizer=='Nelder-Mead')
       CompLikelihood <- optim(param,comploglik_biv2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, control=list(
                               reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=hessian, method='Nelder-Mead',n=n,
+                              hessian=FALSE, method='Nelder-Mead',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,local=local,GPU=GPU)
     if(optimizer=='nmk')
         CompLikelihood <- dfoptim::nmk(par=param, fn=comploglik_biv2, control = list(maxfeval=100000,tol=1e-10),
@@ -346,7 +375,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                             n=n, namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,weigthed=weigthed,X=X,local=local,GPU=GPU)
      if(optimizer=='nlm') 
         CompLikelihood <- nlm( f=comploglik_biv2,p=param,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
-                               fan=fname,hessian=hessian,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               fan=fname,hessian=FALSE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,local=local,GPU=GPU)
     if(optimizer=='ucminf') 
          CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik_biv2, hessian=as.numeric(hessian),   
@@ -474,7 +503,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
   }
 
 #####################################
-if((sensitivity||varest)&&(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0))
+#if((sensitivity||varest)&&(is.null(CompLikelihood$hessian)||min(eigen(CompLikelihood$hessian)$values)<0))
+if((sensitivity||varest))
   {
 if(!bivariate)  
 

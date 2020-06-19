@@ -141,7 +141,7 @@ CkCorrModel <- function(corrmodel)
 
                              Bi_Matern_Cauchy=136,  
                              Bi_GenMatern_Cauchy=137,   Bi_genMatern_Cauchy=137,
-                             Bi_gencauchy=138,Bi_Gencauchy=138,
+                             Bi_genCauchy=138,Bi_GenCauchy=138,
                              Bi_Stable=139,Bi_stable=139,
                              
             ########Tapers

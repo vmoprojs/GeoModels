@@ -21,8 +21,6 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
-
-       
         cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
         as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
         #cc=dotCall64::.C64(corrmat,

@@ -303,9 +303,11 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
                "TwoPieceStudentT","TwoPieceGaussian")) 
      { nugget=param$nugget;param$nugget=0}  ### ojo!!
 
-ccov = GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid,NULL,NULL, "Gaussian", n, 
-                forGaussparam(model,param,bivariate), radius, sparse,NULL,NULL,"Standard",X)
 
+
+ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel, 
+                   distance=distance,grid=grid,model="Gaussian", n=n, 
+                param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)
 ## a realization  with nugget
 if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
                "TwoPieceStudentT","TwoPieceGaussian"))
@@ -421,8 +423,6 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 }
 
  ####### end for #########################  
-
-
  ###############################################################################################
  #### simulation for discrete random field based on indipendent copies  of GRF ######
  ###############################################################################################
@@ -489,7 +489,7 @@ if(model %in% c("TwoPieceGaussian"))   {
         discrete=dd[,,1] 
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
-        aa=mm+sqrt(vv)*(abs(sim)*discrete)
+        aa=mm+c(sqrt(vv)*(abs(sim)*discrete))
         }
 ################################################ 
 if(model %in% c("TwoPieceTukeyh"))   { 
@@ -499,7 +499,7 @@ if(model %in% c("TwoPieceTukeyh"))   {
         discrete=dd[,,1] 
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
-        aa=mm+sqrt(vv)*(abs(sim)*discrete)
+        aa=mm+c(sqrt(vv)*(abs(sim)*discrete))
         }
 ################################################ 
 if(model %in% c("TwoPieceBimodal"))   { 
@@ -510,7 +510,7 @@ if(model %in% c("TwoPieceBimodal"))   {
         pp=qnorm((1-sk)/2)
         discrete=dd[,,k] 
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
-        aa=mm+sqrt(vv)*(sim)^(1/alpha)*discrete
+        aa=mm+c(sqrt(vv)*(sim)^(1/alpha)*discrete)
         #aa=mm+sqrt(vv)*(sim)^(1/bimo)*discrete
         }
 ################################################
@@ -523,7 +523,7 @@ if(model %in% c("TwoPieceStudentT"))   {
         pp=qnorm((1-sk)/2)
         discrete=dd[,,k] 
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
-        aa=mm+sqrt(vv)*(abs(aa)*discrete)
+        aa=mm+c(sqrt(vv)*(abs(aa)*discrete))
         }
 ############################################# 
 ############### formatting data #############

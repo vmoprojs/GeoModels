@@ -3420,6 +3420,8 @@ return(4*pp1*app/pp2);
 
 
 }
+
+
 /*********** bivariate two piece-T distribution********************/ 
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,
              double p11,double mui,double muj,double nugget)
@@ -3430,14 +3432,18 @@ double etamas=1+eta;
 double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
-if(rho){
-if(zi>=mui&&zj>=muj)
+if(rho>0){
+//if(zi>=mui&&zj>=muj)
+    if(zistd>=0&&zjstd>=0)
 {res=          (p11/R_pow(etamos,2))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamos,nugget);}
-if(zi>=mui&&zj<muj)
+//if(zi>=mui&&zj<muj)
+    if(zistd>=0&&zjstd<0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamas,nugget);}
-if(zi<mui&&zj>=muj)
+//if(zi<mui&&zj>=muj)
+      if(zistd<0&&zjstd>=0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamos,nugget);}
-if(zi<mui&&zj<muj)
+//if(zi<mui&&zj<muj)
+    if(zistd<0&&zjstd<0)
 {res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamas,nugget);}
 
 }else{   if(zi>=mui)
@@ -3467,13 +3473,18 @@ double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
 //if(rho){
-if(zi>=mui&&zj>=muj)
+
+//if(zi>=mui&&zj>=muj)
+    if(zistd>=0&&zjstd>=0)
 {res=          (p11/R_pow(etamos,2))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamos);}
-if(zi>=mui&&zj<muj)
+//if(zi>=mui&&zj<muj)
+    if(zistd>=0&&zjstd<0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamas);}
-if(zi<mui&&zj>=muj)
+//if(zi<mui&&zj>=muj)
+      if(zistd<0&&zjstd>=0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
-if(zi<mui&&zj<muj)
+//if(zi<mui&&zj<muj)
+    if(zistd<0&&zjstd<0)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
 
 /*}else{   if(zi>=mui)
@@ -3481,6 +3492,7 @@ if(zi<mui&&zj<muj)
          if(zj<muj)
          {res=0.5*sqrt(2)*exp(-0.5*R_pow(zjstd/etamas,2))/sqrt(M_PI);}
       }*/
+//Rprintf("%f %f %f\n",mui,muj,res);
 return(res/sill);
 }  
 
@@ -3757,16 +3769,20 @@ double etamas=1+eta;
 double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
-/*double x_i=inverse_lamb(zistd/etamos,tail);
-double x_j=inverse_lamb(zjstd/etamas,tail);*/
+
+
 /*if(rho)   {*/
-if(zi>=mui&&zj>=muj)
+//if(zi>=mui&&zj>=muj)
+    if(zistd>=0&&zjstd>=0)
 {res=          (p11/R_pow(etamos,2))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamos,tail);}
-if(zi>=mui&&zj<muj)
+//if(zi>=mui&&zj<muj)
+    if(zistd>=0&&zjstd<0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamas,tail);}
-if(zi<mui&&zj>=muj)
+//if(zi<mui&&zj>=muj)
+      if(zistd<0&&zjstd>=0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamos,tail);}
-if(zi<mui&&zj<muj)
+//if(zi<mui&&zj<muj)
+    if(zistd<0&&zjstd<0)
 {res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamas,tail);}
 /*}else{   if(zi>=mui)
          {res=dnorm(x_i,0,1,0)*x_i/((zistd/etamos)*(1+LambertW(tail*R_pow(zistd/etamos,2))));}
@@ -3807,7 +3823,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
                         term= exp(aux2-aux3+aux4+log(q1));
                       if(!R_finite(term))   {break;}
                        sum =sum+ term;     
-                         if((fabs(sum-res0)<1e-15)  ) {break;}
+                         if((fabs(sum-res0)<1e-10)  ) {break;}
                   else {res0=sum;}
             }
         aux= m*(log(rho2)-log(1-rho2)); 
@@ -3817,7 +3833,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
         term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
         if(!R_finite(term1))   {break;}
            sum1 =sum1+ term1;     
-                         if((fabs(sum1-res00)<1e-15)  ) {break;}
+                         if((fabs(sum1-res00)<1e-10)  ) {break;}
                          else {res00=sum1;}
       
         m++;
@@ -3864,7 +3880,7 @@ if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
       sum1 =sum1+ term1;
       sum2 =sum2+ term2+term3;
 
-            if((fabs(sum1-res00)<1e-15)&&(fabs(sum2-res11)<1e-15)  ) {break;}
+            if((fabs(sum1-res00)<1e-10)&&(fabs(sum2-res11)<1e-10)  ) {break;}
                   else {res00=sum1;res11=sum2;}
           k++;      
       }
@@ -3890,7 +3906,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
             term=exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
                    if(!R_finite(term))   {break;}
             sum=sum+term;
-            if((fabs(sum-res0)<1e-15) ) {break;}
+            if((fabs(sum-res0)<1e-10) ) {break;}
              else {res0=sum;}
         m++;
     }
@@ -3914,7 +3930,7 @@ double P00(double corr,int r, int t, double mean_i, double mean_j){
              term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
                  if(!R_finite(term))   {break;}
              sum =sum+term;
-             if((fabs(sum-res0)<1e-15 )) {break;}
+             if((fabs(sum-res0)<1e-10 )) {break;}
              else {res0=sum;}
         k++;}
     p00 = -1+ exp(-mean_i)+ exp(-mean_j)+(1-rho2)*sum;
