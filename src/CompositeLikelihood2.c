@@ -253,7 +253,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     bl=d2lognorm(zi,zj,sill,nugget, mean1[i], mean2[i],(1-nugget)*corr); 
                     *res+= weights*log(bl);
                     }}
-    // Checks the return values
+    
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -391,7 +391,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     bl=biv_LogLogistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]);
                     *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -412,7 +412,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     bl= biv_Logistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[1]);
                     *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -438,7 +438,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 // Rprintf("%d %d %f %f--%f %f \n",uu,ww,muj,corr,log(bl),bl);
                       *res+= log(bl)*weights;
                     }}        
-    // Checks the return values
+    
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
@@ -474,7 +474,7 @@ double **M;
                     }}  
    for(i=0;i<N;i++)  {Free(M[i]);}
     Free(M);         
-    // Checks the return values
+    
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
@@ -542,6 +542,35 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+
+/*********************************************************/
+void Comp_Pair_Tukeyhh2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i;double bl,corr,zi,zj,weights=1.0;
+    double sill=nuis[1];
+    double nugget=nuis[0];
+    double h1=nuis[2];
+    double h2=nuis[3];
+      if( sill<0||h1<0||h1>0.5||h2<0||h2>0.5||nugget<0||nugget>=1){*res=LOW; return;}
+        for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                zi=data1[i];zj=data2[i];
+                    corr=CorFct(cormod,lags[i],0,par,0,0);
+                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                   bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean1[i],mean2[i],sill,h1,h2);
+                             *res+= weights*log(bl);
+                }}
+    
+    if(!R_FINITE(*res)) *res = LOW;
+    return;
+}
+
+
+
+
+
 /*********************************************************/
 void Comp_Pair_Tukeyh2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -560,7 +589,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                    bl=biv_tukey_h((1-nugget)*corr,zi,zj,mean1[i],mean2[i],tail,sill);
                              *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -595,7 +624,7 @@ if(!ISNAN(zi)&&!ISNAN(zj) ){
             //  Rprintf("%f %f-- %f %f \n",mean1[i],mean2[i],zi,zj);
                     *res+= weights*bl;
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -620,7 +649,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                              *res+= weights*log(bl);
                 }}
 
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -647,7 +676,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     bl=biv_two_pieceTukeyh((1-nugget)*corr,zi,zj,sill,eta,tail,p11,mean1[i],mean2[i]);  
                     *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -677,7 +706,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     /********************************************************/
                            *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -705,7 +734,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     bl=biv_two_pieceGaussian((1-nugget)*corr,zi,zj,sill,eta,p11,mean1[i],mean2[i]);
                     *res+= weights*log(bl);
                 }}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
@@ -738,7 +767,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     /********************************************************/
                            *res+= weights*log(bl);
                 }}}
-    // Checks the return values
+    
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }

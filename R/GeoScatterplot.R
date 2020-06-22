@@ -1,6 +1,6 @@
 GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
                            distance="Eucl", grid=FALSE, maxdist=NULL, 
-                           times=NULL, numbins=NULL, radius=6371, bivariate=FALSE)
+                           times=NULL, numbins=4, radius=6371, bivariate=FALSE)
 
 {
     call <- match.call()

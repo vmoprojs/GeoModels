@@ -36,7 +36,7 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
-        varcov <- (nuisance['nugget']+nuisance['sill'])*ident
+        varcov <- (nuisance['sill'])*ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova
@@ -137,7 +137,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
-        varcov <- (nuisance['nugget']+nuisance['sill'])*ident
+        varcov <- (nuisance['sill'])*ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova
@@ -152,7 +152,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
-        varcov <- (nuisance['nugget']+nuisance['sill'])*ident
+        varcov <- (nuisance['sill'])*ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
@@ -171,7 +171,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
         llik <- 1.0e8
         # Computes the covariance matrix:
-        varcov <- (nuisance['nugget']+nuisance['sill'])*ident
+        varcov <- (nuisance['sill'])*ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova      
@@ -417,7 +417,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-       # if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
+     if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1||nuisance['sill']<0) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
         nuisance['sill']=1
@@ -426,6 +426,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         loglik_u <- do.call(what="LogNormDenStand_TukeyH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
+
         return(loglik_u)
       }
 ################################################################################################ 
@@ -447,6 +448,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         sill=nuisance['sill']
         nuisance['sill']=1
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+           #if(is.nan(corr[1])||sill<0||nugget<0||nugget>1) return(llik)
         corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what="LogNormDenStand_SH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
@@ -476,9 +478,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         D1=(nu-1)/2; D2=nu/2
         CorSkew<-(2*eta2/(pi*w^2+eta2*(pi-2)))*(sqrt(1-corr^2)+corr*asin(corr)-1)+w^2*corr/(w^2+eta2*(1-2/pi))   
         corr3<-(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-eta2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,D2,corr^2))*((1-KK)*CorSkew+KK)-KK)
-     
+       if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
-       nuisance['nugget']=0
+       #nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
@@ -503,8 +505,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
          #if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
          #else      
          corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
-        cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
-        nuisance['nugget']=0
+           if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
+        cova <- corr*(nuisance['sill'])*(1-nuisance['nugget'])
+        #nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
@@ -524,14 +527,17 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
+        #print(param)
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+        if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
-        nuisance['nugget']=0
+        #nuisance['nugget']=0
         # Computes the log-likelihood
         
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
+     # print(loglik_u)
         return(loglik_u)
       }
 
@@ -934,7 +940,7 @@ colnames(Likelihood$hessian)=namesparam
         # ML and REML cases:
         if(type==3||type==4){
             # Computing variance-covariance matrix of the random field:
-            if(!bivariate)   {varcov<-(nuisance['nugget']+nuisance['sill'])*ident;yesdiag=FALSE}  # computes variance components
+            if(!bivariate)   {varcov<-(nuisance['sill'])*ident;yesdiag=FALSE}  # computes variance components
             else             {varcov=ident;yesdiag=TRUE}
             varcov[lower.tri(varcov,diag=yesdiag)]<-varian
             varcov<-t(varcov)
@@ -1029,7 +1035,7 @@ colnames(Likelihood$hessian)=namesparam
         if(type==5||type==6){
             # define the variance-covariance vector
             if(!bivariate) {sel<- varian==(nuisance['sill'])
-                            varian[sel] <- nuisance['nugget']+nuisance['sill']}
+                            varian[sel] <- nuisance['sill']}
             # define the sparse variance-covariance matrix
             spamvar <- new("spam",entries=varian,colindices=setup$ja,rowpointers=setup$ia,
                            dimension=as.integer(rep(dimat,2)))
@@ -1058,7 +1064,7 @@ colnames(Likelihood$hessian)=namesparam
             if(!bivariate) {if(flagnuis[num_betas+1]) gradient[,namesnuis[num_betas+1]] <- ident[setup$idx]  # nugget parameter
                             if(flagnuis[num_betas+2]) gradient[,namesnuis[num_betas+2]] <- corr              # variance parameter
                             }
-            if(!bivariate){ dcorr[sel]<-dcorr[sel]*(nuisance['nugget']+nuisance['sill'])
+            if(!bivariate){ dcorr[sel]<-dcorr[sel]*(nuisance['sill'])
                             dcorr[-sel]<-dcorr[-sel]*nuisance['sill']
                           }
              gradient[,namescorr] <- dcorr

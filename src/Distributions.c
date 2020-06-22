@@ -2297,6 +2297,44 @@ double cdf_norm(double lim1,double lim2,double a11,double a12)
 
 
 
+
+double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double muj,
+    double sill,double hl,double hr)
+            
+{
+
+  double res = 0.0,hl_i = 0.0,hr_i = 0.0,hl_j = 0.0,hr_j = 0.0,z_i = 0.0,z_j = 0.0;
+  double  Lhl_i=1.0,Lhr_i=1.0,Lhl_j=1.0,Lhr_j=1.0;
+ 
+  z_i = (data_i - mui)/sqrt(sill);
+  z_j = (data_j - muj)/sqrt(sill);
+ 
+  hl_i = inverse_lamb(z_i,hl);
+  hr_i = inverse_lamb(z_i,hr);
+  hl_j = inverse_lamb(z_j,hl);
+  hr_j = inverse_lamb(z_j,hr);
+
+
+  Lhl_i = (1 + LambertW(hl*z_i*z_i));
+  Lhr_i = (1 + LambertW(hr*z_i*z_i));
+  Lhl_j = (1 + LambertW(hl*z_j*z_j));
+  Lhr_j = (1 + LambertW(hr*z_j*z_j));
+
+
+if(z_i>=mui&&z_j>=muj)
+{res=dbnorm(hr_i,hr_j,0,0,1,corr)*hr_i*hr_j/(z_i*z_j*Lhr_i*Lhr_j);}
+if(z_i>=mui&&z_j<muj)
+{res=dbnorm(hr_i,hl_j,0,0,1,corr)*hr_i*hl_j/(z_i*z_j*Lhr_i*Lhl_j);}
+if(z_i<mui&&z_j>=muj)
+{res=dbnorm(hl_i,hr_j,0,0,1,corr)*hl_i*hr_j/(z_i*z_j*Lhl_i*Lhr_j);}
+if(z_i<mui&&z_j<muj)
+{res=dbnorm(hl_i,hl_j,0,0,1,corr)*hl_i*hl_j/(z_i*z_j*Lhl_i*Lhl_j);}
+return(res/sill);
+}
+
+
+
+
 // cdf of  a bivariate Gausssian distribution
 double cdf_norm2(double lim1,double lim2,double a11,double a12, double a22)
 {

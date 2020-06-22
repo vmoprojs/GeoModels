@@ -158,9 +158,9 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}  
     if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
+    if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyhh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukey2h' 
+    if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -253,11 +253,11 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               hessian=FALSE, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
 
-   if(optimizer=='Nelder-Mead2'){
-      CompLikelihood <-pracma::fminsearch(x0=param,fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
-         data1=data1,data2=data2, fixed=fixed, fan=fname,n=n,namescorr=namescorr, #lower=lower,upper=upper,
-                                 namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,minimize = TRUE,
-                                tol = 1e-08, maxiter = 100000)
+   #if(optimizer=='Nelder-Mead2'){
+    #  CompLikelihood <-pracma::fminsearch(x0=param,fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
+     #    data1=data1,data2=data2, fixed=fixed, fan=fname,n=n,namescorr=namescorr, #lower=lower,upper=upper,
+      #                           namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,minimize = TRUE,
+       #                         tol = 1e-08, maxiter = 100000)
       
          
    # fmsfundata <- structure( list(colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  data1=data1,data2=data2, 
@@ -280,7 +280,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 
 
       #print(CompLikelihood)
-    }
+   # }
 
     if(optimizer=='nmk')
       CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik2, control = list(maxfeval=100000,tol=1e-10),

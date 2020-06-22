@@ -210,6 +210,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='SkewStudentT') { process <- 'SkewStudentT'; model <- 'SkewStudentT'}
   if(x$model=='Logistic') { process <- 'Logistic'; model <- 'Logistic'}
   if(x$model=='Tukeyh') { process <- 'Tukeyh'; model <- 'Tukeyh'}
+  if(x$model=='Tukeyh2') { process <- 'Tukeyh2'; model <- 'Tukeyh2'}
   if(x$model=='Gamma2'){ process <- 'Gamma2'; model <- 'Gamma2'}
   if(x$model=='LogGauss'||x$model=='LogGaussian'){ process <- 'Log Gaussian'; model <- 'LogGaussian'}
   if(x$model=='SkewGauss'||x$model=='SkewGaussian'){ process <- 'Skew Gaussian';model <- 'SkewGaussian'}

@@ -8,7 +8,7 @@
 \usage{
 GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
            distance='Eucl', grid=FALSE, maxdist=NULL,
-           times=NULL, numbins=NULL, radius=6371, bivariate=FALSE)
+           times=NULL, numbins=4, radius=6371, bivariate=FALSE)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{n \times d}{n x d})-matrix
