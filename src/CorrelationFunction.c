@@ -530,7 +530,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale=par[1];
         smooth=par[2];
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
-      //  Rprintf("%f %f %f\n",sep,smooth,R_power1);
+     // Rprintf("%f \n",scale * sep);
         rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         break;
      case 20://  Whittle-Matern correlation function
@@ -1734,12 +1734,14 @@ double CorFunSmoke(double lag, double scale, double smooth)
 double CorFunWitMat(double lag, double scale, double smooth)
 {
   double rho=0.0;
+  double  a=lag/scale;
   // Computes the correlation:
-  if(lag==0) {rho=1;return rho;}
-  if(smooth==0.5) {rho=exp(-lag/scale);return rho;}
-  if(smooth==1.5) {rho=exp(-lag/scale)*(1+lag/scale);return rho;}
-  if(smooth==2.5) {rho=exp(-lag/scale)*(1+lag/scale+ pow(lag/scale,2)/3);return rho;}
-  rho=(R_pow(lag/scale,smooth)*bessel_k(lag/scale,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
+  if(a==0) {rho=1;return rho;}
+  if(smooth==0.5) {rho=exp(-a);return rho;}
+  if(smooth==1.5) {rho=exp(-a)*(1+a);return rho;}
+  if(smooth==2.5) {rho=exp(-a)*(1+a  + R_pow(a,2)/3);return rho;}
+  if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+ R_pow(a,3)/15 );return rho;}
+  rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
   return rho;
 }
 
@@ -1807,37 +1809,42 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
 {
     double rho=0.0,x=0.0;
 
-   
-    if(lag==0) {rho=1; return(rho);}
-   x=lag/scale;
+     x=lag/scale;
+    if(fabs(lag/scale)<1.110223e-16) {rho=1; return(rho);}
+ 
 
-if(smooth==0.0||smooth==1.0||smooth==2.0){
-    if(smooth==0.0) {
-         if(x<=1)   rho=R_pow(1-x,R_power1);
+    if(smooth==0) {
+         if(x<=1)   rho=exp((R_power1)*log(1-x));
          else rho=0;
          return(rho);
     }
-    if(smooth==1.0) {
-         if(x<=1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+    if(smooth==1) {
+         if(x<=1) rho=exp((R_power1+1)*log(1-x))*(1+x*(R_power1+1));
          else rho=0;
          return(rho);
     }
-    if(smooth==2.0) {
+    if(smooth==2) {
         
-         if(x<=1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+         if(x<=1) rho=exp((R_power1+2)*log(1-x) )*(1+x*(R_power1+2)+R_pow(x,2)*(R_pow(R_power1,2) +4*R_power1 +3 )/3  );
          else rho=0;
          return(rho);
     }     
-  }
- else {    
+   if(smooth==3) {
+        
+         if(x<=1) rho=exp((R_power1+3)*log(1-x) )*   (1+x*(R_power1+3) + 
+              R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 +
+              R_pow(x,3)*(  R_pow(R_power1,3) +9*R_pow(R_power1,2)+ 23*R_power1 +15 )/15   );
+         else rho=0;
+         return(rho);
+    } 
       /*first version  */     
     if(x<=1)
          {
         rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
-         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
+         *R_pow(2,-R_power1-1)*exp((R_power1+smooth)*log(1-x*x) )*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
+                                // R_pow(1-x*x,smooth+R_power1)*
       }
   else {rho=0;}
-}
    /*/second version
   
         x=lag;
@@ -1848,6 +1855,8 @@ if(smooth==0.0||smooth==1.0||smooth==2.0){
         Free(param);*/
     return(rho);
 }
+
+
 
 double CorFunWend0_tap(double lag,double scale,double smoo)
 {

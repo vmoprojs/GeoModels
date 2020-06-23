@@ -551,8 +551,8 @@ void Comp_Pair_Tukeyhh2mem(int *cormod, double *data1,double *data2,int *NN,
     int i;double bl,corr,zi,zj,weights=1.0;
     double sill=nuis[1];
     double nugget=nuis[0];
-    double h1=nuis[2];
-    double h2=nuis[3];
+    double h1=nuis[3];
+    double h2=nuis[2];
       if( sill<0||h1<0||h1>0.5||h2<0||h2>0.5||nugget<0||nugget>=1){*res=LOW; return;}
         for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
