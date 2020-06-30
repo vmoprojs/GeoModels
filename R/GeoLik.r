@@ -566,6 +566,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
       # Computes the log-likelihood
        loglik_b <- do.call(what=fname,args=list(stdata=stdata,const=const,cova=corr,ident=ident,dimat=dimat,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
+       #print( loglik_b)
         return(loglik_b)
       }
 
@@ -753,6 +754,17 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
                           setup=setup,X=X,ns=ns,NS=NS)
+   if(optimizer=='multinlminb'){
+                       Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
+                          const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+                          setup=setup,X=X,ns=ns,NS=NS,
+                             lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol")#,nbclusters=2,
+                   }
+                         
     if(optimizer=='ucminf')    
                         Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
                         control=list( maxeval=100000),
@@ -790,7 +802,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                    maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun
       }
-       if(optimizer=='nlminb'){
+       if(optimizer=='nlminb'||optimizer=='multinlminb'){
                    names(Likelihood$par)=namesparam
                    param <- Likelihood$par
                    maxfun <- -Likelihood$objective
@@ -835,7 +847,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                Likelihood$convergence <- 'Iteration limit reached'
                else
                Likelihood$convergence <- 'Optimization may have failed'}
-        if(optimizer=='nlminb'){
+        if(optimizer=='nlminb'||optimizer=='multinlminb'){
                if(Likelihood$convergence == 0)
                Likelihood$convergence <- 'Successful'
                else

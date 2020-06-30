@@ -1430,6 +1430,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 #           as.integer(ns),as.integer(NS),as.integer(isdyn),
 #           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
+#print("here")
 
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
@@ -1451,7 +1452,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              "w", "w",#2
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
+ ##
+rm(colidx);rm(rowidx)
+if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
+##
 ## number  of selected pairs
 numpairs <- gb$numpairs
 ## indexes for composite 

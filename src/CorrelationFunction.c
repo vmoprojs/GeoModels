@@ -56,11 +56,11 @@ double CheckCor(int *cormod, double *par)
         break; 
     case 19: // Generalised wendland
     case 6:
-        R_power1=1/par[0];
+        R_power1=par[0];
         scale=par[1];
         smooth=par[2];
        // if(scale<=0 ||  R_power1<(1.5+smooth) ||smooth<0) rho=-2;
-            if(scale<=0 ||smooth<0 ||R_power1<0||R_power1>1.5+smooth) rho=-2;
+            if(scale<=0 ||smooth<0) rho=-2;
       break;
     case 18://sinR_power valid on sphere
             R_power=par[0];
@@ -441,7 +441,6 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
   double arg=0.0, col=0.0,R_power=0.0, R_power1=0.0, R_power2=0.0, R_power_s=0.0, R_power_t=0.0, var11=0.0, var22=0.0;
   double rho=0.0, sep=0, scale=0.0, smooth=0.0,smooth_s=0.0,smooth_t=0.0, scale_s=0.0, scale_t=0, x=0, nug11=0.0, nug22=0.0;
   double scale11=0.0, scale22=0.0, scale12=0.0, smoo11=0.0, smoo22=0.0, smoo12=0.0,R_power11=0.0, R_power22=0.0, R_power12=0.0;
-
   switch(*cormod) // Correlation functions are in alphabetical order
     {
     case 1:// Cauchy correlation function
@@ -514,6 +513,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power=par[0];
         scale=par[1];
         rho=R_pow(1-R_power/2,2*scale)/R_pow(1+R_pow(R_power/2,2)-R_power*cos(h),scale);
+        
+
     break;
     case 18://  sinsphere correlation function valid on sphere
         R_power=par[0];
@@ -530,7 +531,6 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale=par[1];
         smooth=par[2];
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
-     // Rprintf("%f \n",scale * sep);
         rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         break;
      case 20://  Whittle-Matern correlation function
@@ -640,6 +640,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
      // rho=R_pow(1+R_pow(u/scale_t, 2*R_power_t)/R_pow(arg,R_power_t*sep),-1)/R_pow(arg,1);
             arg=1+R_pow(u/scale_t, 2*R_power_t);
             rho=exp(-R_pow(h/scale_s, R_power_s)*R_pow(arg,R_power_s*sep))/R_pow(arg,1);
+            
+            
       break;
      case 56:    //st sinR_power
         R_power_s=1;
@@ -649,6 +651,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
         sep=cos(h)*arg;
         rho=(exp(R_power_s*sep/scale_s)*(1+R_power_s*sep/scale_s))/((1+R_power_s/scale_s)*exp(R_power_s/scale_s));
+
+
       break;
      case 58:  //st multiquaderic
         R_power_s=par[0];
@@ -704,8 +708,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
         rho=R_pow(arg,R_power)*CorFunW0(h,scale_s*R_pow(arg,sep),R_power_s);   
         break;
-    case 64:
-
+          case 64:
         R_power_s=par[0];
         R_power=par[1];
         R_power_t=par[2];
@@ -715,10 +718,9 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         //arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
         //rho=R_pow(arg,R_power)*CorFunW0(u,scale_t*R_pow(arg,sep),R_power_t); 
         arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
-         
        /*  arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);  */ 
         rho=R_pow(arg,R_power)*CorFunW0(u,scale_t*R_pow(arg,sep),R_power_t);  //2.5+2*0
-        //Rprintf("%f %f %f\n",rho,h,u);
+         //2.5+2*0
         break;
     case 65:  
           R_power_t=par[0];
@@ -1734,15 +1736,15 @@ double CorFunSmoke(double lag, double scale, double smooth)
 double CorFunWitMat(double lag, double scale, double smooth)
 {
   double rho=0.0;
-  double  a=lag/scale;
+  double a=lag/scale;
   // Computes the correlation:
-  if(a==0) {rho=1;return rho;}
-  if(smooth==0.5) {rho=exp(-a);return rho;}
-  if(smooth==1.5) {rho=exp(-a)*(1+a);return rho;}
-  if(smooth==2.5) {rho=exp(-a)*(1+a  + R_pow(a,2)/3);return rho;}
-  if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+ R_pow(a,3)/15 );return rho;}
+  if(lag<1e-16) {rho=1; return(rho);}
+  if(smooth==0.5) {rho=exp(-a);return(rho);}
+  if(smooth==1.5) {rho=exp(-a)*(1+a);return(rho);}
+  if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
+  if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+R_pow(a,3)/15);return(rho);}
   rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
-  return rho;
+  return(rho);
 }
 
 double Shkarofski(double lag, double a,double b, double k)
@@ -1809,40 +1811,39 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
 {
     double rho=0.0,x=0.0;
 
+   
+    if(lag<1e-16) {rho=1; return(rho);}
+   
      x=lag/scale;
-    if(fabs(lag/scale)<1.110223e-16) {rho=1; return(rho);}
- 
 
     if(smooth==0) {
-         if(x<=1)   rho=exp((R_power1)*log(1-x));
+         if(x<1)   rho=R_pow(1-x,R_power1);
          else rho=0;
          return(rho);
     }
     if(smooth==1) {
-         if(x<=1) rho=exp((R_power1+1)*log(1-x))*(1+x*(R_power1+1));
+         if(x<1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
          else rho=0;
          return(rho);
     }
-    if(smooth==2) {
-        
-         if(x<=1) rho=exp((R_power1+2)*log(1-x) )*(1+x*(R_power1+2)+R_pow(x,2)*(R_pow(R_power1,2) +4*R_power1 +3 )/3  );
+    if(smooth==2) { 
+         if(x<1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
          else rho=0;
          return(rho);
     }     
-   if(smooth==3) {
-        
-         if(x<=1) rho=exp((R_power1+3)*log(1-x) )*   (1+x*(R_power1+3) + 
-              R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 +
-              R_pow(x,3)*(  R_pow(R_power1,3) +9*R_pow(R_power1,2)+ 23*R_power1 +15 )/15   );
+      if(smooth==3) { 
+       if(x<1) rho=R_pow(1-x,R_power1+3)*( 1+R_pow(x,1)*(R_power1+3)+
+                    R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 + 
+                    R_pow(x,3)*(R_pow(R_power1,3)+9*R_pow(R_power1,2)+ 23*R_power1+15)/15);
          else rho=0;
          return(rho);
-    } 
+    }   
+     
       /*first version  */     
     if(x<=1)
          {
         rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
-         *R_pow(2,-R_power1-1)*exp((R_power1+smooth)*log(1-x*x) )*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
-                                // R_pow(1-x*x,smooth+R_power1)*
+         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
       }
   else {rho=0;}
    /*/second version
@@ -1855,8 +1856,6 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
         Free(param);*/
     return(rho);
 }
-
-
 
 double CorFunWend0_tap(double lag,double scale,double smoo)
 {
@@ -1984,10 +1983,6 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 {
   int i=0,j=0,h=0;// check the paramaters range:
   double dd=0.0;
-    //  Rprintf("%f--%f\n",par[0],nuis[1]);
-   //if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
-     // if(nuis[1]<0 ||nuis[1]>1){rho[0]=-2;return;}
-
      for(i=0;i<(ncoord[0]-1);i++){
 	    for(j=(i+1);j<ncoord[0];j++){
        
@@ -2148,7 +2143,6 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
       if(t==v){
          for(j=i+1;j<ns[v];j++){
            dd=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-           
            rho[h]=CorFct(cormod,dd,0,par,t,v);
            h++;}}
 
@@ -2157,7 +2151,6 @@ void CorrelationMat_st_dyn2(double *rho, double *coordx, double *coordy, double 
          for(j=0;j<ns[v];j++){
           dd=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
         
-          
 rho[h]=CorFct(cormod,dd,tt,par,t,v);
               h++;
               }}
@@ -3529,7 +3522,9 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
       if(*model==2||*model==11||*model==19||*model==14||*model==16)   // binomial  type I or  II or geometric case
       {
           ai=mean[i];aj=mean[j];
+          //Rprintf("%f\n",nuis[0]);
           psj=pbnorm22(ai,aj,(1-nuis[0])*CorFct(cormod, h[i], u[j], par,0,0));
+          //psj=pbnorm(cormod,h[i],u[j],ai,aj,nuis[0],nuis[1],par,0);
           p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
 
           if(*model==2||*model==11||*model==19) rho[t]=(psj-p1*p2)/sqrt(p1*p2*(1-p1)*(1-p2));  // binomyal type I II

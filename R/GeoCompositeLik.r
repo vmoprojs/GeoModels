@@ -163,7 +163,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukey2h' 
+    if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyhh' 
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -290,6 +290,17 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                               lower=lower,upper=upper,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
+
+         if(optimizer=='multinlminb'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
+              coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,
+                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol"#,nbclusters=2,
+                     )
+                               }
     if(optimizer=='ucminf')   
       CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik, hessian=as.numeric(hessian),   
                         control=list( maxeval=100000),
@@ -376,7 +387,16 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-
+          if(optimizer=='multinlminb')
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
+         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,
+                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol"#,nbclusters=2,
+                     )
+    
    }}                    
       ########################################################################################   
       ########################################################################################
@@ -440,7 +460,7 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
         if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
 
-    if(optimizer=='nlminb'){
+    if(optimizer=='nlminb'||optimizer=='multinlminb' ){
         CompLikelihood$par <- CompLikelihood$par
         names(CompLikelihood$par)<- namesparam
         CompLikelihood$value <- -CompLikelihood$objective

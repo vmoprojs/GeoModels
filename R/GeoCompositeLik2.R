@@ -252,36 +252,16 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
           control=list( reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
                               hessian=FALSE, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
-
-   #if(optimizer=='Nelder-Mead2'){
-    #  CompLikelihood <-pracma::fminsearch(x0=param,fn=comploglik2,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
-     #    data1=data1,data2=data2, fixed=fixed, fan=fname,n=n,namescorr=namescorr, #lower=lower,upper=upper,
-      #                           namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,minimize = TRUE,
-       #                         tol = 1e-08, maxiter = 100000)
-      
-         
-   # fmsfundata <- structure( list(colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  data1=data1,data2=data2, 
-    #                        fixed=fixed, fan=fname,
-     #                       n=n,namescorr=namescorr,
-      #                            namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, 
-       #                           local=local,GPU=GPU), class='optimbase.functionargs')
-       #   nm <- neldermead::neldermead()
-       #   nm <- neldermead::neldermead.set(nm,'numberofvariables',length(param))
-        #  nm <- neldermead::neldermead.set(nm,'costfargument',fmsfundata)
-        #  nm <- neldermead::neldermead.set(nm,'function',comploglik2)
-        #  nm <- neldermead::neldermead.set(nm,'x0',optimbase::transpose(param))
-         # nm <- neldermead::neldermead.set(nm,'verbose',FALSE)
-         # nm <- neldermead::neldermead.set(nm,'storehistory',TRUE)
-         # nm <- neldermead::neldermead.set(nm,'verbosetermination',FALSE)
-        #  nm <- neldermead::neldermead.set(nm,'method','box')
-        #  nm <- neldermead::neldermead.set(nm,'boundsmin',lower)
-        #  nm <- neldermead::neldermead.set(nm,'boundsmax',upper)
-        #  CompLikelihood <- neldermead::neldermead.search(nm)
-
-
-      #print(CompLikelihood)
-   # }
-
+ if(optimizer=='multinlminb'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik2,
+        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X, local=local,GPU=GPU,
+          lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol"#,nbclusters=4,
+                     )
+  }
     if(optimizer=='nmk')
       CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik2, control = list(maxfeval=100000,tol=1e-10),
                           colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,data1=data1,data2=data2,fixed=fixed, fan=fname,
@@ -390,6 +370,16 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                 colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X,local=local,GPU=GPU)
+     if(optimizer=='multinlminb'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv2,
+        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,local=local,GPU=GPU,
+                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol"#,nbclusters=2,
+                     )
+                               }
 
    }
  }  
@@ -456,7 +446,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
         if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
 
-    if(optimizer=='nlminb'){
+    if(optimizer=='nlminb'||optimizer=='multinlminb'){
         CompLikelihood$par <- CompLikelihood$par
         names(CompLikelihood$par)<- namesparam
         CompLikelihood$value <- -CompLikelihood$objective

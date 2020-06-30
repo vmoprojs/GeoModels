@@ -28,7 +28,7 @@ MatDecomp<-function(mtx,method)    {
 ### square root of a square matrix
 MatSqrt<-function(mat.decomp,method)    {  
         if(method=="cholesky")  varcov.sqrt <- mat.decomp
-        if(method=="svd")       varcov.sqrt <- sqrt(diag(mat.decomp$d))%*%t(mat.decomp$u)
+        if(method=="svd")       varcov.sqrt <- t(mat.decomp$v %*% sqrt(diag(mat.decomp$d)))  #sqrt(diag(mat.decomp$d))%*%t(mat.decomp$u)
         return(varcov.sqrt)
     }  
 ### inverse a square matrix given a decomposition

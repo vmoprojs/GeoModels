@@ -2321,6 +2321,37 @@ void Comp_Pair_Tukeyh2(int *cormod, double *coordx, double *coordy, double *coor
     if(!R_FINITE(*res)) *res = LOW;
     return;
 }
+
+
+/*********************************************************/
+void Comp_Pair_Tukeyhh2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,
+                         double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i,j;double bl,corr,zi,zj,lags,weights=1.0;
+    double sill=nuis[1];
+    double nugget=nuis[0];
+    double h1=nuis[3];
+    double h2=nuis[2];
+      if( sill<0||h1<0||h1>0.5||h2<0||h2>0.5||nugget<0||nugget>=1){*res=LOW; return;}
+          for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+            lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                zi=data[i];zj=data[j];
+                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                    corr=CorFct(cormod,lags,0,par,0,0);
+                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                   bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean[i],mean[j],sill,h1,h2);
+                             *res+= weights*log(bl);
+                }}
+              }}
+    
+    if(!R_FINITE(*res)) *res = LOW;
+    return;
+}
+
+
 /*********************************************************/
 void Comp_Pair_Gauss_misp_Tukeygh2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                          int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,

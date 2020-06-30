@@ -918,14 +918,14 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
           
       if(istap[0])  // tapering case
            {
-              npairs[0]=(int)(ncoord[0]*ncoord[0]);
+              npairs[0]=(int)( (*ncoord)  * (*ncoord));
               tlags=(double *) Calloc(*npairs,double);
               if(tlags==NULL){*ismal=0; return;}
            }  // end tapering case
       else { // distances composite likelihood  
 
 
-           *npairs= (int)( *ncoord * (*ncoord-1)/2);
+           *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
    //Rprintf("sdds22 %ld  %d %d %d %d\n",*npairs,npairs[0],*ncoord * (int)((*ncoord-1)/2),ncoord[0], *ncoord);
            tlags= (double *) Calloc(*npairs,double *);
            // Rprintf("%f %f   %d %d\n",srange[1],maxdist[0],npairs[0],*npairs);
@@ -937,11 +937,12 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
  // computing spatial distances and indexes      
  Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
  Free(tlags);
+ //Rprintf("ciao2");
       if(!ismal[0]) return;
   /***********************************************************/  
 }  // end spatial case
 else { //spatio temporal case or bivariate case
-       int qq=ncoord[0]*ntime[0];
+       int qq=(*ncoord) * (*ntime);
        
     // setting compact supports for space-time and bivariate case
        if(isst[0]){ 
@@ -970,7 +971,7 @@ else { //spatio temporal case or bivariate case
         {
 
           // allocating vectors
-           npairs[0]=(int)(qq*qq);
+           *npairs=(int)( qq * qq );
            tlags=(double *) Calloc(*npairs,double);
            if(tlags==NULL){*ismal=0; return;}
          
@@ -989,8 +990,8 @@ else { //spatio temporal case or bivariate case
        }  // end tapering
 else {  // distance for composite likelihood
               
-               if(isst[0])  npairs[0]=(int)(qq*(qq-1)*0.5);
-               if(isbiv[0]) npairs[0]=(int)(qq*(qq-1)*0.5);
+               if(isst[0])  npairs[0]=(int)(qq * (qq-1) * 0.5);
+               if(isbiv[0]) npairs[0]=(int)(qq * (qq-1) * 0.5);
 
              tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
