@@ -28,7 +28,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
  if(covmatrix$sparse){ 
              
                if(spam::is.spam(covmatrix$covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
-               else                    U = try(spam::chol(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
+               else                    U = try(spam::chol.spam(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
                if(class(U)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
                #Inv=spam::chol2inv.spam(U)
                Inv=0

@@ -176,6 +176,13 @@ The associated parameters in the argument \code{param} are
       where   \eqn{\mu \geq 0.5(d+1)+\kappa}.
      The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2} respectively. 
 
+    \item \eqn{GenWendMatern} (Generalized Wendland Matern) defined as:
+     \deqn{R(h) = \int_h^{1}[(1-x/a)^{\mu-1} ((x/a)^{2}-h^{2})^{\kappa-1}1(h \in [0,a]) ]dx / B(2\kappa+1,\mu) }
+      where   \eqn{\mu \geq 0.5(d+1)+\kappa} and \eqn{a=(\Gamma(\mu+1+2\kappa)/\Gamma(\mu))^(1/(1+2\kappa))}
+      The inverse parametrization  is used for the \eqn{\mu} parameter.
+     
+
+
       \item \eqn{Multiquadric} defined as:
     \deqn{R(h) = (1-\alpha0.5)^{2\beta}/(1+(\alpha0.5)^{2}-\alpha cos(h))^{\beta}, \quad h \in [0,\pi]}
     This model is valid on the unit sphere and \eqn{h} is the geodesic distance.
@@ -462,26 +469,11 @@ param=list(smooth=0.5,sill=1,scale=0.2,nugget=0)
 matrix1 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param)
 dim(matrix1$covmatrix)
 
-################################################################
-###
-### Example 2. Spatial tapered Covariance matrix associated to
-### a Matern correlation model
-###
-###############################################################
-
-
-matrix2 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param,
-                     maxdist=0.2,taper="Wendland1",type="Tapering")
-# Tapered covariance matrix
-as.matrix(matrix2$covmatrix)[1:15,1:15]
-
-# Percentage of no zero values in the tapered matrix
-matrix2$nozero
 
 
 ################################################################
 ###
-### Example 3. Spatial covariance matrix associated to
+### Example 2. Spatial covariance matrix associated to
 ### a Generalized Wendland correlation model
 ###
 ###############################################################
@@ -498,7 +490,7 @@ matrix3$nozero
 
 ################################################################
 ###
-### Example 4. Spatial covariance matrix associated to
+### Example 3. Spatial covariance matrix associated to
 ### a Generalized Cauchy correlation model
 ###
 ###############################################################
@@ -516,7 +508,7 @@ matrix4$covmatrix[1:4,1:4]
 
 ################################################################
 ###
-### Example 5. Covariance matrix associated to
+### Example 4. Covariance matrix associated to
 ### a space-time double exponential correlation model
 ###
 ###############################################################
@@ -538,7 +530,7 @@ dim(matrix5$covmatrix)
 
 ################################################################
 ###
-### Example 6. Covariance matrix associated to
+### Example 5. Covariance matrix associated to
 ### a  skew gaussian RF with Exp correlation model
 ###
 ###############################################################
@@ -553,7 +545,7 @@ matrix6$covmatrix[1:10,1:10]
 
 ################################################################
 ###
-### Example 7. Covariance matrix associated to
+### Example 6. Covariance matrix associated to
 ### a  Weibull RF with Genwend correlation model
 ###
 ###############################################################
@@ -569,7 +561,7 @@ matrix7$nozero
 
 ################################################################
 ###
-### Example 8. Covariance matrix associated to
+### Example 7. Covariance matrix associated to
 ### a  binomial gaussian RF with Wendland correlation model
 ###
 ###############################################################
@@ -586,7 +578,7 @@ matrix8$covmatrix[1:10,1:10]
 
 ################################################################
 ###
-### Example 9.  Covariance matrix associated to
+### Example 8.  Covariance matrix associated to
 ### a bivariate Matern exponential correlation model
 ###
 ###############################################################

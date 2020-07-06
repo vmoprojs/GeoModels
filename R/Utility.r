@@ -1430,8 +1430,6 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 #           as.integer(ns),as.integer(NS),as.integer(isdyn),
 #           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
-#print("here")
-
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
@@ -1477,6 +1475,7 @@ isinit <- gb$isinit
 
 if(is.null(coordt)) coordt=1
   
+
     ### Returned list of objects:
     return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
                 colidx = colidx ,rowidx=rowidx,

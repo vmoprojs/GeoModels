@@ -75,12 +75,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22,40))
 {
   if(type=="Standard") {
+
       fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
          corr=double(numpairstot)
+
   #      cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
    #       as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
    #       as.integer(ns),as.integer(NS),
@@ -96,6 +98,7 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
        corr=double(numpairs)
+       #print(paramcorr)
         #cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
         #  as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
         #   as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
@@ -605,7 +608,10 @@ if(sparse) {
        if(covmod==64||covmod==66||covmod==68) {  tapsep=c(param$power_s,param$power2_t,param$scale_s,param$scale_t,param$sep) }
     }
       if(!(spacetime||bivariate)){
-        maxdist=param$scale}
+        maxdist=param$scale
+        #print(param)
+        if(covmod==6)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+1/param$power2+1)-lgamma(1/param$power2))/ (1+2*param$smooth) ))
+      }
   }
   taper=corrmodel
 }

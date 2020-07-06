@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \title{n-fold  kriging Cross-validation}
 \description{The procedure use the \code{\link{GeoKrig}} function to compute n-fold  kriging cross-validation 
-  using informations from a \code{\link{GeoFit}} object.}
+  using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
 \usage{GeoCV(fit, K=100, n.fold=0.05,local=FALSE,max.points=NULL,
                     maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)}
 \arguments{
@@ -31,6 +31,8 @@
   \item{data_to_pred}{A list  of  the data to predict  in the CV procedure;}
    \item{mae}{The vector of mae in the CV procedure;}
   \item{rmse}{The vector of rmse in the CV procedure;}
+    \item{lscore}{The vector of log-score in the CV procedure;}
+      \item{crps}{The vector of continuous ranked probability score  in the CV procedure;}
 }
 
 

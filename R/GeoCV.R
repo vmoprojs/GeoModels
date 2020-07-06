@@ -5,7 +5,7 @@ GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,max.points=NULL,
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
 print("Cross-validation  kriging can be time consuming ...")
 if(ncol(fit$X)==1) {X=Xloc=NULL}
-mae=rmse=NULL
+mae=rmse=lscore=crps=NULL
 space_dyn=FALSE
 
 if(is.list(fit$data)) space_dyn=TRUE
@@ -48,22 +48,29 @@ data_to_pred  = fit$data[-sel_data]
 dtp[[i]]=data_to_pred
 if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-	            model=fit$model, n=fit$n, #ok
+	            model=fit$model, n=fit$n, mse=TRUE,#ok
               param=as.list(c(fit$param,fit$fixed)), 
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
 if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-              model=fit$model, n=fit$n, #ok
+              model=fit$model, n=fit$n, mse=TRUE,#ok
               max.points=max.points,maxdist=maxdist,
               param=as.list(c(fit$param,fit$fixed)), 
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
 pred[[i]]=as.numeric(pr$pred)
-err=data_to_pred-pr$pred
+err=data_to_pred-pr$pred  
+
+sqrtvv=sqrt(pr$mse)
+std=err/sqrtvv
+
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
+lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
+crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
+#print(i)
 i=i+1} ##end while
 }
 ############################################################
@@ -112,14 +119,14 @@ dtp[[i]]=data_to_pred
 #####################################
 if(!local) pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
 	       corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
-	          model=fit$model, n=fit$n, #ok
+	          model=fit$model, n=fit$n, mse=TRUE,#ok
            param=as.list(c(fit$param,fit$fixed)), 
            radius=fit$radius, sparse=sparse,   time=NULL, 
              which=which, X=X,Xloc=Xloc) #ok  
 
 if(local) pr=GeoKrigloc(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
          corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
-            model=fit$model, n=fit$n, #ok
+            model=fit$model, n=fit$n, mse=TRUE,#ok
            max.points=max.points, maxdist=maxdist,
            param=as.list(c(fit$param,fit$fixed)), 
            radius=fit$radius, sparse=sparse,   time=NULL, 
@@ -127,10 +134,16 @@ if(local) pr=GeoKrigloc(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coo
 
 pred[[i]]=as.numeric(pr$pred)
 err=data_to_pred-pr$pred  
+
+sqrtvv=sqrt(pr$mse)
+std=err/sqrtvv
+
    
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
+lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
+crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
 #print(i)
 i=i+1
 }                
@@ -178,14 +191,20 @@ data_to_pred_ord=data_to_pred[order(data_to_pred[,3]),]
     #       radius=fit$radius, sparse=sparse, time=time_to_pred, X=X,Xloc=Xloc) #ok
 
 err=c(data_to_pred)-c(pr$pred)  
-   
+
+sqrtvv=sqrt(pr$mse)
+std=err/sqrtvv
+
+
 N2=length(err)
 rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
+lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
+crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
 #print(i)
 i=i+1
 }
 } ## end spacetime
 
-return(list(rmse=rmse,mae=mae,predicted=pred,data_to_pred=dtp))
+return(list(rmse=rmse,mae=mae,crps=crps,lscore=lscore,predicted=pred,data_to_pred=dtp))
 }
