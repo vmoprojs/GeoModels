@@ -58,6 +58,7 @@ CkCorrModel <- function(corrmodel)
                              exponential=4,Exponential=4,Exp=4,exp=4,Matern0=4,
                              dagum = 5, Dagum = 5,
                              GenWend_Matern=6,GenWend_matern=6,Genwend_Matern=6,genWend_Matern=6,
+                             GenWend_Matern2=7,GenWend_matern2=7,Genwend_Matern2=7,genWend_Matern2=7,
                              gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
                              Shkarofski=10,shkarofski=10,
                              Wend0=11,wend0=11,
@@ -767,7 +768,7 @@ CorrelationPar <- function(corrmodel)
       param <- c('power1', 'power2','scale')
       return(param)}
     # Generalised wend correlation model abnd reparametrized version:
-     if(corrmodel %in% c(19,6)) {
+     if(corrmodel %in% c(19,6,7)) {
         param <- c('power2', 'scale','smooth')
         return(param)}
     # sine power on sphere 

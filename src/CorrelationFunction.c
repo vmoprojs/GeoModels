@@ -56,10 +56,17 @@ double CheckCor(int *cormod, double *par)
         break; 
     case 19: // Generalised wendland
     case 6:
+        R_power1=1/par[0];
+        scale=par[1];
+        smooth=par[2];
+       if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+            if(scale<=0 ||smooth<0) rho=-2;
+      break;
+       case 7:
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
-       // if(scale<=0 ||  R_power1<(1.5+smooth) ||smooth<0) rho=-2;
+       if(scale<=0 ||  R_power1<(1.5+smooth)) rho=-2;
             if(scale<=0 ||smooth<0) rho=-2;
       break;
     case 18://sinR_power valid on sphere
@@ -528,6 +535,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         break;
     case 6: // Generalised wend correlation function second paramtrizazion
         R_power1=1/par[0];        
+        scale=par[1];
+        smooth=par[2];
+        sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
+        rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
+        break;
+     case 7: // Generalised wend correlation function second paramtrizazion
+        R_power1=par[0];        
         scale=par[1];
         smooth=par[2];
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );

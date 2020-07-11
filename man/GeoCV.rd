@@ -29,8 +29,8 @@
   Returns an object  containing the following informations:
   \item{predicted}{A list  of  the predicted values   in the CV procedure;}
   \item{data_to_pred}{A list  of  the data to predict  in the CV procedure;}
-   \item{mae}{The vector of mae in the CV procedure;}
-  \item{rmse}{The vector of rmse in the CV procedure;}
+   \item{mae}{The vector of mean  absolute error in the CV procedure;}
+  \item{rmse}{The vector of root mean  squared error in the CV procedure;}
     \item{lscore}{The vector of log-score in the CV procedure;}
       \item{crps}{The vector of continuous ranked probability score  in the CV procedure;}
 }

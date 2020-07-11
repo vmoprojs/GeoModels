@@ -648,7 +648,7 @@ if(model==1){  ## gaussian case
  }
  ############################################################################
 ############################################################################
-hessian=FALSE
+hessian=TRUE
  if(model==20){   ## SAS case
      lname <- 'loglik_sh'
     if(bivariate)  {lname <- 'loglik_biv_sh'}
@@ -687,7 +687,7 @@ hessian=FALSE
    # hessian=TRUE
 }
 
-if(varest) hessian=TRUE
+if(varest) hessian=FALSE
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
 
@@ -875,6 +875,7 @@ if(varest)
      aa=try(abs(det(Likelihood$hessian)),silent=T)
    if(aa<1e-08||is.null(Likelihood$hessian)||min(eigen(Likelihood$hessian)$values)<0)
   {  
+   # print("here")
 Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
             coordt=coordt,corr=corr,corrmat=corrmat,
             corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,

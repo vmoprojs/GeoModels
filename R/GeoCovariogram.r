@@ -233,9 +233,9 @@ else                                        nui['nugget']=nuisance['nugget']
                            }
         else { 
         #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
-        covariance <- nuisance["sill"]*correlation*(1-nuisance["nugget"])
+        covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
         #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
-        variogram <-nuisance["sill"]*(1-correlation*(1-nuisance["nugget"]))
+        variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
         
         }
     }
