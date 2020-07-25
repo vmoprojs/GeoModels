@@ -14,8 +14,8 @@
 ### decomposition of a square  matrix
 MatDecomp<-function(mtx,method)    {
         if(method=="cholesky")  {
-            #mat.decomp <- try(chol(mtx), silent=TRUE)
-            mat.decomp <- try(Rfast::cholesky(mtx,parallel=TRUE))
+            mat.decomp <- try(chol(mtx), silent=TRUE)
+            #mat.decomp <- try(Rfast::cholesky(mtx,parallel=TRUE))
             if (inherits(mat.decomp , "try-error")) return (FALSE)
         }
         if(method=="svd")      {
@@ -588,7 +588,7 @@ return(varcov)
     #then set the code as a tapering and an object spam is returned
 if(sparse) {
     covmod=CkCorrModel(corrmodel)
-    if(covmod %in% c(10,11,13,15,19,6,
+    if(covmod %in% c(10,11,13,15,19,6,7,
                      63,64,65,66,67,68,
                      69,70,71,72,73,74,75,76,77,
                      111,112,129,113,114,131,132,130,134,
@@ -611,6 +611,7 @@ if(sparse) {
         maxdist=param$scale
         #print(param)
         if(covmod==6)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+1/param$power2+1)-lgamma(1/param$power2))/ (1+2*param$smooth) ))
+        if(covmod==7)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+param$power2+1)-lgamma(param$power2))/ (1+2*param$smooth) ))
       }
   }
   taper=corrmodel

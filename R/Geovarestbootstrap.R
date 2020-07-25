@@ -25,17 +25,19 @@ model=fit$model
 if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
 if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
 dimat=fit$numtime*fit$numcoord;
-if(sum(fit$X[1:dimat]==1)==dimat)  fit$X=NULL 
+
+
+if(sum(fit$X[1:dimat]==1)==dimat&&!dim(fit$X)[2]>1) fit$X=NULL 
 
 
 k=1;res=NULL
 set.seed(seed)
 while(k<=K){
 data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
-     coordx_dyn=fit$coordx_dyn, sparse=sparse,
+     coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
 	 param=as.list(c(fit$param,fit$fixed)),
-	 GPU=GPU,  local=local,#grid=fit$grid, 
+	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
    X=fit$X,n=fit$n,method="cholesky",
 	 distance=fit$distance,radius=fit$radius)
 
