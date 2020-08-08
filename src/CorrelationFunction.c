@@ -527,20 +527,20 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power=par[0];
         rho=1-R_pow(sin(h/2),R_power);    
     break;
-    case 19: // Generalised wend correlation function
+    case 19: // original   Generalised wend correlation 
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
   rho=CorFunW_gen(h, R_power1, smooth, scale);
         break;
-    case 6: // Generalised wend correlation function second paramtrizazion
+    case 6: // Bevilacqua Generalised wend correlation function  "better"  parametrization
         R_power1=1/par[0];        
         scale=par[1];
         smooth=par[2];
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
         rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         break;
-     case 7: // Generalised wend correlation function second paramtrizazion
+     case 7: // Bevilacqua Generalised wend correlation function  first parametrization
         R_power1=par[0];        
         scale=par[1];
         smooth=par[2];

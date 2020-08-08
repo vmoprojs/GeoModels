@@ -350,10 +350,15 @@ if(bivariate){}
 if(model==10)  {  ##  skew Gaussian case
 
           if(!bivariate){ 
+              #corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+              #sk=as.numeric(nuisance['skew'])
+              #corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
+              #corr=(2*sk2)*(sqrt(1-corr2) + corr*asin(corr)-1)/(pi*vv+sk2*(pi-2)) + (cr$corr*vv)/(vv+sk2*(1-2/pi))
+              #vv=vv+as.numeric(nuisance['skew'])^2*(1-2/pi)
               corr=cr$corr*(1-as.numeric(nuisance['nugget']))
               sk=as.numeric(nuisance['skew'])
-              corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
-              corr=(2*sk2)*(sqrt(1-corr2) + corr*asin(corr)-1)/(pi*vv+sk2*(pi-2)) + (cr$corr*vv)/(vv+sk2*(1-2/pi))
+              corr2=cr$corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
+              corr=(2*sk2)*(sqrt(1-corr2) + cr$corr*asin(cr$corr)-1)/(pi*vv+sk2*(pi-2)) + (corr*vv)/(vv+sk2*(1-2/pi))
               vv=vv+as.numeric(nuisance['skew'])^2*(1-2/pi)
      }
       if(bivariate){}

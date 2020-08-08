@@ -748,7 +748,7 @@ inv = MatInv(decompvarcov,method)
 }
 
 if(matrix$sparse){ 
-decompvarcov = chol(varcov)
+decompvarcov = spam::chol.spam(varcov)
 inv = spam::solve.spam(decompvarcov)
 }
 vv=diag(inv)                                                                              

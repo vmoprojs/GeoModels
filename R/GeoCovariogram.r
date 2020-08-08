@@ -243,12 +243,18 @@ else                                        nui['nugget']=nuisance['nugget']
  if(skewgausssian) {    
             if(bivariate) {}
               else {
-              correlation1=(1-nuisance['nugget'] )*correlation  
+              correlation1=(1-as.numeric(nuisance['nugget']) )*correlation  
               vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;corr2=correlation^2;  
               cc=(2*sk2)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + (correlation1*vv)/(vv+sk2*(1-2/pi))
               vs=(vv+sk2*(1-2/pi))
               covariance=vs*cc;variogram=vs*(1-cc) }
                    }
+
+         #         corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+         #     sk=as.numeric(nuisance['skew'])
+         #     corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
+         #     corr=(2*sk2)*(sqrt(1-corr2) + corr*asin(corr)-1)/(pi*vv+sk2*(pi-2)) + (cr$corr*vv)/(vv+sk2*(1-2/pi))
+         #     vv=vv+as.numeric(nuisance['skew'])^2*(1-2/pi)
 ##########################################
    if(twopieceT)        { if(bivariate) {}
                         else {

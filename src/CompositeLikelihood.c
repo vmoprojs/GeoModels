@@ -380,6 +380,58 @@ void Comp_Pair_Tukeyh_st2(int *cormod, double *coordx, double *coordy, double *c
 }
 
 
+/*tukey h space time */
+void Comp_Pair_Tukeyhh_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
+                        int *ns,int *NS, int *GPU,int *local)
+{
+    
+    
+    int i=0,j=0,t=0,v=0;
+    double corr,zi,zj,lags,lagt,weights=1.0,bl;
+    
+        double sill=nuis[1];
+    double nugget=nuis[0];
+    double h1=nuis[3];
+    double h2=nuis[2];
+      if( sill<0||h1<0||h1>0.5||h2<0||h2>0.5||nugget<0||nugget>=1){*res=LOW; return;}
+
+      for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[t];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                                zi=data[(i+NS[t])];
+                                zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,0,par,0,0);
+                                    
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+
+ bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],sill,h1,h2);
+                             *res+= weights*log(bl);
+ 
+                         }}}}
+                    else {  
+         lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lagt<=maxtime[0] && lags<=maxdist[0]){
+                               zi=data[(i+NS[t])];
+                                zj=data[(j+NS[v])];
+                                if(!ISNAN(zi)&&!ISNAN(zj) ){
+                                    corr=CorFct(cormod,lags,lagt,par,0,0);
+                                           if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lags,maxdist[0]);
+ bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean[(i+NS[t])],mean[(j+NS[v])],sill,h1,h2);
+                             *res+= weights*log(bl);
+                                }}}}
+                }}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 
 
 /*skewn two piece t space time */

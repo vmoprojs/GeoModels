@@ -29,6 +29,7 @@ Prscores(data,  method="cholesky", matrix)
 \value{
   Returns a list  containing the following informations:
   \item{RMSE}{Root-mean-square error predictive score}
+   \item{MAE}{Mean absolute error predictive score}
   \item{LSCORE}{Logarithmic predictive score}
   \item{CRPS}{Continuous ranked probability predictive score}
 

@@ -1006,6 +1006,38 @@ for(i=0;i<npairs[0];i++){
     return;
 }
 /******************************************************************************************/
+void Comp_Pair_Tukeyhh_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    
+    
+    int i=0;
+    double corr,zi,zj,weights=1.0,bl;
+      double sill=nuis[1];
+    double nugget=nuis[0];
+    double h1=nuis[3];
+    double h2=nuis[2];
+      if( sill<0||h1<0||h1>0.5||h2<0||h2>0.5||nugget<0||nugget>=1){*res=LOW; return;}
+
+for(i=0;i<npairs[0];i++){
+             if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                                zi=data1[i];
+                                zj=data2[i];
+                                    corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                                    
+                                   if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+
+ bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean1[i],mean2[i],sill,h1,h2);
+                             *res+= weights*log(bl);
+          
+ 
+                         }}
+                
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+/******************************************************************************************/
 void  Comp_Pair_TWOPIECEGauss_st2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
