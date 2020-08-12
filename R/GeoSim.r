@@ -62,7 +62,7 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
    }  
-     if(model %in% c("Beta",'Kumaraswamy'))  {
+     if(model %in% c("Beta",'Kumaraswamy','Kumaraswamy2'))  {
      if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
       #    if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
      if(!bivariate) param[which(names(param) %in% c("shape1","shape2","min","max"))] <- NULL
@@ -160,7 +160,7 @@ forGaussparam<-function(model,param,bivariate)
 
     k=1
 #################################
-    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','LogGaussian',
+    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',
                     "StudentT","SkewStudentT","Poisson","poisson","TwoPieceTukeyh","Poisson",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
                     "Gamma","Weibull",
@@ -269,7 +269,7 @@ forGaussparam<-function(model,param,bivariate)
                              if(bivariate)  k=max(param$shape_1,param$shape_2)
                                } 
     if(model %in% c("Beta"))  {k=round(param$shape1)+round(param$shape2);}
-    if(model %in% c("Kumaraswamy"))  k=4
+    if(model %in% c("Kumaraswamy","Kumaraswamy2"))  k=4
     if(model %in% c("StudentT"))  k=round(1/param$df)+1
     if(model %in% c("TwoPieceBimodal"))  k=round(param$df)+1
     if(model %in% c("SkewStudentT","TwoPieceStudentT"))  k=round(1/param$df)+2
@@ -398,8 +398,8 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
         dim(sim) <- simdim
          }
     ####################################    
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy"
-              ,"LogGaussian","TwoPieceTukeyh",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","Beta","Kumaraswamy","Kumaraswamy2",
+              "LogGaussian","TwoPieceTukeyh",
                 "Gamma","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
        if(!bivariate) dd[,,i]=t(sim)
@@ -616,7 +616,7 @@ if(model %in% c("Gamma","Weibull"))   {
 #########################################################################################################
 #### simulation for continuos random field  based  on a compact support based on indipendent copies  of GRF ######
 #########################################################################################################
-if(model %in% c("Beta","Kumaraswamy"))   { 
+if(model %in% c("Beta","Kumaraswamy","Kumaraswamy2"))   { 
      sim1=NULL;sim2=NULL
       i=1
     if(model=="Beta")
@@ -627,14 +627,20 @@ if(model %in% c("Beta","Kumaraswamy"))   {
     #sim=aa/(aa+rowSums(sim2)) 
    sim=param$min + (param$max-param$min)*aa/(aa+rowSums(sim2))  
     }
-     if(model=="Kumaraswamy")
+     if(model=="Kumaraswamy"||model=="Kumaraswamy2")
     {
     while(i<=2)  {sim1=cbind(sim1,dd[,,i]^2);i=i+1}
     while(i<=4)  {sim2=cbind(sim2,dd[,,i]^2);i=i+1}
     aa=rowSums(sim1)
     sim=aa/(aa+rowSums(sim2)) 
    # sim=( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
-    sim=param$min + (param$max-param$min)*( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
+    if(model=="Kumaraswamy") 
+      sim=param$min + (param$max-param$min)*( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
+    if(model=="Kumaraswamy2") 
+     {
+      aa=log(1-((1+exp(-mm))^(-1))^(param$shape2))/log(0.5)
+      sim=param$min + (param$max-param$min)*( (1-(1-sim)^aa)^(1/param$shape2) )
+     }
     }   
          if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
