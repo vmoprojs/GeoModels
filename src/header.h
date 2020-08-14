@@ -421,6 +421,7 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma_gen(double corr,double zi,double zj,double mui, double muj, double shape,double n);
 double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double max);
+double biv_Kumara2(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double  max);
 double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double max);
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -1258,7 +1259,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

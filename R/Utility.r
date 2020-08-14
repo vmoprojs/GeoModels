@@ -707,7 +707,7 @@ CkModel <- function(model)
                          Binomial_TwoPieceGauss=31,
                          BinomialNeg_TwoPieceGaussian=32,
                          BinomialNeg_TwoPieceGauss=32,
-                         Kumaraswamy=33,Kumaraswamy=42,
+                         Kumaraswamy=33,Kumaraswamy2=42,
                          Tukeyh=34,tukeyh=34,
                          Tukeyh2=40,tukeyh2=40,
                          Gaussian_misp_StudentT=35,

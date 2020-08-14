@@ -128,6 +128,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==33,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==42,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy2'
+                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
                                               if(varest & vartype==2) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'

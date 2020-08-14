@@ -224,6 +224,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}
   if(x$model=='Binomial'){ process <- 'Binomial';model <- 'Binomial'}
   if(x$model=='Kumaraswamy'){ process <- 'Kumaraswamy';model <- 'Kumaraswamy'}
+  if(x$model=='Kumaraswamy2'){ process <- 'Kumaraswamy2';model <- 'Kumaraswamy2'}
   if(x$model=='Beta'){ process <- 'Beta';model <- 'Beta'}
   if(x$model=='Binomial_TwoPieceGaussian'||x$model=='Binomial_TwoPieceGauss'){ process <- 'Binomial TwoPiece Gaussian';model <- 'Binomial_TwoPieceGauss'}
   if(x$model=='BinomialNeg_TwoPieceGaussian'||x$model=='BinomialNeg_TwoPieceGauss'){ process <- 'Negative Binomial TwoPiece Gaussian';model <- 'BinomialNeg_TwoPieceGauss'}

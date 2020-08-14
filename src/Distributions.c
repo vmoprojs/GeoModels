@@ -3582,6 +3582,28 @@ return(res/R_pow(dd,2));
 }
 
 
+
+double biv_Kumara2(double rho,double zi,double zj,double ai,double aj,double shape1,double shape2,double min,double  max)
+{
+  double xx=0.0,yy=0.0,ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0;
+  double mi=1/(1+exp(-zi)), mj=1/(1+exp(-zj));
+  double dd=(max-min), shapei=log(0.5)/log(1-pow(mi,shape2)),shapej=log(0.5)/log(1-pow(mj,shape2));
+  zi=(zi-min)/dd;zj=(zj-min)/dd;
+
+ ki=1-pow(zi,shape2); kj=1-pow(zj,shape2);
+if(rho) {
+  rho2=rho*rho;
+  xx=rho2*pow(ki,shapei)*pow(kj,shapej);
+  yy=rho2*(1-pow(ki,shapei))*(1-pow(kj,shapej));
+  p1=pow(sqrt(shapei*shapej)*shape2,2)*pow(zi*zj,shape2-1)*pow(ki,shapei-1)*pow(kj,shapej-1)*pow(1-rho2,2);
+  p2= appellF4(2,2,1,1,yy,xx);
+  res=p1*p2;}
+/*else  {p1=shapei*shape2*pow(zi,shape2-1)*pow(ki,shapei-1);
+         p2=shapej*shape2*pow(zj,shape2-1)* pow(kj,shapej-1);
+         res=p1*p2;}*/
+return(res/R_pow(dd,2));
+}
+
 /***********************************************************************************/
 /************ functions for binomial or negative binomial  two piece *********/
 /***********************************************************************************/

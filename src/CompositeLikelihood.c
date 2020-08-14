@@ -1800,6 +1800,33 @@ void Comp_Pair_Kumaraswamy2(int *cormod, double *coordx, double *coordy, double 
     if(!R_FINITE(*res)|| !*res) *res = LOW;
     return;
 }
+
+/*********************************************************/
+void Comp_Pair_Kumaraswamy22(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
+             int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    
+    int i,j;double corr,zi,zj,lags,weights=1.0,bl;
+    double nugget=nuis[0]; 
+     if(nuis[2]<0||nuis[3]<0) {*res=LOW;  return;}
+      double min=nuis[4];
+     double max=nuis[5];
+    for(i=0;i<(ncoord[0]-1);i++){
+            for(j=(i+1); j<ncoord[0];j++){
+                lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+                 if(lags<=maxdist[0]){
+                    zi=(data[i]); zj=(data[j]);
+                      if(!ISNAN(zi)&&!ISNAN(zj) ){
+                    corr=CorFct(cormod,lags,0,par,0,0);
+                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);             
+                  bl=biv_Kumara2((1-nugget)*corr,zi,zj,mean[i],mean[j],nuis[2],nuis[3],min,max);
+       
+        *res+= weights*log(bl);
+                  }}}}
+    // Checks the return values
+    if(!R_FINITE(*res)|| !*res) *res = LOW;
+    return;
+}
 /*********************************************************/
 void Comp_Pair_Weibull2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
                          int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
