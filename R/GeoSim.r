@@ -167,9 +167,10 @@ forGaussparam<-function(model,param,bivariate)
                     "LogLogistic","Logistic")) 
        {
         if(spacetime_dyn){
-          env <- new.env()
-          #coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
-          if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)}
+                       env <- new.env()
+                       #coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
+                       if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)
+                     }
 
   if(!bivariate){
 
@@ -304,7 +305,6 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
      { nugget=param$nugget;param$nugget=0}  ### ojo!!
 
 
-
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel, 
                    distance=distance,grid=grid,model="Gaussian", n=n, 
                 param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)
@@ -320,7 +320,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
   ccov_with_nug=ccov$covmatrix*II
 }
 
-    if(spacetime_dyn) ccov$numtime=1
+if(spacetime_dyn) ccov$numtime=1
   numcoord=ccov$numcoord;numtime=ccov$numtime;
   dime<-numcoord*numtime
   xx=double(dime)
@@ -387,7 +387,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
     nuisance<-param[ccov$namesnuis]
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
     ####################################
+
     sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
+
     ####################################
     ####### starting cases #############
     ####################################
@@ -663,41 +665,54 @@ if(model %in% c("Beta","Kumaraswamy","Kumaraswamy2"))   {
 
 if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2","SinhAsinh"))
 {
-  sim=c(sim)
-  
-  if(model %in% c("LogGaussian","LogGauss"))   {     
+
+
+  if(model %in% c("Gaussian")) {sim=c(sim);byrow=FALSE}
+  if(model %in% c("LogGaussian","LogGauss"))   {  
+        sim=c(t(sim))   
         sim=exp(mm) *  (exp(sqrt(vv)*sim)/(exp( vv/2))) ## note the parametrization
+        byrow=TRUE
         }      
 #################################################################################
  if(model %in% c("Tukeygh"))   { 
+     sim=c(t(sim))  
      if(!sk && !tl) sim= mm+sqrt(vv)* sim
      if(!sk && tl)  sim= mm+sqrt(vv)* sim*exp(tl*sim^2/2)
      if(!tl && sk)  sim= mm+sqrt(vv)* (exp(sk*sim)-1)/sk
-     if(tl&&sk)     sim= mm+sqrt(vv)* (exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk        
+     if(tl&&sk)     sim= mm+sqrt(vv)* (exp(sk*sim)-1)*exp(0.5*tl*sim^2)/sk    
+     byrow=TRUE    
     }
 ############################################################################## 
   if(model %in% c("Tukeyh"))   { 
+     sim=c(t(sim)) 
      if(!tl) sim= mm+sqrt(vv)*sim
      if(tl)  sim= mm+sqrt(vv)*sim*exp(tl*sim^2/2)
+     byrow=TRUE  
    }  
 
     if(model %in% c("Tukeyh2"))   { 
+       sim=c(t(sim)) 
        sel=sim>0
        bb=sim*exp(t1l*sim^2/2)*as.numeric(sel);  bb[bb==0]=1
        aa=sim*exp(t2l*sim^2/2)*as.numeric(!sel); aa[aa==0]=1
-      sim= mm+sqrt(vv)*(aa*bb)
+       sim= mm+sqrt(vv)*(aa*bb)
+      byrow=TRUE 
    } 
 #########################################
-  if (model %in% c("SinhAsinh")) sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk))
+  if (model %in% c("SinhAsinh")) 
+  {sim=c(t(sim));sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk));byrow=TRUE 
+    }
  ### formatting data
   if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
-                else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord)
+                else                       sim <- matrix(sim, nrow=numtime, 
+                                                          ncol=numcoord,byrow=byrow)
         }
          else{
         if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime)) 
             }
+   
 }
 
 

@@ -7,7 +7,7 @@
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
-/*****************************************************************************************/
+/******************************************************************************************/
 
 // Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
 void Comp_Pair_Gauss2mem(int *cormod, double *data1,double *data2,int *NN, 
@@ -1040,7 +1040,7 @@ void Comp_Pair_Tukeyhh_st2mem(int *cormod, double *data1,double *data2,int *NN,
     
     int i=0;
     double corr,zi,zj,weights=1.0,bl;
-      double sill=nuis[1];
+double sill=nuis[1];
     double nugget=nuis[0];
     double h1=nuis[3];
     double h2=nuis[2];
@@ -1050,16 +1050,11 @@ for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                                 zi=data1[i];
                                 zj=data2[i];
-                                    corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
-                                    
-                                   if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-
- bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean1[i],mean2[i],sill,h1,h2);
+                                corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+bl=biv_tukey_hh((1-nugget)*corr,zi,zj,mean1[i],mean2[i],sill,h1,h2);
                              *res+= weights*log(bl);
-          
- 
-                         }}
-                
+                         }}      
     if(!R_FINITE(*res))*res = LOW;
     return;
 }

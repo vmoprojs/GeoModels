@@ -2296,15 +2296,15 @@ double cdf_norm(double lim1,double lim2,double a11,double a12)
 }
 
 
-
-
 double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double muj,
     double sill,double hl,double hr)
-            
+           
 {
 
-  double res = 0.0,hl_i = 0.0,hr_i = 0.0,hl_j = 0.0,hr_j = 0.0,z_i = 0.0,z_j = 0.0;
+  double res = 0.0,A=0.0,B=0.0,hl_i = 0.0,hr_i = 0.0,hl_j = 0.0,hr_j = 0.0,z_i = 0.0,z_j = 0.0;
   double  Lhl_i=1.0,Lhr_i=1.0,Lhl_j=1.0,Lhr_j=1.0;
+
+
  
   z_i = (data_i - mui)/sqrt(sill);
   z_j = (data_j - muj)/sqrt(sill);
@@ -2321,6 +2321,7 @@ double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double mu
   Lhr_j = (1 + LambertW(hr*z_j*z_j));
 
 
+if(fabs(corr)>1e-10){
 if(z_i>=mui&&z_j>=muj)
 {res=dbnorm(hr_i,hr_j,0,0,1,corr)*hr_i*hr_j/(z_i*z_j*Lhr_i*Lhr_j);}
 if(z_i>=mui&&z_j<muj)
@@ -2329,9 +2330,21 @@ if(z_i<mui&&z_j>=muj)
 {res=dbnorm(hl_i,hr_j,0,0,1,corr)*hl_i*hr_j/(z_i*z_j*Lhl_i*Lhr_j);}
 if(z_i<mui&&z_j<muj)
 {res=dbnorm(hl_i,hl_j,0,0,1,corr)*hl_i*hl_j/(z_i*z_j*Lhl_i*Lhl_j);}
+}
+else
+{
+if(z_i>=mui)
+{A=dnorm(hr_i,0,1,0)*hr_i/(z_i*Lhr_i);}
+if(z_i<mui)
+{A=dnorm(hl_i,0,1,0)*hl_i/(z_i*Lhl_i);}
+if(z_j>=muj)
+{B=dnorm(hr_j,0,1,0)*hr_j/(z_j*Lhr_j);}
+if(z_j<muj)
+{B=dnorm(hl_j,0,1,0)*hl_j/(z_j*Lhl_j);}
+res=A*B;
+}
 return(res/sill);
 }
-
 
 
 

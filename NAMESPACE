@@ -7,5 +7,6 @@ importFrom("grDevices", dev.cur)
 importFrom("graphics", abline, lines, par, persp, plot,points)
 importFrom("stats", nlminb, dist, quantile, qqnorm,  pweibull, nlm, optim, optimize, pchisq,pnorm,qnorm,qlnorm,qgamma,qweibull,lm, rnorm, pt,qt,uniroot, var,cor)
 importFrom("methods","is", "new", "slot<-")
+import("Rfast", "fields", "mapproj", "plot3D", "shape")
 
 
