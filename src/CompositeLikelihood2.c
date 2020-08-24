@@ -1430,6 +1430,33 @@ void Comp_Pair_Kumaraswamy_st2mem(int *cormod, double *data1,double *data2,int *
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+
+/******************************************************************************************/
+void Comp_Pair_Kumaraswamy2_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    
+    
+    int i=0;
+    double corr,zi,zj,weights=1.0,bl;
+    //double sill=nuis[1];
+    double nugget=nuis[0];
+    double min=nuis[4];
+     double max=nuis[5];
+  if(nuis[2]<0||nuis[3]<0||min>max)  {*res=LOW;  return;}
+   for(i=0;i<npairs[0];i++){
+             if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                                zi=data1[i];zj=data2[i];
+                                    corr=CorFct(cormod,lags[i],lagt[i],par,0,0);      
+                                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                                   bl= biv_Kumara2((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2],nuis[3],min,max);
+                             *res+= weights*log(bl);
+                         }}
+
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 /******************************************************************************************/
 void Comp_Pair_Beta_st2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
