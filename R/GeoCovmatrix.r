@@ -69,20 +69,21 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
     {
    
-#####################################################
 
 
-if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22,40))
+###################################################################################
+############### computing correlation #############################################
+###################################################################################
+
+if(model %in% c(1,9,34,12,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
 {
   if(type=="Standard") {
-
       fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
-         corr=double(numpairstot)
-
+corr=double(numpairstot)
   #      cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
    #       as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius), 
    #       as.integer(ns),as.integer(NS),
@@ -106,13 +107,15 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
      corr=corr, coordx,coordy,coordt,corrmodel,nuisance, paramcorr,radius,ns,NS,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
-
      ## deleting correlation equual  to 1 because there are problems  with hipergeometric function
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0  
-
       }
     }
-     
+###################################################################################
+###################################################################################
+###################################################################################
+
+
 if(model==1)   ## gaussian case  
 {  
   if(!bivariate)
@@ -163,11 +166,8 @@ if(!bivariate)   {
                   vv=vari 
             }      
 }
-
 if(bivariate){}
 }
- 
-
 ###############################################################
 if(model==40)  {  ## TukeyH2  
           
@@ -198,7 +198,6 @@ p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
 if(bivariate){}
 } 
 
-
 ###############################################################
 if(model==34)  {  ## TukeyH  
           
@@ -226,8 +225,6 @@ vv=as.numeric(nuisance['sill'])*(nu)/(nu-2)
 }
 if(bivariate){}
 }
-
-
 
 ############################################################### 
   if(model==18)   ##  skew student case 
@@ -276,7 +273,6 @@ if(model==27)   ##  two piece student case case
     {  
   if(!bivariate)
 {
-
           corr=cr$corr*(1-as.numeric(nuisance['nugget']))
           nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
           corr2=corr^2;sk2=sk^2
@@ -289,7 +285,6 @@ if(model==27)   ##  two piece student case case
           corr= KK*(a1*a2*a3-4*sk2);
           ttemp=gamma(0.5*(nu-1))/gamma(0.5*nu)
           vv=as.numeric(nuisance['sill'])*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*ttemp^2)
-
        #   corr=cr$corr*(1-nuisance['nugget'] )
        #   nu=1/as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew']);sill=as.numeric(nuisance['sill'])
        #   sk2=sk^2
@@ -345,7 +340,6 @@ if(model==29)   ##  two piece gaussian case
   }
 if(bivariate){}
 }
-
 ###############################################################
 if(model==10)  {  ##  skew Gaussian case
 
@@ -401,6 +395,69 @@ if(!bivariate)
       }
 
 }
+
+#################################################################################
+############# covariance models defined on a bounded support of the real line ###
+#################################################################################
+if(model==28)   ##  beta case
+    {
+      if(!bivariate) {
+         corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+         corr2=corr^2
+         shape1=as.numeric(nuisance['shape1']);     shape2=as.numeric(nuisance['shape2']);  
+         c=0.5*(shape1+shape2)
+         vv=shape1*shape2/((c+1)*(shape1+shape2)^2)        ## variance remember min and max!
+         A=1
+         corr=shape1*(c + 1 ) * ((1-corr2)^c *A -1)/shape2 ## correlation
+        }
+     if(bivariate){}     
+}
+
+if(model==33)   ##  Kumaraswamy case
+    { 
+}
+
+if(model==42)   ##  Kumaraswamy 2 case
+    {     
+}
+#################################################################################
+# covariance matrix for models defined on a bounded support of the  real line  ##
+#################################################################################
+if(model %in% c(28,33,42)){
+if(!bivariate)
+{
+ if(type=="Standard"){
+     # Builds the covariance matrix:
+        varcov <-  diag(dime)
+        varcov[lower.tri(varcov)] <- corr
+        varcov <- t(varcov)
+        varcov[lower.tri(varcov)] <- corr
+        varcov=varcov*vv
+      }
+    if(type=="Tapering")  {
+          vcov <- vv*corr; 
+          varcov <- new("spam",entries=vcov,colindices=setup$ja,
+                             rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
+          diag(varcov)=vv
+        }
+}     
+#####
+    if(bivariate)      {
+       if(type=="Standard"){
+          corr <- cr$corr
+          varcov<-diag(dime)
+          varcov[lower.tri(varcov,diag=TRUE)] <- corr
+          varcov <- t(varcov)
+          varcov[lower.tri(varcov,diag=TRUE)] <- corr
+        }
+        if(type=="Tapering")  {
+          varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
+                         rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
+        }
+      }
+
+}
+
 #################################################################################
 ################ models defined on the positive real line #######################
 #################################################################################
@@ -511,10 +568,6 @@ if(type=="Standard")  {
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-
-    
-      
-
 
   #cr=dotCall64::.C64(fname,SIGNATURE = 
    #    c("double","double","double","double",  "integer","double","integer","double","double","double","integer","integer","integer"),  

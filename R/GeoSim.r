@@ -637,11 +637,11 @@ if(model %in% c("Beta","Kumaraswamy","Kumaraswamy2"))   {
     sim=aa/(aa+rowSums(sim2)) 
    # sim=( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
     if(model=="Kumaraswamy") 
-      sim=param$min + (param$max-param$min)*( (1-(1-sim)^(1/param$shape1))^(1/param$shape2) )
+      sim=param$min + (param$max-param$min)*( (1-(sim)^(1/param$shape1))^(1/param$shape2) )
     if(model=="Kumaraswamy2") 
      {
-      aa=log(1-((1+exp(-mm))^(-1))^(param$shape2))/log(0.5)
-      sim=param$min + (param$max-param$min)*( (1-(1-sim)^aa)^(1/param$shape2) )
+      aa=log(1-((1+exp(-mm))^(-param$shape2)))/log(0.5)
+      sim=param$min + (param$max-param$min)*( (1-(sim)^aa)^(1/param$shape2) )
      }
     }   
          if(!grid)  {
