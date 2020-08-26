@@ -404,11 +404,35 @@ if(model==28)   ##  beta case
       if(!bivariate) {
          corr=cr$corr*(1-as.numeric(nuisance['nugget']))
          corr2=corr^2
-         shape1=as.numeric(nuisance['shape1']);     shape2=as.numeric(nuisance['shape2']);  
-         c=0.5*(shape1+shape2)
-         vv=shape1*shape2/((c+1)*(shape1+shape2)^2)        ## variance remember min and max!
-         A=1
-         corr=shape1*(c + 1 ) * ((1-corr2)^c *A -1)/shape2 ## correlation
+         shape1=as.numeric(nuisance['shape1']);     
+         shape2=as.numeric(nuisance['shape2']);  
+         ssup=as.numeric(nuisance['max'])-as.numeric(nuisance['min'])
+         cc=0.5*(shape1+shape2)
+         vv=ssup^2*shape1*shape2/((cc+1)*(shape1+shape2)^2)        ## variance remember min and max!
+idx=which(abs(corr2)>1e-10);corr22=corr2[idx]
+######################
+  #nu=shape1;alpha=shape2
+  nu2=shape1/2;alpha2=shape2/2
+  res=0;ss=0;k=0
+  while(k<=100){
+    p1=2*(lgamma(cc+k)-lgamma(cc)+lgamma(nu2+1+k)-lgamma(nu2+1))
+    p2=lgamma(k+1)+(lgamma(nu2+k)-lgamma(nu2))+2*(lgamma(cc+1+k)-lgamma(cc+1))
+    b1=p1-p2
+    b2=log(hypergeo::genhypergeo(U=c(cc+k,cc+k,alpha2), L=c(cc+k+1,cc+k+1), polynomial=TRUE,maxiter=1000, z=corr22))
+    b3=k*log(corr22)
+    sum=exp(b1+b2+b3)
+    res=res+sum
+    if (all(sum<1e-6)){
+      break
+    } else{
+      A=res
+    }
+    k=k+1
+  }
+######################
+         corr[idx]=A
+         corr=shape1*(cc + 1 ) * ((1-corr2)^(cc) *corr -1)/shape2 ## correlation
+         corr[-idx]=0
         }
      if(bivariate){}     
 }

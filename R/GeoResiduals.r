@@ -43,7 +43,7 @@ if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
 res1=dd/exp(c(mu))
 ### additive  models  on the real line
 if(model %in% c("Gaussian","SkewGaussian","Logistic", 
-               "Tukeyh","SinhAsinh","Tukeygh","Gaussian_misp_Tukeygh",
+               "Tukeyh","Tukeyh2","SinhAsinh","Tukeygh","Gaussian_misp_Tukeygh",
                "StudentT",  "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT","SkewStudentT",
                "TwoPieceGaussian","TwoPieceTukeyh","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
 {res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))}
@@ -64,7 +64,7 @@ fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
 
-if(model %in% c("Gaussian","Logistic","Tukeyh","Tukeygh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_Tukeygh",
+if(model %in% c("Gaussian","Logistic","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_Tukeygh",
          "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh","TwoPieceBimodal"))
 {fit$param['sill']=1;fit$param['mean']=0}
 

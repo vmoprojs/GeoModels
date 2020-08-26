@@ -80,6 +80,10 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
                              vv=param['sill']; tail=param['tail']
                              param['skew']=NULL; param['tail']=NULL; param['sill']=1
                            }
+     if(model=="Tukeyh2")    { model="Gaussian"    # we need a "Gaussian" covariance matrix
+                             vv=param['sill']; tail1=param['tail1'];tail2=param['tail2'];
+                             param['skew']=NULL; param['tail1']=NULL;param['tail2']=NULL; param['sill']=1
+                           }
     if(model %in% c("Weibull","Gamma","LogLogistic"))          # we need a x covariane matrix with with mean=0   x=gamma,weibull,loglogistic
      {
      paramtemp=param 
@@ -176,7 +180,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 ########################################################################################
 ########################################################################################
 ########################################################################################
-if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos model 
+if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39,28,40))    ## contnuos model 
 {  
 ## gaussian=1 
 ## skew gaussian=10   
@@ -187,11 +191,13 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
 ## loglogistic=24
 ## loggaussian=22 ojo
 ## twopieceStudentT=27
+## beta=28
 ## twopieceGaussian=29
 ## twopieceTukeyh=38
 ## twopiecebimodal=39
 ## sihasin=20
 ## tukey=34
+## tukeyyh2=40
     ################################
     ## standard kriging  ##############
     ################################   
@@ -244,14 +250,14 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
         if(covmatrix$model %in% c(1,20,34))   { #gaussian tukey sas 
                                                 vv=as.numeric(covmatrix$param['sill'])
                                                 corri=cc;} 
-     
+ ############################################################    
         if(covmatrix$model==10) {    #skew gaussian
                         corr2=rho^2
                         sk=as.numeric(covmatrix$param['skew']);sk2=sk^2
                         vv=as.numeric(covmatrix$param['sill'])
                         corri=(2*sk2)*(sqrt(1-corr2) + rho*asin(rho)-1)/(pi*vv+sk2*(pi-2)) + (cc*vv)/(vv+sk2*(1-2/pi))                
                         }    
-
+############################################################
         if(covmatrix$model==12) # student T
                          { 
                         vv=as.numeric(covmatrix$param['sill']) 
@@ -259,10 +265,31 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                         if(nu<170) corri=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,rho^2))*cc)/(2*gamma(nu/2)^2)
                         else       corri=cc
                       }
-
+############################################################
+        if(covmatrix$model==40) # tukeyh2
+                         { 
+                           vv=as.numeric(covmatrix$param['sill']) 
+                           tail1=as.numeric(covmatrix$param['tail1']) 
+                           tail2=as.numeric(covmatrix$param['tail2']) 
+                           hr=tail1;hl=tail2
+                           x1=1-(1-cc^2)*hr
+                           x2=(1-hr)^2-(cc*hr)^2
+                           y1=1-(1-cc^2)*hl
+                           y2=(1-hl)^2-(cc*hl)^2
+                           g=1-hl-hr+(1-cc^2)*hl*hr
+                           h1=sqrt(1-cc^2/(x1^2))+(cc/x1)*asin(cc/x1)
+                           h2=sqrt(1-cc^2/(y1^2))+(cc/y1)*asin(cc/y1)
+                           h3=sqrt(1-cc^2/(x1*y1))+sqrt(cc^2/(x1*y1))*asin(sqrt(cc^2/(x1*y1)))
+                           p1=x1*h1/(2*pi*(x2)^(3/2))+cc/(4*(x2)^(3/2))
+                           p2=y1*h2/(2*pi*(y2)^(3/2))+cc/(4*(y2)^(3/2))
+                           p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+cc/(4*(g)^(3/2))
+                           mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                           vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                           corri=(p1+p2+2*p3-mm^2)/vv1
+                         }
+############################################################
            if(covmatrix$model==18) # skew student T
                          {
-
                   vv=as.numeric(covmatrix$param['sill']) 
                   nu=1/as.numeric(covmatrix$param['df']); 
                   sk=as.numeric(covmatrix$param['skew'])
@@ -285,6 +312,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
              KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
              corri= KK*(a1*a2*a3-4*sk2);        
                       }
+############################################################
          if(covmatrix$model==38) {  # two piece Tukey h
                         tail=as.numeric(covmatrix$param['tail']);
                         sk=as.numeric(covmatrix$param['skew'])
@@ -301,6 +329,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                         M=(2*(1-corr2)^(3/2))/(pi*gg2)
                         corri=  (M*A*a3-mm)/( ff- mm)      
                       }
+############################################################
          if(covmatrix$model==39) {  # bimodal
                                   nu=as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew'])
                                   vv=as.numeric(covmatrix$param['sill'])
@@ -316,7 +345,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                                   vari=2^(2/alpha)*(gamma(nu/2 + 2/alpha))*gamma(nu/2)* (1+3*sk2) - sk2*2^(2/alpha+2)*gamma(nu/2+1/alpha)^2 
                                   corri= MM*(a1*a3-4*sk2)/vari
                       }
-
+############################################################
         if(covmatrix$model==29) {  # two piece Gaussian 
                           corr2=sqrt(1-cc^2)
                           vv=as.numeric(covmatrix$param['sill'])
@@ -326,8 +355,34 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                           KK=3*sk2+2*sk+ 4*p11 - 1
                           corri=(2*((corr2 + cc*asin(cc))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   )                  
                       }
-     ###########################################################################
-
+############################################################
+       if(covmatrix$model==28)   ##  beta case
+    {
+         corr2=cc^2
+         shape1=as.numeric(covmatrix$param['shape1']);     
+         shape2=as.numeric(covmatrix$param['shape2']);  
+         cc1=0.5*(shape1+shape2)
+         vv=shape1*shape2/((cc1+1)*(shape1+shape2)^2)
+         idx=which(abs(corr2)>1e-10);corr22=corr2[idx]
+         nu2=shape1/2;alpha2=shape2/2
+         res=0;ss=0;k=0
+         while(k<=100){
+             p1=2*(lgamma(cc1+k)-lgamma(cc1)+lgamma(nu2+1+k)-lgamma(nu2+1))
+             p2=lgamma(k+1)+(lgamma(nu2+k)-lgamma(nu2))+2*(lgamma(cc1+1+k)-lgamma(cc1+1))
+             b1=p1-p2
+             b2=log(hypergeo::genhypergeo(U=c(cc1+k,cc1+k,alpha2), L=c(cc1+k+1,cc1+k+1), polynomial=TRUE,maxiter=1000, z=corr22))
+             b3=k*log(corr22)
+             sum=exp(b1+b2+b3)
+             res=res+sum
+             if (all(sum<1e-6)){ break} else{ A=res}
+         k=k+1
+        }
+         cc[idx]=A
+         corri=shape1*(cc1 + 1 ) * ((1-corr2)^(cc1) *cc -1)/shape2 ## correlation
+         corri[-idx]=0
+    }
+############################################################
+############################################################
           if(covmatrix$model==21) { # gamma
                         sh=as.numeric(covmatrix$param["shape"])
                         corri=cc^2
@@ -345,7 +400,8 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39))    ## contnuos
                                         Re(hypergeo::hypergeo(1/sh, 1/sh, 1,cc^2)) -1)              
          }
     }
-#####################################################################
+############################################################
+############################################################
 if(bivariate)  { 
                           if(which==1)    vvar=covmatrix$param["sill_1"]+covmatrix$param["nugget_1"]
                           if(which==2)    vvar=covmatrix$param["sill_2"]+covmatrix$param["nugget_2"]
@@ -360,6 +416,11 @@ else    {
                                }  
      if(covmatrix$model==12)  {vvar= vv*nu/(nu-2)    ## studentT
                                M=0      
+                               } 
+     if(covmatrix$model==40) { 
+                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                               vvar= vv* (0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2 )   ## tukeyh2
+                               M=mm      
                                }     
      if(covmatrix$model==18)  { #skew student T
                               D1=(nu-1)*0.5; D2=nu*0.5;
@@ -370,6 +431,12 @@ else    {
                               ttemp=gamma(0.5*(nu-1))/gamma(0.5*nu)
                               vvar= vv*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*ttemp^2)
                               M= - sqrt(vv)*2*sk*sqrt(nu/pi)*ttemp
+                              }
+     if(covmatrix$model==28)  { #beta
+                              ssup=as.numeric((covmatrix$param["max"]-covmatrix$param["min"]))
+                              vvar=(ssup^2)*(shape1*shape2/((cc1+1)*(shape1+shape2)^2))
+                              M=ssup*shape1/(shape1+shape2)+as.numeric(covmatrix$param["min"])
+                              muloc=0;mu=0
                               } 
      if(covmatrix$model==29)  {vvar= vv*((1+3*sk2) - 8*sk2/pi ) # two piece Gaussian
                                M=-sqrt(vv)*2*sk*sqrt(2/pi)  
@@ -394,7 +461,7 @@ else    {
 #### updating mean
         if(!bivariate){
           #### additive model on the real line 
-         if(covmatrix$model %in% c(10,18,29,27,38,39))
+         if(covmatrix$model %in% c(10,18,29,27,38,39,28))
                                 {
                                  muloc=muloc + M
                                  mu=mu +       M
@@ -414,7 +481,7 @@ krig_weights = t(MM$a)
 if(type_krig=='Simple'||type_krig=='simple')  {  
       if(!bivariate) {  ## space and spacetime simple kringing
                ###################################################
-               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37))   ####gaussian, StudenT, two piece  skew gaussian bimodal
+               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,40))   ####gaussian, StudenT, two piece  skew gaussian bimodal
               {
                      pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
               }
@@ -468,7 +535,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
 BB= krig_weights%*%CC
 #BB=crossprod(t(krig_weights),CC)
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
-if(covmatrix$model %in% c(1,12,27,38,29,10,18,39))  
+if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,28,40))  
         {vv=diag(as.matrix(diag(vvar,dimat2) - BB  + bb)) } ## simple variance  kriging predictor variance
 #gamma
 if(covmatrix$model %in% c(21)) 

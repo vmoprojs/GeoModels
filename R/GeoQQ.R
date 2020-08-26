@@ -102,6 +102,25 @@ q_t=uu*exp(0.5*tail*uu^2)
 plot(q_t,q_e,main="Tukey-h qq-plot",xlab=xlab,ylab=ylab)
 }
 #######################################
+if(model %in% c("Tukeyh2"))
+{
+qtpTukeyh22= function(x,tail1,tail2){ 
+  ll=1:length(x)
+  sel1=I(x>0)*ll
+  sel2=I(x<=0)*ll
+  x1=x[sel1];         
+  x2=x[sel2] 
+  uu1<-qnorm(x1,0,1); 
+  uu2<-qnorm(x2,0,1)
+  qq1=uu1*exp(0.5*tail1*uu1^2)
+  qq2=uu2*exp(0.5*tail2*uu2^2)
+  return(c(qq1,qq2))
+}
+tail1 = as.numeric(pp["tail1"]);tail2 = as.numeric(pp["tail2"])
+q_t =qtpTukeyh22(probabilities,tail1,tail2)
+plot(q_t,q_e,main="Tukey-hh qq-plot",xlab=xlab,ylab=ylab)
+}
+#######################################
 if(model %in% c("Tukeygh","Gaussian_misp_Tukeygh")) 
 {
 tail = as.numeric(pp["tail"]);skew = as.numeric(pp["skew"]);
