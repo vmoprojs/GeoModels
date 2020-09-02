@@ -35,6 +35,7 @@ data=fit$data
 
 set.seed(round(seed))
 while(i<=K){
+
 sel_data = sample(1:N,round(N*(1-n.fold)))  
 # data and coord used for prediction
 
@@ -70,7 +71,7 @@ rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
 lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
 crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
-#print(i)
+print(i)
 i=i+1} ##end while
 }
 ############################################################

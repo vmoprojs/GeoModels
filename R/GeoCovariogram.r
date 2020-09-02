@@ -129,7 +129,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     geom <- model==14
     binomialneg<-model==16
     tukeyh<- model ==34
-    tukeyh2<- model ==4
+    tukeyh2<- model ==40
     poisson<- model==30||model==36
     loglogistic <- model==24
     tukeygh<- model==9||model==41
@@ -218,6 +218,7 @@ else                                        nui['nugget']=nuisance['nugget']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
    #print(nui)
+
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param,fitted$n)
 
@@ -383,7 +384,6 @@ else                                        nui['nugget']=nuisance['nugget']
                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
                               vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                               cc=(p1+p2+2*p3-mm^2)/vs
-
                           covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }   

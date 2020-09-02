@@ -2301,27 +2301,32 @@ double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double mu
            
 {
 
-  double res = 0.0,A=0.0,B=0.0,hl_i = 0.0,hr_i = 0.0,hl_j = 0.0,hr_j = 0.0,z_i = 0.0,z_j = 0.0;
+  double res = 0.0,A=0.0,B=0.0,hl_i,hr_i,hl_j,hr_j;
   double  Lhl_i=1.0,Lhr_i=1.0,Lhl_j=1.0,Lhr_j=1.0;
 
 
  
-  z_i = (data_i - mui)/sqrt(sill);
-  z_j = (data_j - muj)/sqrt(sill);
+  double z_i = (data_i - mui)/sqrt(sill);
+  double z_j = (data_j - muj)/sqrt(sill);
  
+
+
+//Rprintf("%f %f %f %f %f \n",z_i,z_j,hl,hr,corr); // hl is tail 2 hr is tail 1
+
   hl_i = inverse_lamb(z_i,hl);
-  hr_i = inverse_lamb(z_i,hr);
   hl_j = inverse_lamb(z_j,hl);
+
+  hr_i = inverse_lamb(z_i,hr);
   hr_j = inverse_lamb(z_j,hr);
 
 
   Lhl_i = (1 + LambertW(hl*z_i*z_i));
-  Lhr_i = (1 + LambertW(hr*z_i*z_i));
   Lhl_j = (1 + LambertW(hl*z_j*z_j));
+  Lhr_i = (1 + LambertW(hr*z_i*z_i));
   Lhr_j = (1 + LambertW(hr*z_j*z_j));
 
 
-if(fabs(corr)>1e-10){
+if(fabs(corr)>1e-30){
 if(z_i>=mui&&z_j>=muj)
 {res=dbnorm(hr_i,hr_j,0,0,1,corr)*hr_i*hr_j/(z_i*z_j*Lhr_i*Lhr_j);}
 if(z_i>=mui&&z_j<muj)

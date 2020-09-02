@@ -22,17 +22,19 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
                U =MatDecomp(covmatrix$covmatrix,method)
                #Inv=MatInv(U,method)
                Inv=0
-               if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}      
-               return(list(a=backsolve(U, backsolve(U, b, transpose = TRUE)),bb=Inv))
+               if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}  
+               Invc=backsolve(U, backsolve(U, b, transpose = TRUE))    
+               return(list(a=Invc,bb=Inv))
              }
  if(covmatrix$sparse){ 
-             
+          
                if(spam::is.spam(covmatrix$covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
                else                    U = try(spam::chol.spam(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
                if(class(U)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
                #Inv=spam::chol2inv.spam(U)
                Inv=0
-              return(list(a=spam::backsolve(U, spam::forwardsolve(U, b)),b=Inv))
+               Invc= spam::backsolve(U, spam::forwardsolve(U, b)) ## R^-1 %*% c
+              return(list(a=Invc,bb=Inv))
         }
     }
 ###################################### 
@@ -483,7 +485,9 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                ###################################################
                if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,40))   ####gaussian, StudenT, two piece  skew gaussian bimodal
               {
-                     pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))   
+    
+                     pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))  
+     
               }
               ###################################################
                if(covmatrix$model %in% c(20)) # Sinh
@@ -533,10 +537,12 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                 bb=0
 
 BB= krig_weights%*%CC
+
 #BB=crossprod(t(krig_weights),CC)
 # Gaussian,StudentT,skew-Gaussian,two piece linear kriging     
 if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,28,40))  
         {vv=diag(as.matrix(diag(vvar,dimat2) - BB  + bb)) } ## simple variance  kriging predictor variance
+
 #gamma
 if(covmatrix$model %in% c(21)) 
        { vv=emuloc^2*diag(as.matrix(diag(2/covmatrix$param['shape'],dimat2)- BB + bb))}

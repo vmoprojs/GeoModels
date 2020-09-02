@@ -3528,7 +3528,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
     for(i=0;i<*nlags;i++){
       if(*model==1||*model==10||*model==12||*model==21||*model==30||*model==36||*model==18||
       *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38
-      ||*model==39||*model==41||*model==35||*model==37||*model==9||*model==41) 
+      ||*model==39||*model==40||*model==41||*model==35||*model==37||*model==9||*model==41) 
 
 
     rho[t]=CorFct(cormod, h[i], u[j], par,0,0);   
