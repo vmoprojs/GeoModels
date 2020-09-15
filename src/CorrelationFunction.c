@@ -2006,6 +2006,9 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
     }}
   return;
 }
+
+    
+
 // Computation of the upper (lower) triangular spatial discrete  models
 void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coordt,  int *cormod, double *mean, 
         int *nn,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
@@ -2038,8 +2041,8 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
      if(*model==30)
        {
            ai=exp(mean[i]);aj=exp(mean[j]);
-           rho[h]=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj);
-
+           rho[h]=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance
+         // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
        } 
             h++;
         }}

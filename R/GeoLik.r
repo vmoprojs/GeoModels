@@ -30,6 +30,14 @@ Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,f
           #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
         return(cc$cr)
     }
+   ######### computing upper trinagular of covariance matrix   
+    matr2 <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius,model,mu)
+    {
+        cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
+         as.double(c(mu)), as.integer(1), as.double(nuisance['nugget']),
+        as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),as.integer(model),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+        return(cc$cr)
+    }
     ### START Defining the objective functions
 ######### Restricted log-likelihood for multivariate normal density:
     LogNormDenRestr <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
@@ -165,7 +173,19 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
          llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
         return(llik)
     }
-
+    LogNormDenStand22 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
+    {
+        llik <- 1.0e8
+        varcov <- cova      
+        # decomposition of the covariance matrix:
+        decompvarcov <- MatDecomp(varcov,mdecomp)
+        if(is.logical(decompvarcov)) return(llik)  
+        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+       # invarcov <- MatInv(decompvarcov,mdecomp)
+       # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
+         llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
+        return(llik)
+    }
     ######### CVV mdecomp:
     CVV <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
@@ -504,11 +524,40 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         #if(df<2)  return(llik)
          #if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
          #else      
-         corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
-           if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
-        cova <- corr*(nuisance['sill'])*(1-nuisance['nugget'])
+    corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
+        if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
+    cova <- corr*(nuisance['sill'])*(1-nuisance['nugget'])
         #nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
+            mdecomp=mdecomp,nuisance=nuisance,setup=setup))
+        return(loglik_u)
+      }
+################################################################################################
+    # Call to the objective functions:
+    loglik_miss_Pois <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+    {
+        llik <- 1.0e8
+        names(param) <- namesparam
+        # Set the parameter vector:
+        pram <- c(param, fixed)
+        paramcorr <- pram[namescorr]
+        nuisance <- pram[namesnuis]
+        sel=substr(names(nuisance),1,4)=="mean"
+        mm=as.numeric(nuisance[sel])
+        # Computes the vector of the correlations:
+        mu=X%*%mm
+        model=30
+        corr=matr2(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius,model,mu)
+        cova <-  ident
+        cova[lower.tri(cova)] <- corr   
+        cova <- t(cova)
+        cova[lower.tri(cova)] <- corr 
+        diag(cova)=exp(mu)
+    if(nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
+        #nuisance['nugget']=0
+      loglik_u <- do.call(what="LogNormDenStand22",args=list(stdata=data-c(exp(mu)),
+           const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
     
@@ -527,7 +576,6 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-        #print(param)
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
@@ -537,7 +585,6 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
-     # print(loglik_u)
         return(loglik_u)
       }
 
@@ -593,6 +640,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     if( bivariate) num_betas=c(ncol(X),ncol(X)) }
     
     corrmat<-"CorrelationMat"# set the type of correlation matrix     
+    if(model==36) corrmat<-"CorrelationMat_dis"# set the type of correlation matrix 
     if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
     if(bivariate)  corrmat<-"CorrelationMat_biv_dyn"  
      if(spacetime||bivariate){
@@ -673,6 +721,13 @@ hessian=TRUE
     if(bivariate)  {lname <- 'loglik_biv_miss_T'}
     #hessian=TRUE
 }
+
+ if(model==36){   ## Poisson misspecified t
+     lname <- 'loglik_miss_Pois'
+    if(bivariate)  {lname <- 'loglik_biv_miss_Pois'}
+    #hessian=TRUE
+}
+
 
  if(model==37){   ## gaussian misspecified skewt
      lname <- 'loglik_miss_skewT'
@@ -875,7 +930,7 @@ if(varest)
      aa=try(abs(det(Likelihood$hessian)),silent=T)
    if(aa<1e-08||is.null(Likelihood$hessian)||min(eigen(Likelihood$hessian)$values)<0)
   {  
-   # print("here")
+
 Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
             coordt=coordt,corr=corr,corrmat=corrmat,
             corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,

@@ -15,6 +15,8 @@ void  hyperg_call(double *a,double *b,double *x,double *res)
     return x <= 0 && x == ceil(x) && fabs(x) < 1e13;
 }
 
+
+
  
 double poch(double a, double m)
 {
@@ -71,6 +73,67 @@ double poch(double a, double m)
     return(r * exp(lgammafn(a + m) - lgammafn(a)) * sign(gammafn(a + m)) * sign(gammafn(a)));
 }
 
+
+
+
+double log_hyp1F1_reg(int n,int m,double z){
+
+double res=0.0,term1=0.0,term2=0.0,term3=0.0;int k=0;
+if(n<m){  
+
+for (k=0;k<=(n-1);k++) {
+  term1=term1+ pow(-z,k)*(poch(1-n,k))/(gamma(k+1)*poch(2-m,k));}
+
+for (k=0;k<=(m-n-1);k++) {
+  term2=term2+pow(z,k)*(poch(1-m+n,k))/(gammafn(k+1)*poch(2-m,k));
+}  
+res=log(poch(2-m,n-1))+exp(log(pow(z,1-m))+log((exp(z)*term1- term2))-lgammafn(n));
+return(res) ; 
+}
+else{
+for (k=0;k<=(n-m);k++) {
+  term3=term3+exp(( log(poch(m-n,k))+log(pow(-z,k)))-(lgammafn(k+1)+log(poch(m,k))));
+}
+return(z+log(term3)-lgammafn(m));    
+  }
+}
+
+
+/***********************************************/
+/***********************************************/
+double log_regularized1F1(int n, int m,double z) 
+{
+double res=0.0;
+
+if(n==1) {res=z+(1-m)*log(z)+log(igam(-1 + m, z));
+         return(res);}
+if(n==2) {
+    res=    exp(-lgammafn(m-1))+  exp(z)*pow(z,1-m)*(2 - m + z)*igam(-1 + m, z);
+         return(log(res));
+     }
+if(n==3) {
+
+   res= 0.5*((4-m+z)/gammafn(-1+m) + 
+               exp(z)*pow(z,1-m)*(6-5*m + m*m + 6*z-2*m*z+z*z)*igam(-1 + m, z));
+          return(log(res));
+         }
+         
+if(n==4)
+       {res=(1/6)*   (   (18 - 8*m + m*m + 10*z - 2*m*z + z*z)/(gammafn(-1 + m)) + 
+        exp(z)*pow(z,1-m)*(24 - 26*m + 9*m*m - m*m*m + 36*z - 21*m*z + 3*m*m*z + 
+    12*z*z - 3*m*z*z + z*z*z)*igam(-1 + m, z));
+    return(log(res));}
+
+if(n==5)
+       {res=(1/24)*   (   (96 - 58*m + 13*m*m - m*m*m + 86*z - 31*m*z + 3*m*m*z + 18*z*z - 
+ 3*m*z*z + z*z*z)/(gammafn(-1 + m)) + 
+        exp(z)*pow(z,1-m)*(120 - 154*m + 71*m*m - 14*m*m*m + pow(m,4) + 240*z - 188*m*z + 48*m*m*z - 
+ 4*m*m*m*z + 120*z*z - 54*m*z*z + 6*pow(z*m,2) + 20*z*z*z - 4*m*z*z*z + pow(z,4))*igam(-1 + m, z));
+  return(log(res));}
+ 
+ res=log(hyperg(n,m, z))-lgammafn(m);    
+return(res);
+}
 /**************************************************/
 double aprox_reg_1F1(int n, int m,double z) 
 {
@@ -85,34 +148,21 @@ k++;
 }
 return(p1*s1);
 }
-/***********************************************/
-double regularized1F1(int n, int m,double z) 
-{
-double s1=0.0,s2=0.0,res=0.0,p1;int k=0;
-if(n==0&&m==0)  res=0.0;
-else{
-if(m>n)
-{    
 
-p1=poch(2-m,n-1)*R_pow(z,1-m)/gammafn(n);
-for(k=0;k<=(n-1);k++) {s1=s1+poch(1-n,k)*R_pow(-z,k)/(poch(2-m,k)*gammafn(k+1));}
-for(k=0;k<=(m-n-1);k++) {s2=s2+poch(1-m+n,k)*R_pow(z,k)/(poch(2-m,k)*gammafn(k+1));}
-res=p1*(exp(z)*s1-s2);
-}
-if(m<=n){
-p1=exp(z)/gammafn(m);
-for(k=0;k<=n-m;k++)  {s1=s1+R_pow(-z,k)*poch(m-n,k)/(poch(m,k)*gammafn(k+1)) ;}
-res=p1*s1;
-}
-}    
-
-
-return(res);
+double try(int m, double b,double z)
+{ 
+double res=0.0,res1=0.0;int k=0;
+//res1=log(exp(z)*pow(z,m-b)*gammafn(b)/(gammafn(b-m)*gammafn(m)));
+res1=z+(m-b)*log(z)+ lgammafn(b)-(lgammafn(b-m)+lgammafn(m));
+for(k=0; k<=m; k++)
+res=res+pow(-z,-k)*exp(lgammafn(m)+lgammafn(b+k-m)-(lgammafn(k+1)+lgammafn(m-k)))*igam(b+k-m,z);
+//Rprintf("%f %f\n,",res,res1);
+return(log(res)+res1);
 }
 
 void  reghyperg_call(int *a,int *b,double *x,double *res)
 {
-    *res = regularized1F1(*a,*b,*x);
+    *res = log_regularized1F1(*a,*b,*x);
 }
 /************ pochammer symbols*******************/
 double Poch(int q,int n)
@@ -136,6 +186,10 @@ double hyperg(a, b, x)
 double a, b, x;
 {
     double asum, psum, acanc, pcanc, temp;
+
+    //if(b==1.0)
+    //    psum= (b-1) exp(x)* x^(1 - b) (gammafn(b - 1) - gammaf(b - 1, x))
+    ///return(psum);
 
     /* See if a Kummer transformation will help */
     temp = b - a;
@@ -183,9 +237,10 @@ double a, b, x;
 
 double hy1f1p(double a, double b, double x, double *err)
 {
-    double n, a0, sum, t, u, temp, maxn;
+        double n, a0, sum, t, u, temp, maxn;
     double an, bn, maxt;
     double y, c, sumc;
+
 
     /* set up for power series summation */
     an = a;
@@ -201,10 +256,9 @@ double hy1f1p(double a, double b, double x, double *err)
     maxn = 200.0 + 2 * fabs(a) + 2 * fabs(b);
 
     while (t > MACHEP) {
-    if (bn == 0) {        /* check bn first since if both   */
+    if (bn == 0) {      /* check bn first since if both   */
         //sf_error("hyperg", SF_ERROR_SINGULAR, NULL);
-        //printf("hyperg SF_ERROR_SINGULAR\n");
-        return (NPY_INFINITY);    /* an and bn are zero it is     */
+        return (NPY_INFINITY);  /* an and bn are zero it is     */
     }
     if (an == 0)        /* a singularity            */
         return (sum);
@@ -218,7 +272,7 @@ double hy1f1p(double a, double b, double x, double *err)
     /* check for blowup */
     temp = fabs(u);
     if ((temp > 1.0) && (maxt > (DBL_MAX / temp))) {
-        *err = 1.0;        /* blowup: estimate 100% error */
+        *err = 1.0;     /* blowup: estimate 100% error */
         return sum;
     }
 
@@ -256,8 +310,9 @@ double hy1f1p(double a, double b, double x, double *err)
 
 double hy1f1a(double a, double b, double x, double *err)
 
-{
+{    
     double h1, h2, t, u, temp, acanc, asum, err1, err2;
+
     if (x == 0) {
     acanc = 1.0;
     asum = NPY_INFINITY;
@@ -314,7 +369,7 @@ double hy1f1a(double a, double b, double x, double *err)
     /* infinity */
     acanc = 0;
 
-    acanc *= 30.0;        /* fudge factor, since error of asymptotic formula
+    acanc *= 30.0;      /* fudge factor, since error of asymptotic formula
                  * often seems this much larger than advertised */
 
   adone:
@@ -323,11 +378,8 @@ double hy1f1a(double a, double b, double x, double *err)
     *err = acanc;
     return (asum);
 }
-
-/*                                                     hyp2f0()        */
 
 double hyp2f0(double a, double b, double x, int type, double *err)
-
 {
     double a0, alast, t, tlast, maxt;
     double n, an, bn, u, sum, temp;
@@ -366,7 +418,7 @@ double hyp2f0(double a, double b, double x, int type, double *err)
         goto ndone;
 
     tlast = t;
-    sum += alast;        /* the sum is one term behind */
+    sum += alast;       /* the sum is one term behind */
     alast = a0;
 
     if (n > 200)
@@ -397,7 +449,7 @@ double hyp2f0(double a, double b, double x, int type, double *err)
     n -= 1.0;
     x = 1.0 / x;
 
-    switch (type) {        /* "type" given as subroutine argument */
+    switch (type) {     /* "type" given as subroutine argument */
     case 1:
     alast *=
         (0.5 + (0.125 + 0.25 * b - 0.5 * a + 0.25 * x - 0.25 * n) / x);
@@ -422,7 +474,6 @@ double hyp2f0(double a, double b, double x, int type, double *err)
   error:
     *err = NPY_INFINITY;
     //sf_error("hyperg", SF_ERROR_NO_RESULT, NULL);
-    //printf("hyperg SF_ERROR_NO_RESULT\n");
     return (sum);
 }
 
@@ -3888,71 +3939,81 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
     double prt,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,k=0,m=0, iter1=4000, iter2=4000;
+    int n,k=0,m=0, iter1=2000, iter2=2000;
     n= r-t;
         while(m<=iter1){
+
             res0=0.0;
                 for(k=0;k<=iter2;k++){
+                     //   Rprintf("%d %d\n",m,k);
                         aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
                         aux3= lgammafn(m+1)+lgammafn(t);
                         aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
-                        q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));  
-                        if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1,rho2*auxi);                     
-                        term= exp(aux2-aux3+aux4+log(q1));
+                        q1=log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1);  
+                       // q11=log_regularized1F1(n,t+m+n+k+1,rho2*auxi);     
+    //  if(try(n,t+m+n+k+1,rho2*auxi)< -999999999)
+        //Rprintf("%f %f %f %f + %f   -%d %d %f \n",q1,
+      //      log_regularized1F1(n,t+m+n+k+1,rho2*auxi), 
+      //      log_hyp1F1_reg( n,t+m+n+k+1,rho2*auxi),
+      //   log(try(n,t+m+n+k+1,rho2*auxi)),log(hyperg(n,t+m+n+k+1, rho2*auxi)),
+      //          n,t+m+n+k+1,rho2*auxi);    
+
+ //if(t+m+n+k+1>160) Rprintf("%f %f  \n",q1,q11);
+      ///   try(n,t+m+n+k+1,rho2*auxi),log(hyperg(n,t+m+n+k+1, rho2*auxi)),
+        //        n,t+m+n+k+1,rho2*auxi,m);  
+                        term= exp(aux2-aux3+aux4+q1);
                       if(!R_finite(term))   {break;}
                        sum =sum+ term;     
-                         if((fabs(sum-res0)<1e-10)  ) {break;}
+                         if((fabs(sum-res0)<1e-30)  ) {break;}
                   else {res0=sum;}
             }
         aux= m*(log(rho2)-log(1-rho2)); 
         aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
-        q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
-        if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
-        term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
+        q2=log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1);  
+        //q2=log_regularized1F1(n+1,t+m+n+1, rho2*auxi);  
+       // Rprintf("%f %f %d \n",q2,log_regularized1F1(n+1,t+m+n+1, rho2*auxi),n+1);        
+        //if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
+        term1= exp(aux+aux1+q2)*igam(t+m, auxj);
         if(!R_finite(term1))   {break;}
            sum1 =sum1+ term1;     
-                         if((fabs(sum1-res00)<1e-10)  ) {break;}
+                         if((fabs(sum1-res00)<1e-30)  ) {break;}
                          else {res00=sum1;}
       
         m++;
     }
-
      prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
-   //  if(!R_finite(prt)) prt=1e-320;
-    //  if(prt<1e-320) prt=1e-320;
-     ///if(prt<=0) prt=0;
+    // Rprintf("%f %f-%d  %d- %f\n",log(prt),prt,r,t,mean_i);
     return(prt);
 }
 
-//*****************************************************************************/
+
 
 double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= pow(corr,2);    
     double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
-    double sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
+    double bbaa=0.0,sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
     int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int iter1=1000;  int iter2=1000;
-
+    int iter1=2000;  int iter2=1500;
     while(k<iter1){
 //+++++++++++++++++++++++++++++++++++++++//
       m=0; res0=0.0;
       while(m<iter2){
                       //Rprintf("%d %d\n",m,k);      
 term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
-        if((fabs(term)<1e-10)||!R_finite(term))   {break;}
+        if((fabs(sum-term)<1e-20)||!R_finite(term))   {break;}
         sum =sum+term;
                   m++;    
                  }
 //+++++++++++++++++++++++++++++++++++++++//
         aa=lgammafn(k+1)+lgammafn(r); bb=lgammafn(r+k);
         cc=igam(r+k,      auxi);  dd=igam(r+k,      auxj);
-
-term1 = pow(rho2,k)*                exp(bb + log(cc)                  +log(dd)-aa);
-term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bb + log(igam(r+k, rho2*auxi))+log(dd)-aa);
-term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bb + log(cc)                  +log(igam(r+k, rho2*auxj))-aa);
+bbaa=bb-aa;
+term1 = pow(rho2,k)*                exp(bbaa)* cc*dd;
+term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bbaa)*    dd*igam(r+k, rho2*auxi);
+term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bbaa)* cc*   igam(r+k, rho2*auxj);
 
 if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
       sum1 =sum1+ term1;
@@ -3981,7 +4042,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
             aux= m*(log(rho2)-log(1-rho2)); 
             aux1= (m+n)*log(mean_i);
             q2=exp(log(hyperg(n,m+n+1, rho2*auxi))-lgammafn(m+n+1));         
-            term=exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
+            term=exp(aux+aux1+log(q2))*igam(m+1, auxj);
                    if(!R_finite(term))   {break;}
             sum=sum+term;
             if((fabs(sum-res0)<1e-10) ) {break;}
@@ -4005,7 +4066,7 @@ double P00(double corr,int r, int t, double mean_i, double mean_j){
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
     while(k<5000){
-             term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
+             term=exp( k*log(rho2))*igam(k+1, auxi)*igam(k+1, auxj) ;
                  if(!R_finite(term))   {break;}
              sum =sum+term;
              if((fabs(sum-res0)<1e-10 )) {break;}
@@ -4028,7 +4089,7 @@ void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,d
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j)
 {
 double dens;
-if(fabs(corr)>1e-6){
+if(fabs(corr)>1e-15){
   if(r==t)
   {    if(r==0) dens=P00(corr,r,r,mean_i,mean_j);
        if(r>0)  dens=Prr(corr,r,r,mean_i,mean_j);
