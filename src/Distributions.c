@@ -108,13 +108,12 @@ double res=0.0;
 if(n==1) {res=z+(1-m)*log(z)+log(igam(-1 + m, z));
          return(res);}
 if(n==2) {
-    res=    exp(-lgammafn(m-1))+  exp(z)*pow(z,1-m)*(2 - m + z)*igam(-1 + m, z);
+    res=    exp(-lgammafn(m-1))+  exp(z)*pow(z,1-m)* (2 - m + z)*igam(-1 + m, z);
          return(log(res));
      }
 if(n==3) {
 
-   res= 0.5*((4-m+z)/gammafn(-1+m) + 
-               exp(z)*pow(z,1-m)*(6-5*m + m*m + 6*z-2*m*z+z*z)*igam(-1 + m, z));
+   res= 0.5*((4-m+z)/gammafn(-1+m) + exp(z)*pow(z,1-m)*(6-5*m + m*m + 6*z-2*m*z+z*z)*igam(-1 + m, z));
           return(log(res));
          }
          
@@ -1604,17 +1603,17 @@ return(a);
 
 double corr_pois(double rho,double mi,double mj)
 {
-if( (rho>(1-1e-5)) &&  rho<=1){return(1.0);}
-if(fabs(rho)<1e-12){return(0.0);}
+if( (rho>(1-1e-6)) &&  rho<=1){return(1.0);}
+if(fabs(rho)<1e-10){return(0.0);}
     else{
 int r=0; double res0=0.0,sum=0.0;
 double rho2=rho*rho;
 double ki=mi/(1-rho2);
 double kj=mj/(1-rho2);
 double K=rho2*(1-rho2)/sqrt(mi*mj);
-while(r<100000){
+while(r<10000){
   sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
-if((fabs(sum-res0)<1e-64)  ) {break;}
+if((fabs(sum-res0)<1e-32)  ) {break;}
 else {res0=sum;}
         r++;}
 return(sum*K);}
@@ -3933,7 +3932,7 @@ double  binomialCoeff(int n, int k)
     return(exp(res)); 
 } 
 
-
+/***************************************************************************************
 double Prt(double corr,int r, int t, double mean_i, double mean_j){
     double rho2= pow(corr,2);
     double prt,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
@@ -3942,10 +3941,8 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
     int n,k=0,m=0, iter1=2000, iter2=2000;
     n= r-t;
         while(m<=iter1){
-
             res0=0.0;
                 for(k=0;k<=iter2;k++){
-                     //   Rprintf("%d %d\n",m,k);
                         aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
                         aux3= lgammafn(m+1)+lgammafn(t);
                         aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
@@ -3964,7 +3961,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
                         term= exp(aux2-aux3+aux4+q1);
                       if(!R_finite(term))   {break;}
                        sum =sum+ term;     
-                         if((fabs(sum-res0)<1e-30)  ) {break;}
+                         if((fabs(sum-res0)<1e-15)  ) {break;}
                   else {res0=sum;}
             }
         aux= m*(log(rho2)-log(1-rho2)); 
@@ -3976,44 +3973,88 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
         term1= exp(aux+aux1+q2)*igam(t+m, auxj);
         if(!R_finite(term1))   {break;}
            sum1 =sum1+ term1;     
-                         if((fabs(sum1-res00)<1e-30)  ) {break;}
+                         if((fabs(sum1-res00)<1e-10)  ) {break;}
                          else {res00=sum1;}
       
         m++;
     }
      prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
-    // Rprintf("%f %f-%d  %d- %f\n",log(prt),prt,r,t,mean_i);
+    return(prt);
+}*/
+
+
+
+
+double Prt(double corr,int r, int t, double mean_i, double mean_j){
+    double rho2= pow(corr,2);
+    double prt,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
+    double auxi= mean_i/(1-rho2);
+    double auxj= mean_j/(1-rho2);
+    int n,k=0,m=0, iter1=4000, iter2=4000;
+    n= r-t;
+        while(m<=iter1){
+            res0=0.0;
+                for(k=0;k<=iter2;k++){
+                        aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
+                        aux3= lgammafn(m+1)+lgammafn(t);
+                        aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
+                        q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));  
+                        if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1,rho2*auxi);                     
+                        term= exp(aux2-aux3+aux4+log(q1));
+                      if(!R_finite(term))   {break;}
+                       sum =sum+ term;     
+                         if((fabs(sum-res0)<1e-10)  ) {break;}
+                  else {res0=sum;}
+            }
+        aux= m*(log(rho2)-log(1-rho2)); 
+        aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
+        q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
+        if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
+        term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
+        if(!R_finite(term1))   {break;}
+           sum1 =sum1+ term1;     
+                         if((fabs(sum1-res00)<1e-10)  ) {break;}
+                         else {res00=sum1;}
+      
+        m++;
+    }
+
+     prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
+   //  if(!R_finite(prt)) prt=1e-320;
+    //  if(prt<1e-320) prt=1e-320;
+     ///if(prt<=0) prt=0;
     return(prt);
 }
 
-
+//*****************************************************************************/
 
 double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= pow(corr,2);    
     double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
-    double bbaa=0.0,sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
+    double sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
     int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int iter1=2000;  int iter2=1500;
+    int iter1=1000;  int iter2=1000;
+
     while(k<iter1){
 //+++++++++++++++++++++++++++++++++++++++//
       m=0; res0=0.0;
       while(m<iter2){
                       //Rprintf("%d %d\n",m,k);      
 term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
-        if((fabs(sum-term)<1e-20)||!R_finite(term))   {break;}
+        if((fabs(term)<1e-10)||!R_finite(term))   {break;}
         sum =sum+term;
                   m++;    
                  }
 //+++++++++++++++++++++++++++++++++++++++//
         aa=lgammafn(k+1)+lgammafn(r); bb=lgammafn(r+k);
         cc=igam(r+k,      auxi);  dd=igam(r+k,      auxj);
-bbaa=bb-aa;
-term1 = pow(rho2,k)*                exp(bbaa)* cc*dd;
-term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bbaa)*    dd*igam(r+k, rho2*auxi);
-term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bbaa)* cc*   igam(r+k, rho2*auxj);
+
+term1 = pow(rho2,k)*                exp(bb + log(cc)                  +log(dd)-aa);
+term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bb + log(igam(r+k, rho2*auxi))+log(dd)-aa);
+term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bb + log(cc)                  +log(igam(r+k, rho2*auxj))-aa);
 
 if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
       sum1 =sum1+ term1;
@@ -4042,7 +4083,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
             aux= m*(log(rho2)-log(1-rho2)); 
             aux1= (m+n)*log(mean_i);
             q2=exp(log(hyperg(n,m+n+1, rho2*auxi))-lgammafn(m+n+1));         
-            term=exp(aux+aux1+log(q2))*igam(m+1, auxj);
+            term=exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
                    if(!R_finite(term))   {break;}
             sum=sum+term;
             if((fabs(sum-res0)<1e-10) ) {break;}
@@ -4066,15 +4107,13 @@ double P00(double corr,int r, int t, double mean_i, double mean_j){
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
     while(k<5000){
-             term=exp( k*log(rho2))*igam(k+1, auxi)*igam(k+1, auxj) ;
+             term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
                  if(!R_finite(term))   {break;}
              sum =sum+term;
              if((fabs(sum-res0)<1e-10 )) {break;}
              else {res0=sum;}
         k++;}
     p00 = -1+ exp(-mean_i)+ exp(-mean_j)+(1-rho2)*sum;
-    //  Rprintf("%f %d %d-- %f \n",p00,r,t,  corr);
-     //  if(p00<1e-320) p00=1e-320;
     return(p00);
    
 }
@@ -4089,7 +4128,7 @@ void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,d
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j)
 {
 double dens;
-if(fabs(corr)>1e-15){
+if(fabs(corr)>1e-6){
   if(r==t)
   {    if(r==0) dens=P00(corr,r,r,mean_i,mean_j);
        if(r>0)  dens=Prr(corr,r,r,mean_i,mean_j);
@@ -4116,5 +4155,9 @@ else{
 return(dens);
 
 }
+
+
+
+
 
 

@@ -641,7 +641,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     
     corrmat<-"CorrelationMat"# set the type of correlation matrix     
     if(model==36) corrmat<-"CorrelationMat_dis"# set the type of correlation matrix 
-    if(spacetime)  corrmat<-"CorrelationMat_st_dyn"
+    if(spacetime)  { corrmat<-"CorrelationMat_st_dyn"
+                     if(model==36) corrmat="CorrelationMat_st_dyn_dis"
+                    } 
     if(bivariate)  corrmat<-"CorrelationMat_biv_dyn"  
      if(spacetime||bivariate){
           NS=cumsum(ns);
