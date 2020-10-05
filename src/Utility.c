@@ -918,7 +918,7 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
           
       if(istap[0])  // tapering case
            {
-              npairs[0]=(int)( (*ncoord)  * (*ncoord));
+              *npairs=(int)( (*ncoord)  * (*ncoord));
               tlags=(double *) Calloc(*npairs,double);
               if(tlags==NULL){*ismal=0; return;}
            }  // end tapering case

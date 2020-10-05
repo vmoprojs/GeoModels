@@ -185,10 +185,25 @@ double hyperg(a, b, x)
 double a, b, x;
 {
     double asum, psum, acanc, pcanc, temp;
+    double alpha=(b-a-1)/x;    double aux1,aux2,aux3,res;
+if(alpha>0 &&  b>1000000 && x>1000000)  // new bad approximation
+{
 
-    //if(b==1.0)
-    //    psum= (b-1) exp(x)* x^(1 - b) (gammafn(b - 1) - gammaf(b - 1, x))
-    ///return(psum);
+    if(b<x+a+1){
+        aux1=exp(lgammafn(b)+x+(a-1)*log(1-alpha)-lgammafn(a)-lgammafn(b-a));
+        aux2=exp((alpha*x)*(log(alpha)-1)+0.5*(log(2*alpha*M_PI)-log(x)));
+        aux3=((2-a*alpha)*(1-a))/((2*pow(1-alpha,2)))+(1/(12*alpha));
+        res=aux1*aux2*(1+aux3/x);
+    }
+    if(b>x+a+1){
+        aux1=exp(lgammafn(b)-lgammafn(b-a))/pow(b-a-x-1,a);
+        aux2=a*(a+1)*(a+1-b)/(2*pow(b-a-x-1,2));
+        res=aux1*(1-aux2);
+    }
+ return(res);   
+}
+
+else{
 
     /* See if a Kummer transformation will help */
     temp = b - a;
@@ -226,6 +241,7 @@ double a, b, x;
     //if(isnan(psum)) psum=approx1F1(a,b,x);
 
     return (psum);
+  }
 }
 
 
