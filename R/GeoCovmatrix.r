@@ -708,7 +708,7 @@ if(sparse) {
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
     # Initialising the parameters:
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
-                           NULL, grid, NULL, maxdist, maxtime, model, n, 
+                           NULL, grid, NULL, maxdist, NULL,maxtime, model, n, 
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
                            NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X,FALSE)
    

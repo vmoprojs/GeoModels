@@ -3,16 +3,17 @@
 \encoding{UTF-8}
 \title{Spatio (temporal) neighborhood selection for local kriging.}
 \description{
-The procedure select a spatio (temporal) neighborhood for  
- given spatial (temporal) locations using  the \code{LKDist} function of package LatticeKrig.
+Given a set of spatio (temporal) locations and data, the procedure select a spatio (temporal) neighborhood associated to some  given spatio (temporal) locations.
+The neighborhood is computed  using a fixed  spatio (temporal) threshold
+or including  a fixed number of spatio (temporal)  points.
 }
 
 \usage{
-GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
+GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
                distance="Eucl", grid=FALSE, loc, max.points=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 }
 \arguments{
-  \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
+  \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
    or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)   or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid).}
@@ -40,7 +41,8 @@ GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivaria
     of non-equispaced spatial sites (irregular grid).}
   \item{loc}{A (\eqn{1 \times 2}{1 x 2})-matrix  giving the spatial coordinate
      of the location for which a neighborhood is computed .}
-    \item{max.points}{See \code{max.points} option in the function  \code{LKDist} of LattticeKrig package.}
+ \item{max.points}{Numeric; an optional positive integer indicating the 
+    number of neighborhood points.}
  \item{maxdist}{Numeric; a positive value indicating the maximum
     spatial distance considered in the spatial neighborhood
     selection.}
@@ -50,7 +52,7 @@ GeoNeighborhood(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivaria
     \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great 
     circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
    \item{time}{Numeric; a value  giving the temporal instant for which a neighborhood is computed.}
-  \item{X}{Numeric; Matrix of space-time covariates.}
+  \item{X}{Numeric; an optional Matrix of spatio (temporal) covariates.}
 }
 
 

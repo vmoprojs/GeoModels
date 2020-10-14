@@ -482,6 +482,11 @@ void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx
   return;
 }
 
+
+
+
+
+
 /*********************************************************************************************/
 /*********************************************************************************************/
 /*********************************************************************************************/
@@ -912,44 +917,34 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   /***********************************************************/  
 if(!isst[0]&&!isbiv[0]) {// spatial case
            // settting compact support
-
-        if(srange[1]) maxdist[0]=srange[1];
-        else maxdist[0]=-LOW;   
-          
-      if(istap[0])  // tapering case
-           {
+            if(srange[1]) maxdist[0]=srange[1];
+            else maxdist[0]=-LOW;   
+          if(istap[0])  // tapering case
+            {
               *npairs=(int)( (*ncoord)  * (*ncoord));
               tlags=(double *) Calloc(*npairs,double);
               if(tlags==NULL){*ismal=0; return;}
-           }  // end tapering case
-      else { // distances composite likelihood  
-
-
-           *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
-   //Rprintf("sdds22 %ld  %d %d %d %d\n",*npairs,npairs[0],*ncoord * (int)((*ncoord-1)/2),ncoord[0], *ncoord);
-           tlags= (double *) Calloc(*npairs,double *);
-           // Rprintf("%f %f   %d %d\n",srange[1],maxdist[0],npairs[0],*npairs);
-           //  tlags=(double *) R_alloc(*npairs, sizeof(double));
-           if(tlags==NULL) {*ismal=0; return;}
-               //   Rprintf("hhk%d",ncoord[0]);
-           } // end  no tapering case
-
+            }  // end tapering case
+          else 
+            { // distances composite likelihood  
+            *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
+            tlags= (double *) Calloc(*npairs,double *);
+            if(tlags==NULL) {*ismal=0; return;}
+            } // end  no tapering case
  // computing spatial distances and indexes      
  Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
  Free(tlags);
- //Rprintf("ciao2");
       if(!ismal[0]) return;
   /***********************************************************/  
 }  // end spatial case
 else { //spatio temporal case or bivariate case
        int qq=(*ncoord) * (*ntime);
-       
     // setting compact supports for space-time and bivariate case
        if(isst[0]){ 
-            if(srange[1]) maxdist[0]=srange[1];
-                 else maxdist[0]=-LOW;
-            if(trange[1]) maxtime[0]=trange[1];
-                else maxtime[0]=-LOW; 
+                   if(srange[1]) maxdist[0]=srange[1];
+                   else maxdist[0]=-LOW;
+                   if(trange[1]) maxtime[0]=trange[1];
+                   else maxtime[0]=-LOW; 
         }
        if(isbiv[0])              {
                                    int i=0;
@@ -969,7 +964,6 @@ else { //spatio temporal case or bivariate case
                                   }
      if(istap[0])  // tapering case
         {
-
           // allocating vectors
            *npairs=(int)( qq * qq );
            tlags=(double *) Calloc(*npairs,double);
@@ -993,14 +987,13 @@ else {  // distance for composite likelihood
                if(isst[0])  npairs[0]=(int)(qq * (qq-1) * 0.5);
                if(isbiv[0]) npairs[0]=(int)(qq * (qq-1) * 0.5);
 
-             tlags= (double *) Calloc(*npairs,double *);
-            if(tlags==NULL) {*ismal=0; return;}
+               tlags= (double *) Calloc(*npairs,double *);
+              if(tlags==NULL) {*ismal=0; return;}
           // allocates the matrix of temporal distances:
           if(isst[0]) {
              //memory allocation of matrix temporal distances
              tlagt= (double *) Calloc(*npairs,double *);
              if(tlagt==NULL) {*ismal=0; return;}
-            
                      }
           if(isbiv[0]) {
             tfirst=(int *) Calloc(*npairs,int);
@@ -1023,6 +1016,8 @@ if(isbiv[0]) {SpaceBiv_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
   return;
      }
 }
+
+
 
 void DeleteGlobalVar()
 {
@@ -1051,6 +1046,70 @@ void DeleteGlobalVar()
 }
 
 
+/*#######################################################################*/
+void SetGlobalVar2 (int *nsite, int *times, 
+                    double *h,int *nn, 
+                    double *u,int *tt,    
+                    int *st,int *biv)
+{
+
+
+    int i; 
+
+  ncoord=(int *) Calloc(1,int);//number of total spatial coordinates
+  ncoord[0]=*nsite;
+  ntime=(int *) Calloc(1,int);//number of times
+  ntime[0]=*times;
+
+
+  
+  npairs=(int *) Calloc(1,int);  // number of pairs involved
+  npairs[0]=nn[0];
+    
+    isbiv=(int *) Calloc(1,int);//is a bivariate random field?
+    isbiv[0]=biv[0];  
+    isst=(int *) Calloc(1,int);//is a spatio-temporal random field?
+    isst[0]=st[0]; 
+
+    if(!isst[0]&&!isbiv[0]) {  /// spatial case
+        lags=(double *) Calloc(*npairs,double);
+           for (i=0;i<*npairs;i++) 
+            {lags[i]=h[i];
+             // Rprintf("%f\n",lags[i]);
+            }
+                              }
+      if(isst[0]) {  /// spatio teemporal case
+        lags=(double *) Calloc(*npairs,double);
+        lagt=(double *) Calloc(*npairs,double);
+                              }
+      if(isbiv[0]) {  /// spatial bivariate  case
+                              }
+      return;
+}
+/*#######################################################################*/
+
+void DeleteGlobalVar2()
+{
+
+  //int i=0;
+  // Delete all the global variables:
+ // Free(maxdist);Free(maxtime);
+  //Free(ncoordx);Free(ncoordy); 
+  Free(ncoord);  Free(ntime);
+  Free(npairs);
+  //Free(type);Free(REARTH);
+  //Free(tapsep);
+  //if(isbiv[0])for(i=0;i<ntime[0];i++)  Free(dista[i]);
+  //Free(dista);
+
+  Free(lags);if(isst[0]) {Free(lagt);}
+           //if(isbiv[0])   {Free(first);Free(second);}
+
+  Free(isbiv); //Free(istap);
+  Free(isst);//Free(ismem);
+ // Free(cdyn);
+  return;
+}
 
 
 
@@ -1081,8 +1140,6 @@ void cumvec(int *ns,int *res,int len)
 
 
 // ============= TEST QQNORM
-
-
 
 #define R_Q_P01_boundaries(p, _LEFT_, _RIGHT_)		\
 if (log_p) {					\

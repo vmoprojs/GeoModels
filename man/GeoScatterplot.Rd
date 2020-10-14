@@ -7,7 +7,7 @@
 }
 \usage{
 GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
-           distance='Eucl', grid=FALSE, maxdist=NULL,
+           distance='Eucl', grid=FALSE, maxdist=NULL,maxpoints=NULL,
            times=NULL, numbins=4, radius=6371, bivariate=FALSE)
 }
 \arguments{
@@ -39,6 +39,9 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
     non-equispaced spatial sites.}
   \item{maxdist}{A numeric value denoting the spatial maximum distance,
    see the Section \bold{Details}.}
+    \item{maxpoints}{Numeric; an optional positive integer indicating the 
+    number of neighborhood location points in the composite likelihood
+    computation. See the Section \bold{Details} for more information.}
    \item{times}{A numeric vector denoting the temporal instants  involved \bold{Details}.}
   \item{numbins}{A numeric value denoting the numbers of bins, see the
     Section \bold{Details}.}

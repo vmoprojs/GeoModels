@@ -46,7 +46,7 @@ print.GeoWLS <- function(x, digits = max(3, getOption("digits") - 3), ...)
 
 
 WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
-                    likelihood, maxdist, maxtime, model, n, param, parscale,
+                    likelihood, maxdist, maxpoints,maxtime, model, n, param, parscale,
                     paramrange, radius, start, taper, tapsep, type, varest, vartype,
                     weighted, winconst,winconst_t, winstp_t, winstp,X,memdist)
   {
@@ -150,7 +150,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
    
     ### Initialization parameters:
     initparam <- StartParam(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed,
-                           grid, likelihood, maxdist, maxtime, model, n, 
+                           grid, likelihood, maxdist,maxpoints, maxtime, model, n, 
                            param, parscale, paramrange, radius,  start, taper, tapsep,
                            "GeoWLS", type, varest, vartype,
                            weighted, winconst,winconst_t, winstp_t, winstp, X, memdist)
@@ -180,8 +180,6 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     ### Checks if all the starting values have been passed by the user:
 
     if(initparam$numstart==initparam$numparam) {
-
-
 
         if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','Beta','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
           'Tukeygh','Tukeyh','Tukeyh2','Kumaraswamy','Kumaraswamy2','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
@@ -292,7 +290,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
 ####################################################################################################################
 ####################################################################################################################
 GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, corrmodel, distance="Eucl",
-                         fixed=NULL,grid=FALSE, maxdist=NULL, maxtime=NULL, model='Gaussian',
+                         fixed=NULL,grid=FALSE, maxdist=NULL, maxpoints=NULL,maxtime=NULL, model='Gaussian',
                          optimizer='Nelder-Mead', numbins=NULL, radius=6371,  start=NULL,
                          weighted=FALSE)
   {
@@ -337,7 +335,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
     ### Initializes the parameter values:
     parscale <- NULL
     initparam <- StartParam(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance, "Fitting", fixed, grid,
-    'None', maxdist, maxtime,  model, NULL,  NULL,
+    'None', maxdist, maxpoints,maxtime,  model, NULL,  NULL,
                            parscale, optimizer=='L-BFGS-B', radius, start,NULL,  NULL,
                            'GeoWLS', 'GeoWLS', FALSE, 'SubSamp', FALSE, 1, 1,1,1, NULL,0)
     if(!is.null(initparam$error))

@@ -12,7 +12,7 @@
 \usage{
 GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
       fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-      lower=NULL,maxdist=Inf,
+      lower=NULL,maxdist=Inf,maxpoints=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE,
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
@@ -59,6 +59,9 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
     names of the list must be the same of the names in the   \code{start} list.}
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite or tapered likelihood
+    computation. See the Section \bold{Details} for more information.}
+      \item{maxpoints}{Numeric; an optional positive integer indicating the 
+    number of neighborhood location points in the composite likelihood
     computation. See the Section \bold{Details} for more information.}
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal separation considered in the composite or tapered likelihood

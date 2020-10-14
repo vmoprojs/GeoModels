@@ -21,6 +21,7 @@ void Comp_Pair_Gauss2mem(int *cormod, double *data1,double *data2,int *NN,
 
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+  //Rprintf("%f %f %f  %d\n",lags[i],data1[i],data2[i],*npairs);
                       corr=CorFct(cormod,lags[i],0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);

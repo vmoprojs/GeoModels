@@ -17,7 +17,7 @@
 
 GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-                         lower=NULL,maxdist=Inf,
+                         lower=NULL,maxdist=Inf,maxpoints=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
                           optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
@@ -38,6 +38,10 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     type=gsub("[[:blank:]]", "",type)
     if(!is.logical(memdist)) memdist=FALSE
     if(!is.null(X)) X=as.matrix(X)
+    if(is.numeric(maxpoints)) {
+            maxpoints=round(maxpoints)
+            if(maxpoints<2)  stop("maxpoints must be an integer >=2")
+          }
  
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
@@ -55,7 +59,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     unname(coordx);unname(coordy)}
 
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
-                         likelihood, maxdist, maxtime,  model, n, NULL,#16
+                         likelihood, maxdist,maxpoints,maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X,memdist)#32
 
@@ -122,7 +126,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx)
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,maxpoints)
       }
      ##misspecified models
     missp=FALSE 
@@ -137,7 +141,8 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     dimat <- initparam$numcoord*numtime#
     if(is.null(dim(initparam$X)))  initparam$X=as.matrix(rep(1,dimat))
     # Delete the global variables:
-    .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
+    if(is.null(maxpoints)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    if(is.numeric(maxpoints)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,

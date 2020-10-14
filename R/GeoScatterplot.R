@@ -1,5 +1,5 @@
 GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
-                           distance="Eucl", grid=FALSE, maxdist=NULL, 
+                           distance="Eucl", grid=FALSE, maxdist=NULL, maxpoints=NULL,
                            times=NULL, numbins=4, radius=6371, bivariate=FALSE)
 
 {
@@ -35,7 +35,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
 
          n=1
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
-                           NULL, grid, 'None', maxdist,
+                           NULL, grid, 'None', maxdist,maxpoints,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
                            'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)

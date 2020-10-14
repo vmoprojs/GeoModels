@@ -1244,6 +1244,10 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
           int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
       int *ns, int *NS, int *dyn);
 
+void SetGlobalVar2 (int *nsite, int *times, 
+                    double *h,int *nn, 
+                    double *u,int *tt,    
+                    int *st,int *biv);
 
 void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
         int *ismal,int *ja,int *colidx,int *rowidx ,double thres);

@@ -328,6 +328,10 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             if(!is.numeric(maxdist)) return(list(error=error))
             else if(maxdist[i]<0) return(list(error=error))}}
 
+       #  if(!is.null(maxpoints)&&(!is.null(maxdist[1])||!is.null(maxtime[1])))
+       #     {
+       #      error <- "maxdist or maxpoints should be chosen\n"
+       #      return(list(error=error))}
         if(!is.null(maxtime)){
             error <- "insert a positive numeric value for the maximum time interval\n"
             if(!is.numeric(maxtime)) return(list(error=error))
@@ -1024,7 +1028,7 @@ if(!bivariate)      {
 
 
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
-                      likelihood,  maxdist, maxtime, model, n, param, parscale,
+                      likelihood,  maxdist, maxpoints,maxtime, model, n, param, parscale,
                       paramrange, radius, start, taper, tapsep, type,
                       typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,X,memdist)
 {
@@ -1395,6 +1399,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 }
         }
     # END code for the simulation procedure
+
     ### Compute the spatial and spatial-temporal distances:
     numpairs <- integer(1)
     srange <- double(1)
@@ -1411,7 +1416,6 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
                 colidx<-rowidx<-integer(nn*(nn-1)/2)
-                #rowidx<-integer(nn*(nn-1)/2)
       }
     if(bivariate) {
       if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
@@ -1431,6 +1435,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 #           as.integer(ns),as.integer(NS),as.integer(isdyn),
 #           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
+
+if(is.null(maxpoints)){
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
@@ -1451,7 +1457,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              "w", "w",#2
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
- ##
+
+  ##
 rm(colidx);rm(rowidx)
 if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
@@ -1460,23 +1467,92 @@ numpairs <- gb$numpairs
 ## indexes for composite 
     colidx=gb$colidx
     rowidx=gb$rowidx
-    #print(length(colidx))
     colidx <- colidx[1:numpairs]
     rowidx  <- rowidx[1:numpairs]
-   #  print(length(colidx))
-## indexes for sparse matrix
-     idx <- gb$idx
-     ja <- gb$ja
-     ia <- gb$ia;
-
-isinit <- gb$isinit
+    idx <- gb$idx
+    ja <- gb$ja
+    ia <- gb$ia;
+    isinit <- gb$isinit
     nozero <- numpairs/(numcoord*numtime)^2
-       idx <- idx[1:numpairs]
-       ja  <- ja[1:numpairs]
+    idx <- idx[1:numpairs]
+    ja  <- ja[1:numpairs]
+}
+else   ######## case  with neighboord!!!
+{ 
+if(!spacetime&&!bivariate)   #  spatial case
+   {
+          fx <- function(x,y) {return(x+y+x*y+x^2+y^2)}
+          ######
+          indices <- function(X,Y)
+          {
+             res = NULL;res_d = NULL
+             for(i in 2:ncol(X))
+             {
+                sol = cbind(X[,1],X[,i])
+                res = rbind(res,sol)
+                sol_d = cbind(Y[,1],Y[,i])
+                res_d = rbind(res_d,sol_d)
+             }
+            sol <- fx(as.numeric(res[,1]),as.numeric(res[,2])) 
+            ids <- !duplicated(sol)
+            return(list(xy = res[ids,],d = res_d[ids,][,2]))
+         }
+     ##########################################
+         nn2Geo <- function(x, K = 2,distance)
+         {
+            nearest = RANN::nn2(x,k = K)
+            #nearest = FNN::get.knn(k, k=K)
+            #########  cases geod (2) or chordal (1) distances
+            if(distance==2||distance==1){
+                  agc=NULL;nnn=nrow(x)
+                  for(i in 1:nnn){
+                  a=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
+                  agc=rbind(agc,a)
+                 }
+             if(distance==2)  agc=radius*agc  
+             if(distance==1)  agc=2*radius*sin(0.5*agc)    
+             nearest$nn.dists=cbind(rep(0,nnn),agc)
+             }
+            ########################################### 
+            sol = indices(nearest$nn.idx,nearest$nn.dists)
+            lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
+         return(list (lags=lags, rowidx = rowidx, colidx = colidx))
+         }
+     ##########################################
+  K=maxpoints
+  x=cbind(coordx, coordy)
+  ############
+  ### projection ??
+  ############
+    print(distance)
+  sol = nn2Geo(x,K,distance)
+  nn = length(sol$lags)
+  sol$lagt=0
+  gb=list(); gb$colidx=sol$colidx;
+             gb$rowidx=sol$rowidx ;
+             gb$numpairs=n
+  ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
+    as.double(sol$lags),as.integer(nn),
+    as.double(sol$lagt),as.integer(nn),
+    as.integer(spacetime),as.integer(bivariate)) 
+
+    ## number  of selected pairs
+    numpairs <- gb$numpairs
+## indexes for composite 
+    colidx=gb$rowidx 
+    rowidx=gb$colidx
+    idx <- 0#gb$idx
+    ja <- 0#gb$ja
+    ia <- 0#gb$ia;
+    isinit <- 1
+    nozero <- numpairs/(numcoord*numtime)^2
+    idx <- 0#idx[1:numpairs]
+    ja  <- 0#ja[1:numpairs]
+   }
+}
 
 if(is.null(coordt)) coordt=1
   
-
     ### Returned list of objects:
     return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
                 colidx = colidx ,rowidx=rowidx,

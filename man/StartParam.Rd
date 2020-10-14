@@ -8,7 +8,7 @@
 }
 \usage{
 StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, 
-          fixed, grid,likelihood,  maxdist, maxtime, model, n,  param, 
+          fixed, grid,likelihood,  maxdist, maxpoints, maxtime, model, n,  param, 
           parscale, paramrange, radius,  start, taper, tapsep,
           type,typereal,varest, vartype, weighted, winconst,
           winstp, winconst_t, winstp_t,X,memdist)
@@ -43,6 +43,9 @@ StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall,
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite-likelihood
     computation.}
+        \item{maxpoints}{Numeric; an optional positive integer indicating the 
+    number of neighborhood location points in the composite likelihood
+    computation. See the Section \bold{Details} for more information.}
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal lag considered in the composite-likelihood
     computation.} 
