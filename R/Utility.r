@@ -1534,7 +1534,7 @@ if(!spacetime&&!bivariate)   #  spatial case
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),
     as.double(sol$lagt),as.integer(nn),
-    as.integer(spacetime),as.integer(bivariate)) 
+    as.integer(spacetime),as.integer(bivariate),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
 
     ## number  of selected pairs
     numpairs <- gb$numpairs
