@@ -9,7 +9,7 @@
 }
 \usage{
 GeoWLS(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, 
-             distance="Eucl", fixed=NULL, grid=FALSE, maxdist=NULL,maxpoints=NULL,
+             distance="Eucl", fixed=NULL, grid=FALSE, maxdist=NULL,neighb=NULL,
              maxtime=NULL,  model='Gaussian', optimizer='Nelder-Mead',
              numbins=NULL, radius=6371, start=NULL, weighted=FALSE)
 }
@@ -45,8 +45,8 @@ GeoWLS(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
       \times n}{d x d x n})-matrix is considered.}
   \item{maxdist}{A numeric value denoting the maximum distance, see
     \bold{Details} in \code{\link{GeoFit}}.}
-      \item{maxpoints}{Numeric; an optional positive integer indicating the 
-    number of neighborhood location points. See \bold{Details} and \code{\link{GeoFit}}}
+      \item{neighb}{Numeric; an optional positive integer indicating the 
+    order of neighborhood. See \bold{Details} and \code{\link{GeoFit}}}
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal lag considered.See \bold{Details} and \code{\link{GeoFit}}.}
    \item{model}{String; the type of random field. \code{Gaussian} is the default, see

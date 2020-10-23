@@ -13,7 +13,7 @@
 ### Procedures are in alphabetical order.
 
 GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
-                       grid=FALSE, maxdist=NULL,maxpoints=NULL, maxtime=NULL, numbins=NULL,
+                       grid=FALSE, maxdist=NULL,neighb=NULL, maxtime=NULL, numbins=NULL,
                        radius=6371, type='variogram',bivariate=FALSE)
   {
     call <- match.call()
@@ -58,7 +58,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
 
     n=1
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
-                           NULL, grid, 'None', maxdist,maxpoints,
+                           NULL, grid, 'None', maxdist,neighb,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
                            'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)

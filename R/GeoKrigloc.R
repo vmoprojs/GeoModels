@@ -1,6 +1,6 @@
 
 
-GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,max.points=NULL,
+GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,neighb=NULL,
               maxdist=NULL,maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, radius=6371, sparse=FALSE, 
                time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, which=1, X=NULL,Xloc=NULL)
 
@@ -30,7 +30,7 @@ if(bivariate)  Tloc=1
 #####################################################################
 if(space){
          ### computing spatial neighborhood
-         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,max.points=max.points,maxdist=maxdist)
+         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,neighb=neighb,maxdist=maxdist)
          res1=res2=NULL
          for(i in 1: Nloc)
           {
@@ -45,7 +45,7 @@ if(space){
 if(spacetime)
 {  
        ### computing spatio-temporal neighborhood
-         neigh=GeoNeighborhood(data, coordx=coords,coordt=coordt,distance=distance,max.points=max.points,
+         neigh=GeoNeighborhood(data, coordx=coords,coordt=coordt,distance=distance,neighb=neighb,
                   loc=loc,time=time,maxdist=maxdist,maxtime=maxtime)
          res1=res2=NULL
          k=1
@@ -61,7 +61,7 @@ if(spacetime)
 }
 if(bivariate)
 { 
-neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,max.points=max.points,bivariate=TRUE)
+neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,neighb=neighb,bivariate=TRUE)
         res1=res2=NULL
          for(i in 1: Nloc)
           {

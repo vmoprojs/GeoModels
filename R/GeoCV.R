@@ -1,5 +1,6 @@
-GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,max.points=NULL,
-                          maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)
+GeoCV=function(fit, K=100, n.fold=0.05, local=FALSE,neighb=NULL,
+                          maxdist=NULL,maxtime=NULL,
+                          sparse=FALSE, which=1,seed=1)
 {
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
@@ -17,7 +18,8 @@ if(K>10000) stop("K is  too large")
 if(bivariate)
    {if(!(which==1||which==2))
           stop("which must be 1 or 2")}
-if(local) if(is.null(maxdist)) stop("maxdist for local kriging is missing")
+if(local) if(is.null(maxdist)&&is.null(neighb)) stop("maxdist or neighb are required
+          for local kriging")
 i=1
 print(paste("Starting iteration from 1 to",K," ..."))
 space=!spacetime&&!bivariate
@@ -56,7 +58,7 @@ if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],
 if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
               model=fit$model, n=fit$n, mse=TRUE,#ok
-              max.points=max.points,maxdist=maxdist,
+              neighb=neighb,maxdist=maxdist,
               param=as.list(c(fit$param,fit$fixed)), 
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
@@ -128,7 +130,7 @@ if(!local) pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coord
 if(local) pr=GeoKrigloc(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
          corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
             model=fit$model, n=fit$n, mse=TRUE,#ok
-           max.points=max.points, maxdist=maxdist,
+           neighb=neighb, maxdist=maxdist,
            param=as.list(c(fit$param,fit$fixed)), 
            radius=fit$radius, sparse=sparse,   time=NULL, 
              which=which, X=X,Xloc=Xloc) #ok  

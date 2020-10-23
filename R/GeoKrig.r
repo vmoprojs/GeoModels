@@ -1,5 +1,5 @@
 ####################################################
-### Authors: Moreno Bevilacqua VÃ­ctor Morales OÃ±ate.
+### Authors: Moreno Bevilacqua Víctor Morales Oñate.
 ### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
 ### Instituto de Estadistica
 ### Universidad de Valparaiso
@@ -687,9 +687,6 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
         if(!bivariate) cc = matrix(corri,nrow=dimat,ncol=dimat2)
         else           {}
 
-
-
-
         MM=getInv(covmatrix,cc)  #compute (\Sigma^-1) %*% cc
         krig_weights = t(MM$a)
 ######################################################################################
@@ -751,7 +748,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
             #              k1=c(pnorm(Xloc%*%betas));k2=c(pnorm(X%*%betas))
             #              pp = (1-k1)/k1 + krig_weights %*% (c(dataT)-(1-k2)/k2)  }
             #            }
-            #      else{}     ###Â todo   
+            #      else{}     ### todo   
             #      if(mse) {ss = (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
             #               vv =  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
            #           }    
@@ -761,7 +758,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
             } 
           else{pred=c(pp);varpred=c(vv)}
 
-    }}  ##end Â binary or binomial or geometric kriging 
+    }}  ##end  binary or binomial or geometric kriging 
 
 ########################################################################################
 ########################################################################################
@@ -831,6 +828,63 @@ ntime=1
 if(matrix$spacetime) ntime=length(matrix$coordt)
 if(matrix$bivariate) ntime=2
 dime = nsites*ntime
+
+
+MM=0
+param=matrix$param
+namesnuis=matrix$namesnuis
+nuisance <- param[namesnuis]
+sel=substr(names(nuisance),1,4)=="mean"
+mm=as.numeric(nuisance[sel])
+MM=(matrix$X)%*%mm
+########
+if(matrix$model %in% c(1,35,12,34,25))  data=data-MM#Gaussian #StudentT Tukey  Logistic
+if(matrix$model %in% c(10))             #SkewGauussian
+                 { kk=param['skew'];
+                   data=data-(MM+kk*sqrt(2/pi))}
+if(matrix$model %in% c(11))     data=data-(matrix$n)*pnorm(MM) #binomial
+if(matrix$model %in% c(30,36))  data=data-exp(MM) #poisson
+if(matrix$model %in% c(27)) #two piece t models
+     {kk=param['skew'];
+      dd=param['df'];
+      ss=param['sill'];
+      data=data-(MM-(2*kk*sqrt(ss*dd)*gamma((dd-1)/2))/(gamma(dd/2)*sqrt(pi)))
+     }
+if(matrix$model %in% c(29)) #two piece gaussian
+     {kk=param['skew'];
+      ss=param['sill'];
+      data=data-(MM-(2*kk*sqrt(2*ss/pi)))
+     }
+if(matrix$model %in% c(38)) #two piece tukeyh
+     {kk=param['skew'];
+      ss=param['sill'];
+      tt=param['tail'];
+      data=data-(MM-(2*kk*sqrt(2*ss/pi)/(1-tt)))
+     }
+if(matrix$model %in% c(40))      #tukeyh2
+     {ss=param['sill'];
+      t1=param['tail1'];
+      t2=param['tail2'];
+      data=data-(MM+sqrt(ss)*(t1-t2)/(sqrt(2*pi)*(1-t1)*(1-t2)))
+     }
+if(matrix$model %in% c(16))     data=data-(matrix$n)*(1-pnorm(MM))/pnorm(MM) #binomialnegative
+if(matrix$model %in% c(20))      #sas  
+     {ss=param['sill'];
+      kk=param['skew'];tt=param['tail'];
+      data=data-(MM+sqrt(ss)*sinh(kk/tt)*exp(0.25)*(besselK(.25,(tt+1)/(2*tt))+besselK(.25,(1-tt)/(2*tt)))/(sqrt(8*pi)))
+     } 
+if(matrix$model %in% c(39))      #twopiecebimodal
+     {vv=param['sill'];
+      sk=param['skew'];
+      nu=param['df'];
+      delta=param['shape'];
+      alpha=2*(delta+1)/nu
+      nn=2^(1-alpha/2)
+      data=data-(MM-sqrt(vv)*sk*2^(1/alpha+1)*gamma(nu/2+1/alpha)/(nn^(1/alpha)*gamma(nu*0.5))) 
+     } 
+
+
+#######
 ###########################
 D=diag(1/vv,dime,dime)
 DD=sqrt(D)

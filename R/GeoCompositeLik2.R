@@ -17,7 +17,7 @@ CompLik2 <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, dat
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
                            numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
                            upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,
-                           colidx,rowidx,maxpoints)
+                           colidx,rowidx,neighb)
   {
 
 comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, n, namescorr, 
@@ -207,7 +207,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
      if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
 ###### selectin data with indexes from composite likelihood
-   if(is.null(maxpoints)) {colidx=colidx+1; rowidx=rowidx+1}
+   if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
    data1=data[colidx]; data2=data[rowidx]
 
     if(is.null(GPU)) GPU=0

@@ -328,9 +328,9 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             if(!is.numeric(maxdist)) return(list(error=error))
             else if(maxdist[i]<0) return(list(error=error))}}
 
-       #  if(!is.null(maxpoints)&&(!is.null(maxdist[1])||!is.null(maxtime[1])))
+       #  if(!is.null(neighb)&&(!is.null(maxdist[1])||!is.null(maxtime[1])))
        #     {
-       #      error <- "maxdist or maxpoints should be chosen\n"
+       #      error <- "maxdist or neighb should be chosen\n"
        #      return(list(error=error))}
         if(!is.null(maxtime)){
             error <- "insert a positive numeric value for the maximum time interval\n"
@@ -1028,7 +1028,7 @@ if(!bivariate)      {
 
 
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
-                      likelihood,  maxdist, maxpoints,maxtime, model, n, param, parscale,
+                      likelihood,  maxdist, neighb,maxtime, model, n, param, parscale,
                       paramrange, radius, start, taper, tapsep, type,
                       typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,X,memdist)
 {
@@ -1436,7 +1436,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 #           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
 
-if(is.null(maxpoints)){
+if(is.null(neighb)){
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
@@ -1481,7 +1481,7 @@ else   ######## case  with neighboord!!!
 { 
 if(!spacetime&&!bivariate)   #  spatial case
    {
-          fx <- function(x,y) {return(x+y+x*y+x^2+y^2)}
+         # fx <- function(x,y) {return(x+y+x*y+x^2+y^2)}
           ######
           indices <- function(X,Y)
           {
@@ -1493,7 +1493,10 @@ if(!spacetime&&!bivariate)   #  spatial case
                 sol_d = cbind(Y[,1],Y[,i])
                 res_d = rbind(res_d,sol_d)
              }
-            sol <- fx(as.numeric(res[,1]),as.numeric(res[,2])) 
+            xx=as.numeric(res[,1])
+            yy=as.numeric(res[,2])
+            #sol <- fx(as.numeric(res[,1]),as.numeric(res[,2])) 
+            sol=xx+yy+xx*yy+xx^2+yy^2
             ids <- !duplicated(sol)
             return(list(xy = res[ids,],d = res_d[ids,][,2]))
          }
@@ -1509,8 +1512,8 @@ if(!spacetime&&!bivariate)   #  spatial case
                   a=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
                   agc=rbind(agc,a)
                  }
-             if(distance==2)  agc=radius*agc  
-             if(distance==1)  agc=2*radius*sin(0.5*agc)    
+             if(distance==2)  agc=radius*agc   # geodesic
+             if(distance==1)  agc=2*radius*sin(0.5*agc)   # chordal  
              nearest$nn.dists=cbind(rep(0,nnn),agc)
              }
             ########################################### 
@@ -1519,12 +1522,8 @@ if(!spacetime&&!bivariate)   #  spatial case
          return(list (lags=lags, rowidx = rowidx, colidx = colidx))
          }
      ##########################################
-  K=maxpoints
+  K=neighb
   x=cbind(coordx, coordy)
-  ############
-  ### projection ??
-  ############
-    print(distance)
   sol = nn2Geo(x,K,distance)
   nn = length(sol$lags)
   sol$lagt=0
@@ -1534,21 +1533,19 @@ if(!spacetime&&!bivariate)   #  spatial case
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),
     as.double(sol$lagt),as.integer(nn),
-    as.integer(spacetime),as.integer(bivariate),PACKAGE='GeoModels', NAOK=TRUE,VERBOSE = 0)
-
+    as.integer(spacetime),as.integer(bivariate)) 
     ## number  of selected pairs
     numpairs <- gb$numpairs
 ## indexes for composite 
     colidx=gb$rowidx 
     rowidx=gb$colidx
-    idx <- 0#gb$idx
-    ja <- 0#gb$ja
-    ia <- 0#gb$ia;
+    idx <- 0;ja <- 0;ia <- 0
     isinit <- 1
     nozero <- numpairs/(numcoord*numtime)^2
-    idx <- 0#idx[1:numpairs]
-    ja  <- 0#ja[1:numpairs]
-   }
+    idx <- 0;ja  <- 0
+   } #### end spatial case 
+
+
 }
 
 if(is.null(coordt)) coordt=1

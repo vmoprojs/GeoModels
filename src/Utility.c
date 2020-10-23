@@ -1054,7 +1054,7 @@ void SetGlobalVar2 (int *nsite, int *times,
 {
 
 
-    int i; 
+    int i,j; 
 
   ncoord=(int *) Calloc(1,int);//number of total spatial coordinates
   ncoord[0]=*nsite;
@@ -1081,6 +1081,11 @@ void SetGlobalVar2 (int *nsite, int *times,
       if(isst[0]) {  /// spatio teemporal case
         lags=(double *) Calloc(*npairs,double);
         lagt=(double *) Calloc(*npairs,double);
+                              
+            for (i=0;i<*npairs;i++) {lags[i]=h[i];}
+            for (j=0;i<*npairs;j++) {lagt[j]=h[j];}
+         
+
                               }
       if(isbiv[0]) {  /// spatial bivariate  case
                               }

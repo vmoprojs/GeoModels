@@ -758,7 +758,8 @@ if(sparse) {
                         initparam$numpairs,numpairstot,initparam$model,
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
    
-    initparam$param=initparam$param[names(initparam$param)!='mean']
+   #print(initparam$param)
+    #initparam$param=initparam$param[names(initparam$param)!='mean']
     
     if(type=="Tapering") sparse=TRUE
 

@@ -12,7 +12,7 @@
 \usage{
 GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
       fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-      lower=NULL,maxdist=Inf,maxpoints=NULL,
+      lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE,
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
@@ -60,8 +60,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite or tapered likelihood
     computation. See the Section \bold{Details} for more information.}
-      \item{maxpoints}{Numeric; an optional positive integer indicating the 
-    number of neighborhood location points in the composite likelihood
+      \item{neighb}{Numeric; an optional positive integer indicating the 
+    order of neighborhood  in the composite likelihood
     computation. See the Section \bold{Details} for more information.}
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal separation considered in the composite or tapered likelihood
@@ -309,7 +309,6 @@ Rf with marginal counts data
   The default is \code{NULL}, in this case the effective maximum spatial distance
   between sites is considered.
 
-
   The same arguments of \code{maxdist} are valid for \code{maxtime} but
   here the weigthed composite-likelihood regards the case of
   spatial-temporal field. At the moment is
@@ -317,12 +316,13 @@ Rf with marginal counts data
   is \code{NULL}, in this case the effective maximum temporal lag
   between pairs of observations is considered.
 
+  A more efficient computational approach consider binary
+  weights where, in this case, the pairs that are neighboords of a certain order 
+  (\code{neighb}) are set to 1 and 0 otherwise.
+
   In the case of tapering likelihood \code{maxdist} and \code{maxtime} describes
    the spatial and temporal compact support of the taper (see \code{\link{GeoCovmatrix}}).
-  If they are not specified then the maximum spatial and temporal distances are considered.
-  In the case of space time adaptive taper the \code{tapsep} parameter allows to specify 
-  the spatio temporal compact support (see \code{\link{GeoCovmatrix}}).    
-      
+        
   The \code{varest} parameter specifies if the standard error estimation of the estimated parameters must be computed.
   For Gaussian RF and standard (restricted) likelihood estimation, standard  errors  are computed as square root of the diagonal elements of the Fisher
   Information matrix (asymptotic covariance matrix of the estimates under increasing domain).
@@ -556,10 +556,10 @@ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 ###
 ### Example 1. Maximum pairwise likelihood fitting of
 ### Gaussian RFs with exponential correlation.
-###
+### 
 ###############################################################
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
-                    optimizer="BFGS",maxdist=0.05,likelihood="Marginal",
+                    optimizer="BFGS",neighb=5,likelihood="Marginal",
                     type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
@@ -577,8 +577,6 @@ fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
                     likelihood="Full",type="Standard", 
                     start=start,fixed=fixed,X=X)
 print(fit2)
-
-
 
 
 ###############################################################
@@ -618,7 +616,7 @@ start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
                     optimizer="Nelder-Mead",
                     start=start,fixed=fixed)
 print(fit$param)
@@ -628,7 +626,7 @@ start<-list(mean=mean,mean1=mean1,scale=scale)
 fixed<-list(nugget=nugget,power2=4,sill=1-nugget,shape=6)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
-                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
                       optimizer="BFGS",
                     start=start,fixed=fixed)
 
@@ -673,7 +671,7 @@ upper<-list(mean=I,mean1=I,scale=I,sill=I,df=0.5)
 # Maximum pairwise composite-likelihood fitting of the RF:
 
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-               maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                 neighb=5,likelihood="Marginal",type="Pairwise",X=X,
                lower=lower,upper=upper,optimizer="nlminb",start=start,fixed=fixed)
 print(fit1$param)
 
@@ -691,7 +689,7 @@ upper<-list(mean=I,mean1=I,scale=I,sill=I)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    maxdist=.05,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
                     lower=lower,upper=upper, optimizer="nlminb" , start=start,fixed=fixed)
 print(fit$param)
 

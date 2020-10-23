@@ -4,7 +4,7 @@
 \title{n-fold  kriging Cross-validation}
 \description{The procedure use the \code{\link{GeoKrig}} function to compute n-fold  kriging cross-validation 
   using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
-\usage{GeoCV(fit, K=100, n.fold=0.05,local=FALSE,max.points=NULL,
+\usage{GeoCV(fit, K=100, n.fold=0.05,local=FALSE,neighb=NULL,
                     maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)}
 \arguments{
   \item{fit}{An object of class
@@ -12,7 +12,8 @@
      \item{K}{The number of iterations in cross-validation.}
        \item{n.fold}{Numeric; the percentage of data to be deleted (and predicted) in the cross-validation procedure.}
        \item{local}{Logical; If local is TRUE, then local kriging is performed. The default is FALSE.}
-          \item{max.points}{See \code{max.points} option in the function  \code{LKDist} of LattticeKrig package.}
+    \item{neighb}{Numeric; an optional positive integer indicating the 
+    order of neighborhood.}
          \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood
          if local kriging is performed.}
        \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood

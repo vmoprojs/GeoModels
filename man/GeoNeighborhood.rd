@@ -5,12 +5,12 @@
 \description{
 Given a set of spatio (temporal) locations and data, the procedure select a spatio (temporal) neighborhood associated to some  given spatio (temporal) locations.
 The neighborhood is computed  using a fixed  spatio (temporal) threshold
-or including  a fixed number of spatio (temporal)  points.
+or including  a fixed number of spatio (temporal) neighbors.
 }
 
 \usage{
 GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
-               distance="Eucl", grid=FALSE, loc, max.points=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+               distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 }
 \arguments{
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -41,8 +41,8 @@ GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bi
     of non-equispaced spatial sites (irregular grid).}
   \item{loc}{A (\eqn{1 \times 2}{1 x 2})-matrix  giving the spatial coordinate
      of the location for which a neighborhood is computed .}
- \item{max.points}{Numeric; an optional positive integer indicating the 
-    number of neighborhood points.}
+ \item{neighb}{Numeric; an optional positive integer indicating the 
+    order of neighborhood.}
  \item{maxdist}{Numeric; a positive value indicating the maximum
     spatial distance considered in the spatial neighborhood
     selection.}
@@ -96,7 +96,7 @@ loc_to_pred=matrix(c(0.3,0.5,0.7,0.2),2,2)
 
 points(loc_to_pred,pch=20)
 neigh=GeoNeighborhood(data_all, coordx=coords,  
-                  loc=loc_to_pred,maxdist=0.15)
+                  loc=loc_to_pred,neighb=8)
 
 # two Neighborhoods 
 neigh$coordx

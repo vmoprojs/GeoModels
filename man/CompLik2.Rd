@@ -12,7 +12,7 @@ CompLik2(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance,
          fixed, GPU,grid,likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
          numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
          upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,
-         colidx,rowidx,maxpoints)
+         colidx,rowidx,neighb)
 }
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
@@ -105,8 +105,8 @@ CompLik2(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance,
          \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
     \item{colidx}{Numeric; Vector of indexes for spatial distances.}
     \item{rowidx}{Numeric; Vector of indexes for spatial distances.}
-        \item{maxpoints}{Numeric; an optional positive integer indicating the 
-    number of neighborhood location.}
+        \item{neighb}{Numeric; an optional positive integer indicating the 
+    order of neighborhood location.}
 }
 
 \seealso{\code{\link{GeoFit}}}

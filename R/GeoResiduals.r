@@ -49,6 +49,7 @@ if(model %in% c("Gaussian","SkewGaussian","Logistic",
 {res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))}
 
 
+
 #if(binomial or binomialneg or geom or bernoulli)
 #
 #............
