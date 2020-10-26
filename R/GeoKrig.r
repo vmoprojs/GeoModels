@@ -635,7 +635,7 @@ if(type=="Tapering"||type=="tapering")  {
 ####################################################################################################################################
 
 
-if(covmatrix$model %in% c(2,11,14,19,30,16))
+if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44))
 {  
      if(type=="Standard"||type=="standard") {
 
@@ -649,7 +649,7 @@ if(covmatrix$model %in% c(2,11,14,19,30,16))
      if(covmatrix$model==19) kk=min(nloc)
      if(covmatrix$model==16) kk=n
 ## ojo que es la covarianza
-if(covmatrix$model %in% c(2,11,14,16,19,30))
+if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44))
 {
   corri=double(dimat*dimat2)
 
@@ -696,13 +696,24 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
        if(type_krig=='Simple'||type_krig=='simple')  {
 
           ##########################################################
-       if(covmatrix$model==30){  ### poisson
+       if(covmatrix$model==30||covmatrix$model==36){  ### poisson
         p0=exp(mu0); pmu=exp(mu) 
             if(!bivariate) 
                    {  pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) }  ## simple kriging
             else{} #todo
            if(mse)  vvar=p0  ### variance (possibly no stationary)     
-          } 
+          }
+            ##########################################################
+       if(covmatrix$model==43||covmatrix$model==44){  ### poisson  inflated
+        p=pnorm(covmatrix$param['pmu'])
+        p0=exp(mu0); pmu=exp(mu) 
+            if(!bivariate) 
+                   {  pp = (1-p)*c(p0) + krig_weights %*% (c(dataT)-(1-p)*c(pmu)) }  ## simple kriging
+            else{} #todo
+           if(mse)  vvar=(1-p)*p0*(1+p*p0)  ### variance (possibly no stationary)  
+
+          }  
+
        ##########################################################
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
         p0=pnorm(mu0); pmu=pnorm(mu) 
@@ -751,15 +762,17 @@ if(covmatrix$model %in% c(2,11,14,16,19,30))
             #      else{}     ### todo   
             #      if(mse) {ss = (Xloc-krig_weights%*%X)%*%(solve(t(X)%*%invcov%*%X)%*%t(X))%*%invcov   + krig_weights
             #               vv =  diag(as.matrix(diag(vvar,dimat2)+ krig_weights %*% t(cc) -2*t(ss)%*%cc)) }  ## ordinary kriging predictor variance
-           #           }    
+           #           }   
+           
       if(spacetime||bivariate) {
             pred=matrix(t(pp),nrow=tloc,ncol=numloc);
             varpred=matrix(c(vv),nrow=tloc,ncol=numloc);
             } 
-          else{pred=c(pp);varpred=c(vv)}
+          else{
+           
+            pred=c(pp);varpred=c(vv)}
 
-    }}  ##end  binary or binomial or geometric kriging 
-
+    }}  ##end  binary or binomial or geometric kriging  poisson
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -844,6 +857,7 @@ if(matrix$model %in% c(10))             #SkewGauussian
                    data=data-(MM+kk*sqrt(2/pi))}
 if(matrix$model %in% c(11))     data=data-(matrix$n)*pnorm(MM) #binomial
 if(matrix$model %in% c(30,36))  data=data-exp(MM) #poisson
+if(matrix$model %in% c(43,44))  {p=pnorm(param['pmu']);data=data-(1-p)*exp(MM)} #poisson inlated
 if(matrix$model %in% c(27)) #two piece t models
      {kk=param['skew'];
       dd=param['df'];

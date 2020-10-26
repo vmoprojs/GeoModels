@@ -313,7 +313,7 @@ model="Weibull"
 
 corrmodel = "GenWend"  
 # Define the spatial-coordinates of the points:
-NN=700
+NN=400
 coords=cbind(runif(NN),runif(NN))
 ## matrix covariates
 a0=rep(1,NN)
@@ -351,7 +351,7 @@ fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
 res=GeoResiduals(fit2)
 
 # locations to predict
-xx=seq(0,1,0.03)
+xx=seq(0,1,0.04)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging for residuals
@@ -381,7 +381,7 @@ image.plot(xx, xx, mapmse,
 model="StudentT"
 df=5
 corrmodel = "Wend0"  
-nsel=600
+nsel=200
 coords=cbind(runif(nsel),runif(nsel))
 
 mean = 0
@@ -430,14 +430,15 @@ image.plot(xx, xx, map_t,
 
 model="Gaussian"
 # Define the spatial-coordinates of the points:
-x = runif(300, 0, 1)
-y = runif(300, 0, 1)
+x = runif(200, 0, 1)
+y = runif(200, 0, 1)
 coords=cbind(x,y)
-times=1:8
+times=1:10
 
 # Define model correlation and associated parameters
-corrmodel="exp_exp"
-param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=1,sill=1)
+corrmodel="Wend0_Wend0"
+param=list(nugget=0,mean=0,power2_s=4,power2_t=4,
+        scale_s=0.15,scale_t=2,sill=1)
 
 # Simulation of the space time Gaussian random field:
 set.seed(31)
@@ -446,7 +447,7 @@ data=GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,
 
 # Maximum pairwise likelihood fitting of the space time random field:
 start = list(scale_s=0.2/3,scale_t=1,sill=1,mean=0)
-fixed = list(nugget=0)
+fixed = list(nugget=0,power2_s=4,power2_t=4)
 I=Inf
 lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
 upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
@@ -470,7 +471,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 times_to_pred=1:2
 
 pr=GeoKrig(loc=loc_to_pred,time=times_to_pred,coordx=coords,coordt=times,
-       corrmodel=corrmodel, param=param,data=data,mse=TRUE)
+       sparse=TRUE,corrmodel=corrmodel, param=param,data=data,mse=TRUE)
 
 par(mfrow=c(2,3))
 #zlim=c(-2.5,2.5)

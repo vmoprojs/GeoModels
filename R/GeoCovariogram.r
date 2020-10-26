@@ -131,6 +131,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeyh<- model ==34
     tukeyh2<- model ==40
     poisson<- model==30||model==36
+    poissonZIP<- model==43||model==44
     loglogistic <- model==24
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
@@ -476,6 +477,20 @@ else                                        nui['nugget']=nuisance['nugget']
                            covariance=vv*cc
                            variogram=vv*(1-cc)}
                    }
+     if(poissonZIP) {
+                    if(bivariate) {}
+                    if(!bivariate) {   
+                           p=pnorm(nuisance['pmu']);MM=exp(mu)
+                           vv=(1-p)*MM*(1+p*MM)
+                           p1=1-2*p+pbivnorm::pbivnorm(nuisance['pmu'],nuisance['pmu'], rho = correlation, recycle = TRUE)
+                           correlation=(1-nuisance['nugget'])*correlation   
+                           corr2=correlation^2    
+                           z=2*vv/(1-corr2)
+                           cc1=corr2*(1-(besselI(z,0,expon.scaled = TRUE)+besselI(z,1,expon.scaled = TRUE)))
+                           cc=(p1*cc1*MM+MM^2*(p1-(1-p)^2))/vv
+                           variogram=vv*(1-cc)
+                      }  
+            }
 ##########################################
 ##########################################
 ##########################################
@@ -656,6 +671,10 @@ else                                        nui['nugget']=nuisance['nugget']
             if(loggauss) vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
             if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(poisson) vvv=exp(mm['mean'])
+             if(poissonZIP){
+              p=pnorm(nuisance['pmu']);
+              MM=exp(mm['mean'])
+              vvv=(1-p)*MM*(1+p*MM)}
             if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(binomialneg)     vvv= fitted$N*(1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
