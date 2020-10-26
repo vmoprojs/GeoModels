@@ -23,6 +23,7 @@ CompLik2 <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, dat
 comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, n, namescorr, 
                               namesnuis,namesparam,weigthed,X,GPU,local)
       {
+
         names(param) <- namesparam
         param <- c(param, fixed)
         paramcorr <- param[namescorr]
@@ -38,13 +39,13 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
        #             as.double(other_nuis),
        #             as.integer(local),as.integer(GPU),
        #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res  
-
+   
         result=dotCall64::.C64(as.character(fan),
-          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
+         SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,
           INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
-        #print(result)
+
          return(-result)
       }
 
@@ -176,6 +177,10 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
+   if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
@@ -209,6 +214,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 ###### selectin data with indexes from composite likelihood
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
    data1=data[colidx]; data2=data[rowidx]
+
+ 
 
     if(is.null(GPU)) GPU=0
    if(!onlyvar){

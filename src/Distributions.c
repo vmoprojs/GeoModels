@@ -4174,6 +4174,56 @@ return(dens);
 
 
 
+double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup)
+{
+double dens,p,p00,p10,p01,p11;
+p=pnorm(mup,0,1,1,0);
+p00=pbnorm22(mup,mup,corr);
+p01=p-p00;
+p10=p01;
+p11=1-2*p+p00;
 
+if(r==0&&t==0)
+     dens=p00  + p01*exp(-mean_i) + p10*exp(-mean_j)+p11*biv_Poisson(corr,0, 0, mean_i, mean_j);
+if(r==0&&t>0)
+      dens=      p01*  exp(-mean_i+t*log(mean_i)-lgammafn(t+1))  + p11*biv_Poisson(corr,0, t, mean_i, mean_j);
+if(r>0&&t==0)
+      dens=      p10*  exp(-mean_j+r*log(mean_j)-lgammafn(r+1))  + p11*biv_Poisson(corr,r, 0, mean_i, mean_j);
+if(r>0&&t>0)
+      dens=      p11*biv_Poisson(corr,r, t, mean_i, mean_j);
+return(dens);
 
+}
+
+double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
+                             double mean_i, double mean_j,double mup,double nugget)
+{
+int N=2,i=0;
+double **M;M= (double **) Calloc(N,double *);
+for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+double *dat;dat=(double *) Calloc(N,double);
+
+double dens,p,p00,p10,p01,p11,pdf2,corr1,pdf1i,pdf1j;
+
+p=pnorm(mup,0,1,1,0);
+p00=pbnorm22(mup,mup,corr);p01=p-p00;p10=p01;p11=1-2*p+p00;
+
+corr1=corr_pois((1-nugget)*corr,mean_i,mean_j);
+M[0][0]=mean_i; M[1][1]=mean_j;M[0][1]=sqrt(mean_i*mean_j)*corr1;M[1][0]= M[0][1];
+                        dat[0]=data_i-mean_i;dat[1]=data_j-mean_j;
+                     
+pdf2=dNnorm(N,M,dat); // bivariate Gaussian pdf
+pdf1i=dnorm(data_i,mean_i,sqrt(mean_i),0); // univariate Gaussian pdf
+pdf1j=dnorm(data_j,mean_j,sqrt(mean_j),0);
+
+if(data_i>0.0&&data_j>0.0)   dens=p11*pdf2; 
+if(data_i>0.0&&data_j==0.0)  dens=p11*pdf2+p10*pdf1i;  
+if(data_i==0.0&&data_j>0.0)  dens=p11*pdf2+p01*pdf1j;
+if(data_i==0.0&&data_j==0.0)  dens=p11*pdf2+p01*pdf1i+p10*pdf1j+p00;
+for(i=0;i<N;i++)  {Free(M[i]);}
+Free(M);
+Free(dat);
+return(dens);
+
+}
 

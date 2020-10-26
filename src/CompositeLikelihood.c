@@ -279,6 +279,50 @@ void Comp_Pair_Gauss_misp_Pois_st2(int *cormod, double *coordx, double *coordy, 
     return;
 }
 
+void Comp_Pair_Gauss_misp_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0;
+     double lags=0.0, lagt=0.0,weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
+   double nugget=nuis[0];
+  double mup=nuis[1];
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                          u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];
+                          if(!ISNAN(u)&&!ISNAN(w) ){
+                                      corr=CorFct(cormod,lags,0,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                                   
+                                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget);
+                              *res+= log(bl)*weights;  
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+    u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])]; 
+                           if(!ISNAN(u)&&!ISNAN(w)){
+              corr=CorFct(cormod,lags,lagt,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);                              
+                                    if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget);
+                              *res+= log(bl)*weights;  
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 
 
 void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
@@ -322,6 +366,55 @@ void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coo
                               uu=(int) u;  ww=(int) w;
 
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
+                       *res+= log(bl)*weights;
+                                   
+                             }}}}}}}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
+
+void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local)
+{
+    int i=0, j=0,  t=0, v=0,uu,ww;
+     double lags=0.0, lagt=0.0,weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
+    double nugget=nuis[0];
+   double mup=nuis[1];
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+    // Computes the log-likelihood:
+  for(t=0;t<ntime[0];t++){
+    for(i=0;i<ns[t];i++){
+      for(v=t;v<ntime[0];v++){
+      if(t==v){
+         for(j=i+1;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]){
+                          u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])];
+                          if(!ISNAN(u)&&!ISNAN(w) ){
+                                      corr=CorFct(cormod,lags,0,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                          uu=(int) u;  ww=(int) w;
+
+                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup); 
+                       *res+= log(bl)*weights;
+
+                                    }}}}
+               else {
+          lagt=fabs(coordt[t]-coordt[v]);
+         for(j=0;j<ns[v];j++){
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                        if(lags<=maxdist[0]&&lagt<=maxtime[0]){
+    u=data[(i+NS[t])];      
+                                w=data[(j+NS[v])]; 
+                           if(!ISNAN(u)&&!ISNAN(w)){
+              corr=CorFct(cormod,lags,lagt,par,0,0);
+                            mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
+                            
+                              uu=(int) u;  ww=(int) w;
+
+                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup); 
                        *res+= log(bl)*weights;
                                    
                              }}}}}}}
@@ -2312,7 +2405,39 @@ void Comp_Pair_Pois2(int *cormod, double *coordx, double *coordy, double *coordt
     return;
 }
 
+// Composite marginal (pariwise) log-likelihood for poisson model
+void Comp_Pair_PoisZIP2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0,uu,ww;
+    double lags=0.0, weights=1.0,corr,mui,muj,bl;
+    // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
+   //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
+   //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
+    double nugget=nuis[0];
+        double mup=nuis[1];
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
 
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+             //***********/
+                    mui=exp(mean[i]);muj=exp(mean[j]);
+
+                     corr=CorFct(cormod,lags,0,par,0,0);
+                   //  if(corr>=1) {*res=LOW; return;}
+
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      uu=(int) data[i];  ww=(int) data[j];
+                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup);
+                      *res+= log(bl)*weights;
+                    }}}}          
+    // Checks the return values
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
 // Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
 void Comp_Pair_Gauss_misp_Pois2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
@@ -2347,6 +2472,37 @@ double **M;
                     }}}}   
    for(i=0;i<N;i++)  {Free(M[i]);}
     Free(M);         
+    // Checks the return values
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+// Composite marginal (pariwise) log-likelihood for the spatial  Gaussian misspecification model:
+void Comp_Pair_Gauss_misp_PoisZIP2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, 
+ double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local)
+{
+    int i=0, j=0;
+    double lags=0.0, weights=1.0,corr,mui,muj,bl;
+    double nugget=nuis[0];
+    double mup=nuis[1];
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+
+
+    for(i=0;i<(ncoord[0]-1);i++){
+        for(j=(i+1); j<ncoord[0];j++){
+      lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+            if(lags<=maxdist[0]){
+                  if(!ISNAN(data[i])&&!ISNAN(data[j]) ){
+             //***********/
+                    mui=exp(mean[i]);muj=exp(mean[j]);
+                    corr=CorFct(cormod,lags,0,par,0,0);
+                      if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
+                      
+                       bl=biv_Mis_PoissonZIP(corr,data[i],data[j],mui, muj,mup,nugget);
+                      *res+= log(bl)*weights;
+                    }}}}   
+         
     // Checks the return values
     if(!R_FINITE(*res))  *res = LOW;
     return;

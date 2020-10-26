@@ -711,15 +711,18 @@ CkModel <- function(model)
                          Binomial_TwoPieceGauss=31,
                          BinomialNeg_TwoPieceGaussian=32,
                          BinomialNeg_TwoPieceGauss=32,
-                         Kumaraswamy=33,Kumaraswamy2=42,
+                         Kumaraswamy=33,
                          Tukeyh=34,tukeyh=34,
-                         Tukeyh2=40,tukeyh2=40,
                          Gaussian_misp_StudentT=35,
                          Gaussian_misp_Poisson=36,
                          Gaussian_misp_SkewStudentT=37,
                          TwoPieceTukeyh=38,
                          TwoPieceBimodal=39,
-                         Gaussian_misp_Tukeygh=41
+                         Tukeyh2=40,tukeyh2=40,
+                         Gaussian_misp_Tukeygh=41,
+                         Kumaraswamy2=42,
+                         PoissonZIP=43,
+                         Gaussian_misp_PoissonZIP=44
                          )
     return(CkModel)
   }
@@ -944,6 +947,12 @@ if(!bivariate)      {
   {
     param <- c(mm, 'nugget', 'sill')
     return(param)}
+
+ if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP')))
+  {
+    param <- c(mm, 'nugget','pmu','sill')
+    return(param)
+  }
 
       if((model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic"))){
       param <- c(mm, 'nugget', 'sill','shape')
@@ -1203,14 +1212,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             if(model==15) mu <- -1
             if(model==17||model==30) mu <- 1
             nuisance <- c(mu, 0, 1)
-            #if(!is.null(start$nugget))
-            #    if(length(start)>1) start<-start[!names(start)%in%"nugget"]
-            #    else start<-NULL
-            #if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
-            #else fixed<-list(nugget=0)
-            #set the nugget in case the sill is fixed
-           # if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
         }
+        if(model %in% c(43,44)) nuisance <- c(0, 0, 0, 1)
       }
  #if(num_betas>1)
  if((!bivariate&&num_betas>1)||(bivariate&&num_betas[1]>1&&num_betas[2]>1) )
@@ -1263,23 +1266,9 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
             }
          }
-     if(model %in% c(2,11,14,15,16,19,17,30)){
+     if(model %in% c(2,11,14,15,16,19,17,30)) nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
+     if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,1)
 
-           # p <- mean(data[!is.na(data)])
-           # if(model==2||model==11) mu <- threshold+qnorm(p/n)
-           # if(model==14||model==16) mu <- 0
-           # if(model==15) mu <- -1
-           # if(model==17) mu <- 1
-            nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
-           
-           # if(!is.null(start$nugget))
-           #     if(length(start)>1) start<-start[!names(start)%in%"nugget"]
-           #     else start<-NULL
-            #if(is.list(fixed)) fixed$nugget<-0# Fixs the nugget
-            #else fixed<-list(nugget=0)
-            #set the nugget in case the sill is fixed
-           # if(!is.null(fixed$sill)) fixed$nugget <- 1-fixed$sill
-        }
      }
         # Update the parameter vector      
         names(nuisance) <- namesnuis

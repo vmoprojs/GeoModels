@@ -92,6 +92,12 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
      }}
       #if(length(param)==1)  {initparam$upper=1000}
 
+
+   #updating starting parameters
+
+   #print(initparam$param)
+  
+
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
@@ -132,6 +138,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     missp=FALSE 
     if(model=="Gaussian_misp_Tukeygh"){model="Tukeygh";missp=TRUE}
     if(model=="Gaussian_misp_Poisson"){model="Poisson";missp=TRUE}
+    if(model=="Gaussian_misp_PoissonZIP"){model="PoissonZIP";missp=TRUE}
     if(model=="Gaussian_misp_StudentT"){model="StudentT";missp=TRUE}
     if(model=="Gaussian_misp_SkewStudentT"){model="SkewStudentT";missp=TRUE}
     ##################
@@ -209,7 +216,9 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
   if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian Poisson '}
+  if(x$model=='Gaussian_misp_PoissonZIP') { process <- 'PoissonZIP'; model <- 'Misspecified Gaussian Poisson Inflated'}
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
+  if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
   if(x$model=='Gaussian_misp_Tukeygh') { process <- 'Tukeygh'; model <- 'Misspecified Gaussian Tukeygh '}

@@ -574,7 +574,7 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 ################################ start discrete #models ########
 ###############################################################
-if(model %in% c(2,11,30,16,14)){ #  binomial (negative)Gaussian type , Poisson
+if(model %in% c(2,11,30,16,14,43)){ #  binomial (negative)Gaussian type , Poisson
 
 
 if(!bivariate){
@@ -637,6 +637,9 @@ if(type=="Standard")  {
   if(model %in% c(14))   { pg=pnorm(mu); vv=  (1-pg)/pg^2; diag(varcov)=vv }       
   if(model %in% c(16))   { pg=pnorm(mu); vv=n*(1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
+  if(model %in% c(43))   { mm=exp(mu); pmu=param$pmu;pg=pnorm(pmu)
+                           vv=(1-pg)*mm*(1+pg*mm)
+                           diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      
 }        

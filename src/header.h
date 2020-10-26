@@ -412,6 +412,7 @@ double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
+double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup);
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -450,6 +451,8 @@ double biv_sinh(double corr,double zi,double zj,double mi,double mj,double skew,
 double biv_skew2(double corr,double zi,double zj,double vari1,double vari2,double rho ,
          double skew1,double skew2);
 
+double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
+                             double mean_i, double mean_j,double mup,double nugget);
 double triv_skew(double x,double c_0i,double c_0j, double rho,double data_i,double data_j,double *nuis);
 
 
