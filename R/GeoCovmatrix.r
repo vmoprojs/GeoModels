@@ -574,11 +574,11 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 ################################ start discrete #models ########
 ###############################################################
-if(model %in% c(2,11,30,16,14,43)){ #  binomial (negative)Gaussian type , Poisson
+if(model %in% c(2,11,30,16,14,43,45)){ #  binomial (negative)Gaussian type , Poisson (inflated)
 
 
 if(!bivariate){
-
+        
             fname <-"CorrelationMat_dis2"
             if(spacetime) fname <- "CorrelationMat_st_dyn_dis2"
             sel=substr(names(nuisance),1,4)=="mean"
@@ -587,7 +587,8 @@ if(!bivariate){
             other_nuis=as.numeric(nuisance[!sel])   
 if(type=="Standard")  {
   corr=double(numpairstot)
-           
+             
+
               cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
@@ -601,10 +602,10 @@ if(type=="Standard")  {
 
 
      corr=cr$corr # ojo que corr en este caso es una covarianza y ya va con el nugget
-                varcov <-  diag(dime) 
-                varcov[lower.tri(varcov)] <- corr   
-                varcov <- t(varcov)
-                varcov[lower.tri(varcov)] <- corr     
+     varcov <-  diag(dime) 
+     varcov[lower.tri(varcov)] <- corr   
+     varcov <- t(varcov)
+     varcov[lower.tri(varcov)] <- corr     
 }
 ############################
 ############################
@@ -637,9 +638,16 @@ if(type=="Standard")  {
   if(model %in% c(14))   { pg=pnorm(mu); vv=  (1-pg)/pg^2; diag(varcov)=vv }       
   if(model %in% c(16))   { pg=pnorm(mu); vv=n*(1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
-  if(model %in% c(43))   { mm=exp(mu); pmu=param$pmu;pg=pnorm(pmu)
+
+  if(model %in% c(43))   { mm=exp(mu); pg=pnorm(param$pmu)
                            vv=(1-pg)*mm*(1+pg*mm)
                            diag(varcov)=vv }
+
+  if(model %in% c(45))   {  
+                            pp=pnorm(mu);
+                            pg=pnorm(param$pmu)
+                            vv=n*(1-pp)*(1-pg)*(1+n*pg*(1-pp))/pp^2
+                            diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      
 }        
@@ -761,8 +769,6 @@ if(sparse) {
                         initparam$numpairs,numpairstot,initparam$model,
                         initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
    
-   #print(initparam$param)
-    #initparam$param=initparam$param[names(initparam$param)!='mean']
     
     if(type=="Tapering") sparse=TRUE
 

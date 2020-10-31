@@ -2462,49 +2462,7 @@ void vpbnorm(int *cormod, double *h, double *u, int *nlags, int *nlagt,
   return;
 }
 
-/*
-
-double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
-{
-  int a=0,i=0;
-  double kk1=0.0,kk2=0.0,dens1=0.0,dens2=0.0;
-
-    for(a=fmax_int(0,u-v+NN-1);a<=NN-2;a++){
-   for(i=fmax_int(0,a-u);i<=fmin_int(a,NN-1);i++){
-    kk1=fac(NN-1+u,1)/(fac(i,1)*fac(NN-1-i,1)*fac(a-i,1)*fac(u-a+i,1));
-    kk2=fac(v-u-1,1)/(fac(v+a-NN-u+1,1)*fac(NN-a-2,1));
-    dens1+=kk1*kk2*R_pow(p11,i+1)*R_pow(1+p11-(x+y),u-a+i)*
-             R_pow(x-p11,NN-i-1)*R_pow(y-p11,a-i)*R_pow(1-y,v-u-NN+a+1)*R_pow(y,NN-a-1);
-  }}
-
-    for(a=fmax_int(0,u-v+NN);a<=NN-1;a++){
-    for(i=fmax_int(0,a-u);i<=fmin_int(a,NN-1);i++){
-    kk1=fac(NN-1+u,1)/(fac(i,1)*fac(NN-1-i,1)*fac(a-i,1)*fac(u-a+i,1));
-    kk2=fac(v-u-1,1)/(fac(v+a-NN-u,1)*fac(NN-a-1,1));
-    dens2+=kk1*kk2*R_pow(p11,i)*R_pow(1+p11-(x+y),u-a+i)*
-                 R_pow(x-p11,NN-i)*R_pow(y-p11,a-i)*R_pow(1-y,v-u-NN+a)*R_pow(y,NN-a);
-  }}
-  return(dens1+dens2);
-}
-
-// bivariate negative  binomial
-double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
-{
-double kk1=0.0,dens=0.0;int i=0;
-if(u<v)    dens=aux_biv_binomneg(NN,u,v,p01,p10,p11);
-
-if(u==v)            {
-    for(i=fmax_int(0,NN-u-1);i<=NN-1;i++){
-      kk1=fac(NN-1+u,1)/(fac(i,1)*R_pow(fac(NN-1-i,1),2)*fac(u-NN+1+i,1));
-      dens+=kk1*R_pow(p11,i+1)*R_pow(1+p11-(p01+p10),u-NN+1+i)*R_pow(p01-p11,NN-1-i)*R_pow(p10-p11,NN-1-i); }
-}
-
-if(u>v)    dens=aux_biv_binomneg(NN,v,u,p10,p01,p11);
-return(dens);
-}
-*/
-
-
+/**********************************************************************/
 double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11)
 {
           int i=0;
@@ -2516,9 +2474,6 @@ double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11)
        }
          return(dens);
 }
-
-
-
 double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
 {
   int a=0,i=0;
@@ -2542,23 +2497,6 @@ double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
   return(dens1+dens2);
 }
 
-/*
-double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
-{
-double kk1=0.0,dens=0.0;int i=0;
-if(u<v)    dens=aux_biv_binomneg(NN,u,v,p01,p10,p11);
-
-if(u==v)            {
-    for(i=fmax_int(0,NN-u-1);i<=NN-1;i++){
-      kk1=exp(lgammafn(NN-1+u+1)-(lgammafn(i+1)+lgammafn(NN-i)+lgammafn(NN-i)+lgammafn(u-NN+2+i)));
-      dens+=kk1*pow(p11,i+1)*pow(1+p11-(p01+p10),u-NN+1+i)*pow(p01-p11,NN-1-i)*pow(p10-p11,NN-1-i); }
-}
-
-if(u>v)    dens=aux_biv_binomneg(NN,v,u,p10,p01,p11);
-return(dens);
-}*/
-
-
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
 {
 double dens=0.0;
@@ -2569,7 +2507,7 @@ if(u==v)      dens=aux_biv_binomneg_simple(NN,v,p10,p01,p11);
 if(u>v)    dens=aux_biv_binomneg(NN,v,u,p10,p01,p11);
 return(dens);
 }
-
+/**********************************************************************/
 double bin_aux(int a,int NN,int u,int v,double p1, double p2,double p11)
 {
   double kk,dens;
@@ -4224,6 +4162,35 @@ for(i=0;i<N;i++)  {Free(M[i]);}
 Free(M);
 Free(dat);
 return(dens);
+}
+/*****/
+double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget,double mup)
+{
+double dens,ap,ap00,ap10,ap01,ap11;
+
+
+ap=pnorm(mup,0,1,1,0);
+
+ap00=pbnorm22(mup,mup,corr);
+ap01=ap-ap00;
+ap10=ap01;
+ap11=1-2*ap+ap00;
+
+double p11=pbnorm22(mean_i,mean_j,(1-nugget)*corr);
+double p1=pnorm(mean_i,0,1,1,0);
+double p2=pnorm(mean_j,0,1,1,0);
+
+
+if(r==0&&t==0)
+     dens=ap00  + ap01*pow(p1,N) + ap10*pow(p2,N)+ap11*biv_binomneg(N,0, 0 ,p1, p2, p11);
+if(r==0&&t>0)
+      dens=      ap01*  exp(lgammafn(N+t)-lgammafn(t+1)-lgammafn(N) +N*log(p2)+t*log(1-p2) ) +
+                               ap11*biv_binomneg(N,0, t, p1, p2, p11);
+if(r>0&&t==0)
+      dens=      ap10* exp(lgammafn(N+r)-lgammafn(r+1)-lgammafn(N) +N*log(p1)+r*log(1-p1) ) +
+                               ap11*biv_binomneg(N,r, 0, p1, p2, p11);
+if(r>0&&t>0)
+      dens=      ap11*biv_binomneg(N,r, t,p1, p2, p11);
+return(dens);
 
 }
-

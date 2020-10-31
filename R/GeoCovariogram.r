@@ -10,7 +10,7 @@
 ### to compute and plot the estimated covariance
 ### function and the variogram after fitting a
 ### random field by composite-likelihood.
-### Last change: 1/05/2020.
+### Last change: 1/12/2020.
 ####################################################
    
 ### Procedures are in alphabetical order.
@@ -128,6 +128,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     binomial2 <- model==19
     geom <- model==14
     binomialneg<-model==16
+    binomialnegZINB<-model==45
     tukeyh<- model ==34
     tukeyh2<- model ==40
     poisson<- model==30||model==36
@@ -135,8 +136,8 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     loglogistic <- model==24
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||geom||tukeyh||tukeyh2||twopiecebimodal||skewstudentT
-            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||twopiecebimodal||skewstudentT
+            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-9
     else slow=1e-3
     # lags associated to empirical variogram estimation
     if(isvario){
@@ -213,7 +214,7 @@ if(!bivariate) {
 
      nui=nuisance
      nui['sill']=1;
-if(!(binomial||geom||binomialneg)) nui['nugget']=0
+if(!(binomial||geom||binomialneg||binomialnegZINB)) nui['nugget']=0
 else                                        nui['nugget']=nuisance['nugget']
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
@@ -456,13 +457,17 @@ else                                        nui['nugget']=nuisance['nugget']
                      }
                   }
    #                   
-   if(binary||binomial||binomial2||geom||binomialneg) {
+   if(binary||binomial||binomial2||geom||binomialneg||binomialnegZINB) {
                     if(bivariate) {}
                     if(!bivariate) {          
                            pp=pnorm(mu)
                            if(binary||binomial||binomial2) vv=min(fitted$n)*pp*(1-pp)
                            if(geom)             vv=(1-pp)/pp^2;
                            if(binomialneg)      vv=(fitted$n)*(1-pp)/pp^2;
+                           if(binomialnegZINB) { 
+                                     pg=pnorm(nuisance['pmu'])
+                                     vv=(fitted$n)*(1-pp)*(1-pg)*(1+(fitted$n)*pg*(1-pp))/pp^2
+                                               }
                            covariance=vv*correlation
                            variogram=vv*(1-correlation)}
                    }
@@ -664,25 +669,28 @@ else                                        nui['nugget']=nuisance['nugget']
 
             vvv=nuisance["nugget"]+nuisance["sill"]
             ########
-            if(gamma)    vvv=2*exp(mm["mean"])^2/nuisance["shape"]
-            if(weibull)  vvv=exp(mm["mean"])^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
-            if(loglogistic)  vvv=exp(mm["mean"])^2*
+            if(gamma)         vvv=2*exp(mm["mean"])^2/nuisance["shape"]
+            if(weibull)       vvv=exp(mm["mean"])^2*(gamma(1+2/nuisance["shape"])/gamma(1+1/nuisance["shape"])^2-1)
+            if(loglogistic)   vvv=exp(mm["mean"])^2*
                                (2*nuisance['shape']*sin(pi/nuisance['shape'])^2/(pi*sin(2*pi/nuisance['shape']))-1)
-            if(loggauss) vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
-            if(binomial) vvv=fitted$N*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
-            if(poisson) vvv=exp(mm['mean'])
-             if(poissonZIP){
-              p=pnorm(nuisance['pmu']);
-              MM=exp(mm['mean'])
-              vvv=(1-p)*MM*(1+p*MM)}
-            if(geom)     vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
-            if(binomialneg)     vvv= fitted$N*(1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
+            if(loggauss)      vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
+            if(binomial)      vvv=fitted$n*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
+            if(poisson)       vvv=exp(mm['mean'])
+            if(poissonZIP){        p=pnorm(nuisance['pmu']); MM=exp(mm['mean']); 
+                              vvv=(1-p)*MM*(1+p*MM)}
+            if(geom)          vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
+            if(binomialneg)   vvv= fitted$n*(1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
+            if(binomialnegZINB) {
+                                  pp=pnorm(mm['mean']);pg=pnorm(nuisance['pmu'])
+                                  vvv=(fitted$n)*(1-pp)*(1-pg)*(1+(fitted$n)*pg*(1-pp))/pp^2
+
+                                }
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
             if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)
-            if(tukeyh2)  { hr=nuisance["tail1"];hl=nuisance["tail2"];
-                           mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                           vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+            if(tukeyh2)  {        hr=nuisance["tail1"];hl=nuisance["tail2"];
+                                  mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                              vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                          }
      
             ########

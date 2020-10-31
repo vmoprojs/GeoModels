@@ -635,7 +635,7 @@ if(type=="Tapering"||type=="tapering")  {
 ####################################################################################################################################
 
 
-if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44))
+if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45))
 {  
      if(type=="Standard"||type=="standard") {
 
@@ -647,9 +647,9 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44))
      kk=0
      if(covmatrix$model==2||covmatrix$model==11) kk=min(n)
      if(covmatrix$model==19) kk=min(nloc)
-     if(covmatrix$model==16) kk=n
+     if(covmatrix$model==16||covmatrix$model==45) kk=n
 ## ojo que es la covarianza
-if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44))
+if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45))
 {
   corri=double(dimat*dimat2)
 
@@ -694,7 +694,6 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44))
 
 
        if(type_krig=='Simple'||type_krig=='simple')  {
-
           ##########################################################
        if(covmatrix$model==30||covmatrix$model==36){  ### poisson
         p0=exp(mu0); pmu=exp(mu) 
@@ -739,7 +738,17 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44))
             if(mse) vvar=n*(1-k1)/k1^2   ### variance (possibly no stationary)
                 
           }
-
+        if(covmatrix$model==45){    ###inflated negative binomial
+            p0=pnorm(mu0); pmu=pnorm(mu)
+            p=as.numeric(pnorm(covmatrix$param['pmu']))
+            if(!bivariate) ## space and spacetime
+            { k1=c(p0);k2=c(pmu);    
+              pp = (1-p)*n*(1-k1)/k1 + krig_weights %*% (c(dataT)-(1-p)*n*(1-k2)/k2) 
+              }
+            else{}   #tood
+            if(mse) vvar=n*(1-k1)*(1-p)*(1+n*p*(1-k1))/k1^2
+          
+          }
         if(mse){
                   ##aa=Xloc-krig_weights%*%X
                   ##AA=chol2inv(chol(crossprod(X,(MM$bb) %*% X)  ))
@@ -882,6 +891,7 @@ if(matrix$model %in% c(40))      #tukeyh2
       data=data-(MM+sqrt(ss)*(t1-t2)/(sqrt(2*pi)*(1-t1)*(1-t2)))
      }
 if(matrix$model %in% c(16))     data=data-(matrix$n)*(1-pnorm(MM))/pnorm(MM) #binomialnegative
+if(matrix$model %in% c(45))     data=data-(1-pnorm(param['pmu']))*(matrix$n)*(1-pnorm(MM))/pnorm(MM) #binomialnegative inflated
 if(matrix$model %in% c(20))      #sas  
      {ss=param['sill'];
       kk=param['skew'];tt=param['tail'];

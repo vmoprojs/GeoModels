@@ -372,6 +372,31 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+/*********************************************************/
+void Comp_Pair_BinomnegGaussZINB2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0,  uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0;
+    double nugget=nuis[0];
+       if( nugget>=1 || nugget<0){*res=LOW; return;}
+    //compute the composite log-likelihood:
+    double mup=nuis[1];
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                  ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+                    u=data1[i];v=data2[i];
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                          uu=(int) u; 
+                         vv=(int) v; 
+                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget,mup);  
+                    *res+= weights*log(bl);
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 /******************************************************************************************/
 void Comp_Pair_BinomGauss2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -1355,16 +1380,14 @@ void Comp_Pair_BinomGauss_st2mem(int *cormod, double *data1,double *data2,int *N
     return;
 }
 
-void Comp_Pair_BinomnegGauss_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+void Comp_Pair_BinomnegGaussZINB_st2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
     int i=0, uu=0,ww=0;
     double bl=0.0,weights=1.0,u=0.0,w=0.0,a=0.0,b=0.0,corr=0.0;
-    double p1=0.0,p2=0.0;//probability of marginal success
-    double psj=0.0;//probability of joint success
-
-      double nugget=nuis[0];
+    
+      double nugget=nuis[0];double mup=nuis[1];
       if(nugget<0||nugget>=1){*res=LOW; return;}
 
            for(i=0;i<npairs[0];i++){
@@ -1372,12 +1395,9 @@ void Comp_Pair_BinomnegGauss_st2mem(int *cormod, double *data1,double *data2,int
              if(!ISNAN(u)&&!ISNAN(w) ){
                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                             a=mean1[i];b=mean2[i];
-                            psj=pbnorm22(a,b,(1-nugget)*corr);
-                            p1=pnorm(a,0,1,1,0);
-                            p2=pnorm(b,0,1,1,0);
-                            uu=(int) u;  ww=(int) w;
+                          uu=(int) u;  ww=(int) w;
                           if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                                    bl=biv_binomneg(NN[0],uu,ww,p1,p2,psj);
+                              bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup); 
 
                                  *res+=log(bl)*weights;
                 }}

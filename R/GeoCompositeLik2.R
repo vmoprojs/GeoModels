@@ -177,9 +177,11 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
-   if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
+    if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==45,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGaussZINB'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")

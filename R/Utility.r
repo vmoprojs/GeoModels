@@ -722,7 +722,8 @@ CkModel <- function(model)
                          Gaussian_misp_Tukeygh=41,
                          Kumaraswamy2=42,
                          PoissonZIP=43,
-                         Gaussian_misp_PoissonZIP=44
+                         Gaussian_misp_PoissonZIP=44,
+                         BinomialNegZINB=45
                          )
     return(CkModel)
   }
@@ -766,6 +767,9 @@ CorrelationPar <- function(corrmodel)
     # Exponential and Gaussian and spherical and wave correlation :
      if(corrmodel %in% c(2,3,4,16)) {
       param <- c('scale')
+      return(param)}
+        if(corrmodel %in% c(45)) {
+      param <- c('scale','pmu')
       return(param)}
         if(corrmodel %in% c(10)) {
       param <- c('scale_1','scale_2','smooth')
@@ -942,13 +946,13 @@ if(!bivariate)      {
   else {mm='mean' 
         for(i in 1:(num_betas-1)) mm=c(mm,paste("mean",i,sep=""))}
 
-  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg','Poisson','Gaussian_misp_Poisson',
+  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Binomial2','BinomialNeg','','Poisson','Gaussian_misp_Poisson',
       'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic')))
   {
     param <- c(mm, 'nugget', 'sill')
     return(param)}
 
- if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP')))
+ if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB')))
   {
     param <- c(mm, 'nugget','pmu','sill')
     return(param)
@@ -1204,14 +1208,16 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }
         }
-        if(model %in% c(11,14,15,16,19,17,30)){
+        if(model %in% c(11,14,15,16,19,17,30,45)){
     
             p <- mean(unlist(data)[!is.na(unlist(data))])
+            mu=0
             if(model==2||model==11) mu <- qnorm(p/n)
             if(model==14||model==16||model==19) mu <- 0
             if(model==15) mu <- -1
             if(model==17||model==30) mu <- 1
             nuisance <- c(mu, 0, 1)
+            if(model==45) {nuisance <- c(mu, 0, 0,1)}
         }
         if(model %in% c(43,44)) nuisance <- c(0, 0, 0, 1)
       }
@@ -1267,6 +1273,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             }
          }
      if(model %in% c(2,11,14,15,16,19,17,30)) nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
+     if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 1)
      if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,1)
 
      }

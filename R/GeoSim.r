@@ -72,11 +72,11 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    } 
-      if(model %in% c("PoissonZIP"))  {
+      if(model %in% c("PoissonZIP","BinomialNegZINB"))  {
      if(!bivariate) param[which(names(param) %in% c("pmu"))] <- NULL
     # if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    }   
-     
+ 
  return(param)   
 }
 ##############################################################################
@@ -265,7 +265,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Weibull")) k=2 
     if(model %in% c("LogLogistic","Logistic")) k=4 
     if(model %in% c("Binomial"))   k=round(n)
-    if(model %in% c("Geometric","BinomialNeg")){ k=99999;
+    if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB")){ k=99999;
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                } 
     if(model %in% c("Poisson")) {k=2;npoi=999999999}
@@ -398,7 +398,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
     ####### starting cases #############
     ####################################
  
-    if(model %in% c("Binomial", "BinomialNeg")) {    
+    if(model %in% c("Binomial", "BinomialNeg","BinomialNegZINB")) {    
         simdim <- dim(sim)
         sim <- as.numeric(sim>0)
         dim(sim) <- simdim
@@ -412,17 +412,18 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
        if(bivariate)  dd[,,i]=t(sim)
      }
      ####################################     
-    if(model %in% c("BinomialNeg")){ 
+    if(model %in% c("BinomialNeg","BinomialNegZINB")){ 
                  cumu=rbind(cumu,c(sim));
-                 if(sum(colSums(cumu)>=n)==dime) {break;}### checking if at least n success have ben achived
+                 if(sum(colSums(cumu)>=n)==dime) {break;}### ## stopping rule
                }
+
     }
  ####################################
   if(model %in% c("poisson","Poisson","PoissonZIP"))   { 
-  pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
+   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
    ssp=ssp+c(pois1)
-  sel=rbind(sel,ssp<=c(exp(mm)))
-  if(sum(apply(sel,2,prod))==0) break  ## stopping rule
+   sel=rbind(sel,ssp<=c(exp(mm)))
+   if(sum(apply(sel,2,prod))==0) break  ## stopping rule
  }
 
  KK=KK+1
@@ -432,13 +433,10 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
  ###############################################################################################
  #### simulation for discrete random field based on indipendent copies  of GRF ######
  ###############################################################################################
- if(model %in% c("Binomial","Poisson","PoissonZIP","BinomialNeg"))   {
+ if(model %in% c("Binomial","Poisson","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
 
    if(model %in% c("poisson","Poisson"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
-      #simdim <- dim(dd[,,3])
-       # dd[,,3]<- as.numeric(dd[,,3]>0)
-        #dim(dd[,,3]) <- simdim
       sim=colSums(sel);  
       a=dd[,,3]  
       a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
@@ -455,6 +453,14 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
    if(model %in% c("BinomialNeg"))   {
           sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
+          byrow=FALSE
+          }
+  if(model %in% c("BinomialNegZINB"))   {
+           sim=NULL
+          for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
+          a=crossprod(sqrtvarcov,ss) 
+          a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
+          sim=a*sim
           byrow=FALSE
           }
 ############################################# 
