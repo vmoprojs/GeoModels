@@ -2034,206 +2034,6 @@ return(dens);
 }
 
 
-// trivariate skew gaussian distribution/
-double triv_skew(double x,double c_0i,double c_0j, double rho,double data_i,double data_j,double *nuis)
-{
-
-    int N=3,m,n,i, maxpts=3*2000,fail=100;
-    double esterror=10.0,abseps=1.0e-6, releps=0.0;
-    double *K;K=(double *) Calloc(N,double);
-    double *lower;lower=(double *) Calloc(N,double);
-    double *upper;upper=(double *) Calloc(N,double);
-    double *corr;corr=(double *) Calloc(N,double);
-    int *infin;infin=(int *) Calloc(N,int);
-    lower[0]=0;lower[1]=0;lower[2]=0;
-    infin[0]=0;infin[1]=0;infin[2]=0;
-
-    double **Om;
-    Om= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){Om[i]=(double *) Calloc(N,double);}
-
-    double **C;
-    C= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){C[i]=(double *) Calloc(N,double);}
-
-    double **M;
-    M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
-
-    double **cov;
-    cov= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){cov[i]=(double *) Calloc(N,double);}
-    
-    double **inverse;
-    inverse= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){inverse[i]=(double *) Calloc(N,double);}  
-
-    double **inverse1;
-    inverse1= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){inverse1[i]=(double *) Calloc(N,double);} 
-
-    int *indx; indx=(int *) Calloc(N,int);
-    double *col; col=(double *) Calloc(N,double);
-    double *data;  data=(double *) Calloc(N,double);
-
-    double det,pdf1,pdf2,pdf3,pdf4,dd;
-    double dens,cdf1,cdf2,cdf3,cdf4;
-    double nu2=R_pow(nuis[3],2.0),tau2 =nuis[2];
-    double kk=tau2+nu2,co=tau2/nu2;
-    double co1=co+1,com1=co-1;
-    double ratio=nuis[3]/tau2;
-  
-
-  /**********    omega and its inverse*/
-    Om[0][0]=1;   Om[0][1]=rho ;Om[0][2]=c_0i;
-    Om[1][0]=Om[0][1];   Om[1][1]=1;     Om[1][2]=c_0j;
-    Om[2][0]=Om[0][2];   Om[2][1]=Om[1][2];  Om[2][2]=1;
-     ludcmp(Om,N,indx,&dd);    //Lu decomposition
-     //for(m=0;m<N;m++){ dd *= cov[m][m];}  //determinant using LU
-     for(n=0;n<N;n++) {
-     for(m=0;m<N;m++) col[m]=0.0;
-     col[n]=1.0;
-     lubksb(Om,N,indx,col);
-    for(m=0;m<N;m++) inverse1[m][n]=col[m];  // inverse using LU decomposition
-      }
-     /**********/
-
-    data[0]=data_i-nuis[0] ;data[1]=data_j-nuis[0] ;data[2]=x-nuis[0] ;
-    det=co*(R_pow(c_0j,2)-2*c_0i*rho*c_0j+R_pow(rho,2)+R_pow(c_0i,2)-1);
-/********************************************************************************************/
-/********************************************************************************************/
-                    M[0][0]=kk     ;   M[0][1]=kk*rho ;M[0][2]=kk*c_0i;
-                    M[1][0]=M[0][1];   M[1][1]=kk;     M[1][2]=kk*c_0j;
-                    M[2][0]=M[0][2];   M[2][1]=M[1][2];  M[2][2]=kk;
-                    pdf1=  dNnorm(N,M,data);
-                    cov[0][0]= (co1)*(c_0j-1)*(c_0j+1)/det;   
-                    cov[0][1]=-(co1)*(c_0i*c_0j-rho)/det;
-                    cov[0][2]=-(co1)*(rho*c_0j-c_0i)/det;
-                    cov[1][1]= (co1)*(c_0i-1)*(c_0i+1)/det;
-                    cov[1][2]=(co1)*(c_0j-c_0i*rho)/det;
-                    cov[2][2]=(co1)*(rho-1)*(rho+1)/det;
-                    cov[1][0]=cov[0][1];cov[2][0]=cov[0][2];cov[2][1]=cov[1][2];  
-
-                    ludcmp(cov,N,indx,&dd);    //Lu decomposition
-                   // for(m=0;m<N;m++){ dd *= cov[m][m];}  //determinant using LU
-                    for(n=0;n<N;n++) {
-                    for(m=0;m<N;m++) col[m]=0.0;
-                    col[n]=1.0;
-                    lubksb(cov,N,indx,col);
-                    for(m=0;m<N;m++) inverse[m][n]=col[m];  // inverse using LU decomposition
-                    }
-
-                    Matrix_prod(inverse,inverse1,C,N);
-                    Matrix_prod_vec(C,data,K,N);
-
-                    upper[0]=K[0]*ratio/sqrt(inverse[0][0]);
-                    upper[1]=K[1]*ratio/sqrt(inverse[0][0]);
-                    upper[2]=K[2]*ratio/sqrt(inverse[0][0]);
-                    corr[0]=inverse[0][1]/inverse[0][0]; corr[1]=inverse[0][2]/inverse[0][0]; corr[2]=inverse[1][2]/inverse[0][0];
-                    mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &cdf1, &fail );
-/********************************************************************************************/
-/********************************************************************************************/
-                    M[0][0]=kk     ;   M[0][1]=(tau2-nu2)*rho ;M[0][2]=(tau2-nu2)*c_0i;
-                    M[1][0]=M[0][1];   M[1][1]=kk;     M[1][2]=kk*c_0j;
-                    M[2][0]=M[0][2];   M[2][1]=M[1][2];  M[2][2]=kk;
-                    pdf2= dNnorm(N,M,data);
-                    cov[0][0]=(co1)*(c_0j-1)*(c_0j+1)/det;
-                    cov[0][1]=(com1)*(c_0i*c_0j-rho)/det;
-                    cov[0][2]=(com1)*(rho*c_0j-c_0i)/det;
-                    cov[1][2]=(co1)*(c_0j-c_0i*rho)/det;
-                    cov[1][1]=(co1)*(c_0i-1)*(c_0i+1)/det; 
-                    cov[2][2]= (co1)*(rho-1)*(rho+1)/det;
-                    cov[1][0]=cov[0][1];cov[2][0]=cov[0][2];cov[2][1]=cov[1][2];  
-                    ludcmp(cov,N,indx,&dd);    //Lu decomposition
-                    //for(m=0;m<N;m++){ dd *= cov[m][m];}  //determinant using LU
-                    for(n=0;n<N;n++) {
-                    for(m=0;m<N;m++) col[m]=0.0;
-                    col[n]=1.0;
-                    lubksb(cov,N,indx,col);
-                    for(m=0;m<N;m++) inverse[m][n]=col[m];  // inverse using LU decomposition
-                    }
-                     Matrix_prod(inverse,inverse1,C,N);
-                     Matrix_prod_vec(C,data,K,N);
-                   
-                   upper[0]=K[0]*ratio/sqrt(inverse[0][0]);
-                   upper[1]=K[1]*ratio/sqrt(inverse[0][0]);
-                   upper[2]=K[2]*ratio/sqrt(inverse[0][0]);
-                   corr[0]=inverse[0][1]/inverse[0][0]; corr[1]=inverse[0][2]/inverse[0][0]; corr[2]=inverse[1][2]/inverse[0][0];
-
-                    mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &cdf2, &fail );
-/********************************************************************************************/
-/********************************************************************************************/
-                    M[0][0]=kk     ;   M[0][1]=(tau2-nu2)*rho ;M[0][2]=kk*c_0i;
-                    M[1][0]=M[0][1];   M[1][1]=kk;     M[1][2]=(tau2-nu2)*c_0j;
-                    M[2][0]=M[0][2];   M[2][1]=M[1][2];  M[2][2]=kk;
-                    pdf3= dNnorm(N,M,data);
-
-                    cov[0][0]=(co1)*(c_0j-1)*(c_0j+1)/det;   
-                    cov[0][1]=(com1)*(c_0i*c_0j-rho)/det;
-                    cov[0][2]=-(co1)*(rho*c_0j-c_0i)/det;
-                    cov[1][1]=(co1)*(c_0i-1)*(c_0i+1)/det;
-                    cov[1][2]=-(com1)*(c_0j-c_0i*rho)/det;
-                    cov[2][2]=(co1)*(rho-1)*(rho+1)/det;
-                    cov[1][0]=cov[0][1];cov[2][0]=cov[0][2];cov[2][1]=cov[1][2];  
-
-                    ludcmp(cov,N,indx,&dd);    //Lu decomposition
-                   // for(m=0;m<N;m++){ dd *= cov[m][m];}  //determinant using LU
-                    for(n=0;n<N;n++) {
-                    for(m=0;m<N;m++) col[m]=0.0;
-                    col[n]=1.0;
-                    lubksb(cov,N,indx,col);
-                    for(m=0;m<N;m++) inverse[m][n]=col[m];  // inverse using LU decomposition
-                    }
-                     Matrix_prod(inverse,inverse1,C,N);
-                     Matrix_prod_vec(C,data,K,N);
-                   upper[0]=K[0]*ratio/sqrt(inverse[0][0]);
-                   upper[1]=K[1]*ratio/sqrt(inverse[0][0]);
-                   upper[2]=K[2]*ratio/sqrt(inverse[0][0]);
-                   corr[0]=inverse[0][1]/inverse[0][0]; corr[1]=inverse[0][2]/inverse[0][0]; corr[2]=inverse[1][2]/inverse[0][0];
-
-                    mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &cdf3, &fail );
-/********************************************************************************************/
-/********************************************************************************************/
-
-                    M[0][0]=kk;   M[0][1]=kk*rho; M[0][2]=(tau2-nu2)*c_0i;
-                    M[1][0]=M[0][1];   M[1][1]=kk;     M[1][2]=(tau2-nu2)*c_0j;
-                    M[2][0]=M[0][2];   M[2][1]=M[1][2];  M[2][2]=kk;
-                    pdf4= dNnorm(N,M,data);
-
-                    cov[0][0]=(co1)*(c_0j-1)*(c_0j+1)/det;   
-                    cov[0][1]=-(co1)*(c_0i*c_0j-rho)/det;
-                    cov[0][2]=(com1)*(rho*c_0j-c_0i)/det ;
-                    cov[1][1]=(co1)*(c_0i-1)*(c_0i+1)/det; 
-                    cov[1][2]=-(com1)*(c_0j-c_0i*rho)/det;
-                    cov[2][2]=(co1)*(rho-1)*(rho+1)/det;
-                    cov[1][0]=cov[0][1];cov[2][0]=cov[0][2];cov[2][1]=cov[1][2];  
-                    ludcmp(cov,N,indx,&dd);    //Lu decomposition
-                    //for(m=0;m<N;m++){ dd *= cov[m][m];}  //determinant using LU
-                    for(n=0;n<N;n++) {
-                    for(m=0;m<N;m++) col[m]=0.0;
-                    col[n]=1.0;
-                    lubksb(cov,N,indx,col);
-                    for(m=0;m<N;m++) inverse[m][n]=col[m];  // inverse using LU decomposition
-                    }
-                    
-                     Matrix_prod(inverse,inverse1,C,N);
-                     Matrix_prod_vec(C,data,K,N);
-                 upper[0]=K[0]*ratio/sqrt(inverse[0][0]);
-                 upper[1]=K[1]*ratio/sqrt(inverse[0][0]);
-                 upper[2]=K[2]*ratio/sqrt(inverse[0][0]);
-                 corr[0]=inverse[0][1]/inverse[0][0]; corr[1]=inverse[0][2]/inverse[0][0]; corr[2]=inverse[1][2]/inverse[0][0];
-                    mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &cdf4, &fail );
-/********************************************************************************************/
-/********************************************************************************************/
-dens=2*(pdf1*cdf1 + pdf2*cdf2 + pdf3*cdf3 + pdf4*cdf4);
- Free(lower);Free(upper);Free(corr);Free(infin);Free(K);
- Free(indx);Free(col);
- for(i=0;i<N;i++)  {Free (inverse[i]);Free(inverse1[i]);Free(Om[i]);Free (M[i]);Free (cov[i]);Free (C[i]);}
-Free(inverse);Free(M);Free(cov);Free(C);Free(Om);Free(inverse1);
- return(dens);
-}
-
-
 double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari, double nugget)
 {
     double u,v,u2,v2,det,s1,s12,dens;
@@ -2362,6 +2162,18 @@ double cdf_norm(double lim1,double lim2,double a11,double a12)
 }
 
 
+// compute the inverse lambert w transformation
+double inverse_lamb(double x,double tail)
+{
+  double sign,value;
+  value = sqrt(LambertW(tail*x*x)/tail);
+  if (x > 0) sign= 1;
+  if(x==0.0) sign=1;
+  if (x < 0) sign= -1;
+   return(sign*value);
+}
+
+
 double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double muj,
     double sill,double hl,double hr)
            
@@ -2369,16 +2181,8 @@ double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double mu
 
   double res = 0.0,A=0.0,B=0.0,hl_i,hr_i,hl_j,hr_j;
   double  Lhl_i=1.0,Lhr_i=1.0,Lhl_j=1.0,Lhr_j=1.0;
-
-
- 
   double z_i = (data_i - mui)/sqrt(sill);
   double z_j = (data_j - muj)/sqrt(sill);
- 
-
-
-//Rprintf("%f %f %f %f %f \n",z_i,z_j,hl,hr,corr); // hl is tail 2 hr is tail 1
-
   hl_i = inverse_lamb(z_i,hl);
   hl_j = inverse_lamb(z_j,hl);
 
@@ -2393,24 +2197,24 @@ double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double mu
 
 
 if(fabs(corr)>1e-30){
-if(z_i>=mui&&z_j>=muj)
+if(z_i>=0&&z_j>=0)
 {res=dbnorm(hr_i,hr_j,0,0,1,corr)*hr_i*hr_j/(z_i*z_j*Lhr_i*Lhr_j);}
-if(z_i>=mui&&z_j<muj)
+if(z_i>=0&&z_j<0)
 {res=dbnorm(hr_i,hl_j,0,0,1,corr)*hr_i*hl_j/(z_i*z_j*Lhr_i*Lhl_j);}
-if(z_i<mui&&z_j>=muj)
+if(z_i<0&&z_j>=0)
 {res=dbnorm(hl_i,hr_j,0,0,1,corr)*hl_i*hr_j/(z_i*z_j*Lhl_i*Lhr_j);}
-if(z_i<mui&&z_j<muj)
+if(z_i<0&&z_j<0)
 {res=dbnorm(hl_i,hl_j,0,0,1,corr)*hl_i*hl_j/(z_i*z_j*Lhl_i*Lhl_j);}
 }
 else
 {
-if(z_i>=mui)
+if(z_i>=0)
 {A=dnorm(hr_i,0,1,0)*hr_i/(z_i*Lhr_i);}
-if(z_i<mui)
+if(z_i<0)
 {A=dnorm(hl_i,0,1,0)*hl_i/(z_i*Lhl_i);}
-if(z_j>=muj)
+if(z_j>=0)
 {B=dnorm(hr_j,0,1,0)*hr_j/(z_j*Lhr_j);}
-if(z_j<muj)
+if(z_j<0)
 {B=dnorm(hl_j,0,1,0)*hl_j/(z_j*Lhl_j);}
 res=A*B;
 }
@@ -3793,16 +3597,6 @@ double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,doub
 }
 
 
-// compute the inverse lambert w transformation
-double inverse_lamb(double x,double tail)
-{
-  double sign,value;
-  value = sqrt(LambertW(tail*x*x)/tail);
-  if (x > 0) sign= 1;
-  if (x < 0) sign= -1;
-   return(sign*value);
-}
-
 
 // pdf bivariate tukey h random field 
 double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, double mean_j, double tail, double sill)
@@ -3817,9 +3611,10 @@ double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, doub
   x_j = inverse_lamb(est_mean_j,tail);
 
   est_mean_ij = 1/(est_mean_i*est_mean_j);
-    extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
-  dens = dbnorm(x_i,x_j,0,0,1,corr)*
-              x_i*x_j * est_mean_ij * extra/sill;
+  extra       = 1/( (1 + LambertW(tail*est_mean_i*est_mean_i))*(1 + LambertW(tail*est_mean_j*est_mean_j)));
+  dens = dbnorm(x_i,x_j,0,0,1,corr)*x_i*x_j * est_mean_ij * extra/sill;
+
+  
   if((x_i==0.0)&&(x_j!=0.0))  dens = dbnorm(x_i,x_j,0,0,1,corr)*x_j/(est_mean_j*(1 + LambertW(tail*est_mean_j*est_mean_j)));
   if((x_j==0.0)&&(x_i!=0.0))  dens = dbnorm(x_i,x_j,0,0,1,corr)*x_i/(est_mean_i*(1 + LambertW(tail*est_mean_i*est_mean_i)));
   if((x_j==0.0)&&(x_i==0.0))  dbnorm(x_i,x_j,0,0,1,corr);

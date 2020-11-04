@@ -24,6 +24,8 @@ if(!is.numeric(seed)) stop(" seed must be numeric")
 model=fit$model
 if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
 if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
+if(fit$model=="Gaussian_misp_SkewStudenT") fit$model="SkewStudentT"
+if(fit$model=="Gaussian_misp_PoissonZIP")  fit$model="PoissonZIP"
 dimat=fit$numtime*fit$numcoord;
 
 

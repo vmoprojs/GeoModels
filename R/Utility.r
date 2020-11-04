@@ -1477,7 +1477,6 @@ else   ######## case  with neighboord!!!
 { 
 if(!spacetime&&!bivariate)   #  spatial case
    {
-         # fx <- function(x,y) {return(x+y+x*y+x^2+y^2)}
           ######
           indices <- function(X,Y)
           {
@@ -1489,9 +1488,7 @@ if(!spacetime&&!bivariate)   #  spatial case
                 sol_d = cbind(Y[,1],Y[,i])
                 res_d = rbind(res_d,sol_d)
              }
-            xx=as.numeric(res[,1])
-            yy=as.numeric(res[,2])
-            #sol <- fx(as.numeric(res[,1]),as.numeric(res[,2])) 
+            xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
             sol=xx+yy+xx*yy+xx^2+yy^2
             ids <- !duplicated(sol)
             return(list(xy = res[ids,],d = res_d[ids,][,2]))
