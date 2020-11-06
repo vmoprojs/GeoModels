@@ -397,7 +397,7 @@ void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                           uu=(int) u;  ww=(int) w;
 
-                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup); 
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget); 
                        *res+= log(bl)*weights;
 
                                     }}}}
@@ -414,7 +414,7 @@ void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *
                             
                               uu=(int) u;  ww=(int) w;
 
-                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup); 
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget); 
                        *res+= log(bl)*weights;
                                    
                              }}}}}}}
@@ -1524,7 +1524,7 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
       if(nugget<0||nugget>=1){*res=LOW; return;}
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
-      for(v=t;v<ntime[0];v++){
+      for(v=t;v<ntime[0];v++){ 
       if(t==v){
          for(j=i+1;j<ns[t];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
@@ -1536,7 +1536,8 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                                    bl=1;//biv_binomnegZINB (NN[0],uu,ww,p1,p2,psj);
+                      
+                                     bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup);
                                    *res+=log(bl)*weights;
                                 }}}}
                  else {  
@@ -1552,7 +1553,7 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
-                                    bl=1;//biv_binomnegZINB (NN[0],uu,ww,p1,p2,psj);
+                               bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup);
                                    *res+=log(bl)*weights;
                                 }}}}
             }}}
@@ -2265,7 +2266,9 @@ void Comp_Pair_BinomnegGaussZINB2(int *cormod, double *coordx, double *coordy, d
                          if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                           uu=(int) u; 
                          vv=(int) v; 
-                        bl=1;//biv_binomnegZINB (NN[0],uu,vv,p1,p2,psj);
+                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget,mup);
+
+
                            
                     *res+= weights*log(bl);
                 }}}}
@@ -2508,7 +2511,7 @@ void Comp_Pair_PoisZIP2(int *cormod, double *coordx, double *coordy, double *coo
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       uu=(int) data[i];  ww=(int) data[j];
-                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
                       *res+= log(bl)*weights;
                     }}}}          
     // Checks the return values

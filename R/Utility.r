@@ -1496,12 +1496,15 @@ if(!spacetime&&!bivariate)   #  spatial case
      ##########################################
          nn2Geo <- function(x, K = 2,distance)
          {
+            #print("1")
             nearest = RANN::nn2(x,k = K)
             #nearest = FNN::get.knn(k, k=K)
             #########  cases geod (2) or chordal (1) distances
             if(distance==2||distance==1){
-                  agc=NULL;nnn=nrow(x)
-                  for(i in 1:nnn){
+                  agc=NULL;
+                  nnn=nrow(x)
+                  #agc=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
+                  for(i in 1:nnn){   ## can we improve that?
                   a=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
                   agc=rbind(agc,a)
                  }
@@ -1510,8 +1513,10 @@ if(!spacetime&&!bivariate)   #  spatial case
              nearest$nn.dists=cbind(rep(0,nnn),agc)
              }
             ########################################### 
+            #print("2")
             sol = indices(nearest$nn.idx,nearest$nn.dists)
             lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
+           # print("2")
          return(list (lags=lags, rowidx = rowidx, colidx = colidx))
          }
      ##########################################

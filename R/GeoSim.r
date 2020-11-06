@@ -309,7 +309,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
                "TwoPieceStudentT","TwoPieceGaussian")) 
      { nugget=param$nugget;param$nugget=0}  ### ojo!!
 
-
+print(param)
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel, 
                    distance=distance,grid=grid,model="Gaussian", n=n, 
                 param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)

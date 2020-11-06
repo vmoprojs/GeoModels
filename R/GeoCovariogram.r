@@ -250,6 +250,7 @@ else                                        nui['nugget']=nuisance['nugget']
               vv=as.numeric(nuisance['sill']);sk=nuisance['skew'];sk2=sk^2;corr2=correlation^2;  
               cc=(2*sk2)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + (correlation1*vv)/(vv+sk2*(1-2/pi))
               vs=(vv+sk2*(1-2/pi))
+          
               covariance=vs*cc;variogram=vs*(1-cc) }
                    }
 
@@ -367,6 +368,7 @@ else                                        nui['nugget']=nuisance['nugget']
                               sill=as.numeric(nuisance['sill'])
                               vs=  (1-2*h)^(-1.5)     ## variance
                               cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
+                              
                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   } 
@@ -386,6 +388,7 @@ else                                        nui['nugget']=nuisance['nugget']
                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
                               vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                               cc=(p1+p2+2*p3-mm^2)/vs
+                         
                           covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }   
@@ -469,7 +472,9 @@ else                                        nui['nugget']=nuisance['nugget']
                                      vv=(fitted$n)*(1-pp)*(1-pg)*(1+(fitted$n)*pg*(1-pp))/pp^2
                                                }
                            covariance=vv*correlation
-                           variogram=vv*(1-correlation)}
+
+                           variogram=vv*(1-correlation)
+                           }
                    }
      if(poisson) {
                     if(bivariate) {}
@@ -487,8 +492,9 @@ else                                        nui['nugget']=nuisance['nugget']
                     if(!bivariate) {   
                            p=pnorm(nuisance['pmu']);MM=exp(mu)
                            vv=(1-p)*MM*(1+p*MM)
+                           correlation=(1-nuisance['nugget'])*correlation  
                            p1=1-2*p+pbivnorm::pbivnorm(nuisance['pmu'],nuisance['pmu'], rho = correlation, recycle = TRUE)
-                           correlation=(1-nuisance['nugget'])*correlation   
+      
                            corr2=correlation^2    
                            z=2*vv/(1-corr2)
                            cc1=corr2*(1-(besselI(z,0,expon.scaled = TRUE)+besselI(z,1,expon.scaled = TRUE)))

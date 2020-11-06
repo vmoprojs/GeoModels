@@ -512,7 +512,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
-                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
                       *res+= log(bl)*weights;
                     }}        
     
@@ -1064,7 +1064,7 @@ void Comp_Pair_PoisZIP_st2mem(int *cormod, double *data1,double *data2,int *NN,
                      mui=exp(mean1[i]);
                      muj=exp(mean2[i]);
                           uu=(int) u;  ww=(int) w;
-                      bl=biv_PoissonZIP((1-nugget)*corr,uu,ww,mui, muj,mup);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;

@@ -96,8 +96,6 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
    #updating starting parameters
 
    #print(initparam$param)
-  
-
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
