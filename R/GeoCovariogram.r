@@ -469,7 +469,7 @@ else                                        nui['nugget']=nuisance['nugget']
                            if(binomialneg)      vv=(fitted$n)*(1-pp)/pp^2;
                            if(binomialnegZINB) { 
                                      pg=pnorm(nuisance['pmu'])
-                                     vv=(fitted$n)*(1-pp)*(1-pg)*(1+(fitted$n)*pg*(1-pp))/pp^2
+                                     vv=fitted$n*(1-pp)*(1-pg)*(1+fitted$n*pg*(1-pp)) /pp^2
                                                }
                            covariance=vv*correlation
 
@@ -687,9 +687,8 @@ else                                        nui['nugget']=nuisance['nugget']
             if(geom)          vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(binomialneg)   vvv= fitted$n*(1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
             if(binomialnegZINB) {
-                                  pp=pnorm(mm['mean']);pg=pnorm(nuisance['pmu'])
-                                  vvv=(fitted$n)*(1-pp)*(1-pg)*(1+(fitted$n)*pg*(1-pp))/pp^2
-
+                                  MM=pnorm(mm['mean']);pg=pnorm(nuisance['pmu'])
+                                  vvv=fitted$n*(1-MM)*(1-pg)*(1+fitted$n*pg*(1-MM)) /MM^2
                                 }
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)

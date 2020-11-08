@@ -2024,6 +2024,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
         corr=CorFct(cormod,dd,0,par,0,0);
 
    if(*model==14||*model==16||*model==2||*model==11||*model==45){
+    
      ai=mean[i];aj=mean[j];
      psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
      p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
@@ -2092,7 +2093,8 @@ void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *
       if(*model==16)                  rho[i]=cov_binom_neg(n[0],psj,p1,p2);  
       if(*model==45)       
          {
-           p=pnorm(nuis[1],0,1,1,0);  p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr); p11=1-2*p+p00;
+           p=pnorm(nuis[1],0,1,1,0);  
+           p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr); p11=1-2*p+p00;
            dd=cov_binom_neg(n[0],psj,p1,p2);
            rho[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
          }
@@ -3657,13 +3659,14 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
           if(*model==14)                        rho[t]= ((psj-p1*p2)/((-psj+p1+p2)*p1*p2))/(sqrt((1-p1)*(1-p2))/(p1*p2));  //covar12/sqrt(var1var2)
           if(*model==16)                        rho[t]=cov_binom_neg(N[0],psj,p1,p2)/(N[0]* sqrt((1-p1)*(1-p2))/(p1*p2));
           if(*model==45)       
-      {
+      {  
            p=pnorm(nuis[1],0,1,1,0);
            p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*ccc);
            p11=1-2*p+p00;
-
            dd=cov_binom_neg(N[0],psj,p1,p2);
-           rho[t]=(p11*dd +  (N[0]*N[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p)));
+           rho[t]=(p11*dd +  (N[0]*N[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p)))/
+           (sqrt(N[0]*(1-p1)*(1-p)*(1+N[0]*p*(1-p1))*pow(p1,-2))*
+            sqrt(N[0]*(1-p2)*(1-p)*(1+N[0]*p*(1-p2))*pow(p2,-2)));
       }
       }
       /***************************************/

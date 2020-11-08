@@ -643,9 +643,9 @@ if(type=="Standard")  {
                            diag(varcov)=vv }
 
   if(model %in% c(45))   {  
-                            pp=pnorm(mu);
-                            pg=pnorm(param$pmu)
-                            vv=n*(1-pp)*(1-pg)*(1+n*pg*(1-pp))/pp^2
+                            p=pnorm(param$pmu)
+                            MM=pnorm(mu)
+                            vv=m*(1-MM)*(1-p)*(1+m*p*(1-MM)) /MM^2
                             diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      
