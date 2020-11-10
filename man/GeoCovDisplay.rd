@@ -1,7 +1,10 @@
 \name{GeoCovDisplay}
 \alias{GeoCovDisplay}
 \encoding{UTF-8}
-\title{Image plot displaying the pattern of the sparsness  of a  covariance matrix}
+\title{Image plot displaying the pattern of the sparsness  of a  covariance matrix.}
+\description{
+  Image plot displaying the pattern of the sparsness  of a  covariance matrix.
+}
 \usage{
 GeoCovDisplay(covmatrix,limits=FALSE,pch=2)
 }

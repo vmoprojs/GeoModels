@@ -284,19 +284,7 @@ if(model==27)   ##  two piece student case case
           corr= KK*(a1*a2*a3-4*sk2);
           ttemp=gamma(0.5*(nu-1))/gamma(0.5*nu)
           vv=as.numeric(nuisance['sill'])*((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*ttemp^2)
-       #   corr=cr$corr*(1-nuisance['nugget'] )
-       #   nu=1/as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew']);sill=as.numeric(nuisance['sill'])
-       #   sk2=sk^2
-       #  corr2=corr^2;sk2=sk^2
-       #   a1=Re(hypergeo::hypergeo(0.5,0.5,nu/2,corr2))
-       #   a2=corr *asin(corr) + (1-corr2)^(0.5)
-       #   ll=qnorm((1-sk)/2)
-       #   p11=pbivnorm::pbivnorm(ll,ll, rho = corr, recycle = TRUE)
-       #  a3=3*sk2 + 2*sk + 4*p11 - 1
-       #   KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
-       #   corr= KK*(a1*a2*a3-4*sk2);
-       #   vv=sill* ((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
-}
+      }
 
 if(bivariate){}
 }
@@ -645,7 +633,7 @@ if(type=="Standard")  {
   if(model %in% c(45))   {  
                             p=pnorm(param$pmu)
                             MM=pnorm(mu)
-                            vv=m*(1-MM)*(1-p)*(1+m*p*(1-MM)) /MM^2
+                            vv=n*(1-MM)*(1-p)*(1+n*p*(1-MM)) /MM^2
                             diag(varcov)=vv }
 }
 if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}      

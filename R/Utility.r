@@ -768,9 +768,9 @@ CorrelationPar <- function(corrmodel)
      if(corrmodel %in% c(2,3,4,16)) {
       param <- c('scale')
       return(param)}
-        if(corrmodel %in% c(45)) {
-      param <- c('scale','pmu')
-      return(param)}
+    #if(corrmodel %in% c(45)) {
+    #  param <- c('scale','pmu')
+    #  return(param)}
         if(corrmodel %in% c(10)) {
       param <- c('scale_1','scale_2','smooth')
       return(param)}
@@ -955,6 +955,7 @@ if(!bivariate)      {
  if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB')))
   {
     param <- c(mm, 'nugget','pmu','sill')
+    #param <- c(mm, 'nugget1','nugget2','pmu','sill')
     return(param)
   }
 
@@ -1217,9 +1218,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             if(model==15) mu <- -1
             if(model==17||model==30) mu <- 1
             nuisance <- c(mu, 0, 1)
-            if(model==45) {nuisance <- c(mu, 0, 0,1)}
+            if(model==45) nuisance <- c(mu, 0, 0,1)
+            #if(model==45) nuisance <- c(mu, 0, 0,0,1)
         }
         if(model %in% c(43,44)) nuisance <- c(0, 0, 0, 1)
+        #if(model %in% c(43,44)) nuisance <- c(0, 0, 0,0, 1)
       }
  #if(num_betas>1)
  if((!bivariate&&num_betas>1)||(bivariate&&num_betas[1]>1&&num_betas[2]>1) )
@@ -1274,7 +1277,9 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
          }
      if(model %in% c(2,11,14,15,16,19,17,30)) nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
      if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 1)
+     #if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 0,1)
      if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,1)
+     #if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,0,1)
 
      }
         # Update the parameter vector      

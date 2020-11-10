@@ -472,7 +472,6 @@ else                                        nui['nugget']=nuisance['nugget']
                                      vv=fitted$n*(1-pp)*(1-pg)*(1+fitted$n*pg*(1-pp)) /pp^2
                                                }
                            covariance=vv*correlation
-
                            variogram=vv*(1-correlation)
                            }
                    }

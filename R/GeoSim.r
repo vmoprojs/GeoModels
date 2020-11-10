@@ -1,3 +1,7 @@
+
+
+
+
 ####################################################
 ### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
 ### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
@@ -72,7 +76,7 @@ forGaussparam<-function(model,param,bivariate)
      if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    } 
-      if(model %in% c("PoissonZIP","BinomialNegZINB"))  {
+    if(model %in% c("PoissonZIP","BinomialNegZINB"))  {
      if(!bivariate) param[which(names(param) %in% c("pmu"))] <- NULL
     # if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    }   
@@ -268,8 +272,8 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB")){ k=99999;
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                } 
-    if(model %in% c("Poisson")) {k=2;npoi=999999999}
-    if(model %in% c("PoissonZIP")) {k=3;npoi=999999999}
+    if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
+    #if(model %in% c("PoissonZIP")) {k=3;npoi=999999999}
     if(model %in% c("Gamma"))  {
                              if(!bivariate) k=round(param$shape)
                              if(bivariate)  k=max(param$shape_1,param$shape_2)
@@ -313,6 +317,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel, 
                    distance=distance,grid=grid,model="Gaussian", n=n, 
                 param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)
+
 ## a realization  with nugget
 if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
                "TwoPieceStudentT","TwoPieceGaussian"))
@@ -354,11 +359,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
       ccov1=ccov
       ccov1$covmatrix=ccov_with_nug
-       #simDD<-RFfct1(ccov1,dime,param[ccov$namesnuis],param,simD,ccov$X,ns)
-             if(!spacetime&&!bivariate) simDD <- c(simD)
-            else simDD <- matrix(simD, nrow=ccov1$numtime, ncol=ccov1$numcoord,byrow=TRUE)
+      if(!spacetime&&!bivariate) simDD <- c(simD)
+      else simDD <- matrix(simD, nrow=ccov1$numtime, ncol=ccov1$numcoord,byrow=TRUE)
 }
-
 
   while(KK<=npoi) { 
   for(i in 1:k) {  
@@ -437,8 +440,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
    if(model %in% c("poisson","Poisson"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
-      sim=colSums(sel);  
-      a=dd[,,3]  
+     
+      ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
+      a=crossprod(sqrtvarcov,ss) 
       a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
       sim=a*colSums(sel);
       byrow=TRUE
@@ -458,6 +462,8 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
   if(model %in% c("BinomialNegZINB"))   {
            sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
+
+          ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
           a=crossprod(sqrtvarcov,ss) 
           a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
           sim=a*sim
