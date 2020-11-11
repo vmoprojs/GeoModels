@@ -457,7 +457,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
    if(model %in% c("BinomialNeg"))   {
           sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
-          byrow=FALSE
+          byrow=TRUE
           }
   if(model %in% c("BinomialNegZINB"))   {
            sim=NULL
@@ -467,7 +467,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
           a=crossprod(sqrtvarcov,ss) 
           a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
           sim=a*sim
-          byrow=FALSE
+          byrow=TRUE
           }
 ############################################# 
 ############### formatting data #############
