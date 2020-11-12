@@ -29,7 +29,6 @@
 #include <stdbool.h>
 
 
-
 //************************************** ST igam.c*****************************************
 
 #ifdef MAXITER
@@ -412,8 +411,8 @@ double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
-double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget);
-double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget,double mup);
+double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2);
+double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget1,double nugget2,double mup);
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -453,7 +452,7 @@ double biv_skew2(double corr,double zi,double zj,double vari1,double vari2,doubl
          double skew1,double skew2);
 
 double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
-                             double mean_i, double mean_j,double mup,double nugget);
+                             double mean_i, double mean_j,double mup,double nugget1,double nugget2);
 double triv_skew(double x,double c_0i,double c_0j, double rho,double data_i,double data_j,double *nuis);
 
 
@@ -715,91 +714,7 @@ double Trace(double **A,int n);
 void lubksb(double **a, int n, int *indx, double *b);
 void ludcmp(double **a, int n, int *indx, double *dd);
 
-/*----------------------------------------------------------------
-File name: CorrelationFunction.c
-Description: procedures for computation of correlation functions
-End
- ---------------------------------------------------------------*/
 
-// 2)
-/*----------------------------------------------------------------
-File name: CompositeLikelihood.c
-Description: functions for composite log-likelihood evaluation
-Start
- ---------------------------------------------------------------*/
-void Comp_Pair_Pois(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local);
-void Comp_Pair_Pois_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns,int *NS,int *GPU,int *local);
-void Comp_Pair_Kumaraswamy2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_Kumaraswamy_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_Weibull_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_SinhGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_2Gamma2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Gamma2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Gamma_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_Gauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_BinGauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_BinGauss_st2( int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par,int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Diff_Gauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Diff_Gauss_st2(int *cormod,double *coordx, double *coordy, double *coordt,  double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Diff_BinGauss2( int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN,  double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Diff_BinGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Diff_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Gauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_WrapGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int  *ns,int *NS,int *GPU, int *local);
-void Comp_Pair_WrapGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Gauss_biv2(int *cormod,  double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_WrapGauss_biv2(int *cormod,  double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Cond_Gauss_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_TapGauss(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par,  int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinomGauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Binom2Gauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinomnegGauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_GeomGauss2(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_PoisbinGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_PoisbinnegGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_PoisbinGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_PoisbinnegGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_Binom2Gauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinGauss_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinomGauss_biv2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinomGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_BinomnegGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_GeomGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed,double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_SkewGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_SkewGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_T2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_TWOPIECET2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_TWOPIECET_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
-                        int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_TWOPIECEGauss2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                         int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_TWOPIECEGauss_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,
-                        int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_T_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                        int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns,int *NS, int *GPU,int *local);
-void Comp_Pair_LogLogistic_st2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                               int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *GPU, int *local);
-void Comp_Pair_LogLogistic2(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                            int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *GPU, int *local);
-
-
-/*----------------------------------------------------------------
-File name: CompositeLikelihood.c
-Description: functions for composite log-likelihood evaluation
-End
- ---------------------------------------------------------------*/
-
-
-
-// 2.1)
 /*----------------------------------------------------------------
  File name: CompositeLikelihood_OCL.c
  Description: functions for composite log-likelihood evaluation in OpenCL
@@ -1267,7 +1182,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

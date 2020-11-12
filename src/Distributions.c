@@ -3906,29 +3906,29 @@ return(dens);
 }
 
 
-double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget)
+double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2)
 {
 double dens,p,p00,p10,p01,p11;
 p=pnorm(mup,0,1,1,0);
-p00=pbnorm22(mup,mup,(1-nugget)*corr);
+p00=pbnorm22(mup,mup,(1-nugget2)*corr);
 p01=p-p00;
 p10=p01;
 p11=1-2*p+p00;
 
 if(r==0&&t==0)
-     dens=p00  + p01*exp(-mean_i) + p10*exp(-mean_j)+p11*biv_Poisson((1-nugget)*corr,0, 0, mean_i, mean_j);
+     dens=p00  + p01*exp(-mean_i) + p10*exp(-mean_j)+p11*biv_Poisson((1-nugget1)*corr,0, 0, mean_i, mean_j);
 if(r==0&&t>0)
-      dens=      p01*  exp(-mean_i+t*log(mean_i)-lgammafn(t+1))  + p11*biv_Poisson((1-nugget)*corr,0, t, mean_i, mean_j);
+      dens=      p01*  exp(-mean_i+t*log(mean_i)-lgammafn(t+1))  + p11*biv_Poisson((1-nugget1)*corr,0, t, mean_i, mean_j);
 if(r>0&&t==0)
-      dens=      p10*  exp(-mean_j+r*log(mean_j)-lgammafn(r+1))  + p11*biv_Poisson((1-nugget)*corr,r, 0, mean_i, mean_j);
+      dens=      p10*  exp(-mean_j+r*log(mean_j)-lgammafn(r+1))  + p11*biv_Poisson((1-nugget1)*corr,r, 0, mean_i, mean_j);
 if(r>0&&t>0)
-      dens=      p11*biv_Poisson((1-nugget)*corr,r, t, mean_i, mean_j);
+      dens=      p11*biv_Poisson((1-nugget1)*corr,r, t, mean_i, mean_j);
 return(dens);
 
 }
 
 double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
-                             double mean_i, double mean_j,double mup,double nugget)
+                             double mean_i, double mean_j,double mup,double nugget1,double nugget2)
 {
 int N=2,i=0;
 double **M;M= (double **) Calloc(N,double *);
@@ -3938,9 +3938,9 @@ double *dat;dat=(double *) Calloc(N,double);
 double dens,p,p00,p10,p01,p11,pdf2,corr1,pdf1i,pdf1j;
 
 p=pnorm(mup,0,1,1,0);
-p00=pbnorm22(mup,mup,(1-nugget)*corr);p01=p-p00;p10=p01;p11=1-2*p+p00;
+p00=pbnorm22(mup,mup,(1-nugget2)*corr);p01=p-p00;p10=p01;p11=1-2*p+p00;
 
-corr1=corr_pois((1-nugget)*corr,mean_i,mean_j);
+corr1=corr_pois((1-nugget1)*corr,mean_i,mean_j);
 M[0][0]=mean_i; M[1][1]=mean_j;M[0][1]=sqrt(mean_i*mean_j)*corr1;M[1][0]= M[0][1];
                         dat[0]=data_i-mean_i;dat[1]=data_j-mean_j;
                      
@@ -3958,17 +3958,18 @@ Free(dat);
 return(dens);
 }
 /*****/
-double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget,double mup)
+double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,
+    double nugget1,double nugget2,double mup)
 {
 double dens,ap,ap00,ap10,ap01,ap11;
 ap=pnorm(mup,0,1,1,0);
 
-ap00=pbnorm22(mup,mup,(1-nugget)*corr);
+ap00=pbnorm22(mup,mup,(1-nugget2)*corr);
 ap01=ap-ap00;
 ap10=ap01;
 ap11=1-2*ap+ap00;
 
-double p11=pbnorm22(mean_i,mean_j,(1-nugget)*corr);
+double p11=pbnorm22(mean_i,mean_j,(1-nugget1)*corr);
 double p1=pnorm(mean_i,0,1,1,0);
 double p2=pnorm(mean_j,0,1,1,0);
 

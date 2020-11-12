@@ -40,6 +40,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
        #             as.integer(local),as.integer(GPU),
        #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res  
    
+
         result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,

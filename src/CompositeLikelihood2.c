@@ -379,10 +379,11 @@ void Comp_Pair_BinomnegGaussZINB2mem(int *cormod, double *data1,double *data2,in
 {
     int i=0,  uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0;
-    double nugget=nuis[0];
-       if( nugget>=1 || nugget<0){*res=LOW; return;}
-    //compute the composite log-likelihood:
-    double mup=nuis[1];
+    double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+
+      
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                   ai=mean1[i];aj=mean2[i];
@@ -391,7 +392,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; 
                          vv=(int) v; 
-                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget,mup);  
+                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget1,nugget2,mup);  
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
@@ -500,10 +501,11 @@ void Comp_Pair_PoisZIP2mem(int *cormod, double *data1,double *data2,int *NN,
 {
     int i=0, uu,ww;
     double weights=1.0,corr,mui,muj,bl;
-    double nugget=nuis[0];
-    double mup=nuis[1];
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
 
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+      
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
   // Rprintf("%d   \n",npairs[0]);
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -512,7 +514,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
-                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2);
                       *res+= log(bl)*weights;
                     }}        
     
@@ -562,17 +564,18 @@ void Comp_Pair_Gauss_misp_PoisZIP2mem(int *cormod, double *data1,double *data2,i
 {
     int i=0;
     double weights=1.0,corr,mui,muj,bl;
-    double nugget=nuis[0];
-    double mup=nuis[1];
+    double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
 
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
+
   // Rprintf("%d   \n",npairs[0]);
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
                      corr=CorFct(cormod,lags[i],0,par,0,0);
                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                      bl=biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget);
+                      bl=biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget1,nugget2);
                   //    Rprintf("%f %f\n",bl,mup);
                       *res+= log(bl)*weights;
                     }}        
@@ -1052,10 +1055,13 @@ void Comp_Pair_PoisZIP_st2mem(int *cormod, double *data1,double *data2,int *NN,
 {
     int i=0,uu,ww;
      double weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
-    double nugget=nuis[0];
-    double mup=nuis[1];
 
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+
+       double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+
+      
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     // Computes the log-likelihood:
   for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -1064,7 +1070,7 @@ void Comp_Pair_PoisZIP_st2mem(int *cormod, double *data1,double *data2,int *NN,
                      mui=exp(mean1[i]);
                      muj=exp(mean2[i]);
                           uu=(int) u;  ww=(int) w;
-                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
@@ -1113,10 +1119,11 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2mem(int *cormod, double *data1,double *data
 {
     int i=0;
      double weights=1.0,corr,mui,muj,bl;
-    double nugget=nuis[0];
-    double mup=nuis[1];
+     double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
 
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+      
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     // Computes the log-likelihood:
   for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -1124,7 +1131,7 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2mem(int *cormod, double *data1,double *data
                      mui=exp(mean1[i]);
                      muj=exp(mean2[i]);
                          
-               bl=biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget);
+               bl=biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget1,nugget2);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
@@ -1366,7 +1373,10 @@ void Comp_Pair_BinomGauss_st2mem(int *cormod, double *data1,double *data2,int *N
            for(i=0;i<npairs[0];i++){
                    u=data1[i];w=data2[i];
              if(!ISNAN(u)&&!ISNAN(w) ){
+
+   
                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                                  
                             a=mean1[i];b=mean2[i];
                             psj=pbnorm22(a,b,(1-nugget)*corr);
                             p1=pnorm(a,0,1,1,0);
@@ -1395,7 +1405,7 @@ void Comp_Pair_BinomnegGauss_st2mem(int *cormod, double *data1,double *data2,int
                    u=data1[i];w=data2[i];
              if(!ISNAN(u)&&!ISNAN(w) ){
                             
-                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                             a=mean1[i];b=mean2[i];
                             psj=pbnorm22(a,b,(1-nugget)*corr);
                             p1=pnorm(a,0,1,1,0);
@@ -1416,9 +1426,9 @@ void Comp_Pair_BinomnegGaussZINB_st2mem(int *cormod, double *data1,double *data2
     int i=0, uu=0,ww=0;
     double bl=0.0,weights=1.0,u=0.0,w=0.0,a=0.0,b=0.0,corr=0.0;
     
-      double nugget=nuis[0];double mup=nuis[1];
-      if(nugget<0||nugget>=1){*res=LOW; return;}
-
+     double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
            for(i=0;i<npairs[0];i++){
                    u=data1[i];w=data2[i];
              if(!ISNAN(u)&&!ISNAN(w) ){
@@ -1426,7 +1436,7 @@ void Comp_Pair_BinomnegGaussZINB_st2mem(int *cormod, double *data1,double *data2
                             a=mean1[i];b=mean2[i];
                           uu=(int) u;  ww=(int) w;
                           if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                              bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup); 
+                              bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget1,nugget2,mup); 
 
                                  *res+=log(bl)*weights;
                 }}

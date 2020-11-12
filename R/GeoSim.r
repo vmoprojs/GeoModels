@@ -77,7 +77,7 @@ forGaussparam<-function(model,param,bivariate)
      if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    } 
     if(model %in% c("PoissonZIP","BinomialNegZINB"))  {
-     if(!bivariate) param[which(names(param) %in% c("pmu"))] <- NULL
+     if(!bivariate) param[which(names(param) %in% c("pmu","nugget1","nugget2"))] <- NULL
     # if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
    }   
  
@@ -133,6 +133,8 @@ forGaussparam<-function(model,param,bivariate)
 ####################################################################
 ############# END internal functions ###############################
 ####################################################################
+
+    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
@@ -168,11 +170,10 @@ forGaussparam<-function(model,param,bivariate)
 
     k=1
 #################################
-    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',
-                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP",
+    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',"Binomial",
+                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","BinomialNegZINB","BinomialNeg",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
-                    "Gamma","Weibull",
-                    "LogLogistic","Logistic")) 
+                    "Gamma","Weibull","LogLogistic","Logistic")) 
        {
         if(spacetime_dyn){
                        env <- new.env()
@@ -273,7 +274,8 @@ forGaussparam<-function(model,param,bivariate)
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                } 
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-    #if(model %in% c("PoissonZIP")) {k=3;npoi=999999999}
+
+    if(model %in% c("PoissonZIP","BinomialNegZINB")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {
                              if(!bivariate) k=round(param$shape)
                              if(bivariate)  k=max(param$shape_1,param$shape_2)
@@ -318,11 +320,22 @@ ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coor
                    distance=distance,grid=grid,model="Gaussian", n=n, 
                 param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)
 
-## a realization  with nugget
+
+
+ if(model%in% c("PoissonZIP","BinomialNegZINB"))
+  { 
+    II=diag(nrow(ccov$covmatrix)); 
+  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1) 
+  II <- t(II); 
+  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1) 
+  ccov_with_nug=(ccov$covmatrix)*(II)
+
+   }
+
+## putting nugget
 if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh", 
                "TwoPieceStudentT","TwoPieceGaussian"))
 { 
-
   II=diag(nrow(ccov$covmatrix)); 
   II[lower.tri(II)] <- (1-nugget); 
   II <- t(II); 
@@ -365,6 +378,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
   while(KK<=npoi) { 
   for(i in 1:k) {  
+
 
     ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
    #### simulating with cholesky decomposition using GPU
@@ -416,7 +430,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
      }
      ####################################     
     if(model %in% c("BinomialNeg","BinomialNegZINB")){ 
-                 cumu=rbind(cumu,c(sim));
+                 cumu=rbind(cumu,c(t(sim)));
                  if(sum(colSums(cumu)>=n)==dime) {break;}### ## stopping rule
                }
 
@@ -440,9 +454,14 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
    if(model %in% c("poisson","Poisson"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
-     
+
+     ####
+      decompvarcov1 <- MatDecomp(ccov_with_nug,method)
+      if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
+      sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
       ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-      a=crossprod(sqrtvarcov,ss) 
+      a=crossprod(sqrtvarcov1,ss) 
+     ###    
       a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
       sim=a*colSums(sel);
       byrow=TRUE
@@ -462,9 +481,13 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
   if(model %in% c("BinomialNegZINB"))   {
            sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
-
-          ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-          a=crossprod(sqrtvarcov,ss) 
+    ####
+      decompvarcov1 <- MatDecomp(ccov_with_nug,method)
+      if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
+      sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
+      ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
+      a=crossprod(sqrtvarcov1,ss) 
+     ###   
           a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
           sim=a*sim
           byrow=TRUE

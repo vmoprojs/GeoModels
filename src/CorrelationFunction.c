@@ -805,6 +805,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
           R_power_t=par[1];
           scale_s=par[2];
           scale_t=par[3];
+
           rho=CorFunW0(h,scale_s,R_power_s)*CorFunW0(u,scale_t,R_power_t);
         break;
         case 70:
@@ -2034,8 +2035,8 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
       if(*model==45)       
       {
            
-           p=pnorm(nuis[1],0,1,1,0); 
-           p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr); 
+           p=pnorm(nuis[2],0,1,1,0); 
+           p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr); 
            p11=1-2*p+p00;
            dd=cov_binom_neg(nn[0],psj,p1,p2);
            rho[h]=p11*dd +  (pow(nn[0],2)*(1-p1)*(1-p2)/(p1*p2)) *(p11-pow((1-p),2));
@@ -2093,8 +2094,8 @@ void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *
       if(*model==16)                  rho[i]=cov_binom_neg(n[0],psj,p1,p2);  
       if(*model==45)       
          {
-           p=pnorm(nuis[1],0,1,1,0);  
-           p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr); p11=1-2*p+p00;
+           p=pnorm(nuis[2],0,1,1,0);  
+           p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr); p11=1-2*p+p00;
            dd=cov_binom_neg(n[0],psj,p1,p2);
            rho[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
          }
@@ -2162,7 +2163,8 @@ void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, doubl
       if(*model==16)                  rho[i]=cov_binom_neg(n[0],psj,p1,p2);  
       if(*model==45)       
          {
-           p=pnorm(nuis[1],0,1,1,0); p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr);p11=1-2*p+p00;
+           p=pnorm(nuis[2],0,1,1,0); 
+           p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);p11=1-2*p+p00;
            dd=cov_binom_neg(n[0],psj,p1,p2);
            rho[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
          }
@@ -2251,7 +2253,8 @@ for(t=0;t<ntime[0];t++){
       if(*model==16)                  rho[h]=cov_binom_neg(n[0],psj,p1,p2);         //binomialnegative     
       if(*model==45)       
       {
-           p=pnorm(nuis[1],0,1,1,0); p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr); p11=1-2*p+p00;
+           p=pnorm(nuis[2],0,1,1,0); 
+           p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr); p11=1-2*p+p00;
            dd=cov_binom_neg(n[0],psj,p1,p2);
            rho[h]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
       }
@@ -2289,8 +2292,8 @@ if(*model==30||*model==36) {       //poisson
              if(*model==14)                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);    //goemettric   
              if(*model==16)                  rho[h]=cov_binom_neg(n[0],psj,p1,p2); ;      // negative binomial
              if(*model==45)  {     
-                      p=pnorm(nuis[1],0,1,1,0);
-                      p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr);
+                      p=pnorm(nuis[2],0,1,1,0);
+                      p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
                       p11=1-2*p+p00;
                       dd=cov_binom_neg(n[0],psj,p1,p2);
                       rho[h]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
@@ -2481,7 +2484,8 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)            cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)   {
-                             p=pnorm(nuis[1],0,1,1,0);p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr);p11=1-2*p+p00;
+                             p=pnorm(nuis[2],0,1,1,0);
+                             p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);p11=1-2*p+p00;
                              dd=cov_binom_neg(n[0],psj,p1,p2);
                              cc[h]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
                                     }
@@ -2531,8 +2535,8 @@ if(*spt) {
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)          cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)       {
-                                p=pnorm(nuis[1],0,1,1,0);
-                                p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*corr);
+                                p=pnorm(nuis[2],0,1,1,0);
+                                p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
                                 p11=1-2*p+p00;
                                 dd=cov_binom_neg(n[0],psj,p1,p2);
                                 cc[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
@@ -3660,8 +3664,8 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
           if(*model==16)                        rho[t]=cov_binom_neg(N[0],psj,p1,p2)/(N[0]* sqrt((1-p1)*(1-p2))/(p1*p2));
           if(*model==45)       
       {  
-           p=pnorm(nuis[1],0,1,1,0);
-           p00=pbnorm22(nuis[1],nuis[1],(1-nuis[0])*ccc);
+           p=pnorm(nuis[2],0,1,1,0);
+           p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*ccc);
            p11=1-2*p+p00;
            dd=cov_binom_neg(N[0],psj,p1,p2);
            rho[t]=(p11*dd +  (N[0]*N[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p)))/

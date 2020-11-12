@@ -284,9 +284,11 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2(int *cormod, double *coordx, double *coord
 {
     int i=0, j=0,  t=0, v=0;
      double lags=0.0, lagt=0.0,weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
-   double nugget=nuis[0];
-  double mup=nuis[1];
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+
+        double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
@@ -301,7 +303,7 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2(int *cormod, double *coordx, double *coord
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                                    
                                        if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget);
+                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget1,nugget2);
                               *res+= log(bl)*weights;  
                                     }}}}
                else {
@@ -315,7 +317,7 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2(int *cormod, double *coordx, double *coord
               corr=CorFct(cormod,lags,lagt,par,0,0);
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);                              
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
-                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget);
+                             bl=biv_Mis_PoissonZIP(corr,u,w,mui, muj,mup,nugget1,nugget2);
                               *res+= log(bl)*weights;  
                                    
                              }}}}}}}
@@ -379,9 +381,9 @@ void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *
 {
     int i=0, j=0,  t=0, v=0,uu,ww;
      double lags=0.0, lagt=0.0,weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
-    double nugget=nuis[0];
-   double mup=nuis[1];
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+      double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+   if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     // Computes the log-likelihood:
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
@@ -397,7 +399,7 @@ void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *
                             mui=exp(mean[(i+NS[t])]);muj=exp(mean[(j+NS[v])]);
                           uu=(int) u;  ww=(int) w;
 
-                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget); 
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2); 
                        *res+= log(bl)*weights;
 
                                     }}}}
@@ -414,7 +416,7 @@ void Comp_Pair_PoisZIP_st2(int *cormod, double *coordx, double *coordy, double *
                             
                               uu=(int) u;  ww=(int) w;
 
-                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget); 
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2); 
                        *res+= log(bl)*weights;
                                    
                              }}}}}}}
@@ -1518,10 +1520,11 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
 {
     int i=0, j=0, t=0,v=0,uu=0,ww=0;
     double bl=0.0,lags=0.0,lagt=0.0,weights=1.0,u=0.0,w=0.0,a=0.0,b=0.0,corr=0.0;
-     double nugget=nuis[0];
-     double mup=nuis[1];
+       double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
 
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+      
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
       for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){ 
@@ -1537,7 +1540,7 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       
-                                     bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup);
+                                     bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget1,nugget2,mup);
                                    *res+=log(bl)*weights;
                                 }}}}
                  else {  
@@ -1553,7 +1556,7 @@ void Comp_Pair_BinomnegGaussZINB_st2(int *cormod, double *coordx, double *coordy
                                 if(!ISNAN(u)&&!ISNAN(w) ){
                                      uu=(int) u; ww=(int) w;
                                     if(*weigthed) weights=CorFunBohman(lags,maxdist[0])*CorFunBohman(lagt,maxtime[0]);
-                               bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget,mup);
+                               bl=biv_binomnegZINB(NN[0],corr,uu,ww,a,b,nugget1,nugget2,mup);
                                    *res+=log(bl)*weights;
                                 }}}}
             }}}
@@ -2250,9 +2253,9 @@ void Comp_Pair_BinomnegGaussZINB2(int *cormod, double *coordx, double *coordy, d
 {
     int i=0, j=0, uu=0,vv=0;
     double u,v,bl=0.0,lags=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0;
-       double nugget=nuis[0];
-       if(nugget >=1 || nugget<0){*res=LOW; return;}
-     double mup=nuis[1];
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     //compute the composite log-likelihood:
 
     for(i=0; i<(ncoord[0]-1);i++){
@@ -2266,9 +2269,7 @@ void Comp_Pair_BinomnegGaussZINB2(int *cormod, double *coordx, double *coordy, d
                          if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                           uu=(int) u; 
                          vv=(int) v; 
-                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget,mup);
-
-
+                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget1,nugget2,mup);
                            
                     *res+= weights*log(bl);
                 }}}}
@@ -2494,9 +2495,9 @@ void Comp_Pair_PoisZIP2(int *cormod, double *coordx, double *coordy, double *coo
     // Checks the validity of the nuisance and correlation parameters (nugget, sill and corr):
    //if(nuis[1]<0 || nuis[2]<0 || nuis[0]<2 ){*res=LOW; return;}
    //if( CheckCor(cormod,par)==-2){*res=LOW; return;} 
-    double nugget=nuis[0];
-        double mup=nuis[1];
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
     for(i=0;i<(ncoord[0]-1);i++){
         for(j=(i+1); j<ncoord[0];j++){
 
@@ -2511,7 +2512,7 @@ void Comp_Pair_PoisZIP2(int *cormod, double *coordx, double *coordy, double *coo
 
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       uu=(int) data[i];  ww=(int) data[j];
-                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget);
+                      bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2);
                       *res+= log(bl)*weights;
                     }}}}          
     // Checks the return values
@@ -2564,9 +2565,9 @@ void Comp_Pair_Gauss_misp_PoisZIP2(int *cormod, double *coordx, double *coordy, 
 {
     int i=0, j=0;
     double lags=0.0, weights=1.0,corr,mui,muj,bl;
-    double nugget=nuis[0];
-    double mup=nuis[1];
-      if(nugget<0||nugget>=1){*res=LOW; return;}
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
 
 
     for(i=0;i<(ncoord[0]-1);i++){
@@ -2579,7 +2580,7 @@ void Comp_Pair_Gauss_misp_PoisZIP2(int *cormod, double *coordx, double *coordy, 
                     corr=CorFct(cormod,lags,0,par,0,0);
                       if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                       
-                       bl=biv_Mis_PoissonZIP(corr,data[i],data[j],mui, muj,mup,nugget);
+                       bl=biv_Mis_PoissonZIP(corr,data[i],data[j],mui, muj,mup,nugget1,nugget2);
                       *res+= log(bl)*weights;
                     }}}}   
          
