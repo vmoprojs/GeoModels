@@ -57,6 +57,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
               stop("At least one temporal instants is needed for space-time kriging ")
 ###################################### 
 ###################################### 
+
     #### number of points to predict
      if(is.null(time)) time=0
     numloc = nrow(loc); tloc = length(time);
@@ -95,12 +96,12 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
      
-     
+ 
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, 
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n, 
           param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,X=X) 
     ###########
-
+ 
     bivariate = covmatrix$bivariate;   
     if(bivariate) tloc=1
     spacetime = covmatrix$spacetime; 
@@ -123,6 +124,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     else { X=covmatrix$X }
     ###############
     ###############
+
     num_betas=ncol(X)
     NS=0
     if(spacetime||bivariate)
@@ -133,9 +135,11 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(spacetime_dyn) Xloc=as.matrix(Xloc)
     } 
     nuisance = param[covmatrix$namesnuis]
+
     sel=substr(names(nuisance),1,4)=="mean"
+
     betas=as.numeric(nuisance[sel])   ## mean paramteres
-  
+
     if(bivariate) {
                  sel1=substr(names(nuisance),1,6)=="mean_1"
                  betas1=as.numeric(nuisance[sel1])   ## mean1 paramteres
@@ -143,6 +147,8 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
                  betas2=as.numeric(nuisance[sel2])   ## mean1 paramteres
                }
     other_nuis=as.numeric(nuisance[!sel]) 
+
+
     ################################################
     ################################################
     if(type %in% c("Tapering","tapering")) {
@@ -664,7 +670,6 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45))
 
 
       
-
 
 #     ccorr=dotCall64::.C64('Corr_c_bin',
  #   SIGNATURE = c("double","double","double","double", "integer","integer",  #6

@@ -104,6 +104,12 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
             if(namesparam[i]=='nugget'){
                 lower <- c(lower, low)
                 upper <- c(upper, big)}
+             if(namesparam[i]=='nugget1'){
+                lower <- c(lower, low)
+                upper <- c(upper, big)}
+          if(namesparam[i]=='nugget2'){
+                lower <- c(lower, low)
+                upper <- c(upper, big)}
             if(namesparam[i]=='power'){
                 lower <- c(lower, low)
                 upper <- c(upper, 2)}

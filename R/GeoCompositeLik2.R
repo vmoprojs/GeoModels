@@ -274,6 +274,20 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                            typerunif = "sobol"#,nbclusters=4,
                      )
   }
+
+ if(optimizer=='multiNelder-Mead'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik2,
+        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X, local=local,GPU=GPU,lower=lower,upper=upper,
+          method = "Nelder-Mead", nbtrials = 500, 
+                              control=list( reltol=1e-14, maxit=100000),
+                           typerunif = "sobol"#,nbclusters=4,
+                     )
+      print(CompLikelihood)
+  }
+
+
     if(optimizer=='nmk')
       CompLikelihood <-dfoptim::nmk(par=param, fn=comploglik2, control = list(maxfeval=100000,tol=1e-10),
                           colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,data1=data1,data2=data2,fixed=fixed, fan=fname,
@@ -389,9 +403,18 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                weigthed=weigthed,X=X,local=local,GPU=GPU,
                                     lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
                               control = list( iter.max=100000),
-                           typerunif = "sobol"#,nbclusters=2,
-                     )
+                           typerunif = "sobol")
                                }
+     if(optimizer=='multiNelder-Mead'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv2,
+        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X, local=local,GPU=GPU,lower=lower,upper=upper,
+          method = "Nelder-Mead", nbtrials = 500, 
+                              control=list( reltol=1e-14, maxit=100000),
+                           typerunif = "sobol"#,nbclusters=4,
+                     )
+  }
 
    }
  }  
@@ -399,7 +422,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
-      if(optimizer=='Nelder-Mead'){
+      if(optimizer=='Nelder-Mead'||optimizer=='multiNelder-Mead'){
         CompLikelihood$value = -CompLikelihood$value
         names(CompLikelihood$par)<- namesparam
         if(CompLikelihood$convergence == 0)

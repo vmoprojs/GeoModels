@@ -309,6 +309,17 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                            typerunif = "sobol"#,nbclusters=2,
                      )
                                }
+     if(optimizer=='multiNelder-Mead'){
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
+         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,lower=lower,upper=upper,
+          method = "Nelder-Mead", nbtrials = 500, 
+                              control=list( reltol=1e-14, maxit=100000),
+                           typerunif = "sobol"#,nbclusters=4,
+                     )
+  }
+
     if(optimizer=='ucminf')   
       CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik, hessian=as.numeric(hessian),   
                         control=list( maxeval=100000),
@@ -402,14 +413,21 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,
                                     lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
                               control = list( iter.max=100000),
-                           typerunif = "sobol"#,nbclusters=2,
-                     )
+                           typerunif = "sobol")
+          if(optimizer=='multiNelder-Mead')
+       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
+         coordx=coordx, coordy=coordy, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,
+                                    lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol")
     
    }}                    
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
-      if(optimizer=='Nelder-Mead'){
+      if(optimizer=='Nelder-Mead'||optimizer=='multiNelder-Mead'){
         CompLikelihood$value = -CompLikelihood$value
         names(CompLikelihood$par)<- namesparam
         if(CompLikelihood$convergence == 0)

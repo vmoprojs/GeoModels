@@ -821,7 +821,16 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                               control = list( iter.max=100000),
                            typerunif = "sobol")#,nbclusters=2,
                    }
-                         
+     if(optimizer=='multiNelder-Mead'){
+                       Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
+                          const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+                          setup=setup,X=X,ns=ns,NS=NS,
+                             lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
+                              control = list( iter.max=100000),
+                           typerunif = "sobol")#,nbclusters=2,
+                   }                 
     if(optimizer=='ucminf')    
                         Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
                         control=list( maxeval=100000),
@@ -846,8 +855,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
 #}
 
 
- if(optimizer=='Nelder-Mead'||optimizer=='L-BFGS-B'||optimizer=='BFGS'
-        ||optimizer=='nmk'||optimizer=='nmkb')
+ if(optimizer %in% c('Nelder-Mead','L-BFGS-B','BFGS','nmk','nmkb','multiNelder-Mead'))
                    {names(Likelihood$par)=namesparam
                     param <- Likelihood$par
                    maxfun <- -Likelihood$value
@@ -859,7 +867,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                    maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun
       }
-       if(optimizer=='nlminb'||optimizer=='multinlminb'){
+       if(optimizer %in% c('nlminb','multinlminb')){
                    names(Likelihood$par)=namesparam
                    param <- Likelihood$par
                    maxfun <- -Likelihood$objective

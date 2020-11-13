@@ -751,6 +751,9 @@ if(sparse) {
     }
     if(is.null(initparam$NS)) initparam$NS=0
  
+
+    if(initparam$model %in% c(43,45)) initparam$namesnuis=initparam$namesnuis[!initparam$namesnuis %in% "nugget"]
+
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
                         initparam$NS,
                         initparam$param[initparam$namesnuis],

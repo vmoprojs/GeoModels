@@ -954,7 +954,6 @@ if(!bivariate)      {
 
  if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB')))
   {
-    #param <- c(mm, 'nugget','pmu','sill')
     param <- c(mm, 'nugget1','nugget2','pmu','sill')
     return(param)
   }
@@ -1099,6 +1098,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         { if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
             else  num_betas=c(ncol(X),ncol(X)) }}
     namesnuis <- NuisParam(model,bivariate,num_betas)
+  
 
 
     ltimes=length(coordt)
@@ -1377,13 +1377,18 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     # END code for the fitting procedure
     # START code for the simulation procedure
     if(fcall=="Simulation"){
+
+
        
         namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas))))
         param <- unlist(param)
         numparam <- length(param)
         namesparam <- names(param)
 
-        if(!bivariate) namessim <- c("mean","sill","nugget","scale",namescorr[!namescorr=="scale"])
+        if(!bivariate)
+
+       if(any(model!=c(43,45)))  namessim <- c("mean","sill","nugget","scale",namescorr[!namescorr=="scale"])
+       if(any(model==c(43,45)))  namessim <- c("mean","sill","nugget1","nugget2","scale",namescorr[!namescorr=="scale"])
         if(bivariate)  namessim <- c("mean_1","mean_2","scale",
                              namescorr[!namescorr=="scale"])  
 
