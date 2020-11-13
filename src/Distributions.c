@@ -3915,6 +3915,8 @@ p01=p-p00;
 p10=p01;
 p11=1-2*p+p00;
 
+//Rprintf("%f %f \n",nugget1,nugget2);
+
 if(r==0&&t==0)
      dens=p00  + p01*exp(-mean_i) + p10*exp(-mean_j)+p11*biv_Poisson((1-nugget1)*corr,0, 0, mean_i, mean_j);
 if(r==0&&t>0)
@@ -3934,6 +3936,8 @@ int N=2,i=0;
 double **M;M= (double **) Calloc(N,double *);
 for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
 double *dat;dat=(double *) Calloc(N,double);
+
+
 
 double dens,p,p00,p10,p01,p11,pdf2,corr1,pdf1i,pdf1j;
 

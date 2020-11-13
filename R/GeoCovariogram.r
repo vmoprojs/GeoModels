@@ -486,15 +486,16 @@ else                                        nui['nugget']=nuisance['nugget']
                            covariance=vv*cc
                            variogram=vv*(1-cc)}
                    }
+
      if(poissonZIP) {
                     if(bivariate) {}
                     if(!bivariate) {   
                            p=pnorm(nuisance['pmu']);MM=exp(mu)
-                           vv=(1-p)*MM*(1+p*MM)
-                           correlation=(1-nuisance['nugget'])*correlation  
-                           p1=1-2*p+pbivnorm::pbivnorm(nuisance['pmu'],nuisance['pmu'], rho = correlation, recycle = TRUE)
+                           vv=(1-p)*MM*(1+p*MM) 
+                           p1=1-2*p+pbivnorm::pbivnorm(nuisance['pmu'],nuisance['pmu'], rho =
+                           (1-nuisance['nugget2'])*correlation, recycle = TRUE)
       
-                           corr2=correlation^2    
+                           corr2=((1-nuisance['nugget1'])*correlation)^2    
                            z=2*vv/(1-corr2)
                            cc1=corr2*(1-(besselI(z,0,expon.scaled = TRUE)+besselI(z,1,expon.scaled = TRUE)))
                            cc=(p1*cc1*MM+MM^2*(p1-(1-p)^2))/vv

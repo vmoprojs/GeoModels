@@ -29,6 +29,7 @@
 #include <stdbool.h>
 
 
+
 //************************************** ST igam.c*****************************************
 
 #ifdef MAXITER
@@ -1182,7 +1183,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 
