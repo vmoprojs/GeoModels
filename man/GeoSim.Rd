@@ -275,31 +275,30 @@ data[[3]]
 ################################################################
 ###
 ### Example 8. Simulation of a Gaussian RF 
-###  with a Wend0 correlation on the planet earth
+###  with a Wend0 correlation in the north emisphere of the planet earth
 ###
 ###############################################################
 
-require(plot3D)
-require(sphereplot)
+rm(list=ls())
+require(GeoModels)
+require(globe)
 distance="Geod";radius=6371
 
-NN=4500 ## total point on the sphere on lon/lat format
+NN=5000 ## total point on the sphere on lon/lat format
 set.seed(80)
-coords=pointsphere(NN,c(-180,180),c(-90,90),c(radius,radius))
+coords=cbind(runif(NN,-180,180),runif(NN,0,90))
 ## Set the wendland parameters
 corrmodel <- "Wend0"
-param<-list(mean=0,sill=1,nugget=0,scale=radius*0.3,power2=3)
+param<-list(mean=0,sill=1,nugget=0,scale=radius*0.1,power2=3)
 # Simulation of a spatial Gaussian RF on the sphere
 #set.seed(2)
 data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
         distance=distance,radius=radius,param=param)$data
-#converting in 3d cartesian  coordinates
-b=sph2car(coords[,1], coords[,2], radius = radius, deg = TRUE)
-x0 = b[,1]; y0 = b[,2]; z0 = b[,3]
-# plotting
-scatter3D(x0,y0,z0,colvar=data,clim=c(min(data),max(data)),pch=20,cex=0.8,
-col=rainbow(200))
 
+
+globeearth(eye=place("newyorkcity"))
+globepoints (loc =coords,pch =20 ,
+col =cm.colors( length (data),alpha =0.15)[rank(data)])
 
 
 

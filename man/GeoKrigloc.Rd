@@ -157,7 +157,7 @@ x = runif(800, 0, 1)
 y = runif(800, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
-corrmodel = "exponential"
+corrmodel = "Exponential"
 mean=0
 sill=1
 nugget=0
@@ -262,7 +262,7 @@ fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
         optimizer="BFGS", start=start,fixed=fixed)
 
 neigh=GeoNeighborhood(data, coordx=coords,bivariate=TRUE,
-                  loc=loc_to_pred,maxdist=0.25)
+                  loc=loc_to_pred,neighb=10)
 
 # locations to predict
 
@@ -272,8 +272,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
        param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
 
-pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,
-       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
 
 par(mfrow=c(2,2))
 

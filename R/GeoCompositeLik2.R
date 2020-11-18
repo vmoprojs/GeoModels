@@ -218,8 +218,6 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
    data1=data[colidx]; data2=data[rowidx]
 
- 
-
     if(is.null(GPU)) GPU=0
    if(!onlyvar){
   ##############################.  spatial or space time ############################################

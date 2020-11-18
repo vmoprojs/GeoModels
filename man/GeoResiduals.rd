@@ -59,10 +59,10 @@ fixed=list(nugget=nugget,sill=sill,power2=power2)
 # Maximum composite-likelihood fitting 
 fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,X=X,
                     likelihood="Marginal",type='Pairwise',start=start,
-                    fixed=fixed,maxdist=0.1)
+                    fixed=fixed,neighb=3)
 
 res=GeoResiduals(fit)
-mean(res$data) # should be 1
+mean(res$data) # should be approx 1
 # Empirical estimation of the variogram for the residuals:
 vario = GeoVariogram(res$data,coordx=coords,maxdist=0.5)
 

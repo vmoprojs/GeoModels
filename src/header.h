@@ -26,8 +26,8 @@
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
 
-
 #include <stdbool.h>
+
 
 
 //************************************** ST igam.c*****************************************
@@ -1183,9 +1183,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
-
-
 
 
 

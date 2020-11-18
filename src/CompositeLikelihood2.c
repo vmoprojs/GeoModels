@@ -35,23 +35,18 @@ void Comp_Cond_Gauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int i=0;
-    double s1=0.0, s12=0.0, weights=1.0;
-    double det=0.0, u=0.0, u2=0.0, v=0.0, v2=0.0;
-
-    double nugget=nuis[0];
-    double sill=nuis[1];
-      if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
-   for(i=0;i<npairs[0];i++){
+       int i=0;
+    double  weights=1.0,sill,nugget,corr,bl,l1,l2;
+     sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+    for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                    u=data1[i]-mean1[i]; 
-                    v=data2[i]-mean2[i]; 
-                         s12=sill*CorFct(cormod, lags[i], 0, par,0,0)*(1-nugget); //sill * corr
-                          det=R_pow(s1,2)-R_pow(s12,2);
-                        u2=R_pow(u,2);v2=R_pow(v,2);
-                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                        *res+= (-log(2*M_PI)-log(det)+log(s1)+
-                        (u2+v2)*(0.5/s1-s1/det)+2*s12*u*v/det)*weights;
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);
+                      l1= dnorm(data1[i], mean1[i],sqrt(sill),0);
+                      l2= dnorm(data2[i], mean2[i],sqrt(sill),0);
+                      *res+= (2*bl-l1-l2)*weights;
                     }}
     if(!R_FINITE(*res))*res = LOW;
     return;

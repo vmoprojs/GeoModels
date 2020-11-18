@@ -18,10 +18,10 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 
 \examples{
 library(GeoModels)
-set.seed(211)
+set.seed(2711)
 
-model="Weibull";shape=4
-N=700 # number of location sites
+model="StudentT";df=6
+N=400 # number of location sites
 # Set the coordinates of the points:
 x = runif(N, 0, 1)
 y = runif(N, 0, 1)
@@ -42,16 +42,16 @@ power2=4
 
 
 param=list(mean=mean,mean1=mean1, sill=sill, nugget=nugget, 
-	           scale=scale,shape=shape,power2=power2)
+	           scale=scale,df=1/df,power2=power2)
 # Simulation of the Gaussian RF:
 data = GeoSim(coordx=coords, corrmodel=corrmodel, X=X,model=model,param=param)$data
 
-start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
-fixed=list(nugget=nugget,sill=sill,power2=power2)
+start=list(mean=mean,mean1=mean1, scale=scale)
+fixed=list(nugget=nugget,sill=sill,power2=power2,df=1/df)
 # Maximum composite-likelihood fitting 
 fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,X=X,
                     likelihood="Marginal",type='Pairwise',start=start,
-                    fixed=fixed,maxdist=0.1)
+                    fixed=fixed,neighb=2)
 
 res=GeoResiduals(fit)
 
