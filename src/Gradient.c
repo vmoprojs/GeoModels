@@ -35,7 +35,7 @@ void Grad_Cond_Gauss(double rho, int *flag, double *gradcor, double *grad,
   // Derivatives of the conditional respect with the mean
   if(flag[0]==1){grad[i]=2*(u+v)/(a+b)-(u/a+v/a);i++;}
   // Derivative of the conditional respect with the nugget
-   if(flag[1]==1){grad[i]=k*(R*d-L*4*b*a-2*a*(pa-pb))-suv;i++;}
+   if(flag[1]==1){grad[i]=-b;i++;}
   // Derivative of the conditional respect with the sill
    if(flag[2]==1){grad[i]=-k*(2*(pa*a-pb*(2*sill+3*nugget)+
 				 rho*b*(pb-pn))+R*(c+2*nugget*b*rho)+
@@ -633,7 +633,8 @@ double ff=log(biv_Logistic(rho,u,v,ai,aj,sill));
    i++; }
 }
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+  if(flag[nbetas]==1) {  
+      grad[i]=(log(biv_Logistic(rho,u,v,ai,aj,sill)) - ff)/delta; i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
@@ -834,7 +835,9 @@ b1=(double *) Calloc(nbetas,double);
    i++; }
 }
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+  if(flag[nbetas]==1) {   delta=sqrt(EPS)*nugget;
+         grad[i]=(log(biv_tukey_h(rho*(1-(nugget+delta)),u,v,ai,aj,tail,sill)) - ff)/delta; 
+   i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
@@ -897,7 +900,10 @@ b1=(double *) Calloc(nbetas,double);
    i++; }
 }
   // Derivvativve of the difference respect with the nugget*/
-  if(flag[nbetas]==1) { grad[i]=1; i++; }
+  if(flag[nbetas]==1) { 
+   delta=sqrt(EPS)*nugget;
+    grad[i]=(log(biv_sinh(rho*(1-(nugget+delta)),u,v,ai,aj,skew,tail,sill)) - ff)/delta; 
+    i++;  i++; }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
@@ -1021,6 +1027,8 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double sill=nuis[nbetas+1];double nugget=nuis[nbetas];
   double skew=nuis[nbetas+2];
+
+  double ff=biv_skew(rho,u,v,ai,aj,sill,skew,nugget);
 /*
   // Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
@@ -1030,23 +1038,23 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
      ai_d=0.0;aj_d=0.0;
      for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
                            aj_d=aj_d+sX[m][o]*(b1[o]);}
-   grad[i]=(log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
+   grad[i]=(log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew,nugget)) - log(ff))/delta; 
    i++; }
 }  
   // Derivvativve of the difference respect with the nugget*/
   if(flag[nbetas]==1) {  delta=sqrt(EPS)*nugget;
-    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew,nugget+delta)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget+delta)) - log(ff))/delta; 
     i++; 
   }
   /* Derivvativve of the difference respect with the sill*/  
   if(flag[nbetas+1]==1) { 
     delta=sqrt(EPS)*sill;
-    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill+delta,skew,nugget)) - log(ff))/delta; 
     i++; 
   }
     if(flag[nbetas+2]==1) { 
     delta=sqrt(EPS)*skew;
-    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill,skew+delta,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta; 
+    grad[i]=(log(biv_skew(rho,u,v,ai,aj,sill,skew+delta,nugget)) - log(ff))/delta; 
     i++; 
   }
   /* Derivvativves with respect to the correlation parameters*/
@@ -1059,7 +1067,7 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
        parC[h]=par[h]+delta;
        rhod=CorFct(cormod,lag,lagt,parC,0,0);
        
-      grad[kk+i]=(log(biv_skew(rhod,u,v,ai,aj,sill,skew,nugget)) - log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget)))/delta;
+      grad[kk+i]=(log(biv_skew(rhod,u,v,ai,aj,sill,skew,nugget)) - log(ff))/delta;
     kk++;}
       h++;
     }
@@ -1154,7 +1162,7 @@ void Grad_Pair_Gauss(double rho, int *flag,int *flagcor,  double *gradcor, doubl
      i++;}
   }
   // Derivative  respect with the nugget
-   if(flag[nbetas]==1){grad[i]=0.5*k*(R*d-L*4*b*a-2*a*(pa-pb));i++;}
+   if(flag[nbetas]==1){grad[i]=-b;i++;}
   // Derivative respect with the sill
    if(flag[nbetas+1]==1){grad[i]=-0.5*k*(2*(pa*a-pb*(2*sill+3*nugget)+
              rho*b*(pb-pn))+R*(c+2*nugget*b*rho)+
@@ -1181,7 +1189,7 @@ void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gra
 double nugget=nuis[nbetas],sill=nuis[nbetas+1];
 
   double a=nugget+sill,b=sill*rho,pa=a*a,pb=b*b;
-  double c=-pa+pb,d=pa+pb,k=1/(c*c);
+  double c=-pa+pb,k=1/(c*c);
   double L=0.0,R=0.0;
   double pn=nugget*nugget,ps=sill*sill,pu=0.0, pv=0.0;
   int kk=0,h=0, i=0;
@@ -1194,7 +1202,7 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
      i++;}
   }
   // Derivative  respect with the nugget
-   if(flag[nbetas]==1){grad[i]=0.5*k*(R*d-L*4*b*a-2*a*(pa-pb));i++;}
+   if(flag[nbetas]==1){grad[i]=-b;i++;}
   // Derivative respect with the sill
    if(flag[nbetas+1]==1){grad[i]=-0.5*k*(2*(pa*a-pb*(2*sill+3*nugget)+
              rho*b*(pb-pn))+R*(c+2*nugget*b*rho)+
