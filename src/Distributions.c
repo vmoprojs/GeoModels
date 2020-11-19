@@ -1951,13 +1951,14 @@ return(dens);
 }*/
 
 
+
 double biv_wrapped (double alfa,double u, double v,double mi,double mj,double nugget,double sill,double corr)
 {
     double x,y,s1=0.0,s12=0.0,quadr=0.0,det=0.0,wrap_gauss=0.0; // 5???
     //2*atan(mean[i])-M_PI
     x=u-2*atan(mi)-M_PI; y=v-2*atan(mj)-M_PI;
     s1=sill;
-    s12=sill*corr; //sill * corr
+    s12=sill*corr*(1-nugget);
     det=R_pow(s1,2)-R_pow(s12,2);
     double k1=-alfa,k2=-alfa;
      while(k1<=alfa){
