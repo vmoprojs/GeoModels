@@ -407,8 +407,23 @@ int fmin_int(int u,int v);
 
 double bi_matern_bounds(double scale11,double scale22,double scale12,double nu11,double nu22,double nu12,double t,int c);
 
-double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 
+
+
+
+double one_log_two_pieceT(double z, double sill, double df,double eta, double m);
+double one_log_T(double z,double m, double sill, double df);
+double one_log_tukeyh(double z,double m, double sill, double tail);
+double one_log_tukeyhh(double z,double m, double sill, double h1,double h2);
+double one_log_SkewGauss(double z,double m, double vari, double skew);
+double one_log_sas(double z,double m, double skew, double tail,  double vari);
+double one_log_kumma2(double z,double m, double shape1,double shape2,double min,double  max);
+double one_log_kumma(double z,double m, double shape1,double shape2,double min,double  max);
+double one_log_beta(double z, double shape1,double shape2,double min,double  max);
+double one_log_loggaussian(double z,double m, double sill);
+double one_log_weibull(double z,double m, double shape);
+double one_log_gamma(double z,double m, double shape);
+double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double  biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
@@ -1183,9 +1198,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
-
-
 
 
 

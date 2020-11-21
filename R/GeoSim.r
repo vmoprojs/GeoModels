@@ -1,7 +1,3 @@
-
-
-
-
 ####################################################
 ### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
 ### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
@@ -170,8 +166,8 @@ forGaussparam<-function(model,param,bivariate)
 
     k=1
 #################################
-    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',"Binomial",
-                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","BinomialNegZINB","BinomialNeg",
+    if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',#"Binomial","BinomialNeg","BinomialNegZINB",
+                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
                     "Gamma","Weibull","LogLogistic","Logistic")) 
        {
@@ -415,7 +411,8 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
     ####### starting cases #############
     ####################################
  
-    if(model %in% c("Binomial", "BinomialNeg","BinomialNegZINB")) {    
+    if(model %in% c("Binomial", "BinomialNeg","BinomialNegZINB")) {   
+    
         simdim <- dim(sim)
         sim <- as.numeric(sim>0)
         dim(sim) <- simdim
@@ -476,6 +473,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
    if(model %in% c("BinomialNeg"))   {
           sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
+      
           byrow=TRUE
           }
   if(model %in% c("BinomialNegZINB"))   {

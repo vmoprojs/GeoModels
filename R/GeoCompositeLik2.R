@@ -118,14 +118,46 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==20,likelihood==1,type==2)){ fname <- 'Comp_Cond_SinhGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-
     if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
                                               if(varest & vartype==2) hessian <- TRUE} 
-
+    if(all(model==10,likelihood==1,type==2)){ fname <- 'Comp_Cond_SkewGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==12,likelihood==1,type==2)){ fname <- 'Comp_Cond_T'
+                                              if(varest & vartype==2) hessian <- TRUE}  
+    if(all(model==34,likelihood==1,type==2)){ fname <- 'Comp_Cond_Tukeyh' 
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==40,likelihood==1,type==2)){ fname <- 'Comp_Cond_Tukeyhh' 
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==35,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_T'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==39,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEBIMODAL'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==31,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomTWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==32,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegTWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==30,likelihood==1,type==2)){ fname <- 'Comp_Cond_Pois'
+                                             if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==36,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Pois'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==2,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomGauss'
+                                             if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==11,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomGauss'
+                                             if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==14,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==16,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
 
 
 ###################### pairwise ###############################################

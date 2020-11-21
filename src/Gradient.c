@@ -1154,14 +1154,14 @@ void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gra
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
 {
- 
+  
 
     double rhod,delta=0,*parC,zi,zj;int j=0;
   parC=(double *) Calloc(nparcT[0],double);
   for(j=0;j<nparcT[0];j++) parC[j]=par[j];
    zi=u-ai;zj=v-aj;
 double nugget=nuis[nbetas],sill=nuis[nbetas+1];
- 
+  
 
   double a=sill,b=sill*rho*(1-nugget),pa=a*a,pb=b*b;
   double c=-pa+pb;
@@ -1191,8 +1191,8 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
   // Derivatives with respect to the correlation parameters
   h=0;
      kk=0;
-  for(j=i;j<(i+*nparcT);j++) {
-     
+  for(j=i;j<(i+*nparcT);j++) { 
+      
   if(flagcor[h]==1){
        delta=sqrt(EPS)*par[h];
        parC[h]=par[h]+delta;
@@ -1205,7 +1205,6 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
 
   return;
 }
-
 
 void Grad_Pair_Gauss_biv(double rhott, double rhotv,double rhovt,double rhovv,int *flag,
                          double *gradcortt, double *gradcortv, double *gradcorvt, double *gradcorvv,

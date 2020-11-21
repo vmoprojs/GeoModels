@@ -2335,18 +2335,6 @@ dens+=kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p1
 }
 
 
-/*
-double biv_binom (int NN, int u, int v, double p01,double p10,double p11)
-{
-    
-int a;
-double kk=0,dens=0.0;
-for(a=fmax_int(0,u+v-NN);a<=fmin_int(u,v);a++){
-kk=fac(NN,1)/(fac(a,1)*fac(u-a,1)*fac(v-a,1)*fac(NN-u-v+a,1));
-dens+=kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p10),NN-u-v+a));
- }
-    return(dens);
-}*/
 
 
 
@@ -3992,3 +3980,129 @@ if(r>0&&t>0)
 return(dens);
 
 }
+
+
+
+
+
+
+
+
+
+/******* some marginals (log)pdf  *****************/
+
+
+double one_log_SkewGauss(double z,double m, double vari, double skew)
+{
+  double  res;
+  double skew2  = R_pow(skew,2);
+  double vari2  = R_pow(vari,1);
+  double q=z-m;
+    res=log(2)-0.5*log(skew2+vari2)+dnorm(q/(sqrt(skew2+vari2)),0,1,1)
+    +log(pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,0));
+  return(res);
+}
+
+double one_log_tukeyhh(double z,double m, double sill, double h1,double h2)
+{
+  double  res;
+ if(z>=m){
+    res=one_log_tukeyh(z,m,sill,h2);
+          }
+  if(z<m){
+    res=one_log_tukeyh(z,m,sill,h1);
+         }
+  return(res);
+}
+
+double one_log_tukeyh(double z,double m, double sill, double tail)
+{
+  double q = (z - m)/sqrt(sill);
+  double x = inverse_lamb(q,tail);
+  double extra = 1/( (1 + LambertW(tail*q*q)));
+  double dens = log(dnorm(x,0,1,0)* x  * extra/(q*sqrt(sill)));
+return(dens);
+}
+
+
+double one_log_T(double z,double m, double sill, double df)
+{
+  double  res;
+  double q=(z-m)/sqrt(sill);
+    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+q*q/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
+  return(res);
+}
+
+
+double one_log_sas(double z,double m, double skew, double tail,  double vari)
+{
+  double  res,b1,Z1;
+  double q=(z-m)/(sqrt(vari));
+    b1=tail*asinh(q)-skew;
+    Z1=sinh(b1);
+    res=-0.5*log(R_pow(q,2)+1)-0.5*log(2*M_PI*vari)+log(cosh(b1))+log(tail)-Z1*Z1/2;
+  return(res);
+}
+
+
+double one_log_two_pieceT(double z, double sill, double df,double eta, double m)
+{
+  double  res;
+  if(z>=m){
+    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+R_pow((z/(1-eta)-m)/sqrt(sill),2)/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
+          } 
+  if(z<m){
+    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+R_pow((z/(1+eta)-m)/sqrt(sill),2)/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
+         }
+  return(res);
+}
+
+double one_log_beta(double z, double shape1,double shape2,double min,double  max)
+{
+  double  res;
+  double q=(z-min)/(max-min);
+  res=(shape1/2-1)*log(q)+(shape2/2-1)*log(1-q)+lgammafn(0.5*(shape1+shape2))-lgammafn(shape1/2)-lgammafn(shape2/2)-log(max-min);
+  return(res);
+}
+
+double one_log_kumma2(double z,double m, double shape1,double shape2,double min,double  max)
+{
+  double  res,k;
+  double q=(z-min)/(max-min);k=1-pow(q,shape2);
+  double m1=1/(1+exp(-m));
+  double shapei=log(0.5)/log(1-pow(m1,shape2));
+  res=log(shapei)+log(shape2)+(shape2-1)*log(q)+(shapei-1)*log(k)-log(max-min);
+  return(res);
+}
+
+double one_log_kumma(double z,double m, double shape1,double shape2,double min,double  max)
+{
+  double  res,k;
+  double q=(z-min)/(max-min);k=1-pow(q,shape2);
+  res=log(shape1)+log(shape2)+(shape2-1)*log(q)+(shape1-1)*log(k)-log(max-min);
+  return(res);
+}
+
+double one_log_loggaussian(double z,double m, double sill)
+{
+  double  res;
+  double q=z*exp(sill/2);
+  res=-0.5*R_pow((log(q)-m),2)/sill-log(q)-log(sqrt(sill))-0.5*log(2*M_PI)+sill/2;
+  return(res);
+}
+double one_log_weibull(double z,double m, double shape)
+{
+  double  res;
+  double c1=exp(m)/(gammafn(1+1/shape));
+  res=log(shape)-shape*log(c1)+(shape-1)*log(z)-R_pow(z/c1,shape);
+  return(res);
+}
+double one_log_gamma(double z,double m, double shape)
+{
+  double  res;
+  res=(shape/2)*log(shape/(2*exp(m)))+(shape/2-1)*log(z)-(shape/(2*exp(m)))*z-log(gammafn(shape/2));
+  return(res);
+}
+
+
+
