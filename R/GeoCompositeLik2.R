@@ -158,7 +158,20 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==16,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-
+    if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==39,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEBIMODAL'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==43,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==44,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==45,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGaussZINB'
+                                              if(varest & vartype==2) hessian <- TRUE}
 
 ###################### pairwise ###############################################
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
@@ -192,8 +205,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
                                               if(varest & vartype==2) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}    
-                                        
+                                              if(varest & vartype==2) hessian <- TRUE}                                      
     if(all(model==24,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogLogistic'
                                               if(varest & vartype==2) hessian <- TRUE}     
     if(all(model==25,likelihood==3,type==2)){ fname <- 'Comp_Pair_Logistic'

@@ -4045,18 +4045,6 @@ double one_log_sas(double z,double m, double skew, double tail,  double vari)
 }
 
 
-double one_log_two_pieceT(double z, double sill, double df,double eta, double m)
-{
-  double  res;
-  if(z>=m){
-    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+R_pow((z/(1-eta)-m)/sqrt(sill),2)/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
-          } 
-  if(z<m){
-    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+R_pow((z/(1+eta)-m)/sqrt(sill),2)/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
-         }
-  return(res);
-}
-
 double one_log_beta(double z, double shape1,double shape2,double min,double  max)
 {
   double  res;
@@ -4103,6 +4091,83 @@ double one_log_gamma(double z,double m, double shape)
   res=(shape/2)*log(shape/(2*exp(m)))+(shape/2-1)*log(z)-(shape/(2*exp(m)))*z-log(gammafn(shape/2));
   return(res);
 }
+double one_log_two_pieceTukey(double z,double m, double sill,double tail, double eta)
+{
+  double  res;
+ if(z>=m){
+    res=one_log_tukeyh(z/(1-eta),m,sill,tail);      
+          }
+  if(z<m){
+    res=one_log_tukeyh(z/(1+eta),m,sill,tail);
+         }
+  return(res);
+}
+double one_log_two_pieceT(double z,double m, double sill, double df, double eta)
+{
+  double  res;
+ if(z>=m){
+    res=one_log_T(z/(1-eta),m,sill,df);      
+          }
+  if(z<m){
+    res=one_log_T(z/(1+eta),m,sill,df);
+         }
+  return(res);
+}
+double one_log_two_pieceGauss(double z,double m, double sill, double eta)
+{
+  double  res;
+ if(z>=m){
+    res=dnorm(z/(1-eta),m,sqrt(sill),1);    
+          }
+  if(z<m){
+    res=dnorm(z/(1+eta),m,sqrt(sill),1);
+         }
+  return(res);
+}
 
+double one_log_gammagem(double z,double shape,double n)
+{
+  double  res;
+  res=(shape/2)*log(n/2)+(shape/2-1)*log(z)-0.5*n*z-lgammafn(shape/2);
+  return(res);
+}
 
-
+double one_log_bomidal(double z,double m, double sill,double nu,double delta, double eta)
+{
+  double  res;
+  double q=(z-m)/sqrt(sill);
+  double alpha=2*(delta+1)/nu;
+  double nn=R_pow(2,1-alpha/2);
+ if(z>=m){
+    res=log(alpha)+(alpha-1)*log(q)-(alpha-1)*log(1-eta)-log(2)+one_log_gammagem(R_pow(z/(1-eta),alpha),nu,nn)-0.5*log(sill);    
+          }
+  if(z<m){
+    res=log(alpha)+(alpha-1)*log(-q)-(alpha-1)*log(1+eta)-log(2)+one_log_gammagem(R_pow(-z/(1+eta),alpha),nu,nn)-0.5*log(sill);
+         }
+  return(res);
+}
+double one_log_BinomnegZIP(int z,double n, double mu, double mup)
+{
+  double  res;
+  double  p=pnorm(mup,0,1,1,0);
+  double  pp=pnorm(mu,0,1,1,0);
+ if(z==0){
+    res=log(p+(1-p)*dnbinom(0,n,pp,0));    
+          }
+  if(z>0){
+   res=log(1-p)+ dnbinom(z,n,pp,1);
+         }
+  return(res);
+}
+double one_log_PoisZIP(int z,double lambda, double mup)
+{
+  double  res;
+  double  p=pnorm(mup,0,1,1,0);
+ if(z==0){
+    res=log(p+(1-p)*dpois(0,lambda,0));    
+          }
+  if(z>0){
+    res=log(1-p)+dpois(z,lambda,1);   
+         }
+  return(res);
+}
