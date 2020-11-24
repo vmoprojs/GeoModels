@@ -194,7 +194,8 @@ GeoTests(fitH1, fitH0 , statistic='Wilks')
 
 ################################################################
 ###
-### Example 2. Composite likelihood-based hypothesis testing.
+### Example 2. Composite likelihood-based hypothesis testing
+### for a Gaussian  RF
 ### Testing significance of a regression parameter 
 ###
 ###############################################################
@@ -213,21 +214,24 @@ sill = 1
 nugget = 0
 scale = 0.15/3
 
+model="Gaussian"
+
 # Simulation of the spatial Gaussian random field:
-data = GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,mean1=mean1,
-              sill=sill,nugget=nugget,scale=scale),X=X)$data
+data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,
+      param=list(mean=mean,mean1=mean1,sill=sill,
+                   nugget=nugget,scale=scale),X=X)$data
 
 # Pairwise-likelihood fitting of the random field, full model:
-start=list(mean=mean,mean1=mean1,sill=sill,scale=scale)
+start=list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 fixed=list(nugget=nugget)
-fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
+fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,model=model,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     optimizer="BFGS",fixed=fixed,start=start,X=X)
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
-start=list(mean=mean,sill=sill,scale=scale)
+start=list(mean=mean,scale=scale,sill=sill)
 fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
-fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,
+fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,model=model,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
                     optimizer="BFGS",fixed=fixed,start=start,X=X)
 

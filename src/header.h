@@ -25,8 +25,8 @@
 #define MAXLGM 2.556348e305
 #define LS2PI  0.91893853320467274178
 #define LOGPI  1.14472988584940017414
-#include <stdbool.h>
 
+#include <stdbool.h>
 
 
 
@@ -429,8 +429,8 @@ double one_log_gammagem(double z,double shape,double n);
 double one_log_bomidal(double z,double m, double sill,double nu,double delta, double eta);
 double one_log_BinomnegZIP(int z,double n, double mu, double mup);
 double one_log_PoisZIP(int z,double lambda, double mup);
-
-
+double one_log_loglogistic(double z,double m, double shape);
+double one_log_logistic(double z,double m, double sill);
 double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
@@ -944,11 +944,8 @@ Description: procedures for computation of the gredients
 Start
  ---------------------------------------------------------------*/
 
-void Grad_Cond_Bin(double rho,double pij, double p,int *flag, double *gradcor,
-           double *grad, int *npar, double *nuis,  double u, double v);
 
-void Grad_Cond_Gauss(double rho, int *flag, double *gradcor, double *grad,
-             int *npar, double *par, double u, double v);
+
 
 void Grad_Diff_Bin(double rho,double pij, double p,int *flag, double *gradcor,
            double *grad, int *npar, double *nuis,  double u, double v);
@@ -963,15 +960,35 @@ void Grad_Diff_Vario(double rho, int *flag, double *gradcor, double *grad,
 void Grad_Pair_Binom(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Binom(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
 void Grad_Pair_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
+
+
+void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
 
 void Grad_Pair_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
+
 void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
@@ -979,7 +996,16 @@ void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
        int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc,int *nparcT, int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+
 void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
@@ -987,15 +1013,34 @@ void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+
 void Grad_Pair_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
 
 void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+
 void Grad_Pair_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
 
@@ -1003,23 +1048,74 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
 void Grad_Pair_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
 
 void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+
 void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
 
 void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
        double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
 
+void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
+  double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
+       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas);
+
 void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Pair_Beta(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Beta(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Pair_Kuma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Kuma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Pair_Kuma2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       ,double **sX,int l,int m,double *betas);
+
+void Grad_Cond_Kuma2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
        int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
        ,double **sX,int l,int m,double *betas);
 
@@ -1206,7 +1302,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

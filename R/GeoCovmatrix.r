@@ -69,8 +69,6 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
     {
    
-
-
 ###################################################################################
 ############### computing correlation #############################################
 ###################################################################################
@@ -396,7 +394,7 @@ if(model==28)   ##  beta case
          ssup=as.numeric(nuisance['max'])-as.numeric(nuisance['min'])
          cc=0.5*(shape1+shape2)
          vv=ssup^2*shape1*shape2/((cc+1)*(shape1+shape2)^2)        ## variance remember min and max!
-idx=which(abs(corr2)>1e-10);corr22=corr2[idx]
+         idx=which(abs(corr2)>1e-10);corr22=corr2[idx]
 ######################
   #nu=shape1;alpha=shape2
   nu2=shape1/2;alpha2=shape2/2

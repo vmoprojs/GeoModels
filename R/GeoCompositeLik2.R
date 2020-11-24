@@ -172,7 +172,10 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==45,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGaussZINB'
                                               if(varest & vartype==2) hessian <- TRUE}
-
+    if(all(model==24,likelihood==1,type==2)){ fname <- 'Comp_Cond_LogLogistic'
+                                              if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==25,likelihood==1,type==2)){ fname <- 'Comp_Cond_Logistic'
+                                              if(varest & vartype==2) hessian <- TRUE}
 ###################### pairwise ###############################################
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
                                               if(varest & vartype==2) hessian <- TRUE}

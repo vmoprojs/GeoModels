@@ -4171,3 +4171,21 @@ double one_log_PoisZIP(int z,double lambda, double mup)
          }
   return(res);
 }
+
+
+double one_log_loglogistic(double z,double m, double shape)
+{
+  double  res;
+  double c=gammafn(1+1/shape)*gammafn(1-1/shape);
+  double k=R_pow(c*z/m,shape)+1;
+  //res=log(c)+log(shape/m)+(shape-1)*log(c*z/m)-2*loh(k);
+  res=log((c*shape/m)*R_pow((c*z/m),shape-1)*R_pow(k,-2));
+  return(res);
+}
+double one_log_logistic(double z,double m, double sill)
+{
+  double  res;
+  double k=exp((z-m)/sqrt(sill));
+  res=log(k)-2*log(k+1)-0.5*log(sill);
+  return(res);
+}

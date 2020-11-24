@@ -626,7 +626,93 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+void Comp_Cond_Gauss_misp_PoisZIP2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0;
+    double weights=1.0,corr,mui,muj,bl ,l1=0.0,l2=0.0;
+    double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+    double p=pnorm(mup,0,1,1,0);
 
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
+
+  // Rprintf("%d   \n",npairs[0]);
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+
+
+                      l1=dnorm(data1[i],(1-p)*mui,sqrt(mui*(1-p)*(1+p*mui)),1);
+                      l2=dnorm(data2[i],(1-p)*muj,sqrt(muj*(1-p)*(1+p*muj)),1);
+
+
+                      if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      bl=2*log(biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget1,nugget2))-(l1+l2);
+                 
+                      *res+= bl*weights;
+                    }}        
+   
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+void Comp_Cond_LogLogistic2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+   
+    int i;double corr,zi,zj,weights=1.0,bl=1.0,l1=0.0,l2=0.0;
+    double nugget=nuis[0];
+    if(nugget<0||nugget>=1||nuis[2]<0) {*res=LOW;  return;}
+     for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    zi=(data1[i]); zj=(data2[i]);
+                    corr=CorFct(cormod,lags[i],0,par,0,0);
+
+                    l1=one_log_loglogistic(zi,exp(mean1[i]),nuis[2]);
+                    l2=one_log_loglogistic(zj,exp(mean2[i]),nuis[2]);
+
+                    bl=2*log(biv_LogLogistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]))
+                     -(l1+l2);
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);      
+                           
+  *res+= weights*bl;
+                  }}
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+
+void Comp_Cond_Logistic2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+   
+    int i;double corr,zi,zj,weights=1.0,bl=1.0,l1=0.0,l2=0.0;
+    double nugget=nuis[0];
+    if(nugget<0||nugget>=1||nuis[2]<0) {*res=LOW;  return;}
+     for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    zi=(data1[i]); zj=(data2[i]);
+                    corr=CorFct(cormod,lags[i],0,par,0,0);
+
+                    l1=one_log_logistic(zi,mean1[i],nuis[1]) ;
+                    l2=one_log_logistic(zj,mean2[i],nuis[1])  ;  
+
+                    bl=2*log(biv_Logistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[1]))
+
+                     -(l1+l2);
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);      
+                           
+  *res+= weights*bl;
+                  }}
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -1282,3 +1368,84 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+void Comp_Cond_Gauss_misp_PoisZIP_st2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0;
+    double weights=1.0,corr,mui,muj,bl ,l1=0.0,l2=0.0;
+    double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2];
+    double p=pnorm(mup,0,1,1,0);
+
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+
+
+                      l1=dnorm(data1[i],(1-p)*mui,sqrt(mui*(1-p)*(1+p*mui)),1);
+                      l2=dnorm(data2[i],(1-p)*muj,sqrt(muj*(1-p)*(1+p*muj)),1);
+
+
+                                                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                      bl=2*log(biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget1,nugget2))-(l1+l2);
+                 
+                      *res+= bl*weights;
+                    }}        
+   
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+void Comp_Cond_LogLogistic_st2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+   
+    int i;double corr,zi,zj,weights=1.0,bl=1.0,l1=0.0,l2=0.0;
+    double nugget=nuis[0];
+    if(nugget<0||nugget>=1||nuis[2]<0) {*res=LOW;  return;}
+     for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    zi=(data1[i]); zj=(data2[i]);
+                    corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+
+                    l1=one_log_loglogistic(zi,exp(mean1[i]),nuis[2]);
+                    l2=one_log_loglogistic(zj,exp(mean2[i]),nuis[2]);
+
+                    bl=2*log(biv_LogLogistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]))
+                     -(l1+l2);
+             if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);      
+                           
+  *res+= weights*bl;
+                  }}
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+void Comp_Cond_Logistic_st2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+   
+    int i;double corr,zi,zj,weights=1.0,bl=1.0,l1=0.0,l2=0.0;
+    double nugget=nuis[0];
+    if(nugget<0||nugget>=1||nuis[2]<0) {*res=LOW;  return;}
+     for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    zi=(data1[i]); zj=(data2[i]);
+                    corr=CorFct(cormod,lags[i],0,par,0,0);
+                    l1=one_log_logistic(zi,mean1[i],nuis[1]) ;
+                    l2=one_log_logistic(zj,mean2[i],nuis[1])  ;  
+                    bl=2*log(biv_Logistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[1]))
+                     -(l1+l2);
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);      
+                           
+  *res+= weights*bl;
+                  }}
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
