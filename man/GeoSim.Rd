@@ -278,9 +278,6 @@ data[[3]]
 ###  with a Wend0 correlation in the north emisphere of the planet earth
 ###
 ###############################################################
-
-rm(list=ls())
-require(GeoModels)
 require(globe)
 distance="Geod";radius=6371
 

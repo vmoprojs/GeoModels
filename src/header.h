@@ -893,16 +893,17 @@ void Sens_Diff_Gauss_ij(double *gradient, int *npar, double *sensmat,double weig
 
 
 void Sens_Pair(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis,double *NN,
-         double *nuis, int *np, int *nbetas,int *npar,  int *nparc,int *nparcT,double *mean, int *model, double *parcor,double *score,  double *sensmat,int *weigthed,double *Z);
+         double *nuis, int *np, int *nbetas,int *npar,  int *nparc,int *nparcT,double *mean, int *model, double *parcor,double *score,  
+         double *sensmat,int *weigthed,double *Z, int *type_lik);
 
 void Sens_Pair_st(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, 
          double *eps, int *flagcor, int *flagnuis, double *NN,double *nuis, int *np,
       int *nbetas, int *npar,int *nparc,int *nparcT, double *mean, int *model,
-            double *parcor, double *score, double *sensmat,  int *weigthed,double *Z, int *ns, int *NS);
+            double *parcor, double *score, double *sensmat,  int *weigthed,double *Z, int *ns, int *NS,int *type_lik);
 
 void Sens_Pair_biv(double *betas,double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis,
                          double *NN, double *nuis, int *np,int *npar, int *nparc,int *nparcT, double *mean,int *mode,
-                         double *parcor, double *score, double *sens,int *weigthed,double *Z, int *ns, int *NS);
+                         double *parcor, double *score, double *sens,int *weigthed,double *Z, int *ns, int *NS,int *type_lik);
 
 void Sens_Pair_Gauss_ij(double rho, int *flag, double *gradcor, int *npar, int nbetas,
       int *nparc, double *par, double *sensmat, double *Xi, double *Xj);
@@ -1302,6 +1303,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

@@ -594,6 +594,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
+    
 }
 /************************************************/
 void Comp_Cond_PoisZIP2mem(int *cormod, double *data1,double *data2,int *NN,

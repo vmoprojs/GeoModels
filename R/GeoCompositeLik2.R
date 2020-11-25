@@ -661,6 +661,11 @@ colnames(CompLikelihood$hessian)=namesparam
             # Set score vectore:
             CompLikelihood$winconst<-winconst
             CompLikelihood$winstp<-winstp
+
+            GD$score=numDeriv::grad(func=comploglik2,x=CompLikelihood$par,method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
+                              data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
+                              namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
+                              weigthed=weigthed,X=X,local=local,GPU=GPU)
             CompLikelihood$score <- GD$score
             # Set sensitivity matrix:
             CompLikelihood$sensmat <- matrix(rep(0,dimmat),ncol=numparam)

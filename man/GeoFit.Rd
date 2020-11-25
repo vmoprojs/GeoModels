@@ -66,8 +66,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
   \item{maxtime}{Numeric; an optional positive value indicating the maximum
     temporal separation considered in the composite or tapered likelihood
     computation (see \bold{Details}).}
-        \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
-      are computed before  the optimization. }
+        \item{memdist}{ Logical; if \code{TRUE} then  all  the distances  useful in the  composite likelihood 
+      estimation are computed before  the optimization. \code{FALSE} is deprecated. }
    \item{method}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
     The other possible choices is \code{svd}.}   
   \item{model}{String; the type of RF and therefore the densities associated to the likelihood
