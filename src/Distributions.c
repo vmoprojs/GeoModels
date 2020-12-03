@@ -4172,6 +4172,13 @@ double one_log_PoisZIP(int z,double lambda, double mup)
   return(res);
 }
 
+double one_log_negbinom_marg(int u,int N, double p)
+{
+  double  res;
+    res=lgammafn(u+N)-(lgammafn(u+1)+lgammafn(N))+N*log(p)+u*log(1-p);
+  return(res);
+}
+
 
 double one_log_loglogistic(double z,double m, double shape)
 {

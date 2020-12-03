@@ -699,19 +699,23 @@ void SetSampling(double *coordx, double *coordy, double *data, int n, int *npts,
 		 double xmin, double ymax, double ymin, double **sX,double **X)
 {
   int i=0, j=0,k=0;
-  for(i=0;i<ncoord[0];i++)
+
+  for(i=0;i<ncoord[0];i++){
+    
     if((xmin<coordx[i]||is_equal(xmin,coordx[i]))&&
        (xmax>coordx[i]||is_equal(xmax,coordx[i]))&&
        (ymin<coordy[i]||is_equal(ymin,coordy[i]))&&
-       (ymax>coordy[i]||is_equal(ymax,coordy[i]))){
+       (ymax>coordy[i]||is_equal(ymax,coordy[i])))
+  {
 	scoordx[j]=coordx[i];
 	scoordy[j]=coordy[i];
-  
-  for(k=0;k<nbetas;k++)  sX[j][k]=X[i][k];
-	
+
   sdata[j]=data[i];
+  
+  for(k=0;k<nbetas;k++)  {sX[j][k]=X[i][k];}
 	
-  j++;}
+  j=j+1;
+  }}
   *npts = j;
   return;
 }

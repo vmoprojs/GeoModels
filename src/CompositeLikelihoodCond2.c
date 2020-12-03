@@ -435,10 +435,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; 
                          vv=(int) v; 
-                         l1=dnbinom(uu,NN[0],p1,1);
-                         l2=dnbinom(vv,NN[0],p2,1);
-
-
+                         l1=one_log_negbinom_marg(uu,NN[0],p1);
+                         l2=one_log_negbinom_marg(vv,NN[0],p2);
                         bl=2*log(biv_binomneg(NN[0],uu,vv,p1,p2,p11))-(l1+l2);  
                     *res+= weights*bl;
                 }}
@@ -1138,8 +1136,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 u=data1[i];v=data2[i];
                             if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                           uu=(int) u; vv=(int) v; 
-                          l1=dbinom(uu,NN[0],p1,1);
-                          l2=dbinom(vv,NN[0],p2,1);
+                          l1=one_log_negbinom_marg(uu,NN[0],p1);
+                          l2=one_log_negbinom_marg(vv,NN[0],p2);
                         bl=2*log(biv_binom (NN[0],uu,vv,p1,p2,p11))-(l1+l2);
                     *res+= weights*bl;
                 }}
@@ -1167,10 +1165,9 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 p1=pnorm(ai,0,1,1,0);p2=pnorm(aj,0,1,1,0);
                     u=data1[i];v=data2[i];
                             if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-                          uu=(int) u; 
-                         vv=(int) v; 
-                         l1=dnbinom(uu,NN[0],p1,1);
-                         l2=dnbinom(vv,NN[0],p2,1);
+                          uu=(int) u;  vv=(int) v; 
+                         l1=one_log_negbinom_marg(uu,NN[0],p1);
+                         l2=one_log_negbinom_marg(vv,NN[0],p2);
                         bl=2*log(biv_binomneg(NN[0],uu,vv,p1,p2,p11))-(l1+l2);  
                     *res+= weights*bl;
                 }}

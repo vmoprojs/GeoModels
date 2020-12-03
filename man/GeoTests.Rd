@@ -171,20 +171,29 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
 ##### H1
 fixed=list(power2=power2,nugget=nugget,mean=mean)
 start=list(scale=c_supp,skew=skew,tail=tail,sill=sill)
+
+lower=list(scale=0,skew=-1 ,tail=0.5,sill=0)
+upper=list(scale=2,skew=1,tail=1.5,sill=5)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                    likelihood="Full",type="Standard",varest=TRUE,
-                    optimizer="BFGS",start=start,fixed=fixed)
+                   lower=lower,upper=upper,
+                   optimizer="nlminb",
+                    start=start,fixed=fixed)
 
 fitH1$param
 
 ##### H0: Gaussianity (i.e tail1=1, skew=0 fixed)
 fixed=list(power2=power2,nugget=nugget,mean=mean,tail=1,skew=0)
 start=list(scale=c_supp,sill=sill)
+lower=list(scale=0,sill=0)
+upper=list(scale=2,sill=5)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     likelihood="Full",type="Standard",varest=TRUE,
-                    optimizer="BFGS",start=start,fixed=fixed)
+                      lower=lower,upper=upper,
+                   optimizer="nlminb",
+                    start=start,fixed=fixed)
 
 
 #  Wald statistic test
@@ -224,16 +233,16 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,
 # Pairwise-likelihood fitting of the random field, full model:
 start=list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 fixed=list(nugget=nugget)
-fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,model=model,
+fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    optimizer="BFGS",fixed=fixed,start=start,X=X)
+                    fixed=fixed,start=start,X=X)
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
 start=list(mean=mean,scale=scale,sill=sill)
 fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
-fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.01,model=model,
+fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
                     varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    optimizer="BFGS",fixed=fixed,start=start,X=X)
+                    fixed=fixed,start=start,X=X)
 
 
 # Hypothesis testing results:

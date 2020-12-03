@@ -69,7 +69,7 @@ void Grad_Diff_Vario(double rho, int *flag, double *gradcor,
 
 void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
     double rhod,delta=0,*parC,*b1;int j=0,o=0,k=0;
 
@@ -77,7 +77,8 @@ void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gra
         b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
+  
 
 
 double nugget=nuis[nbetas],sill=nuis[nbetas+1];
@@ -89,14 +90,21 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
 
 
    for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log_biv_Norm((1-nugget)*rho,u,v, ai_d, aj_d,sill,0)-ff)/delta; 
-   i++; }
+      i++; 
+   }
+
 } 
 
   // Derivative  respect with the nugget
@@ -127,13 +135,13 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
 
 void Grad_Cond_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
     double rhod,delta=0,*parC,*b1;int j=0,o=0,k=0;
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 double nugget=nuis[nbetas],sill=nuis[nbetas+1];
   double ai_d=0.0,aj_d=0.0;
   int kk=0,h=0, i=0;
@@ -142,14 +150,18 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
   double l2=dnorm(v,aj,sqrt(sill),1);
   double ff=2*log_biv_Norm((1-nugget)*rho,u,v, ai, aj,sill,0)-(l1+l2);
 
-    // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+   for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(2*log_biv_Norm((1-nugget)*rho,u,v, ai_d, aj_d,sill,0)-
               (dnorm(u,ai_d,sqrt(sill),1)+dnorm(v,aj_d,sqrt(sill),1))
                 - ff)/delta; 
@@ -187,7 +199,7 @@ double nugget=nuis[nbetas],sill=nuis[nbetas+1];
 /*************************************************************************************/
 void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -196,7 +208,6 @@ void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
 
   double nugget=nuis[nbetas];
   double sill=nuis[nbetas+1];
@@ -208,15 +219,20 @@ void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   double l1=one_log_two_pieceGauss(u,ai,sill,skew);
   double l2=one_log_two_pieceGauss(v,aj,sill,skew);
   double ff=2*log(biv_two_pieceGaussian(rho1,u,v,sill,skew,p11,ai,aj))-(l1+l2);
-/*
+
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_two_pieceGaussian(rho1,u,v,sill,skew,p11,ai_d,aj_d)) - 
    (one_log_two_pieceGauss(u,ai_d,sill,skew)+one_log_two_pieceGauss(v,aj_d,sill,skew)))-ff)/delta; 
    i++; }
@@ -262,7 +278,7 @@ void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
 /*************************************************************************************/
 void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -271,7 +287,7 @@ void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double nugget=nuis[nbetas];
@@ -282,15 +298,20 @@ void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   double qq=qnorm((1-skew)/2,0,1,1,0);
   double p11=pbnorm(cormod,lag,lagt,qq,qq,nugget,1,par,0);
   double ff=log(biv_two_pieceGaussian(rho1,u,v,sill,skew,p11,ai,aj));
-/*
+
   // Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_two_pieceGaussian(rho1,u,v,sill,skew,p11,ai_d,aj_d)) - ff)/delta; 
    i++; }
 }  
@@ -337,7 +358,7 @@ void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
 /*************************************************************************************/
 void Grad_Cond_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0,uu,vv,N;
@@ -358,18 +379,18 @@ void Grad_Cond_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *g
   double  l1=dbinom(uu,NN,p1,1);
   double  l2=dbinom(vv,NN,p2,1);
   double ff=2*log(biv_binomneg (N,uu,vv,p1,p2,p11))-(l1+l2);
-for(o=0;o<nbetas;o++) {b1[o]=betas[o];}
-for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
-                        if(flag[o]==1)  b1[o]=betas[o]+delta;}
+for(kk=0;kk<nbetas;kk++){
 
-/* Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
      p1_d=pnorm(ai_d,0,1,1,0); p2_d=pnorm(aj_d,0,1,1,0);
      p11_d=pbnorm(cormod,lag,lagt,ai_d,aj_d,nugget,1,par,0);
     
@@ -406,7 +427,7 @@ for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
 /*************************************************************************************/
 void Grad_Pair_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0,uu,vv,N;
@@ -423,18 +444,20 @@ void Grad_Pair_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *g
   /* probabilitities*/
   p11=pbnorm(cormod,lag,lagt,ai,aj,nugget,1,par,0);
   p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-for(o=0;o<nbetas;o++) {b1[o]=betas[o];}
-for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
-                        if(flag[o]==1)  b1[o]=betas[o]+delta;}
 double ff=log(biv_binomneg (N,uu,vv,p1,p2,p11));
 /* Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
      p1_d=pnorm(ai_d,0,1,1,0); p2_d=pnorm(aj_d,0,1,1,0);
      p11_d=pbnorm(cormod,lag,lagt,ai_d,aj_d,nugget,1,par,0);
     
@@ -471,7 +494,7 @@ double ff=log(biv_binomneg (N,uu,vv,p1,p2,p11));
 /*************************************************************************************/
 void Grad_Cond_Binom(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   int h=0, i=0, j=0,kk=0,o=0,k=0,uu,vv,N;
   uu=(int) u; vv=(int) v; N=(int) NN;
@@ -487,21 +510,24 @@ void Grad_Cond_Binom(double rho,int *cormod,int *flag,int *flagcor, double *grad
   /* probabilitities*/
   p11=pbnorm(cormod,lag,lagt,ai,aj,nugget,1,par,0);
   p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-for(o=0;o<nbetas;o++) {b1[o]=betas[o];}
-for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
-                        if(flag[o]==1)  b1[o]=betas[o]+delta;}
+
 
     double  l1=dbinom(uu,NN,p1,1);
     double  l2=dbinom(vv,NN,p2,1);
 double ff=2*log(biv_binom (N,uu,vv,p1,p2,p11))-(l1+l2);
 /* Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
      p1_d=pnorm(ai_d,0,1,1,0); p2_d=pnorm(aj_d,0,1,1,0);
      p11_d=pbnorm(cormod,lag,lagt,ai_d,aj_d,nugget,1,par,0);
     
@@ -539,7 +565,7 @@ double ff=2*log(biv_binom (N,uu,vv,p1,p2,p11))-(l1+l2);
 /*************************************************************************************/
 void Grad_Pair_Binom(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   int h=0, i=0, j=0,kk=0,o=0,k=0,uu,vv,N;
   uu=(int) u; vv=(int) v; N=(int) NN;
@@ -555,18 +581,21 @@ void Grad_Pair_Binom(double rho,int *cormod,int *flag,int *flagcor, double *grad
   /* probabilitities*/
   p11=pbnorm(cormod,lag,lagt,ai,aj,nugget,1,par,0);
   p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-for(o=0;o<nbetas;o++) {b1[o]=betas[o];}
-for(o=0;o<nbetas;o++) { delta=sqrt(EPS)*betas[o];
-                        if(flag[o]==1)  b1[o]=betas[o]+delta;}
+
 double ff=log(biv_binom (N,uu,vv,p1,p2,p11));
 /* Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
      p1_d=pnorm(ai_d,0,1,1,0); p2_d=pnorm(aj_d,0,1,1,0);
      p11_d=pbnorm(cormod,lag,lagt,ai_d,aj_d,nugget,1,par,0);
     
@@ -603,7 +632,7 @@ double ff=log(biv_binom (N,uu,vv,p1,p2,p11));
 
 void Grad_Cond_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -613,7 +642,7 @@ void Grad_Cond_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
 
   double shape=nuis[nbetas+2];
@@ -621,14 +650,19 @@ void Grad_Cond_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
   double l1=one_log_weibull(u,ai,shape);
   double l2=one_log_weibull(v,aj,shape);
   double ff=2*log(biv_Weibull((1-nugget)*rho,u,v,ai,aj,shape))-(l1+l2);
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=( (2*log(biv_Weibull((1-nugget)*rho,u,v,ai_d,aj_d,shape)) -(one_log_weibull(u,ai_d,shape)+one_log_weibull(v,aj_d,shape)))- ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -677,7 +711,7 @@ grad[i]=(2*log(biv_Weibull((1-nugget)*rho,u,v,ai,aj,shape+delta))-(one_log_weibu
 
 void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -687,19 +721,23 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
 
   double shape=nuis[nbetas+2];
   double ff=log(biv_Weibull((1-nugget)*rho,u,v,ai,aj,shape));
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_Weibull((1-nugget)*rho,u,v,ai_d,aj_d,shape)) - ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -746,7 +784,7 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 void Grad_Cond_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -756,20 +794,24 @@ void Grad_Cond_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
 
   double l1=dpois(u,exp(ai),1);
   double l2=dpois(v,exp(aj),1);
   double ff=2*log( biv_Poisson((1-nugget)*rho,u,v,ai,aj))-(l1+l2);
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*(betas[kk]);                
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log( biv_Poisson((1-nugget)*rho,u,v,ai_d,aj_d)) - (dpois(u,exp(ai_d),1)+ dpois(v,exp(aj_d),1)))-ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -801,7 +843,7 @@ void Grad_Cond_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -811,19 +853,23 @@ void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   double nugget=nuis[nbetas];
 
   double rhosill=(1-nugget)*rho;
   double ff=log( biv_Poisson(rhosill,u,v,ai,aj));
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*(betas[kk]);                
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log( biv_Poisson(rhosill,u,v,ai_d,aj_d)) - ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -856,7 +902,7 @@ void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 void Grad_Cond_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -866,21 +912,26 @@ void Grad_Cond_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
 
   double shape=nuis[nbetas+2];
   double  l1=one_log_gamma(u,ai,shape);
   double  l2=one_log_gamma(v,aj,shape);
   double ff=2*log(biv_gamma((1-nugget)*rho,u,v,ai,aj,shape))-(l1+l2);
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(  (2*log(biv_gamma((1-nugget)*rho,u,v,ai_d,aj_d,shape)) -(one_log_gamma(u,ai_d,shape)+one_log_gamma(v,aj_d,shape)) )-     ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -925,7 +976,7 @@ void Grad_Cond_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
 
 void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -935,20 +986,25 @@ void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
 
   double shape=nuis[nbetas+2];
 
   double ff=log(biv_gamma((1-nugget)*rho,u,v,ai,aj,shape));
-  //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_gamma((1-nugget)*rho,u,v,ai_d,aj_d,shape)) - ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -995,7 +1051,7 @@ void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
 
 void Grad_Cond_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1004,7 +1060,7 @@ void Grad_Cond_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+ 
   double nugget=nuis[nbetas];
 double sill=nuis[nbetas+1];
  double l1=one_log_loggaussian(u,ai,sill);
@@ -1012,14 +1068,18 @@ double sill=nuis[nbetas+1];
  double ff=2*log(d2lognorm(u,v,sill,0, ai, aj,rho*(1-nugget)))-(l1+l2);
 
   // Derivativve of the difference respect with the mean*/
-   
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(2*log(d2lognorm(u,v,sill,0, ai_d, aj_d,rho*(1-nugget))) - (one_log_loggaussian(u,ai_d,sill)+ one_log_loggaussian(v,aj_d,sill))-ff)/delta; 
    i++; }
 }
@@ -1055,7 +1115,7 @@ double sill=nuis[nbetas+1];
 
 void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1064,7 +1124,7 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
        b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+ 
   double nugget=nuis[nbetas];
 double sill=nuis[nbetas+1];
  //double sill=1-nugget;
@@ -1073,13 +1133,18 @@ double sill=nuis[nbetas+1];
 /*
   // Derivativve of the difference respect with the mean*/
    
-     for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(d2lognorm(u,v,sill,0, ai_d, aj_d,rho*(1-nugget))) - ff)/delta; 
    i++; }
 }
@@ -1115,7 +1180,7 @@ double sill=nuis[nbetas+1];
 
 void Grad_Cond_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1126,7 +1191,7 @@ void Grad_Cond_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *g
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
  double sill=nuis[nbetas+1];
   double l1=one_log_logistic(u,ai,sill) ;
@@ -1135,12 +1200,17 @@ b1=(double *) Calloc(nbetas,double);
 double ff=2*log(biv_Logistic((1-nugget)*rho,u,v,ai,aj,sill))-(l1+l2);
   // Derivativve of the difference respect with the mean*/
   for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
                           
    grad[i]=((2*log(biv_Logistic((1-nugget)*rho,u,v,ai_d,aj_d,sill)) - (one_log_logistic(u,ai_d,sill) +one_log_logistic(v,aj_d,sill)))-ff)/delta; 
    i++; }
@@ -1178,7 +1248,7 @@ grad[kk+i]=((2*log(biv_Logistic((1-nugget)*rhod,u,v,ai,aj,sill)) - (l1+l2))-ff)/
 
 void Grad_Pair_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1189,20 +1259,24 @@ void Grad_Pair_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *g
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
    double nugget=nuis[nbetas];
  double sill=nuis[nbetas+1];
 
 double ff=log(biv_Logistic((1-nugget)*rho,u,v,ai,aj,sill));
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
-                          
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_Logistic((1-nugget)*rho,u,v,ai_d,aj_d,sill)) - ff)/delta; 
    i++; }
 }
@@ -1241,7 +1315,7 @@ grad[kk+i]=(log(biv_Logistic((1-nugget)*rhod,u,v,ai,aj,sill)) - ff)/delta;
 /*************************************************************************************/
 void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1250,7 +1324,7 @@ void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
     
     double df=nuis[nbetas];
     double nugget=nuis[nbetas+1];
@@ -1265,13 +1339,18 @@ void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
     double ff=2*log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai,aj,nugget))-(l1+l2);
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+ for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai_d,aj_d,nugget)) -
       (one_log_two_pieceT(u,ai_d,sill,df,skew)+one_log_two_pieceT(v,aj_d,sill,df,skew)))-ff)/delta; 
    i++; }
@@ -1324,7 +1403,7 @@ void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
 /*************************************************************************************/
 void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1333,7 +1412,7 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
     
     double df=nuis[nbetas];
     double nugget=nuis[nbetas+1];
@@ -1347,13 +1426,18 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
  //Rprintf("%d %d %d %d %d %d %f %f %f %f\n",nbetas,flag[0],flag[1],flag[2],flag[3],flag[4],df,nugget,sill,skew);
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_two_pieceT(rho1,u,v,sill,df,skew,p11,ai_d,aj_d,nugget)) - ff)/delta; 
    i++; }
 }  
@@ -1401,7 +1485,7 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
 }
 
 void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
-       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj
        ,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
@@ -1411,7 +1495,7 @@ void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
  double df=nuis[nbetas];
  double nugget=nuis[nbetas+1];
@@ -1422,13 +1506,18 @@ void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  double ff=2*log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df,nugget)/sill)-(l1+l2);
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_T(rho1,(u-ai_d)/sill,(v-aj_d)/sill,df,nugget)/sill) -(one_log_T(u,ai_d,sill,df)+one_log_T(v,aj_d,sill,df)))-ff)/delta; 
    i++; }
 }
@@ -1468,7 +1557,7 @@ void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
 }
 
 void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,double NN,
-       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj,double *Xl, double *Xm
+       int *npar,int *nparc, int *nparcT,int nbetas,double *nuis, double *par,  double u, double v,double ai,double aj
        ,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
@@ -1478,7 +1567,7 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
  double df=nuis[nbetas];
  double nugget=nuis[nbetas+1];
@@ -1487,13 +1576,18 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
  double ff=log(biv_T(rho1,(u-ai)/sqrt(sill),(v-aj)/sqrt(sill),df,nugget)/sill);
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_T(rho1,(u-ai_d)/sill,(v-aj_d)/sill,df,nugget)/sill) - ff)/delta; 
    i++; }
 }
@@ -1533,7 +1627,7 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 void Grad_Cond_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1542,7 +1636,7 @@ void Grad_Cond_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gra
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+ 
   double nugget=nuis[nbetas];
   double sill=nuis[nbetas+1];//double nugget=nuis[nbetas]; nuis[2],nuis[3],nuis[1]
   double tail=nuis[nbetas+2];
@@ -1553,13 +1647,18 @@ b1=(double *) Calloc(nbetas,double);
   double ff=2*log(biv_tukey_h(rho1,u,v,ai,aj,tail,sill))-(l1+l2);
 
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_tukey_h(rho1,u,v,ai_d,aj_d,tail,sill)) -
      -(one_log_tukeyh(u,ai_d,sill,tail)+one_log_tukeyh(v,aj_d,sill,tail)))-ff)/delta; 
    i++; }
@@ -1599,7 +1698,7 @@ b1=(double *) Calloc(nbetas,double);
 
 void Grad_Pair_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1608,7 +1707,7 @@ void Grad_Pair_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gra
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
   double sill=nuis[nbetas+1];//double nugget=nuis[nbetas]; nuis[2],nuis[3],nuis[1]
   double tail=nuis[nbetas+2];
@@ -1616,13 +1715,18 @@ b1=(double *) Calloc(nbetas,double);
   double ff=log(biv_tukey_h(rho1,u,v,ai,aj,tail,sill));
 
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_tukey_h(rho1,u,v,ai_d,aj_d,tail,sill)) - ff)/delta; 
    i++; }
 }
@@ -1661,7 +1765,7 @@ b1=(double *) Calloc(nbetas,double);
 
 void Grad_Cond_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1670,7 +1774,7 @@ void Grad_Cond_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradc
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
 
   double nugget=nuis[nbetas];
@@ -1685,13 +1789,18 @@ b1=(double *) Calloc(nbetas,double);
 
 
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_sinh(rho1,u,v,ai_d,aj_d,skew,tail,sill)) -
     (one_log_sas(u,ai_d,skew,tail,sill)+one_log_sas(v,aj_d,skew,tail,sill)))- ff)/delta; 
    i++; }
@@ -1737,7 +1846,7 @@ b1=(double *) Calloc(nbetas,double);
 
 void Grad_Pair_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1746,7 +1855,7 @@ void Grad_Pair_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradc
 b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
 
   double nugget=nuis[nbetas];
@@ -1757,13 +1866,18 @@ b1=(double *) Calloc(nbetas,double);
   double ff=log(biv_sinh(rho1,u,v,ai,aj,skew,tail,sill));
 
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_sinh(rho1,u,v,ai_d,aj_d,skew,tail,sill)) - ff)/delta; 
    i++; }
 }
@@ -1808,7 +1922,7 @@ b1=(double *) Calloc(nbetas,double);
 
 void Grad_Cond_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1818,20 +1932,25 @@ void Grad_Cond_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
   double shape=nuis[nbetas+2];
   double l1=one_log_loglogistic(u,exp(ai),shape);
   double l2=one_log_loglogistic(v,exp(aj),shape);
   double ff=2*log(biv_LogLogistic((1-nugget)*rho,u,v,ai,aj,shape))-(l1+l2);
   //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_LogLogistic((1-nugget)*rho,u,v,ai_d,aj_d,shape)) - 
     (one_log_loglogistic(u,exp(ai_d),shape)+one_log_loglogistic(v,exp(aj_d),shape)))-ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
@@ -1879,7 +1998,7 @@ void Grad_Cond_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
 
 void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc, int *nparcT,int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1889,20 +2008,25 @@ void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
     b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
   double nugget=nuis[nbetas];
 
   double shape=nuis[nbetas+2];
   double rhosill=(1-nugget)*rho;
   double ff=log(biv_LogLogistic(rhosill,u,v,ai,aj,shape));
   //Rprintf("----ff---%f\n",ff);
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
      delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_LogLogistic(rhosill,u,v,ai_d,aj_d,shape)) - ff)/delta; 
   //   Rprintf("----grad1---%f\n",grad[i]);
    i++; 
@@ -1951,7 +2075,7 @@ void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
 
 void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -1960,7 +2084,7 @@ void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double sill=nuis[nbetas+1];double nugget=nuis[nbetas];
@@ -1972,13 +2096,18 @@ void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   double  ff=2*log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget))-(l1+l2);
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=((2*log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew,nugget))-(one_log_SkewGauss(u,ai_d,sill,skew)+one_log_SkewGauss(v,aj_d,sill,skew)))- ff)/delta; 
    i++; }
 }  
@@ -2019,7 +2148,7 @@ void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
 
 void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 { 
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -2028,7 +2157,7 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double sill=nuis[nbetas+1];double nugget=nuis[nbetas];
@@ -2036,13 +2165,18 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
     double  ff=log(biv_skew(rho,u,v,ai,aj,sill,skew,nugget));
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
    grad[i]=(log(biv_skew(rho,u,v,ai_d,aj_d,sill,skew,nugget)) - ff)/delta; 
    i++; }
 }  
@@ -2082,7 +2216,7 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
 
 void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -2091,7 +2225,7 @@ void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double sill=nuis[nbetas+1];double nugget=nuis[nbetas];
@@ -2099,13 +2233,18 @@ void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
 
    grad[i]=(log(biv_wrapped(alfa,u,v,ai_d,aj_d,nugget,sill,rho)) - ff)/delta; 
    i++; }
@@ -2142,7 +2281,7 @@ void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 void Grad_Pair_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gradcor, double *grad, double lag, double lagt,
   double NN,int *npar,int *nparc,int *nparcT, int nbetas, double *nuis, double *par, double u, double v,
-       double ai, double aj,double *Xl,double *Xm,double **sX,int l,int m,double *betas)
+       double ai, double aj,double **sX,int l,int m,double *betas)
 {
   // Initialization variables:
   int h=0, i=0, j=0,kk=0,o=0,k=0;
@@ -2151,7 +2290,7 @@ void Grad_Pair_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
   b1=(double *) Calloc(nbetas,double);
   parC=(double *) Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
-  for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
+
 
   //q3,dp1dBeta,dp2dBeta,dp11dBeta,dp11dsill,p11_dcorr,p11_dsill,C;
   double sill=nuis[nbetas+1];double nugget=nuis[nbetas];
@@ -2159,13 +2298,18 @@ void Grad_Pair_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
 
 /*
   // Derivativve of the difference respect with the mean*/
-  for(kk=0;kk<nbetas;kk++){
+for(kk=0;kk<nbetas;kk++){
+
+    for(o=0;o<nbetas;o++) {b1[o]=betas[o];} 
   if(flag[kk]==1){
-     delta=sqrt(EPS)*betas[kk];
+     delta=sqrt(EPS)*(betas[kk]);
      b1[kk]=betas[kk]+delta;
      ai_d=0.0;aj_d=0.0;
-     for(o=0;o<nbetas;o++){ai_d=ai_d+sX[l][o]*(b1[o]);
-                           aj_d=aj_d+sX[m][o]*(b1[o]);}
+     for(o=0;o<nbetas;o++){
+                           
+                           ai_d=ai_d+sX[l][o]*(  b1[o] );
+                           aj_d=aj_d+sX[m][o]*(  b1[o] );
+                           }
 
    grad[i]=(log(biv_wrapped(alfa,u,v,ai_d,aj_d,nugget,sill,rho)) - ff)/delta; 
    i++; }
