@@ -278,7 +278,7 @@ data[[3]]
 ###  with a Wend0 correlation in the north emisphere of the planet earth
 ###
 ###############################################################
-require(globe)
+library(globe)
 distance="Geod";radius=6371
 
 NN=5000 ## total point on the sphere on lon/lat format

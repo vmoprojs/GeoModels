@@ -1509,7 +1509,7 @@ if(!spacetime&&!bivariate)   #  spatial case
             #print("1")
             nearest = RANN::nn2(x,k = K)
             #nearest = FNN::get.knn(k, k=K)
-            #########  cases geod (2) or chordal (1) distances
+            #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
             if(distance==2||distance==1){
                   agc=NULL;
                   nnn=nrow(x)
