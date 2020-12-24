@@ -24,7 +24,7 @@
       are computed before  the optimization. }
         \item{seed}{Numeric; The seed used in the  n-fold  kriging cross-validation. Default is 1.}
      }
-
+\details{ The function update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
 \value{  
   Returns an object of class \code{GeoFit}.
 }

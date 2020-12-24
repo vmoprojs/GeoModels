@@ -15,6 +15,7 @@ CkVarType(type)
     are computed by the sub-sampling method, see \code{\link{GeoFit}}.}
 }
 
+\details{The procedure controls the method used to compute the estimates' variances}
 \seealso{\code{\link{GeoFit}}}
 
 

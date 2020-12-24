@@ -14,6 +14,7 @@ CkModel(model)
     objects. \code{Gaussian} is the default.}
 }
 
+\details{The function controls the type of random field inserted by the users.}
 \seealso{\code{\link{GeoFit}}}
 
 

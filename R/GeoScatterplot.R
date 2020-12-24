@@ -19,6 +19,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
                              'None', maxdist, maxtime, model,NULL, 'Nelder-Mead', NULL,
                              radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL)
     # Checks if there are errors in the input:
+  if(is.null(maxdist))         stop('maxdist must be specified\n')
   if(!is.null(checkinput$error))
       stop(checkinput$error)
   if(spatial||bivariate){

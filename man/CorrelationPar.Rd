@@ -14,6 +14,8 @@ CorrelationPar(corrmodel)
   \item{corrmodel}{Integer; an integer associated to a given correlation model.}
 }
 
+\details{The function return a list with the Parameters of a Correlation Model}
+
 \seealso{\code{\link{GeoFit}}}
 
 

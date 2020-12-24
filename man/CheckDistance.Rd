@@ -15,10 +15,13 @@ CheckDistance(distance)
     and \code{Chor} that is euclidean, geodesic and chordal distance.}
 }
 
+\details{ The function check if  the type of distance is valid.} 
+
+
 \value{Returns 0,1,2 for  euclidean,geodesic, chordal distances 
 respectively. Otherwise returns NULL.} 
 
-\seealso{\code{\link{GeoFit}}}
+
 
 
 

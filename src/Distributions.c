@@ -2041,7 +2041,7 @@ double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double v
     u=zi-mi;
     v=zj-mj;
     u2=R_pow(u,2);v2=R_pow(v,2);
-    s1=vari;
+    s1=vari+nugget;
     s12=vari*corr;
     det=R_pow(s1,2)-R_pow(s12,2);
     dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));
@@ -3992,6 +3992,7 @@ return(dens);
 /******* some marginals (log)pdf  *****************/
 
 
+
 double one_log_SkewGauss(double z,double m, double vari, double skew)
 {
   double  res;
@@ -3999,7 +4000,7 @@ double one_log_SkewGauss(double z,double m, double vari, double skew)
   double vari2  = R_pow(vari,1);
   double q=z-m;
     res=log(2)-0.5*log(skew2+vari2)+dnorm(q/(sqrt(skew2+vari2)),0,1,1)
-    +log(pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,0));
+    +pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,1);
   return(res);
 }
 

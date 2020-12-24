@@ -278,10 +278,9 @@ data[[3]]
 ###  with a Wend0 correlation in the north emisphere of the planet earth
 ###
 ###############################################################
-library(globe)
 distance="Geod";radius=6371
 
-NN=5000 ## total point on the sphere on lon/lat format
+NN=1000 ## total point on the sphere on lon/lat format
 set.seed(80)
 coords=cbind(runif(NN,-180,180),runif(NN,0,90))
 ## Set the wendland parameters
@@ -291,11 +290,6 @@ param<-list(mean=0,sill=1,nugget=0,scale=radius*0.1,power2=3)
 #set.seed(2)
 data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
         distance=distance,radius=radius,param=param)$data
-
-
-globeearth(eye=place("newyorkcity"))
-globepoints (loc =coords,pch =20 ,
-col =cm.colors( length (data),alpha =0.15)[rank(data)])
 
 
 

@@ -50,7 +50,12 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
     if(!is.matrix(loc))   stop("loc parameter must be a matrix")
     if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")
-    if(!is.null(Xloc)) Xloc=as.matrix(Xloc)
+    if(!is.null(Xloc)) 
+         { 
+           if(is.vector(Xloc)) Xloc=matrix(Xloc,nrow=1)
+           else                Xloc=as.matrix(Xloc)
+         }
+ 
     if(is.matrix(X) &&is.null(Xloc))  stop("Covariates for locations to predict are missing ")
     if(is.null(X) &&is.matrix(Xloc))  stop("Covariates  are missing ")
     if(CheckST(CkCorrModel(corrmodel))) if(is.null(time)) 

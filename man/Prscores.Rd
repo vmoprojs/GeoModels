@@ -9,18 +9,17 @@ for spatial, spatiotemporal and bivariate Gaussian RF.}
 }
 \usage{
 Prscores(data,  method="cholesky", matrix)
-
 }
+
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) 
    or a a(\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation).
     or a a(\eqn{2 \times d}{2 x d})-matrix (a single bivariate realisation).}
-  \item{method}{String; the type of matrix decomposition used in the computation of the predictive scores. Default is \code{cholesky}. The other possible choices is \code{svd}.}      
+  \item{method}{String; the type of matrix decomposition used in the computation of the predictive scores. Default is \code{cholesky}. The other possible choices is \code{svd}.} 
    \item{matrix}{An object of class matrix. See the Section \bold{Details}.}
 }
 
 \details{
-
   For a given covariance matrix object (\code{\link{GeoCovmatrix}})
   and a given spatial, spatiotemporal or bivariare realization
   from a Gaussian random field,
@@ -32,7 +31,6 @@ Prscores(data,  method="cholesky", matrix)
    \item{MAE}{Mean absolute error predictive score}
   \item{LSCORE}{Logarithmic predictive score}
   \item{CRPS}{Continuous ranked probability predictive score}
-
 }
 
 
@@ -40,7 +38,6 @@ Prscores(data,  method="cholesky", matrix)
  Zhang H. and Wang Y. (2010). \emph{Kriging
    and cross-validation for massive spatial data}.
   Environmetrics, \bold{21}, 290--304.
-
 Gneiting T. and Raftery A. \emph{Strictly Proper Scoring Rules, 
    Prediction, and Estimation}.
   Journal of the American Statistical Association, \bold{102}

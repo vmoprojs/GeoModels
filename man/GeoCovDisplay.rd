@@ -15,7 +15,7 @@ GeoCovDisplay(covmatrix,limits=FALSE,pch=2)
     \item{pch}{Type of symbols to use in the image plot.}
 }
 
-\details{
+\details{ 
   For a given covariance matrix object (\code{\link{GeoCovmatrix}})
   the function diplays the  pattern of   the sparsness  of a  covariance matrix
   where the white color represents 0 entries and black color represents  non zero entries}

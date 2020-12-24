@@ -79,6 +79,9 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
   \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
 }
 
+\details{Subroutine called by the fitting procedures.
+  The procedure controls the the validity of the input inserted by the users.}
+  
 \seealso{\code{\link{GeoFit}}}
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},

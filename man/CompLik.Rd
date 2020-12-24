@@ -105,7 +105,10 @@ CompLik(bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance
       \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
          \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
 }
-
+\details{ Subroutine called by GeoFit.
+  The procedure estimates the model parameters by maximisation of the
+  composite log-likelihood}
+  
 \seealso{\code{\link{GeoFit}}}
 
 

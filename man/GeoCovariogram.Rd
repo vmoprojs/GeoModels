@@ -1,7 +1,7 @@
 \name{GeoCovariogram}
 \alias{GeoCovariogram}
 \encoding{UTF-8}
-\title{Computes fitted covariance and/or  variogram}
+\title{Computes the fitted  variogram model.}
 \description{
   The procedure computes and plots covariance  or variogram estimated fitting a Gaussian,
   and non Gaussian spatio (temporal) bivariate random  fields. Allows to add 
@@ -53,6 +53,7 @@ GeoCovariogram(fitted, distance="Eucl",answer.cov=FALSE,
   \item{\dots}{other optional parameters which are passed to plot functions.}
 }
 
+\details{The function computes the fitted variogram model}
 \value{
   The returned object is eventually a list with:
 
@@ -63,15 +64,11 @@ GeoCovariogram(fitted, distance="Eucl",answer.cov=FALSE,
 }
 
 \references{
-
-
 Cressie, N. A. C. (1993) \emph{Statistics for Spatial Data}. New York:
 Wiley.
 
-  Gaetan, C. and Guyon, X. (2010) Spatial Statistics and Modelling.
+Gaetan, C. and Guyon, X. (2010) Spatial Statistics and Modelling.
   \emph{Spring Verlang, New York}.
-
-
 }
 
 \seealso{\code{\link{GeoFit}}.}

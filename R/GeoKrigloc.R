@@ -30,12 +30,12 @@ if(bivariate)  Tloc=1
 #####################################################################
 if(space){
          ### computing spatial neighborhood
-         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,neighb=neighb,maxdist=maxdist)
+         neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,neighb=neighb,maxdist=maxdist,X=X)
          res1=res2=NULL
          for(i in 1: Nloc)
           {
             pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
-                X=neigh$X[[i]],
+                X=neigh$X[[i]],Xloc= Xloc[i,],
                 model=model, param=param,mse=mse, data=neigh$data[[i]])
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
@@ -46,13 +46,13 @@ if(spacetime)
 {  
        ### computing spatio-temporal neighborhood
          neigh=GeoNeighborhood(data, coordx=coords,coordt=coordt,distance=distance,neighb=neighb,
-                  loc=loc,time=time,maxdist=maxdist,maxtime=maxtime)
+                  loc=loc,time=time,maxdist=maxdist,maxtime=maxtime,X=X)
          res1=res2=NULL
          k=1
          for(i in 1: Nloc){
           for(j in 1: Tloc){
             pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],
-               X=neigh$X[[i]],
+               X=neigh$X[[i]],Xloc= Xloc[i+(Nloc)*(j-1),],
              corrmodel=corrmodel,distance=distance, model=model, param=param,mse=mse, data=neigh$data[[k]])
             res1=c(res1,pr$pred)
             res2=c(res2,pr$mse)
@@ -61,12 +61,12 @@ if(spacetime)
 }
 if(bivariate)
 { 
-neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,neighb=neighb,bivariate=TRUE)
+neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,neighb=neighb,bivariate=TRUE,X=X)
         res1=res2=NULL
          for(i in 1: Nloc)
           {
             pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
-                X=neigh$X,which=which,
+                X=neigh$X,,Xloc= Xloc[i,],which=which,
                 model=model, param=param,mse=mse, data=neigh$data[[i]])
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)

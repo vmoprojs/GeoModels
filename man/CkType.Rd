@@ -15,6 +15,9 @@ CkType(type)
     pairwise marginal likelihoods.}
 }
 
+\details{The procedure checks the  likelihood Object}
+
+
 \seealso{\code{\link{GeoFit}}}
 
 

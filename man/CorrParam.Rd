@@ -13,6 +13,8 @@ CorrParam(corrmodel)
   \item{corrmodel}{String; the name of a correlation model.}
 }
 
+\details{The function return a list with the Parameters of a Correlation Model}
+
 \seealso{\code{\link{GeoCovmatrix}}}
 
 

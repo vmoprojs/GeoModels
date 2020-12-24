@@ -14,9 +14,11 @@ CkCorrModel(corrmodel)
     description see \code{\link{GeoCovmatrix}}.}
 }
 
+\details{The procedure controls if the correlation model is correct}
+
+
 \value{Return a number associated to a given correlation model if the model
 is considered in the package. Otherwise return NULL.} 
-
 
 
 

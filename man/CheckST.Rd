@@ -12,7 +12,9 @@ CheckST(numbermodel)
   \item{numbermodel}{numeric; the number associated to a given correlation model.}
 }
 
-\value{Returns TRUE or FALSE depending if the correlation model is spatiotemporal or not.} 
+\details{ The function check if  the correlation model is spacetime.} 
+
+\value{Returns TRUE or FALSE depending if the correlation model is spacetime or not.} 
 
 
 

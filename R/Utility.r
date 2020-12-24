@@ -1128,6 +1128,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
 
 
+
     if(is.null(coordx_dyn))
     {
 
@@ -1416,12 +1417,15 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     if(is.null(tapsep))  tapsep=c(0.5,0.5)
     else  {if(length(tapsep)==1) tapsep=c(tapsep,0)}
     mem=FALSE
+
     if(tapering||memdist)  { mem=TRUE }   #### NB
+
     if(mem&&!tapering)  
       {        
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
-                colidx<-rowidx<-integer(nn*(nn-1)/2)
+                if(is.null(neighb)){
+                    colidx<-rowidx<-integer(nn*(nn-1)/2)}
       }
     if(bivariate) {
       if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
@@ -1430,7 +1434,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
     if(CheckSph(corrmodel))   radius=1
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
-
+ 
 # gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
 #           as.integer(grid),ia=ia,idx=idx,
 #           isinit=isinit,ja=ja,as.integer(mem),as.integer(numcoord),as.integer(numcoordx), as.integer(numcoordy),
@@ -1440,7 +1444,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 #           colidx=as.integer(colidx),rowidx=as.integer(rowidx),
 #           as.integer(ns),as.integer(NS),as.integer(isdyn),
 #           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-
+  
 
 if(is.null(neighb)){
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
@@ -1488,6 +1492,7 @@ else   ######## case  with neighboord!!!
 if(!spacetime&&!bivariate)   #  spatial case
    {
           ######
+
           indices <- function(X,Y)
           {
              res = NULL;res_d = NULL
@@ -1506,7 +1511,7 @@ if(!spacetime&&!bivariate)   #  spatial case
      ##########################################
          nn2Geo <- function(x, K = 2,distance)
          {
-            #print("1")
+           
             nearest = RANN::nn2(x,k = K)
             #nearest = FNN::get.knn(k, k=K)
             #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
@@ -1523,10 +1528,10 @@ if(!spacetime&&!bivariate)   #  spatial case
              nearest$nn.dists=cbind(rep(0,nnn),agc)
              }
             ########################################### 
-            #print("2")
+        
             sol = indices(nearest$nn.idx,nearest$nn.dists)
             lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
-           # print("2")
+        
          return(list (lags=lags, rowidx = rowidx, colidx = colidx))
          }
      ##########################################

@@ -86,9 +86,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                  namesparam[i]==paste('mean',22,sep="")||
                  namesparam[i]==paste('mean',23,sep="")||
                  namesparam[i]==paste('mean',24,sep="")||
-                 namesparam[i]==paste('mean',25,sep="")
-                 )
-
+                 namesparam[i]==paste('mean',25,sep=""))
               {
                 lower <- c(lower, -big)
                 upper <- c(upper, big)}   
@@ -153,7 +151,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
               
         return(list(lower=lower, upper=upper))
     }
-   
+
     ### Initialization parameters:
     initparam <- StartParam(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed,
                            grid, likelihood, maxdist,neighb, maxtime, model, n, 
@@ -161,7 +159,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                            "GeoWLS", type, varest, vartype,
                            weighted, winconst,winconst_t, winstp_t, winstp, X, memdist)
 
-    
+       
   
     if(!is.null(initparam$error))     stop(initparam$error)
     if(length(coordt)>0&&is.list(X)) X=X[[1]]

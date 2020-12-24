@@ -1,7 +1,7 @@
 \name{CheckSph}
 \alias{CheckSph}
 \encoding{UTF-8}
-\title{Checking if a covariance is valid only on sphere}
+\title{Checking if a covariance is valid only on the sphere}
 \description{
   Subroutine called by InitParam.
   The procedure controls if a covariance model is valid only on the sphere.
@@ -12,6 +12,7 @@ CheckSph(numbermodel)}
    \item{numbermodel}{Numeric; the code number for the covariance model.}
 }
 
+\details{The function checks if a covariance is valid only on the sphere}
 \value{Returns TRUE or FALSE} 
 
 

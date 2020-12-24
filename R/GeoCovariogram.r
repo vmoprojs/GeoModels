@@ -131,12 +131,13 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     binomialnegZINB<-model==45
     tukeyh<- model ==34
     tukeyh2<- model ==40
+    sas<- model ==20
     poisson<- model==30||model==36
     poissonZIP<- model==43||model==44
     loglogistic <- model==24
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||twopiecebimodal||skewstudentT
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||sas||twopiecebimodal||skewstudentT
             ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-9
     else slow=1e-3
     # lags associated to empirical variogram estimation
@@ -235,10 +236,10 @@ else                                        nui['nugget']=nuisance['nugget']
                         variogram22  <- correlation[(7*length(lags_m)+1):(8*length(lags_m))]
                            }
         else { 
-        #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
-        covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
-        #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
-        variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
+        covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
+        #covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
+        variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
+        #variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
         
         }
     }
@@ -378,6 +379,7 @@ else                                        nui['nugget']=nuisance['nugget']
                               hr=as.numeric(nuisance['tail1']); hl=as.numeric(nuisance['tail2'])
                               sill=as.numeric(nuisance['sill'])
                               corr=correlation
+                              corr[corr>=0.99999999]=0.99999999
                               x1=1-(1-corr^2)*hr; x2=(1-hr)^2-(corr*hr)^2
                               y1=1-(1-corr^2)*hl; y2=(1-hl)^2-(corr*hl)^2
                               g=1-hl-hr+(1-corr^2)*hl*hr
@@ -411,6 +413,60 @@ else                                        nui['nugget']=nuisance['nugget']
                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }     
+  if(sas) { if(bivariate) {}
+                        else {
+                          correlation=correlation*(1-nuisance['nugget'] )
+                          corr=correlation
+                          d=as.numeric(nuisance['tail']); 
+                          e=as.numeric(nuisance['skew']); 
+                          sill=as.numeric(nuisance['sill'])
+                  
+    mm=sinh(e/d)*exp(0.25)*(besselK(.25,(d+1)/(2*d))+besselK(.25,(1-d)/(2*d)))/(sqrt(8*pi))
+    vs=cosh(2*e/d)*exp(0.25)*(besselK(.25,(d+2)/(2*d))+besselK(0.25,(2-d)/(2*d)))/(sqrt(32*pi))-0.5-mm^2
+####### starting extra functions
+c1<-function(e,d,n,r){
+   U=c(0.5-0.5/d,-0.5/d);L=c(1-1/d,0.5-0.5/d-n/2+r)
+   res=exp(-e/d)*2^(-0.5+1.5/d+n/2-r)*gamma(0.5+0.5/d+n/2-r)*hypergeo::genhypergeo(U=U, L=L,0.5)
+   return(res)
+  }
+c2<-function(e,d,n,r){
+   U=c(0.5+0.5/d,0.5/d);L=c(1+1/d,0.5+0.5/d-n/2+r)
+   res=exp(-e/d)*2^(-0.5-1.5/d+n/2-r)*gamma(0.5-0.5/d+n/2-r)*hypergeo::genhypergeo(U=U, L=L,0.5)
+   return(res)
+  }
+c3<-function(e,d,n,r){
+   U=c(0.5+n/2-r,1+n/2-r);L=c(1.5-0.5/d+n/2-r,1.5+0.5/d+n/2-r)
+   r1=exp(-e/d)*pi*gamma(1+n-2*r)*hypergeo::genhypergeo(U=U, L=L,0.5)
+   r2=d*gamma(1.5-0.5/d+n/2-r)*gamma(1.5+0.5/d+n/2-r)
+   return(r1/r2)
+   }
+I1<-function(e,d,n,r){
+   a1=cosh(2*e/d)+sinh(2*e/d);  a2=pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)+pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)*a1; a3=pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)+pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)*a1
+   r1=(-1)^(3+n-2*r)*c1(e,d,n,r)-c2(e,d,n,r)+c1(e,d,n,r)*a1; r2=(-1)^(2+n-2*r)*c2(e,d,n,r)*a1+2^(-2-n+2*r)*c3(e,d,n,r)*a2; r3=-(-0.5)^(2+n-2*r)*c3(e,d,n,r)*a3
+  return(r1+r2+r3)
+     }
+SS<-Vectorize(I1, c("r"))
+coef<-function(e,d,N){
+  mat=NULL;n=1
+  while(n<=N){
+   r=as.vector(seq(0,trunc(n/2),1))
+   res=factorial(n)*SS(e,d,n,r)*(-0.5)^r/(2*sqrt(2*pi)*factorial(n-2*r)*factorial(r))
+   mat=c(mat,sum(res));n=n+1}
+return(mat)}
+CC<-Vectorize(coef, c("N"))
+corrsas<-function(e,d,N,vv,rho1){
+  mat=NULL;  j=1
+  while(j<=N){
+     A=CC(e,d,j)^2*rho1^(seq(1:j))/factorial(1:j)
+     mat=sum(A)/vv;j=j+1}
+    return(mat)}
+CorrSAS<-Vectorize(corrsas, c("rho1"))
+##########
+corr=CorrSAS(e,d,20,vs,corr)
+
+covariance=sill*vs*corr;variogram=sill*vs*(1-corr)  
+                        }
+          }
 ##########################################
  if(gamma)        { if(bivariate) {}
                         else {
@@ -693,9 +749,13 @@ else                                        nui['nugget']=nuisance['nugget']
             if(skewgausssian) vvv=(nuisance["sill"]+nuisance["skew"])^2*(1-2/pi)
             if(studentT)      vvv=nuisance["df"]/(nuisance["df"]-2)
             if(tukeyh)        vvv=(1-2*as.numeric(nuisance["tail"]))^(-1.5)
+            if(sas)           { d=as.numeric(nuisance['tail']); e=as.numeric(nuisance['skew'])
+                                MM=sinh(e/d)*exp(0.25)*(besselK(.25,(d+1)/(2*d))+besselK(.25,(1-d)/(2*d)))/(sqrt(8*pi))
+                                vvv=cosh(2*e/d)*exp(0.25)*(besselK(.25,(d+2)/(2*d))+besselK(0.25,(2-d)/(2*d)))/(sqrt(32*pi))-0.5-(MM)^2
+                            }
             if(tukeyh2)  {        hr=nuisance["tail1"];hl=nuisance["tail2"];
                                   mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                              vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                                  vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                          }
      
             ########

@@ -13,13 +13,15 @@ void Comp_Cond_Gauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-       int i=0;
+      int i=0;
     double  weights=1.0,sill,nugget,corr,bl,l1,l2;
-     sill=nuis[1];nugget=nuis[0];
+    sill=nuis[1];nugget=nuis[0];
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                     corr=CorFct(cormod,lags[i],0,par,0,0);
+  //Rprintf("%f %f %f  %d\n",lags[i],data1[i],data2[i],*npairs);
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);
                       l1= dnorm(data1[i], mean1[i],sqrt(sill),1);

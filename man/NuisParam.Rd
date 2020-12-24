@@ -3,8 +3,7 @@
 \encoding{UTF-8}
 \title{Lists the Nuisance Parameters of a Random Field}
 \description{
-  Subroutine called by InitParam and other procedures.
-  The procedure returns a list with the nuisance parameters of a given
+ The procedure returns a list with the nuisance parameters of a given
   random field model.
 }
 \usage{
@@ -17,6 +16,8 @@ NuisParam(model, bivariate=FALSE,num_betas=c(1,1))
   \item{num_betas}{Numerical; the nunber of mean parameters in the linear specification (default is 1)     }
 }
 
+\details{The function returns a list with the nuisance parameters of a given
+  random field model.}
 \seealso{\code{\link{GeoFit}}}
 
 

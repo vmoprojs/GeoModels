@@ -12,6 +12,8 @@ CheckBiv(numbermodel)
   \item{numbermodel}{numeric; the number associated to a given correlation model.}
 }
 
+\details{ The function check if  the correlation model is bivariate.}
+
 \value{Returns TRUE or FALSE depending if the correlation model is bivariate or not.} 
 
 

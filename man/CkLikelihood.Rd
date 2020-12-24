@@ -15,6 +15,8 @@ CkLikelihood(likelihood)
     likelihood. \code{Marginal} is the default.}
 }
 
+\details{  The function controls the type of the composite-likelihood inserted
+  by the users.}
 \seealso{\code{\link{GeoFit}}}
 
 

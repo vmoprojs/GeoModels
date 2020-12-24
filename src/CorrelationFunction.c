@@ -1758,7 +1758,8 @@ double CorFunWitMat(double lag, double scale, double smooth)
   if(smooth==1.5) {rho=exp(-a)*(1+a);return(rho);}
   if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
   if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+R_pow(a,3)/15);return(rho);}
-  rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
+  //rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
+ rho=exp((smooth*log(a) + log(bessel_k(a,smooth,2)) -a)- ((smooth-1)*log(2)+lgammafn(smooth)));
   return(rho);
 }
 
@@ -3645,7 +3646,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
       if(*model==1||*model==10||*model==12||*model==21||*model==30||*model==36||*model==18
-        ||*model==43||*model==44||
+        ||*model==43||*model==44||*model==20||
       *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38
       ||*model==39||*model==40||*model==41||*model==35||*model==37||*model==9||*model==41) 
 

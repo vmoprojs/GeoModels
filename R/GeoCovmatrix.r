@@ -288,7 +288,7 @@ corrsas<-function(e,d,N,vv,rho){
     return(mat)}
 CorrSAS<-Vectorize(corrsas, c("rho"))
 ##########
-corr=CorrSAS(e,d,25,vv,corr)
+corr=CorrSAS(e,d,20,vv,corr)
 vv=as.numeric(nuisance['sill'])*vv;
 }
 if(bivariate){}

@@ -14,6 +14,8 @@ MatDecomp(mtx, method)
           Two possible choices: \code{cholesky} and \code{svd}.}
 }
 
+\details{ Decomposition of a square positive or positive semidefinite matrix.} 
+
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
 }
