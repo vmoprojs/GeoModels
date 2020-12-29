@@ -161,6 +161,50 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
+/*********************************************************/
+/*********************************************************/
+void Comp_Cond_Gauss_misp_Tukeygh2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i;double bl,corr,corr2,zi,zj,weights=1.0,eta,tail,sill,nugget,u,eta2,mu,vv,l1,l2;
+    eta  = nuis[2];  //skewness parameter
+    tail = nuis[3];  //tail parameter
+    sill =nuis[1];
+    nugget=nuis[0];
+
+    eta2=eta*eta;
+    u=1-tail;
+    mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
+    vv=((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
+                           sqrt(1-2*tail))-mu*mu);
+    if(fabs(eta)<1e-5) 
+           {
+           mu=0.0;
+           vv=R_pow(1-2*tail,-3/2); 
+           }
+         if(sill<0||nugget<0||nugget>=1||tail<0||tail>0.5) {*res=LOW;  return;} 
+   for(i=0;i<npairs[0];i++){
+          zi=data1[i];zj=data2[i];
+if(!ISNAN(zi)&&!ISNAN(zj) ){
+          
+                    corr=(1-nugget)*CorFct(cormod,lags[i],0,par,0,0);
+                    corr2=corr_tukeygh(corr,eta,tail);
+                 //   if(corr2<0) Rprintf("%f %f %f \n",corr2,par[0],par[1]);
+                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]); 
+                bl=log_biv_Norm(corr2,zi,zj,mean1[i]+sqrt(sill)*mu,
+                                            mean1[i]+sqrt(sill)*mu, sill*vv,0);
+
+                      l1= dnorm(zi, mean1[i]+sqrt(sill)*mu,sqrt(sill*vv),1);
+                      l2= dnorm(zj, mean1[i]+sqrt(sill)*mu,sqrt(sill*vv),1);
+                      *res+= (2*bl-l1-l2)*weights;
+
+                    *res+= weights*bl;
+                }}
+    
+    if(!R_FINITE(*res)) *res = LOW;
+    return;
+}
 /******************************************************************************************/
 void Comp_Cond_SinhGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,

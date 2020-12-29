@@ -367,9 +367,8 @@ else                                        nui['nugget']=nuisance['nugget']
                               correlation=correlation*(1-nuisance['nugget'] )
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
-                              vs=  (1-2*h)^(-1.5)     ## variance
+                              vs=  (1-2*h)^(-1.5)     
                               cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
-                              
                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   } 
@@ -403,15 +402,33 @@ else                                        nui['nugget']=nuisance['nugget']
                               sill=as.numeric(nuisance['sill'])
                               eta=as.numeric(nuisance['skew'])
                               rho2=rho*rho; eta2=eta*eta; tail2=tail*tail;
-                              u=1-tail; a=1+rho;
-                              mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
-                              vs=(exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*sqrt(1-2*tail))-mu*mu;
-                              A1=exp(a*eta2/(1-tail*a));
-                              A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
-                              A3=eta2*sqrt(u*u- rho2*tail*tail);
-                              cc=((A1-A2+1)/A3-mu*mu)/vs;
-                              covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
-                             } 
+
+                        if(tail>1e-05&&abs(eta)>1e-05){
+                               rho2=rho*rho; eta2=eta*eta; tail2=tail*tail;
+                               u=1-tail; a=1+rho;
+                               mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
+                               vs=(exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*sqrt(1-2*tail))-mu*mu;
+                               A1=exp(a*eta2/(1-tail*a));
+                               A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
+                               A3=eta2*sqrt(u*u- rho2*tail*tail);
+                               cc=((A1-A2+1)/A3-mu*mu)/vs;
+                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)
+                            } 
+                        if(tail<=1e-05&&abs(eta)>1e-05){
+                              vs=( -exp(eta^2)+exp(eta^2*2))*eta^(-2)
+                              cc= (( -exp(eta^2)+exp(eta^2*(1+rho)))*eta^(-2))/vs
+                              covariance=sill*vs*cc;variogram=sill*vs*(1-cc) 
+                            } 
+                        if(tail>1e-05&&abs(eta)<=1e-05){
+                              vs=  (1-2*tail)^(-1.5)     
+                              cc=(-rho/((1+h*(tail-1))*(-1+tail+tail*rho)*(1+tail*(-2+tail-tail*rho^2))^0.5))/vs
+                              covariance=sill*vs*cc;variogram=sill*vs*(1-cc) 
+                            } 
+                        if(tail<=1e-05&&abs(eta)<=1e-05){
+                            covariance=sill*rho;variogram=sill*(1-rho)
+                            }  
+                                
+                      } 
                   }     
   if(sas) { if(bivariate) {}
                         else {

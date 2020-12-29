@@ -688,7 +688,11 @@ void Comp_Pair_Gauss_misp_Tukeygh2mem(int *cormod, double *data1,double *data2,i
     mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
     vv=((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
                            sqrt(1-2*tail))-mu*mu);
-    
+        if(fabs(eta)<1e-5) 
+           {
+           mu=0.0;
+           vv=R_pow(1-2*tail,-3/2); 
+           }
          if(sill<0||nugget<0||nugget>=1||tail<0||tail>0.5) {*res=LOW;  return;} 
    for(i=0;i<npairs[0];i++){
           zi=data1[i];zj=data2[i];
@@ -956,7 +960,6 @@ void Comp_Pair_Gauss_misp_T_st2mem(int *cormod, double *data1,double *data2,int 
 bl=log_biv_Norm(corr,u,w,mean1[i],mean2[i],sill*df/(df-2),0);
                 *res+= bl*weights;   
                                     }}
-             
     if(!R_FINITE(*res))*res = LOW;
     return;
 }

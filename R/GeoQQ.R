@@ -138,7 +138,7 @@ tail = as.numeric(pp["tail"]);skew = as.numeric(pp["skew"]);
 uu=qnorm(probabilities);uu1=qnorm(probabilities1)
 q_t=(exp(skew*uu)-1)*exp(0.5*tail*uu^2)/skew
 q_t1=(exp(skew*uu1)-1)*exp(0.5*tail*uu1^2)/skew
-plot(q_t,q_e,main="Tukey-h qq-plot",xlab=xlab,ylab=ylab,pch=20)
+plot(q_t,q_e,main="Tukey-gh qq-plot",xlab=xlab,ylab=ylab,pch=20)
 }
 #######################################
 if(model %in% c("TwoPieceGaussian"))

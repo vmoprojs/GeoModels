@@ -132,27 +132,22 @@ if(!bivariate)   {
           g=as.numeric(nuisance['skew'])
           ss=as.numeric(nuisance['sill']) 
 
-  if(!g&&!h) { vv=ss } 
-
-  if(g&&!h){  #  
-              varcov <-  diag(dime)
+  if(abs(g)<=1e-05 && h<=1e-05) { vv=ss }  
+  if(abs(g)>1e-05&&h<=1e-05) {  #  
               aa=( -exp(g^2)+exp(g^2*2))*g^(-2)
               corr <- (( -exp(g^2)+exp(g^2*(1+corr)))*g^(-2))/aa
               vv=  aa*ss
               } 
-   if(!g&&h){ ##
-              varcov <-  diag(dime)
-              aa=(1-2*h)^(-1.5) # variance
-              corr <- corr/(aa*( (1-h)^2-h^2*corr^2 )^(1.5))
+   if(abs(g)<=1e-05&& h>1e-05){ ##
+              aa=(1-2*h)^(1.5) # variance
+              corr <- aa*corr/( (1-h)^2-h^2*corr^2 )^(1.5)
               vv=aa*ss
                } 
-
-  if(h&&g){ # ok
-              varcov <-  diag(dime)
+  if(h>1e-05&&abs(g)>1e-05){ # ok
                   rho=corr; rho2=rho*rho;
-                  tail2=tail*tail
                   tail=h; eta=g
-                  eta2=eta*eta; u=1-tail;a=1+rho;
+                  eta2=eta*eta; tail2=tail*tail;
+                  u=1-tail;a=1+rho;
                   A1=exp(a*eta2/(1-tail*a));
                   A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
                   A3=eta2*sqrt(u*u- rho2*tail2)
@@ -203,7 +198,7 @@ if(!bivariate)    {
     h=nuisance['tail']
    if(!h)     vv=as.numeric(nuisance['sill']) 
    if(h){     aa=(1-2*h)^(-1.5) # variance
-              #varcov <-  diag(dime)
+              #corr <- aa*corr/( (1-h)^2-h^2*corr^2 )^(1.5)
               corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/aa
               vv=aa*as.numeric(nuisance['sill'])
               }      

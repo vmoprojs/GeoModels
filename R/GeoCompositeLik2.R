@@ -175,6 +175,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==25,likelihood==1,type==2)){ fname <- 'Comp_Cond_Logistic'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==41,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Tukeygh' 
+                                              if(varest & vartype==2) hessian <- TRUE} 
 ###################### pairwise ###############################################
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -352,7 +354,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               control=list( reltol=1e-14, maxit=100000),
                            typerunif = "sobol"#,nbclusters=4,
                      )
-      print(CompLikelihood)
+    
   }
 
 

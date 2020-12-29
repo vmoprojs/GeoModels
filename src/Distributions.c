@@ -1636,15 +1636,15 @@ return(sum*K);}
 }
 
 double corr_tukeygh(double rho,double eta,double tail)
-{       
-if(fabs(rho)<1e-32){return(0.0);}
+{   
+    double mu,rho2,a,eta2,tail2,u,A1,A2,A3,cova,vari,rho1;    
+if(fabs(rho)<1e-16){return(0.0);}
     else{
-double mu,rho2,a,eta2,tail2,u,A1,A2,A3,cova,vari;
-                  rho2=rho*rho;
-                  tail2=tail*tail;
+
+        if(fabs(eta)>1e-5){
+                  rho2=rho*rho; tail2=tail*tail;
                   eta2=eta*eta; 
-                  u=1-tail;
-                  a=1+rho;
+                  u=1-tail; a=1+rho;
                   A1=exp(a*eta2/(1-tail*a));
                   A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
                   A3=eta2*sqrt(u*u- rho2*tail2);
@@ -1652,8 +1652,19 @@ double mu,rho2,a,eta2,tail2,u,A1,A2,A3,cova,vari;
                   cova=((A1-A2+1)/A3-mu*mu);
                   vari=((exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*
                   sqrt(1-2*tail))-mu*mu);
-return(cova/vari);}
+                  rho1=cova/vari;
+                  }
+       if(fabs(eta)<=1e-5) {
+                 a=R_pow(1-2*tail,-1.5);
+                 rho1=(-rho/((1+tail*(rho-1))*(-1+tail+tail*rho)*R_pow(1+tail*(-2+tail-tail*rho*rho),0.5)))/a;
+               //  Rprintf("%f %f %f %f \n",rho1,tail,eta,rho);
+                 }   
 }
+return(rho1);
+}
+
+
+
 
 
 double corr_skewt(double corr,double df,double skew)
