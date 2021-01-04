@@ -4015,6 +4015,17 @@ double one_log_SkewGauss(double z,double m, double vari, double skew)
   return(res);
 }
 
+
+
+double one_log_tukeyh(double z,double m, double sill, double tail)
+{
+  double q = (z - m)/sqrt(sill);
+  double x = inverse_lamb(q,tail);
+  double extra = 1/( (1 + LambertW(tail*q*q)));
+  double dens = log(dnorm(x,0,1,0)* x  * extra/(q*sqrt(sill)));
+return(dens);
+}
+
 double one_log_tukeyhh(double z,double m, double sill, double h1,double h2)
 {
   double  res;
@@ -4026,16 +4037,6 @@ double one_log_tukeyhh(double z,double m, double sill, double h1,double h2)
          }
   return(res);
 }
-
-double one_log_tukeyh(double z,double m, double sill, double tail)
-{
-  double q = (z - m)/sqrt(sill);
-  double x = inverse_lamb(q,tail);
-  double extra = 1/( (1 + LambertW(tail*q*q)));
-  double dens = log(dnorm(x,0,1,0)* x  * extra/(q*sqrt(sill)));
-return(dens);
-}
-
 
 double one_log_T(double z,double m, double sill, double df)
 {
@@ -4103,40 +4104,35 @@ double one_log_gamma(double z,double m, double shape)
   res=(shape/2)*log(shape/(2*exp(m)))+(shape/2-1)*log(z)-(shape/(2*exp(m)))*z-log(gammafn(shape/2));
   return(res);
 }
+/************************************************************************/
 double one_log_two_pieceTukey(double z,double m, double sill,double tail, double eta)
 {
   double  res;
- if(z>=m){
-    res=one_log_tukeyh(z/(1-eta),m,sill,tail);      
-          }
-  if(z<m){
-    res=one_log_tukeyh(z/(1+eta),m,sill,tail);
-         }
-  return(res);
+  double y=(z-m)/sqrt(sill);
+ if(y>=0)res=one_log_tukeyh(y/(1-eta),0,1,tail);       
+ if(y<0) res=one_log_tukeyh(y/(1+eta),0,1,tail); 
+  return(res-log(sqrt(sill)));
 }
 double one_log_two_pieceT(double z,double m, double sill, double df, double eta)
 {
   double  res;
- if(z>=m){
-    res=one_log_T(z/(1-eta),m,sill,df);      
-          }
-  if(z<m){
-    res=one_log_T(z/(1+eta),m,sill,df);
-         }
-  return(res);
+  double y=(z-m)/sqrt(sill);
+ if(y>=0) res=one_log_T(y/(1-eta),0,1,df);       
+ if(y<0)  res=one_log_T(y/(1+eta),0,1,df); 
+  return(res-log(sqrt(sill)));
 }
 double one_log_two_pieceGauss(double z,double m, double sill, double eta)
 {
   double  res;
- if(z>=m){
-    res=dnorm(z/(1-eta),m,sqrt(sill),1);    
-          }
-  if(z<m){
-    res=dnorm(z/(1+eta),m,sqrt(sill),1);
-         }
-  return(res);
+  double y=(z-m)/sqrt(sill);
+ if(y>=0) res=dnorm(y/(1-eta),0,1,1);       
+ if(y<0)  res=dnorm(y/(1+eta),0,1,1); 
+  return(res-log(sqrt(sill)));
 }
 
+
+
+/************************************************************************/
 double one_log_gammagem(double z,double shape,double n)
 {
   double  res;
