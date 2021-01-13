@@ -95,10 +95,12 @@ void Comp_Cond_SkewGauss2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
-                    l1=one_log_SkewGauss(zi,mean1[i],nuis[1],nuis[2]);
-                    l2=one_log_SkewGauss(zj,mean2[i],nuis[1],nuis[2]);
+    l1=one_log_SkewGauss(zi,mean1[i],nuis[1],nuis[2]);
+    l2=one_log_SkewGauss(zj,mean2[i],nuis[1],nuis[2]);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                    bb=2*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nuis[0]))-(l1+l2);
+    bb=2*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nuis[0]))-(l1+l2);
+    
+    //bb=2*0.5-(l1+l2);
                   *res+= weights*bb;
                  }}
     if(!R_FINITE(*res))  *res = LOW;
@@ -275,8 +277,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     corr=CorFct(cormod,lags[i],0,par,0,0);
                     l1=one_log_gamma(zi,mean1[i],nuis[2]);
                     l2=one_log_gamma(zj,mean2[i],nuis[2]);
-                    bl=2*log(biv_gamma((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]))
-                     -(l1+l2);
+                    bl=2*log(biv_gamma((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]))-(l1+l2);
                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);                            
   *res+= weights*bl;
                   }}

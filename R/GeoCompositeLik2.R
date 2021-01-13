@@ -274,7 +274,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(!is.null(GPU))
     {
       fname <- paste(fname,"_OCL",sep="")
-      # cat("fname de Composit.r: ",fname,"\n")
+      #cat("fname de Composit.r: ",fname,"\n")
       
       path <- system.file("CL", paste(fname,".cl",sep = ""), package = "GeoModels")
       path <- gsub(paste("/",paste(fname,".cl",sep = ""),sep = ""),"/",path)

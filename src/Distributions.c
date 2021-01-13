@@ -1703,14 +1703,14 @@ double biv_gamma(double corr,double zi,double zj,double mui, double muj, double 
         D=log(bessel_i(z,shape/2-1,2))+z; //ok
         res=(A+C+D)-(mui+muj+B);
         return(exp(res));
-       }
-    else
+       }else
     {
         B=(R_pow((shape/(2*exp(mui))),shape/2)*R_pow(zi,shape/2-1)*exp(-(shape*ci/(2))))/gam;
         C=(R_pow((shape/(2*exp(muj))),shape/2)*R_pow(zj,shape/2-1)*exp(-(shape*cj/(2))))/gam;
         res=B*C;    
     }
 return(res);
+    //return(0.5);
 }
 
 
@@ -2052,8 +2052,8 @@ double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double v
     u=zi-mi;
     v=zj-mj;
     u2=R_pow(u,2);v2=R_pow(v,2);
-    s1=vari+nugget;
-    s12=vari*corr;
+    s1=vari;
+    s12=vari*corr*(1-nugget);
     det=R_pow(s1,2)-R_pow(s12,2);
     dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));
 return(dens);
@@ -2159,7 +2159,19 @@ double p3norm(int *cormod, double h0,double h1,double h2, double u0, double u1,d
   return(res2);
 }
 
+/*
+// cdf of  a bivariate Gausssian distribution
+double cdf_norm2(double lim1,double lim2,double a11,double a12, double a22)
+{
+  double res=0;
 
+  double  lowe[2]={0,0}, uppe[2]={lim1/sqrt(a11),lim2/sqrt(a22)}, corre[1] ={a12/sqrt(a11*a22)};
+  int infin[2]={0,0};
+  double auxil=1-R_pow(corre[0],2);
+  double det=a11*a22-R_pow(a12,2) ;
+  res= sqrt(a11*a22)* sqrt(auxil/det) *  F77_CALL(bvnmvn)(lowe,uppe,infin,corre);
+  return(res);
+}*/
 
 // cdf of  a bivariate Gausssian distribution
 double cdf_norm(double lim1,double lim2,double a11,double a12)
@@ -2171,6 +2183,7 @@ double cdf_norm(double lim1,double lim2,double a11,double a12)
     double det=R_pow(a11,2)-R_pow(a12,2) ;
     res= a11* sqrt(auxil/det) *  F77_CALL(bvnmvn)(lowe,uppe,infin,corre);
     return(res);
+    //return(0.5);
 }
 
 
@@ -2179,8 +2192,8 @@ double inverse_lamb(double x,double tail)
 {
   double sign,value;
   value = sqrt(LambertW(tail*x*x)/tail);
-  if (x > 0) sign= 1;
-  if(x==0.0) sign=1;
+  if (x >= 0) sign= 1;
+  //if(x==0.0) sign=1;
   if (x < 0) sign= -1;
    return(sign*value);
 }
@@ -3281,42 +3294,52 @@ pp1=exp(nu*log(nu)-arg*log(x2*y2)+2*lgammafn(arg));
 pp2=exp(log(M_PI)+2*lgammafn(arg1)+log(rho12)+log(rho22));
 app=appellF4(arg,arg,0.5,arg1,R_pow(rho1*x*y*(1-rho*rho),2)/(x2*y2), R_pow(rho*nu*(1-rho1*rho1),2)/(x2*y2));
 return(4*pp1*app/pp2);
+    //return(50);
 
 
 }
 
-
 /*********** bivariate two piece-T distribution********************/ 
+
 double biv_two_pieceT(double rho,double zi,double zj,double sill,double nuu,double eta,
              double p11,double mui,double muj,double nugget)
 {
-double res;  
+double res;
 double nu=1/nuu;
 double etamas=1+eta;
 double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
-if(rho>0){
-//if(zi>=mui&&zj>=muj)
+
+    if(rho>DBL_EPSILON){
     if(zistd>=0&&zjstd>=0)
 {res=          (p11/R_pow(etamos,2))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamos,nugget);}
-//if(zi>=mui&&zj<muj)
     if(zistd>=0&&zjstd<0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamas,nugget);}
-//if(zi<mui&&zj>=muj)
       if(zistd<0&&zjstd>=0)
 {res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamos,nugget);}
-//if(zi<mui&&zj<muj)
     if(zistd<0&&zjstd<0)
 {res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamas,nugget);}
 
-}else{   if(zi>=mui)
+}
+    if(rho<DBL_EPSILON){// OJO!
+    
+    if(zi>=mui)
          {res=0.5*2*exp((nu/2)*log(nu)+lgammafn((nu+1)/2)-((nu+1)/2)*log(R_pow(zistd/etamos,2)+nu)-0.5*log(M_PI)-lgammafn(nu/2));}
          if(zj<muj)
          {res=0.5*2*exp((nu/2)*log(nu)+lgammafn((nu+1)/2)-((nu+1)/2)*log(R_pow(zjstd/etamas,2)+nu)-0.5*log(M_PI)-lgammafn(nu/2));}
-      } 
+     
+     
+    
+      }
 return(res/sill);
+    
 }
+
+
+
+
+
 /***** bivariate half gaussian ****/     
 double biv_half_Gauss(double rho,double zi,double zj)
 {
@@ -3441,6 +3464,7 @@ double pbnorm22(double lim1,double lim2,double corr)
     int     infin[2] = {0,0};
     value            = F77_CALL(bvnmvn)(lowe,uppe,infin,corre); 
     return(value);
+    //return(0.1);
 }
 
 // cdf bivariate half-normal distribution
@@ -3632,7 +3656,9 @@ double biv_tukey_h(double corr,double data_i, double data_j, double mean_i, doub
 double biv_half_Tukeyh(double rho,double ti,double tj,double tail)
 {
   double dens = 0.0;
-  dens = biv_tukey_h(rho,ti,tj,0,0,tail,1) + biv_tukey_h(rho,-ti,-tj,0,0,tail,1) + biv_tukey_h(rho,-ti,tj,0,0,tail,1) + biv_tukey_h(rho,ti,-tj,0,0,tail,1);
+  dens = biv_tukey_h(rho,ti,tj,0,0,tail,1) + biv_tukey_h(rho,-ti,-tj,0,0,tail,1) +
+    biv_tukey_h(rho,-ti,tj,0,0,tail,1) +
+    biv_tukey_h(rho,ti,-tj,0,0,tail,1);
   return(dens);
 }
  
@@ -4010,9 +4036,9 @@ double one_log_SkewGauss(double z,double m, double vari, double skew)
   double skew2  = R_pow(skew,2);
   double vari2  = R_pow(vari,1);
   double q=z-m;
-    res=log(2)-0.5*log(skew2+vari2)+dnorm(q/(sqrt(skew2+vari2)),0,1,1)
-    +pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,1);
+    res=log(2)-0.5*log(skew2+vari2)+dnorm(q/(sqrt(skew2+vari2)),0,1,1)+pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,1);
   return(res);
+    //return(0.5);
 }
 
 

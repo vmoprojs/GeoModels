@@ -784,7 +784,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                       p11=pbnorm22(qq,qq,corr);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                     /********************************************************/
-                    bl=biv_two_pieceT(corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i],nugget);
+    bl=biv_two_pieceT(corr,zi,zj,sill,df,eta,p11,mean1[i],mean2[i],nugget);
   //Rprintf("%f- %f- %f %f %f %f %f %f %f %f %f  \n",lags[i],corr,eta,sill,zi,zj,df,eta,p11,mean1[i],mean2[i]);
                     /********************************************************/
                            *res+= weights*log(bl);

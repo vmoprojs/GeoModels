@@ -27,7 +27,7 @@
 #define LOGPI  1.14472988584940017414
 
 
-
+#include <stdbool.h>
 
 
 //************************************** ST igam.c*****************************************
@@ -1313,6 +1313,8 @@ End
 
 
 
+
+
 double hyp2f1_neg_c_equal_bc(double a, double b, double x);
 double hyp2f1ra(double a, double b, double c, double x,double *loss);
 double lgam(double x);
@@ -1334,6 +1336,7 @@ double hyperg(double a, double b, double x);
 void hyperg_call(double *a,double *b,double *x,double *res);
 void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res);
 // END hyperg.c
+
 
 
 

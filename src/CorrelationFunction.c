@@ -1753,7 +1753,7 @@ double CorFunWitMat(double lag, double scale, double smooth)
   double rho=0.0;
   double a=lag/scale;
   // Computes the correlation:
-  if(lag<1e-16) {rho=1; return(rho);}
+  if(lag<1e-32) {rho=1; return(rho);}
   if(smooth==0.5) {rho=exp(-a);return(rho);}
   if(smooth==1.5) {rho=exp(-a)*(1+a);return(rho);}
   if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
