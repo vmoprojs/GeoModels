@@ -3228,8 +3228,8 @@ double biv_T(double rho,double zi,double zj,double nuu,double nugget)
   double aux1 = R_pow(rho*nu*(1-rho1*rho1),2)/(x1*y1);
  
   
-  if(rho){
-  while( k<=5000 )
+  if(rho> DEPSILON){
+  while( k<=3000 )
     {
    // pp1=hypergeo(cc+k,cc+k,0.5,aux);
     pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
@@ -3251,7 +3251,7 @@ double biv_T(double rho,double zi,double zj,double nuu,double nugget)
 
 return(RR);
 }
-else
+  if(rho< DEPSILON)
   {
     C = lgammafn(cc)+log(R_pow((1+x*x/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
     B = lgammafn(cc)+log(R_pow((1+y*y/nu),-cc))-log(sqrt(M_PI*nu))-lgammafn(nu/2);
