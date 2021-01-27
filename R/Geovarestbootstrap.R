@@ -34,7 +34,10 @@ if(sum(fit$X[1:dimat]==1)==dimat&&!dim(fit$X)[2]>1) fit$X=NULL
 
 k=1;res=NULL
 set.seed(seed)
+
+  pb <- txtProgressBar(min = 0, max = K, style = 3)
 while(k<=K){
+Sys.sleep(0.1)
 data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
@@ -53,8 +56,14 @@ res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$f
 
 if(res_est$convergence=='Successful'){
  res=rbind(res,res_est$param)
- print(k)
- k=k+1}
+ 
+
+ k=k+1
+setTxtProgressBar(pb, k)
+}               
+close(pb)
+
+
 }
 
 numparam=length(fit$param)

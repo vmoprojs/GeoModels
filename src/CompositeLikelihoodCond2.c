@@ -248,6 +248,7 @@ void Comp_Cond_SinhGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
+    
     int i=0;double corr,zi,zj,bb=0.0,weights=1.0,l1=0.0,l2=0.0;
            if(nuis[3]<0||nuis[1]<0||nuis[0]<0||nuis[0]>=1) {*res=LOW;  return;}
    for(i=0;i<npairs[0];i++){
@@ -430,6 +431,7 @@ double **M;
                       l1=dnorm(data1[i],mui,sqrt(mui),1);
                       l2=dnorm(data2[i],muj,sqrt(muj),1);;
                       bl=2*log(dNnorm(N,M,dat))-(l1+l2);
+                
                       *res+= bl*weights;
                     }}  
    for(i=0;i<N;i++)  {Free(M[i]);}
@@ -481,15 +483,18 @@ void Comp_Cond_BinomGauss2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  ai=mean1[i];aj=mean2[i];
                  corr=CorFct(cormod,lags[i],0,par,0,0);
-                    p11=pbnorm22(ai,aj,(1-nugget)*corr);
+    p11=pbnorm22(ai,aj,(1-nugget)*corr);
+    //Rprintf("p11: %f\n",p11);
                 p1=pnorm(ai,0,1,1,0);
                 p2=pnorm(aj,0,1,1,0);
                 u=data1[i];v=data2[i];
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; vv=(int) v; 
                           l1=dbinom(uu,NN[0],p1,1);
+    //printf("l1:%f uu:%d NN:%d p1:%f \n\n",l1,uu,NN[0],p1);
                           l2=dbinom(vv,NN[0],p2,1);
                         bl=2*log(biv_binom (NN[0],uu,vv,p1,p2,p11))-(l1+l2);
+    //bl=2*log(0.1)-(l1+l2);
                     *res+= weights*bl;
                 }}
     if(!R_FINITE(*res))*res = LOW;

@@ -4,12 +4,13 @@
 \title{n-fold  kriging Cross-validation}
 \description{The procedure use the \code{\link{GeoKrig}} function to compute n-fold  kriging cross-validation 
   using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
-\usage{GeoCV(fit, K=100, n.fold=0.05,local=FALSE,neighb=NULL,
+\usage{GeoCV(fit, K=100, estimation=FALSE, n.fold=0.05,local=FALSE,neighb=NULL, 
                     maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)}
 \arguments{
   \item{fit}{An object of class
     \code{\link{GeoFit}}.}
      \item{K}{The number of iterations in cross-validation.}
+       \item{estimation}{Logical; if \code{TRUE} then  an estimation is performed at each iteration and the estimates are used in the prediction.}
        \item{n.fold}{Numeric; the percentage of data to be deleted (and predicted) in the cross-validation procedure.}
        \item{local}{Logical; If local is TRUE, then local kriging is performed. The default is FALSE.}
     \item{neighb}{Numeric; an optional positive integer indicating the 
