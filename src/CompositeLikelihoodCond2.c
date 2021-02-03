@@ -686,6 +686,7 @@ void Comp_Cond_PoisZIP2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
+    
     int i=0, uu,vv;
     double weights=1.0,corr,mui,muj,bl,l1=0.0,l2=0.0,u,v;
    double nugget1=nuis[0];double nugget2=nuis[1];
