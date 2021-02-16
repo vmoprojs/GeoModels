@@ -147,6 +147,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==30,likelihood==1,type==2)){ fname <- 'Comp_Cond_Pois'
                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==46,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisGamma'
+                                             if(varest & vartype==2) hessian <- TRUE}
     if(all(model==36,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==2,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomGauss'
@@ -251,6 +253,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(all(model==38,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECETukeyh'
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}

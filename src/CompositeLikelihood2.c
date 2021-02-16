@@ -470,6 +470,31 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
+void Comp_Pair_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu,ww;
+    double weights=1.0,corr,mui,muj,bl;
+    double nugget=nuis[0];
+
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+  // Rprintf("%d   \n",npairs[0]);
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+                    // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
+                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      uu=(int) data1[i];  ww=(int) data2[i];
+                      bl=biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]);
+                      *res+= log(bl)*weights;
+                    }}        
+    
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+/*********************************************************/
 void Comp_Pair_PoisZIP2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
@@ -1015,6 +1040,36 @@ void Comp_Pair_Pois_st2mem(int *cormod, double *data1,double *data2,int *NN,
                      muj=exp(mean2[i]);
                           uu=(int) u;  ww=(int) w;
                       bl=biv_Poisson((1-nugget)*corr,uu,ww,mui, muj); 
+                //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
+                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                       *res+= log(bl)*weights;
+
+                                    }}
+              
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
+/******************************************************************************************/
+void Comp_Pair_PoisGamma_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+
+{
+    int i=0,uu,ww;
+     double weights=1.0,corr,mui,muj,bl,u=0.0, w=0.0;
+    double nugget=nuis[0];
+
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+    // Computes the log-likelihood:
+  for(i=0;i<npairs[0];i++){
+             if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                          u=data1[i];      w=data2[i];
+                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                     mui=exp(mean1[i]);
+                     muj=exp(mean2[i]);
+                          uu=(int) u;  ww=(int) w;
+                      bl=biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]); 
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;

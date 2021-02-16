@@ -441,6 +441,33 @@ double **M;
     return;
 }
 /*********************************************************/
+void Comp_Cond_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu,ww;
+    double weights=1.0,corr,mui,muj,bl,l1,l2;
+    double nugget=nuis[0];
+
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+  // Rprintf("%d   \n",npairs[0]);
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+                    // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
+                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      uu=(int) data1[i];  ww=(int) data2[i];
+                      l1=one_log_dpoisgamma(uu,mui,nuis[2]);
+                      l2=one_log_dpoisgamma(ww,muj,nuis[2]);
+                      bl=2*log(biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]))
+                        - (l1+l2);
+                      *res+= bl*weights;
+                    }}        
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+/*********************************************************/
 void Comp_Cond_Pois2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
@@ -1172,6 +1199,34 @@ double **M;
    for(i=0;i<N;i++)  {Free(M[i]);}
     Free(M);         
     
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+/*********************************************************/
+void Comp_Cond_PoisGamma_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu,ww;
+    double weights=1.0,corr,mui,muj,bl,l1,l2;
+    double nugget=nuis[0];
+
+      if(nugget<0||nugget>=1){*res=LOW; return;}
+  // Rprintf("%d   \n",npairs[0]);
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                    // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
+                            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                      uu=(int) data1[i];  ww=(int) data2[i];
+                      l1=one_log_dpoisgamma(uu,mui,nuis[2]);
+                      l2=one_log_dpoisgamma(ww,muj,nuis[2]);
+                      bl=2*log(biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]))
+                        - (l1+l2);
+                      *res+= bl*weights;
+                    }}        
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }

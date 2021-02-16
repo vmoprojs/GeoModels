@@ -180,6 +180,10 @@ CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
+                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'

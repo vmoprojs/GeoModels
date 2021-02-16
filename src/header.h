@@ -420,6 +420,7 @@ double one_log_kumma2(double z,double m, double shape1,double shape2,double min,
 double one_log_kumma(double z,double m, double shape1,double shape2,double min,double  max);
 double one_log_beta(double z, double shape1,double shape2,double min,double  max);
 double one_log_loggaussian(double z,double m, double sill);
+double one_log_dpoisgamma(int z,double lambda, double a);
 double one_log_weibull(double z,double m, double shape);
 double one_log_gamma(double z,double m, double shape);
 double one_log_two_pieceTukey(double z,double m, double sill,double tail, double eta);
@@ -438,6 +439,7 @@ double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
+double biv_PoissonGamma(double corr,int r, int t, double mean_i, double mean_j, double a);
 double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2);
 double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget1,double nugget2,double mup);
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
@@ -1306,7 +1308,6 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
-
 
 
 

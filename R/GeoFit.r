@@ -41,7 +41,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     if(!is.null(X)) X=as.matrix(X)
     if(is.numeric(neighb)) {
             neighb=round(neighb)
-            if(neighb<2)  stop("neighb must be an integer >=2")
+            if(neighb<1)  stop("neighb must be an integer >=1")
           }
  
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
@@ -63,15 +63,15 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X,memdist)#32
 
-    
+
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
       if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","ucminf","optimize")))
              stop("optimizer is not correct\n")
+     ####        
     if(optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb','multiNelder-Mead') || length(initparam$param)==1){
-   # if(optimizer=='L-BFGS-B'|| optimizer=='nlminb' || optimizer=='nmkb' ||optimizer=='lbfgsb3c' || length(initparam$param)==1){
-
+   
     if(!is.null(lower)||!is.null(upper)){
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")
     #setting alphabetic order
@@ -218,6 +218,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian Poisson '}
   if(x$model=='Gaussian_misp_PoissonZIP') { process <- 'PoissonZIP'; model <- 'Misspecified Gaussian Poisson Inflated'}
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
+  if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
   if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}

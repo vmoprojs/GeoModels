@@ -58,7 +58,7 @@ forGaussparam<-function(model,param,bivariate)
    } 
 
 
-    if(model %in% c("Gamma","LogLogistic","Weibull"))  {
+    if(model %in% c("Gamma","LogLogistic","Weibull","PoissonGamma"))  {
      if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
      if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
    }  
@@ -167,7 +167,7 @@ forGaussparam<-function(model,param,bivariate)
     k=1
 #################################
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',#"Binomial","BinomialNeg","BinomialNegZINB",
-                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP",
+                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","PoissonGamma",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
                     "Gamma","Weibull","LogLogistic","Logistic")) 
        {
@@ -185,7 +185,7 @@ forGaussparam<-function(model,param,bivariate)
 
 
         if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian",
-          "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","PoissonZIP","Tukeyh","Tukeyh2",
+          "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","PoissonZIP","Tukeyh","Tukeyh2","PoissonGamma",
           'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", "Tukeygh","SinhAsinh",
                     "StudentT","SkewStudentT","TwoPieceStudentT","Gaussian")))   ## 
         {
@@ -270,7 +270,7 @@ forGaussparam<-function(model,param,bivariate)
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                } 
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-
+    if(model %in% c("PoissonGamma")) {k=2+2*round(param$shape);npoi=999999999}
     if(model %in% c("PoissonZIP","BinomialNegZINB")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {
                              if(!bivariate) k=round(param$shape)
@@ -418,7 +418,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
         dim(sim) <- simdim
          }
     ####################################    
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","PoissonGamma","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
               "LogGaussian","TwoPieceTukeyh",
                 "Gamma","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
@@ -439,6 +439,19 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
    sel=rbind(sel,ssp<=c(exp(mm)))
    if(sum(apply(sel,2,prod))==0) break  ## stopping rule
  }
+  ####################################
+ if(model %in% c("PoissonGamma"))   {
+
+     if(KK==1){
+   sim3=NULL
+   for(i in 3:k)  {sim3=cbind(sim3,dd[,,i]^2)}}
+   #################################
+   pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
+   ssp=ssp+c(pois1)
+   sel=rbind(sel,ssp<=c(exp(mm)*rowSums(sim3)/(k-2)))
+   if(sum(apply(sel,2,prod))==0) break  ## stopping rule
+ }
+
 
  KK=KK+1
 }
@@ -447,9 +460,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
  ###############################################################################################
  #### simulation for discrete random field based on indipendent copies  of GRF ######
  ###############################################################################################
- if(model %in% c("Binomial","Poisson","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
+ if(model %in% c("Binomial","Poisson","PoissonGamma","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
 
-   if(model %in% c("poisson","Poisson"))   {sim=colSums(sel);byrow=TRUE}
+   if(model %in% c("poisson","Poisson","PoissonGamma"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
 
      ####

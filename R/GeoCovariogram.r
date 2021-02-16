@@ -133,6 +133,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeyh2<- model ==40
     sas<- model ==20
     poisson<- model==30||model==36
+    poissongamma<- model==46||model==47
     poissonZIP<- model==43||model==44
     loglogistic <- model==24
     tukeygh<- model==9||model==41
@@ -559,7 +560,24 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                            covariance=vv*cc
                            variogram=vv*(1-cc)}
                    }
-
+        if(poissongamma) {
+                    if(bivariate) {}
+                    if(!bivariate) {   
+                           
+                       correlation=(1-nuisance['nugget'])*correlation 
+                       corr2=correlation^2 
+                       rho1=1-corr2
+                       a=nuisance['shape']
+                       b=exp(mu);
+                       KK=2+b*corr2
+                       dd=   ( b*(sqrt(b*rho)*KK)^(a) ) /((1+b)*(2+KK)^(0.5+a))
+                       aa=hypergeo::hypergeo((1 - a)/2, -a/2, 1, 4/KK^2)
+                       bb=(a + 1)*hypergeo::hypergeo((2-a)/2, -(1-a)/2, 1, 4/KK^2)/KK
+                       cc=Re(rho^2*(1-dd*(aa+bb)))
+                       covariance=vv*cc
+                       variogram=vv*(1-cc)
+                           }
+                   }
      if(poissonZIP) {
                     if(bivariate) {}
                     if(!bivariate) {   
@@ -755,6 +773,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
             if(loggauss)      vvv=(exp(nuisance["sill"])-1)#*(exp(mm['mean']))^2
             if(binomial)      vvv=fitted$n*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(poisson)       vvv=exp(mm['mean'])
+            if(poissongamma)  vvv=exp(mm['mean']*(1+1/nuisance["shape"]))
             if(poissonZIP){        p=pnorm(nuisance['pmu']); MM=exp(mm['mean']); 
                               vvv=(1-p)*MM*(1+p*MM)}
             if(geom)          vvv= (1-pnorm(mm['mean']))/pnorm(mm['mean'])^2
