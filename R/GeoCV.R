@@ -56,6 +56,7 @@ if(estimation) {
           fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,grid=fit$grid,
                             model=fit$model,radius=fit$radius,n=fit$n,
+                            local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
@@ -142,6 +143,7 @@ if(estimation) {
           fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,grid=fit$grid,
                             model=fit$model,radius=fit$radius,n=fit$n,
+                            local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))

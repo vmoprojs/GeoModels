@@ -28,7 +28,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
     #CMdl<-CkCorrModel(corrmodel)
     #Stime <- CheckST(CMdl)  
-    
+    memdist=TRUE
     ### Check the parameters given in input:
       if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -161,8 +161,10 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          data = initparam$data,
                          distance = distance,
                          fixed = initparam$fixed,
+                         GPU=GPU,
                          grid = grid,
                          iterations = fitted$counts,
+                         local=local,
                          likelihood = likelihood,
                          logCompLik = fitted$value,
                          lower=lower,

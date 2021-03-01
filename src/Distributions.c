@@ -4059,18 +4059,21 @@ double PG00(double corr,int r, int t, double mean_i, double mean_j, double a){ /
     double beta_j= a/mean_j;
     int k = 0, l = 0;
 
-    double p00,sum = 0.0,res0=0.0,term=0.0;
-    
-    double auxi= beta_i/(1+beta_i-rho2);
-    double auxj= beta_j/(1+beta_j-rho2);
-    
+    double p00,sum = 0.0,res0=0.0,term=0.0,aa=0.0,bb=0.0;
+
+    double auxi= 1/(1+beta_i);
+    double auxj= 1/(1+beta_j);
+
     int iter1=1000;  int iter2=1000;
     while(k<iter1){
         l=0;
         while(l<iter2){
-            term= R_pow(beta_i*beta_j,l+a)*R_pow(rho2,k+l)*R_pow(1-rho2,a+1)*R_pow((beta_i+1)*(beta_j+1),-(k+l+a+1))*exp(
-                log(hypergeo(1,k+l+a+1,k+2,1/(beta_i+1)))+log(hypergeo(1,k+l+a+1,k+2,1/(beta_j+1)))+2*lgammafn(k+l+a+1)-2*lgammafn(k+2)-
-                lgammafn(l+1)-lgammafn(a)-lgammafn(l+a));
+
+          aa=R_pow(beta_i*beta_j,l+a-1)*R_pow(rho2,k+l)*R_pow(1-rho2,a+1)*R_pow(auxi*auxj,k+l+a);
+          bb=2*lgammafn(k+l+a+1)-2*lgammafn(k+2)-lgammafn(l+1)-lgammafn(a)-lgammafn(l+a);
+
+          term=aa*hypergeo(1,1-l-a,k+2,-1/beta_i)*hypergeo(1,1-l-a,k+2,-1/beta_j)*exp(bb);
+
             if((fabs(term)<1e-10)||!R_finite(term))   {break;}
             sum =sum+term;
              l++;
@@ -4078,7 +4081,10 @@ double PG00(double corr,int r, int t, double mean_i, double mean_j, double a){ /
         if((fabs(sum-res0)<1e-10 )) {break;}
              else {res0=sum;}
         k++;}
-    p00 = -1+ R_pow(1-rho2,a)*(R_pow(auxi,a)*R_pow(1-rho2*auxi,-a)+R_pow(auxj,a)*R_pow(1-rho2*auxj,-a))+sum;
+
+    p00 = -1+R_pow(auxi*beta_i,a)+R_pow(auxj*beta_j,a)+sum;
+      if(p00<1e-320) p00=1e-320;
+
     return(p00);
    }
 
@@ -4086,9 +4092,9 @@ double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
-    double beta_j= a/mean_j;   
-    double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0;
-    double sum = 0.0, res00=0.0,res11=0.0,res22=0.0, sum1 = 0.0, sum2 = 0.0, sum3 = 0.0;
+    double beta_j= a/mean_j;
+    double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0;
+    double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
     int k = 0, l=0, l1=0 ;
 
     double auxi= 1/(beta_i+1);
@@ -4096,88 +4102,111 @@ double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
     int iter1=1000;  int iter2=1000; int iter3=1000;
 
     while(k<iter1){
-      l1=0; 
+      l1=0;
       while(l1<iter2){
         l=0;
         while(l<iter3){
-            term= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,r+a+1)*R_pow(auxi*auxj,r+k+l+l1+a+1)*exp(
-                log(hypergeo(1,r+k+l+l1+a+1,r+k+l+2,auxi))+log(hypergeo(1,r+k+l+l1+a+1,r+k+l+2,auxj))+lgammafn(r+l)+2*lgammafn(r+k+l+l1+a+1)-
-                2*lgammafn(r+k+l+2)-lgammafn(l+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a));
-            if((fabs(term)<1e-10)||!R_finite(term))   {break;}
+
+            aa=R_pow(beta_i*beta_j,l1+a-1)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,r+a+1)*R_pow(auxi*auxj,r+k+l+l1+a);
+            bb=lgammafn(r+l)+2*lgammafn(r+k+l+l1+a+1)-2*lgammafn(r+k+l+2)-lgammafn(l+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
+
+            term= aa*hypergeo(1,1-l1-a,r+k+l+2,-1/beta_i)*hypergeo(1,1-l1-a,r+k+l+2,-1/beta_j)*exp(bb);
+
+            if((fabs(term)<1e-30)||!R_finite(term))   {break;}
+
             sum =sum+term;
             l++;
         }
 
-        aa= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,k+l1)*R_pow(auxi*auxj,r+k+l1+a);
-        bb= lgammafn(r+k)+2*lgammafn(r+k+l1+a)-2*lgammafn(r+k+1)-lgammafn(k+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
+        aa1= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,k+l1)*R_pow(1-rho2,r+a)*R_pow(auxi*auxj,r+k+l1+a);
+        bb1= lgammafn(r+k)+2*lgammafn(r+k+l1+a)-2*lgammafn(r+k+1)-lgammafn(k+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
 
-        term1 = aa*R_pow(1-rho2,a+1)*exp( log(hypergeo(1,r+k+l1+a,r+k+1,auxi))     +log(hypergeo(1,r+k+l1+a,r+k+1,auxj))+ bb );
-        term2 = aa*R_pow(1-rho2,r+a)*exp( log(hypergeo(1,r+k+l1+a,r+k+1,auxi/rho2))+log(hypergeo(1,r+k+l1+a,r+k+1,auxj))+ bb );
-        term3 = aa*R_pow(1-rho2,r+a)*exp( log(hypergeo(1,r+k+l1+a,r+k+1,auxi))     +log(hypergeo(1,r+k+l1+a,r+k+1,auxj/1-rho2))+ bb );
 
-        if(fabs(term1)<1e-10||fabs(term2)<1e-10||fabs(term3)<1e-10||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
-        sum1 =sum1+ term1;
-        sum2 =sum2+ term2;
-        sum3 =sum3+ term3;
+        term1 = aa1*hypergeo(1,1-l1-a,r+k+1,-1/beta_i)  *hypergeo(1,1-l1-a,r+k+1,-1/beta_j)*R_pow(beta_i*beta_j*auxi*auxj,-1) *exp(bb1 );
+
+        term2 = aa1*hypergeo(1,1-l1-a,r+k+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,r+k+1,-1/beta_j)*R_pow((1+beta_i-rho2)*beta_j*auxi*auxj,-1)* exp(bb1 );
+
+        term3 = aa1*hypergeo(1,1-l1-a,r+k+1,-1/beta_i)     *hypergeo(1,1-l1-a,r+k+1,-rho2/(1+beta_j-rho2))*R_pow((1+beta_j-rho2)*beta_i*auxi*auxj,-1)* exp(bb1 );
+
+        if(fabs(term1)<1e-30||fabs(term2)<1e-30||fabs(term3)<1e-30||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
+
+
+        sum1 = sum1+ term1;
+        sum2 = sum2+ term2+term3;
         l1++;
       }
-           if((fabs(sum1-res00)<1e-10)&&(fabs(sum2-res11)<1e-10)&&(fabs(sum3-res22)<1e-10)  ) {break;}
-                  else {res00=sum1;res11=sum2;res22=sum3;}  
-          k++;      
+
+          if((fabs(sum1-res00)<1e-10)&&(fabs(sum2-res11)<1e-10)  ) {break;}
+          else {res00=sum1;res11=sum2;}
+          k++;
       }
-    prr= - sum1 + sum2 + sum3  + sum ;
-    return(prr);   
+
+
+    prr= - sum1 + sum2  + sum ;
+
+    if(prr<1e-320) prr=1e-320;
+
+    return(prr);
 }
+
 
 double PGr0(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
-    double beta_j= a/mean_j;   
+    double beta_j= a/mean_j;
     double pr0,  term1=0.0,aa=0.0,bb=0.0;
     double res00=0.0, sum1 = 0.0;
-    
-    double aux= 1/(1+beta_i-rho2);
+
+
 
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
+
 
     int n, l=0, l1=0 ;
     int iter1=1000;  int iter2=1000;
     n= r-t;
 
+    double aux1= R_pow(beta_i,a)*R_pow(auxi,n+a)*exp(lgammafn(n+a)-lgammafn(n+1)-lgammafn(a));
+
     while(l<iter1){
         l1=0;
         while(l1<iter2){
 
-            aa= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,l+l1)*R_pow(1-rho2,a)*R_pow(auxi,n+l+l1+a)*R_pow(auxj,l+l1+a+1);
+
+            aa= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,l+l1)*R_pow(1-rho2,a+n)*R_pow(auxi*auxj,l+l1+a)*R_pow(1+beta_i-rho2,-n);
             bb= lgammafn(n+l+l1+a)+lgammafn(l+l1+a+1)-lgammafn(n+l+1)-lgammafn(l+2)-lgammafn(l1+1)-lgammafn(a)-lgammafn(l1+a);
 
-            term1 = aa*exp( log(hypergeo(n,n+l+l1+a,n+l+1,auxi/rho2))+log(hypergeo(1,l+l1+a+1,l+2,auxj))+ bb );
+
+            term1 = aa*hypergeo(n,1-l1-a,n+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,l+2,-1/beta_j)* exp(bb );
 
             if(fabs(term1)<1e-10||!R_finite(term1))   {break;}
+
             sum1 =sum1+ term1;
             l1++;
         }
         if((fabs(sum1-res00)<1e-10) ) {break;}
              else {res00=sum1;}
+
         l++;
     }
 
-
-     pr0= R_pow(beta_i,a)*exp(lgammafn(n+a)-lgammafn(n+1)-lgammafn(a))*R_pow((1-rho2)*aux,n+a)*R_pow(1-rho2*beta_i*aux,-(n+a))-sum1 ;
-
+     pr0= aux1-sum1 ;
+if(pr0<1e-320) pr0=1e-320;
     return(pr0);
 }
+
 
 double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
-    double beta_j= a/mean_j;   
+    double beta_j= a/mean_j;
     double prt,  term1=0.0,term2=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0;
+
     double res11=0.0, sum1 = 0.0,  sum2 = 0.0;
-    
+
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
 
@@ -4191,34 +4220,41 @@ double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a){
             k=0;
             while(k<iter3){
 
-                aa= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi,t+n+k+l+l1+a)*R_pow(auxj,t+k+l+l1+a+1);
+
+                aa= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi*auxj,t+k+l+l1+a)*R_pow(1+beta_i-rho2,-n);
                 bb= lgammafn(t+l)+lgammafn(t+n+k+l+l1+a)+lgammafn(t+k+l+l1+a+1)-lgammafn(t+n+k+l+1)-lgammafn(t+k+l+2)-lgammafn(l1+1)-lgammafn(l+1)-lgammafn(t)-lgammafn(a)-lgammafn(l1+a);
 
-                term1 = aa*exp( log(hypergeo(n,t+n+k+l+l1+a,t+n+k+l+1,auxi/rho2))+log(hypergeo(1,t+k+l+l1+a+1,t+k+l+2,auxj))+ bb );
 
-                if(fabs(term1)<1e-10||!R_finite(term1))   {break;}
+                term1 = aa*hypergeo(n,1-l1-a,t+n+k+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,t+k+l+2,-1/beta_j)*exp(  bb );
+
+                if(fabs(term1)<1e-30||!R_finite(term1))   {break;}
                 sum1 =sum1+ term1;
-                k++; 
+
+                k++;
             }
 
-            aa1= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi,t+n+l+l1+a)*R_pow(auxj,t+l+l1+a);
+
+            aa1= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi*auxj,t+l+l1+a-1)*R_pow(1+beta_i-rho2,-n-1);
             bb1= lgammafn(t+l)+lgammafn(t+n+l+l1+a)+lgammafn(t+l+l1+a)-lgammafn(t+n+l+1)-lgammafn(t+l+1)-lgammafn(l1+1)-lgammafn(l+1)-lgammafn(t)-lgammafn(a)-lgammafn(l1+a);
 
-            term2 = aa1*exp( log(hypergeo(n+1,t+n+l+l1+a,t+n+l+1,auxi/rho2))+log(hypergeo(1,t+l+l1+a,t+l+1,auxj))+ bb1 );
 
-            if(fabs(term2)<1e-10||!R_finite(term2))   {break;}
+            term2 = aa1*hypergeo(n+1,1-l1-a,t+n+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,t+l+1,-1/beta_j)*exp( bb1 );
+
+            if(fabs(term2)<1e-40||!R_finite(term2))   {break;}
             sum2 =sum2+ term2;
             l1++;
         }
-        if((fabs(sum2-res11)<1e-10) ) {break;}
+        if((fabs(sum2-res11)<1e-30) ) {break;}
              else {res11=sum2;}
         l++;
     }
 
      prt= sum2 - sum1;
- 
+     if(prt<1e-320) prt=1e-320;
+
     return(prt);
 }
+
 
 double biv_PoissonGamma(double corr,int r, int t, double mean_i, double mean_j, double a)
 {
@@ -4442,13 +4478,8 @@ double one_log_PoisZIP(int z,double lambda, double mup)
 double one_log_dpoisgamma(int z,double lambda, double a)
 {
   double  res;
-  double  p=pnorm(a,0,1,1,0);
- if(z==0){
-    res=log(p+(1-p)*dpois(0,lambda,0));    
-          }
-  if(z>0){
-    res=log(1-p)+dpois(z,lambda,1);   
-         }
+  double beta= a/lambda;
+   res= z*log(1/(1+beta))+a*log(beta/(1+beta))+lgammafn(a+z)-lgammafn(z+1)-lgammafn(a);
   return(res);
 }
 

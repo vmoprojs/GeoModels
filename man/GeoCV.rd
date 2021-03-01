@@ -10,7 +10,8 @@
   \item{fit}{An object of class
     \code{\link{GeoFit}}.}
      \item{K}{The number of iterations in cross-validation.}
-       \item{estimation}{Logical; if \code{TRUE} then  an estimation is performed at each iteration and the estimates are used in the prediction.}
+       \item{estimation}{Logical; if \code{TRUE} then  an estimation is performed at each iteration and the estimates are used in the prediction. 
+       Otherwise the estimates in the object fit are used.}
        \item{n.fold}{Numeric; the percentage of data to be deleted (and predicted) in the cross-validation procedure.}
        \item{local}{Logical; If local is TRUE, then local kriging is performed. The default is FALSE.}
     \item{neighb}{Numeric; an optional positive integer indicating the 

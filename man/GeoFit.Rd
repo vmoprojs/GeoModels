@@ -279,7 +279,7 @@ Rf with marginal counts data
   one based on neighboords and one based on distances.
    
   In the first  case  binary weights are set to 1 and 0 otherwise
-  depending if the pairs are neighboords of a certain order (2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' distance  in based on  the package RANN that  provides
+  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' distance  in based on  the package RANN that  provides
   fast nearest neighbour search.
 
   In the second case, the \code{maxdist} parameter set the maximum
@@ -506,7 +506,7 @@ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 ### 
 ###############################################################
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
-                    optimizer="BFGS",neighb=5,likelihood="Marginal",
+                    optimizer="BFGS",neighb=3,likelihood="Marginal",
                     type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
@@ -563,7 +563,7 @@ start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
                     optimizer="Nelder-Mead",
                     start=start,fixed=fixed)
 print(fit$param)
@@ -573,7 +573,7 @@ start<-list(mean=mean,mean1=mean1,scale=scale)
 fixed<-list(nugget=nugget,power2=4,sill=1-nugget,shape=6)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
-                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
                       optimizer="BFGS",
                     start=start,fixed=fixed)
 
@@ -618,7 +618,7 @@ upper<-list(mean=I,mean1=I,scale=I,sill=I,df=0.5)
 # Maximum pairwise composite-likelihood fitting of the RF:
 
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                 neighb=5,likelihood="Marginal",type="Pairwise",X=X,
+                 neighb=3,likelihood="Marginal",type="Pairwise",X=X,
                lower=lower,upper=upper,optimizer="nlminb",start=start,fixed=fixed)
 print(fit1$param)
 
@@ -636,7 +636,7 @@ upper<-list(mean=I,mean1=I,scale=I,sill=I)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    neighb=5,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
                     lower=lower,upper=upper, optimizer="nlminb" , start=start,fixed=fixed)
 print(fit$param)
 
@@ -707,7 +707,7 @@ fixed <- list(nugget=nugget,power2=4,sill=1)
 start <- list(scale=0.2,mean=mean,mean1=mean1,mean2=mean2)
 # Maximum pairwise likelihood:
 fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
-                    maxdist=0.05,model="Binomial",  fixed=fixed, optimizer="BFGS")
+                    neighb=3,model="Binomial",  fixed=fixed, optimizer="BFGS")
                   
 print(fit1)
 
@@ -765,7 +765,7 @@ start<-list(mean=mean,scale_s=scale_s,scale_t=scale_t,sill=sill)
 
 # Maximum composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,coordt=time,
-                    corrmodel="Exp_Exp",maxtime=1,maxdist=0.3,
+                    corrmodel="Exp_Exp",maxtime=1,neighb=3,
                     likelihood="Marginal",type="Pairwise",
                     optimizer="BFGS" , start=start,fixed=fixed)
 print(fit)

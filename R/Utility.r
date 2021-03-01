@@ -1131,7 +1131,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
 
 
-    if(is.null(coordx_dyn))
+    if(is.null(coordx_dyn))  
     {
 
       if(is.null(coordy)){coordy <- coordx[,2]
@@ -1145,7 +1145,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
       
       ns<-rep(numcoord,ltimes)
     }
-    else
+    else     ##  dynamic coords
     {
        env <- new.env()
        coords=do.call(rbind,args=c(coordx_dyn),envir = env) 
@@ -1508,7 +1508,7 @@ else   ######## case  with neighboord!!!
             return(list(xy = res[ids,],d = res_d[ids,][,2]))
          }
      ##########################################
-         nn2Geo <- function(x, K = 2,distance)  # default 2 means 1 neighb
+         nn2Geo <- function(x, K = 1,distance)  
          {
            
             nearest = RANN::nn2(x,k = K)
@@ -1563,7 +1563,7 @@ else   ######## case  with neighboord!!!
   ##########################
   ##########################     
 if(!spacetime&&!bivariate)   #  spatial case
-   {
+{
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
@@ -1573,24 +1573,15 @@ if(!spacetime&&!bivariate)   #  spatial case
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              gb$numpairs=n
+  ## loading space distances in memory 
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),
     as.double(sol$lagt),as.integer(nn),
     as.integer(spacetime),as.integer(bivariate)) 
-    ## number  of selected pairs
-    numpairs <- gb$numpairs
-## indexes for composite 
-    colidx=gb$rowidx 
-    rowidx=gb$colidx
-    idx <- 0;ja <- 0;ia <- 0
-    isinit <- 1
-    nozero <- numpairs/(numcoord*numtime)^2
-    idx <- 0;ja  <- 0
-   } #### end spatial case 
+} #### end spatial case 
 ##############################################   
 if(spacetime)   #  space time  case
-   { 
-     ##########################################
+{ 
   K=neighb
   x=cbind(coordx, coordy)
   sol=spacetime_index(x[1:numcoord,],numcoord,K,coordt,numtime,maxtime,distance)
@@ -1598,11 +1589,14 @@ if(spacetime)   #  space time  case
   gb=list(); gb$colidx=sol[,2];
              gb$rowidx=sol[,1] ;
              gb$numpairs=n
+  ## loading space time distances in memory           
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol[,4]),as.integer(nn),
     as.double(sol[,3]),as.integer(nn),
     as.integer(spacetime),as.integer(bivariate)) 
     ## number  of selected pairs
+} #### end spacetime case
+############################################## 
     numpairs <- gb$numpairs
 ## indexes for composite 
     colidx=gb$rowidx 
@@ -1611,8 +1605,6 @@ if(spacetime)   #  space time  case
     isinit <- 1
     nozero <- numpairs/(numcoord*numtime)^2
     idx <- 0;ja  <- 0
-   } #### end spacetime case
-
 }
 #####
 if(is.null(coordt)) coordt=1
