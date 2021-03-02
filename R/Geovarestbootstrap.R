@@ -22,10 +22,14 @@ print("Parametric bootstrap can be time consuming ...")
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 if(!is.numeric(seed)) stop(" seed must be numeric")
 model=fit$model
-if(fit$model=="Gaussian_misp_StudentT") fit$model="StudentT"
-if(fit$model=="Gaussian_misp_Poisson") fit$model="Poisson"
-if(fit$model=="Gaussian_misp_SkewStudenT") fit$model="SkewStudentT"
-if(fit$model=="Gaussian_misp_PoissonZIP")  fit$model="PoissonZIP"
+if(fit$missp)  ### misspecification
+ {if(fit$model=="StudentT")     model="Gaussian_misp_StudentT"
+  if(fit$model=="Poisson")      model="Gaussian_misp_Poisson"
+  if(fit$model=="PoissonZIP")   model="Gaussian_misp_PoissonZIP"
+  if(fit$model=="SkewStudentT") model="Gaussian_misp_SkewStudenT"
+  if(fit$model=="Tukeygh")      model="Gaussian_misp_Tukeygh"
+ }
+
 dimat=fit$numtime*fit$numcoord;
 
 

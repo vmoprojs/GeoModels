@@ -26,6 +26,16 @@ space=!spacetime&&!bivariate
 
 dtp=pred=list()
 
+
+model1=fit$model
+if(fit$missp)  ### misspecification
+ {if(fit$model=="StudentT")     model1="Gaussian_misp_StudentT"
+  if(fit$model=="Poisson")      model1="Gaussian_misp_Poisson"
+  if(fit$model=="PoissonZIP")   model1="Gaussian_misp_PoissonZIP"
+  if(fit$model=="SkewStudentT") model1="Gaussian_misp_SkewStudenT"
+  if(fit$model=="Tukeygh")      model1="Gaussian_misp_Tukeygh"
+ }
+
 ############################################################
 ########### spatial case ###################################
 ############################################################
@@ -55,7 +65,7 @@ param=as.list(c(fit$param,fit$fixed))
 if(estimation) {
           fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,grid=fit$grid,
-                            model=fit$model,radius=fit$radius,n=fit$n,
+                            model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
@@ -142,8 +152,8 @@ dtp[[i]]=data_to_pred
 if(estimation) {
           fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,grid=fit$grid,
-                            model=fit$model,radius=fit$radius,n=fit$n,
-                            local=fit$local,GPU=fit$GPU,
+                            model=model1,radius=fit$radius,n=fit$n,
+                             local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
