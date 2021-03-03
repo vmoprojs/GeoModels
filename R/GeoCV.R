@@ -75,13 +75,13 @@ if(estimation) {
  
 if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-	            model=fit$model, n=fit$n, mse=TRUE,#ok
+	            model=fit$model, n=fit$n, mse=FALSE,#ok
               param=param, 
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
 if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-              model=fit$model, n=fit$n, mse=TRUE,#ok
+              model=fit$model, n=fit$n, mse=FALSE,#ok
               neighb=neighb,maxdist=maxdist,
               param=param, 
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
