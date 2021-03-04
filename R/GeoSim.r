@@ -457,8 +457,6 @@ if(model %in% c("PoissonWeibull"))   {
    #################################
    pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
    ssp=ssp+c(pois1)
-
-
    sel=rbind(sel,ssp<=c(exp(mm)*(rowSums(sim3)/2)^(1/param$shape)/(gamma(1+1/param$shape))))
    #sel=rbind(sel,ssp<=c(exp(mm)*rowSums(sim3)^(1/param$shape)/((k-2)*gamma(1+1/param$shape))))
    if(sum(apply(sel,2,prod))==0) break  ## stopping rule

@@ -237,10 +237,12 @@ else                                        nui['nugget']=nuisance['nugget']
                         variogram22  <- correlation[(7*length(lags_m)+1):(8*length(lags_m))]
                            }
         else { 
-        covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
-        #covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
-        variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
-        #variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
+
+
+        #covariance <- nuisance["nugget"]+nuisance["sill"]*correlation
+        covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
+        #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
+        variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
         
         }
     }

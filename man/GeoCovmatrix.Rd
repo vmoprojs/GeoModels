@@ -161,27 +161,26 @@ The associated parameters in the argument \code{param} are
 
     \item \eqn{Wend0} defined as:
       \deqn{R(h) = (1-h )^{\mu} 1(h \in [0,1])}
-      where  \eqn{\mu \geq 0.5(d+1)}. If \eqn{h} is the geodesic distance then \eqn{\mu \geq 2}.
+      where  \eqn{\mu \ge 0.5(d+1)}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 2}.
 
     \item \eqn{Wend1} defined as:
       \deqn{R(h) = (1-h )^{\mu+1} (1+(\mu+1) h) 1(h \in [0,1])}
-      where   \eqn{\mu \geq 0.5(d+1)+1}. If \eqn{h} is the geodesic distance then \eqn{\mu \geq 4}.
+      where   \eqn{\mu \ge 0.5(d+1)+1}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 4}.
 
      \item \eqn{Wend2} defined as:
       \deqn{R(h) = (1-h )^{\mu+2} (1+(\mu+2) h+ (1/3)((\mu+1)^2-1) h^2 ) 1(h \in [0,1])  }
-      where \eqn{\mu \geq 0.5(d+1)+2}. If \eqn{h} is the geodesic distance then \eqn{\mu \geq 6}.
+      where \eqn{\mu \ge 0.5(d+1)+2}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 6}.
 
     \item \eqn{GenWend} (Generalized Wendland) defined as:
      \deqn{R(h) = \int_h^{1}[(1-x)^{\mu-1} (x^{2}-h^{2})^{\kappa-1}1(h \in [0,1]) ]dx / B(2\kappa+1,\mu) }
-      where   \eqn{\mu \geq 0.5(d+1)+\kappa}.
+      where   \eqn{\mu \ge 0.5(d+1)+\kappa}.
      The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2} respectively. 
 
     \item \eqn{GenWendMatern} (Generalized Wendland Matern) defined as:
      \deqn{R(h) = \int_h^{1}[(1-x/a)^{\mu-1} ((x/a)^{2}-h^{2})^{\kappa-1}1(h \in [0,a]) ]dx / B(2\kappa+1,\mu) }
-      where   \eqn{\mu \geq 0.5(d+1)+\kappa} and \eqn{a=(\Gamma(\mu+1+2\kappa)/\Gamma(\mu))^(1/(1+2\kappa))}
+      where   \eqn{\mu \ge 0.5(d+1)+\kappa} and \eqn{a=(\Gamma(\mu+1+2\kappa)/\Gamma(\mu))^(1/(1+2\kappa))}
       The inverse parametrization  is used for the \eqn{\mu} parameter.
      
-
 
       \item \eqn{Multiquadric} defined as:
     \deqn{R(h) = (1-\alpha0.5)^{2\beta}/(1+(\alpha0.5)^{2}-\alpha cos(h))^{\beta}, \quad h \in [0,\pi]}
@@ -228,13 +227,13 @@ The associated parameters in the argument \code{param} are
       \deqn{R(h, u) =\phi(u)^{3.5+2x}Wenx(h/\phi(u),\mu_s),\quad x=0,1,2}
       where  \eqn{\phi(u)=(1+u^{0.5\alpha_t})^{-\gamma}},
       \eqn{0<  \gamma  \leq \alpha_t/2},
-       \eqn{\mu_s \geq  0.5(d+5)+x}.
+       \eqn{\mu_s \ge  0.5(d+5)+x}.
       
         \item \eqn{Wenx}\code{_}\eqn{time}, \eqn{x=0,1,2} defined as:
       \deqn{R(h, u) =\phi(h)^{3.5+2x}Wenx(u/\phi(h);\mu_t),\quad x=0,1,2}
       where  \eqn{\phi(h)=(1+h^{0.5\alpha_s})^{-\gamma}},
       \eqn{0< \gamma  \leq \alpha_s/2}, 
-       \eqn{\mu_t \geq  0.5(d+5)+x}.
+       \eqn{\mu_t \ge  0.5(d+5)+x}.
 
         \item \eqn{Multiquadric}\code{_}\eqn{st} defined as:
   \deqn{R(h, u)= ((1-0.5\alpha_s)^2/(1+(0.5\alpha_s)^2-\alpha_s \psi(u) cos(h)))^{a_s} , \quad h \in [0,\pi]}
@@ -335,10 +334,11 @@ The associated parameters in the argument \code{param} are
    Let \eqn{R(h)} be a  spatial correlation model given in standard notation.
    Then the covariance model
    applied with arbitrary variance, nugget  and scale equals to:
-  \deqn{C(h)=(\sigma^2+\tau^2 1(h=0)) R( h/a,,...), \quad     h \geq 0 }
+  \deqn{C(h)=\sigma^2(1-\tau^2 ) R( h/a,,...), \quad     h \ge 0}
+  with nugget parameter  \eqn{\tau^2} between 0 and 1.
   Similarly if \eqn{R(h,u)} is a spatio-temporal correlation model given in standard notation,
    then the covariance model is:
-  \deqn{C(h,u)=(\sigma^2+\tau^2 1(h=0,u=0)) R(h/a_s ,u/a_t,...) \quad h\geq 0, u\geq0 }
+  \deqn{C(h,u)=(\sigma^2+\tau^2 1(h=0,u=0)) R(h/a_s ,u/a_t,...) \quad h\ge 0, u\ge 0 }
 
   Here \sQuote{...} stands for additional parameters.
 
@@ -366,7 +366,7 @@ The associated parameters in the argument \code{param} are
   The bivariate models implemented are the following :
   \enumerate{
   \item \eqn{Bi}\code{_}\eqn{Matern}  defined as: 
-  \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))  Matern(h/a_{ij},\kappa_{ij}) \quad i,j=1,2.\quad h\geq 0}
+  \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))  Matern(h/a_{ij},\kappa_{ij}) \quad i,j=1,2.\quad h\ge 0}
  where \eqn{\rho=\rho_{12}=\rho_{21}} is the correlation colocated parameter and   \eqn{\rho_{ii}=1}.
  The model  \eqn{Bi}\code{_}\eqn{Matern}\code{_}\eqn{sep}  (separable matern) is a special case when
   \eqn{a=a_{11}=a_{12}=a_{22}} and \eqn{\kappa=\kappa_{11}=\kappa_{12}=\kappa_{22}}.
@@ -374,7 +374,7 @@ The associated parameters in the argument \code{param} are
    is a special case when \eqn{a_{12}=0.5  (a_{11} + a_{22})} and  \eqn{\kappa_{12}=0.5  (\kappa_{11} + \kappa_{22})}
 
  \item \eqn{Bi}\code{_}\eqn{Wendx}  (\eqn{x=0,1,2}) defined as:
-    \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))   Wendx(h/a_{ij},\nu_{ij}+1) \quad i,j=1,2.\quad h\geq 0}
+    \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))   Wendx(h/a_{ij},\nu_{ij}+1) \quad i,j=1,2.\quad h\ge 0}
      where \eqn{\rho=\rho_{12}=\rho_{21}} is the correlation colocated parameter and   \eqn{\rho_{ii}=1}.
    The model  \eqn{Bi}\code{_}\eqn{Wendx}\code{_}\eqn{sep}  (separable wendland) is a special case when
   \eqn{a=a_{11}=a_{12}=a_{22}} and \eqn{\mu=\mu_{11}=\mu_{12}=\mu_{22}}.
@@ -392,7 +392,7 @@ The associated parameters in the argument \code{param} are
 The bivariate spatial tapers  implemented are the following :
  \enumerate{
   \item \eqn{Bi}\code{_}\eqn{Wendlandx}, \eqn{x=0,1,2}  defined as:
-    \deqn{T_{ij}(h)=r_{ij}   Wendx(h/d_{ij},x), \quad i,j=1,2 \quad x=0,1,2 \quad h\geq 0}
+    \deqn{T_{ij}(h)=r_{ij}   Wendx(h/d_{ij},x), \quad i,j=1,2 \quad x=0,1,2 \quad h\ge 0}
      with   \eqn{r_{ii}=1}  and  \eqn{r_{12}=r_{21}} to be fixed using \code{tapsep}.
   }
 
