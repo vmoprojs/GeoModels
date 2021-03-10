@@ -1701,17 +1701,16 @@ double corr_skewt(double corr,double df,double skew)
 {
 if(fabs(corr)<1e-32){return(0.0);}
     else{
-double w,corr1,skew2,CorSkew,nu,l,y;
-skew2=skew*skew;
-nu=df;
-l=df/2; 
-w=sqrt(1-skew2);
-y=corr;
-if(df<170){
-CorSkew=(2*skew2/(M_PI*w*w+skew2*(M_PI-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+skew2*(1-2/M_PI)) ;
-corr1=(M_PI*(nu-2)*R_pow(gammafn((nu-1)/2),2)/(2*(M_PI*R_pow(gammafn(nu/2),2)-skew2*(nu-2)*R_pow(gammafn((nu-1)/2),2))))*
-(hypergeo(0.5,0.5,l,y*y)*((1-2*skew2/M_PI)*CorSkew+2*skew2/M_PI)-2*skew2/M_PI);}
-else {corr1=corr;}
+    double d,w,corr1,skew2,CorSkew,nu,l,y,KK;
+    skew2=skew*skew; nu=df; l=df/2;  d=(df-1)/2; w=sqrt(1-skew2);
+    y=corr;
+    CorSkew=(2*skew2/(M_PI*w*w+skew2*(M_PI-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*y/(w*w+skew2*(1-2/M_PI)) ;
+   
+    if(df<99){
+    KK=exp(log(M_PI)+log(nu-2)+2*lgammafn(d)
+    - log(2)-log(M_PI*R_pow(gammafn(l),2)*(1+skew2) - skew2*(nu-2)*R_pow(gammafn(d),2)));
+    corr1=KK * (hypergeo(0.5,0.5,l,y*y)*((1+skew2*(1-2/M_PI))*CorSkew+2*skew2/M_PI) - 2*skew2/M_PI);}
+    else {corr1=CorSkew;}
 return(corr1);
 }
 }
@@ -2375,6 +2374,11 @@ dens=kk*(R_pow(p11,a)*R_pow(p1-p11,u-a)*R_pow(p2-p11,v-a)*R_pow(1+p11-(p1+p2),NN
 return(dens);
 }
 
+
+
+
+
+
 double biv_binom(int NN, int u, int v, double p01,double p10,double p11)
 {
     
@@ -2388,6 +2392,18 @@ dens+=kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p1
     return(dens);
 }
 
+
+double aux_biv_binom(int n1,int n2, int u, int v,double p01,double p10,double p11)
+{
+
+int k;
+double dens=0.0;
+int N=n1-n2;
+for(k=0;k<=N;k++)
+dens+= R_pow(p01,k)*R_pow(1-p01,N-k)
+    *biv_binom(n2, u-k,  v, p01,p10,p11);
+ return(dens);   
+}
 
 
 

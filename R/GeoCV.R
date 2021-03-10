@@ -71,6 +71,7 @@ if(estimation) {
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
             param=as.list(c(fit_s$param,fit_s$fixed))
+            
               }
  
 if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  

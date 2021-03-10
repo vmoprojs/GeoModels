@@ -182,7 +182,7 @@ void Comp_Cond_Gauss_misp_SkewT2mem(int *cormod, double *data1,double *data2,int
     double D1=(df-1)/2;
     double D2=df/2;
     //double delta=skew/sqrt(1-skew*skew);
-    double MM=sqrt(df)*gammafn(D1)*skew/(sqrt(M_PI)*gammafn(D2));
+    double MM=(sqrt(df)*skew)/(sqrt(M_PI))*exp(lgammafn(D1)-lgammafn(D2));
     double FF=(df/(df-2)-MM*MM);
 
      for(i=0;i<npairs[0];i++){
@@ -191,10 +191,13 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                      corr2=corr_skewt(corr,df,skew);
                      if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           bl=log_biv_Norm(corr2,data1[i],data2[i],mean1[i]+sqrt(sill)*MM,
-                                                                 mean2[i]+sqrt(sill)*MM,sill*FF,0);
+                                                                  mean2[i]+sqrt(sill)*MM,
+                                                                  sill*FF,0);
                           l1=dnorm(data1[i],mean1[i]+sqrt(sill)*MM,sqrt(sill*FF),1); 
                           l2=dnorm(data2[i],mean2[i]+sqrt(sill)*MM,sqrt(sill*FF),1);
                         *res+= (2*bl-l1-l2)*weights;
+
+
                     }}            
     if(!R_FINITE(*res))  *res = LOW;
     return;

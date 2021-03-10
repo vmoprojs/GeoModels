@@ -265,7 +265,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1
     if(model %in% c("Weibull")) k=2
     if(model %in% c("LogLogistic","Logistic")) k=4
-    if(model %in% c("Binomial"))   k=round(n)
+    if(model %in% c("Binomial"))   k=max(round(n))
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB")){ k=99999;
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                }
@@ -451,9 +451,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
  }
 if(model %in% c("PoissonWeibull"))   {
 
-  if(KK==1){
-   sim3=NULL;
-   for(i in 3:k){sim3=cbind(sim3,dd[,,i]^2)}}
+  if(KK==1){sim3=NULL;for(i in 3:k){sim3=cbind(sim3,dd[,,i]^2)}}
    #################################
    pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
    ssp=ssp+c(pois1)
@@ -473,7 +471,6 @@ if(model %in% c("PoissonWeibull"))   {
 
    if(model %in% c("poisson","Poisson","PoissonGamma","PoissonWeibull"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
-
      ####
       decompvarcov1 <- MatDecomp(ccov_with_nug,method)
       if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
@@ -487,9 +484,13 @@ if(model %in% c("PoissonWeibull"))   {
       }
 ########################################
    if(model %in% c("Binomial"))   {
-                  sim[sim==1]=0;
-                  sim=c(sim)
-                  for(i in 1:k) sim=sim+dd[,,i]
+                  dd1=length(dd[,,1])
+                  if(length(n)==1) NN=rep(n,dd1)
+                  else NN=n
+                  bb=NULL; for(i in 1:k) bb=rbind(bb,dd[,,i])
+                  AA=NULL; for(i in 1:dd1) AA=cbind(AA,c(rep(1,NN[i]),rep(0,k-NN[i])))
+                  sim=bb*AA
+                  sim=apply(sim,2,sum)
                   byrow=TRUE }
 #######################################
    if(model %in% c("BinomialNeg"))   {
