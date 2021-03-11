@@ -151,11 +151,11 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==36,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Pois'
                                               if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==2,likelihood==1,type==2)&&length(n)==1) { fname <- 'Comp_Cond_BinomGauss'
+    if(all(model==2,likelihood==1,type==2)) { fname <- 'Comp_Cond_BinomGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==11,likelihood==1,type==2)&length(n)==1){ fname <- 'Comp_Cond_BinomGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==1,type==2)&&length(n)>1){ fname <- 'Comp_Cond_BinomNNGauss'
+    if(all(model==11,likelihood==1,type==2)&length(n)>1){ fname <- 'Comp_Cond_BinomNNGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==14,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -186,11 +186,11 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 ###################### pairwise ###############################################
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==2,likelihood==3,type==2)&&length(n)==1){ fname <- 'Comp_Pair_BinomGauss'
+    if(all(model==2,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==3,type==2)&&length(n)==1){ fname <- 'Comp_Pair_BinomGauss'
+    if(all(model==11,likelihood==3,type==2)&length(n)==1){ fname <- 'Comp_Pair_BinomGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==3,type==2)&&length(n)>11){ fname <- 'Comp_Pair_BinomNNGauss'
+    if(all(model==11,likelihood==3,type==2)&length(n)>1){ fname <- 'Comp_Pair_BinomNNGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==19,likelihood==3,type==2)){ namesnuis=c(namesnuis,"z")
                                               fixed<- c(fixed, list(z=min(n)))
@@ -299,8 +299,11 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 ###### selectin data with indexes from composite likelihood
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
    data1=data[colidx]; data2=data[rowidx]
+  
 
-    if(is.null(GPU)) GPU=0
+   if(model==11&&length(n)>1) {n1=n[colidx];n2=n[rowidx];
+                               n=c(n1,n2)}
+   if(is.null(GPU)) GPU=0
    if(!onlyvar){
   ##############################.  spatial or space time ############################################
    if(!bivariate)           {

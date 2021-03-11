@@ -1217,7 +1217,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     
             p <- mean(unlist(data)[!is.na(unlist(data))])
             mu=0
-            if(model==2||model==11) mu <- qnorm(p/n)
+            if(model==2||model==11) mu <- 0
             if(model==14||model==16||model==19) mu <- 0
             if(model==15) mu <- -1
             if(model==17||model==30) mu <- 1

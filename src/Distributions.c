@@ -2375,10 +2375,6 @@ return(dens);
 }
 
 
-
-
-
-
 double biv_binom(int NN, int u, int v, double p01,double p10,double p11)
 {
     
@@ -2400,13 +2396,19 @@ int k;
 double dens=0.0;
 int N=n1-n2;
 for(k=0;k<=N;k++)
-dens+= R_pow(p01,k)*R_pow(1-p01,N-k)
-    *biv_binom(n2, u-k,  v, p01,p10,p11);
+dens+= exp( lgammafn(N+1)-lgammafn(k+1)-lgammafn(N-k+1)+k*log(p01)+(N-k)*log(1-p01)+log(biv_binom(n2, u-k,  v, p01,p10,p11)));
  return(dens);   
 }
 
-
-
+double biv_binom222(int n1,int n2, int u, int v, double p01,double p10,double p11)
+{
+  
+ double res;
+ if(n1> n2)  res=aux_biv_binom(n1,n2,u,v,p01,p10,p11);
+ if(n2> n1)  res=aux_biv_binom(n2,n1,v,u,p10,p01,p11);  
+ if(n1==n2)  res=biv_binom (n1,u,v,p01,p10,p11);
+return(res);
+}
 
 /// biv binomial type II
 /*
