@@ -169,7 +169,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("SkewGaussian","SkewGauss","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',#"Binomial","BinomialNeg","BinomialNegZINB",
                     "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","PoissonGamma","PoissonWeibull",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
-                    "Gamma","Weibull","LogLogistic","Logistic"))
+                    "Gamma","Weibull","LogLogistic","Logistic","BinomialLogistic"))
        {
         if(spacetime_dyn){
                        env <- new.env()
@@ -184,7 +184,7 @@ forGaussparam<-function(model,param,bivariate)
            param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
 
 
-        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian",
+        if((model %in% c("SkewGaussian","SkewGauss","TwoPieceGaussian","Logistic",
           "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","PoissonZIP","Tukeyh","Tukeyh2","PoissonGamma","PoissonWeibull",
           'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", "Tukeygh","SinhAsinh",
                     "StudentT","SkewStudentT","TwoPieceStudentT","Gaussian")))   ##
@@ -266,6 +266,7 @@ forGaussparam<-function(model,param,bivariate)
     if(model %in% c("Weibull")) k=2
     if(model %in% c("LogLogistic","Logistic")) k=4
     if(model %in% c("Binomial"))   k=max(round(n))
+    if(model %in% c("BinomialLogistic"))   k=2*max(round(n))
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB")){ k=99999;
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                }
@@ -419,7 +420,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
         dim(sim) <- simdim
          }
     ####################################
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
               "LogGaussian","TwoPieceTukeyh",
                 "Gamma","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
@@ -467,7 +468,7 @@ if(model %in% c("PoissonWeibull"))   {
  ###############################################################################################
  #### simulation for discrete random field based on indipendent copies  of GRF ######
  ###############################################################################################
- if(model %in% c("Binomial","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
+ if(model %in% c("Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
 
    if(model %in% c("poisson","Poisson","PoissonGamma","PoissonWeibull"))   {sim=colSums(sel);byrow=TRUE}
     if(model %in% c("PoissonZIP"))   {
@@ -489,6 +490,23 @@ if(model %in% c("PoissonWeibull"))   {
                   else NN=n
                   bb=NULL; for(i in 1:k) bb=rbind(bb,dd[,,i])
                   AA=NULL; for(i in 1:dd1) AA=cbind(AA,c(rep(1,NN[i]),rep(0,k-NN[i])))
+                  sim=bb*AA
+                  sim=apply(sim,2,sum)
+                  byrow=TRUE }
+########################################
+if(model %in% c("BinomialLogistic"))   {
+                  dd1=length(dd[,,1])
+                  if(length(n)==1) NN=rep(n,dd1)
+                  else NN=n
+                  bb=NULL;i=1;
+                         while(i<=k) 
+                          {  
+                             ee=0.5*rowSums(cbind(dd[,,i]^2,dd[,,(i+1)]^2)) # exp RF
+                             ss=mm+log(exp(ee)-1) # transformation
+                             bb=rbind(bb,as.numeric(c(ss)>0))  
+                             i=i+2
+                          }
+                  AA=NULL; for(i in 1:dd1) AA=cbind(AA,c(rep(1,NN[i]),rep(0,k/2-NN[i])))
                   sim=bb*AA
                   sim=apply(sim,2,sum)
                   byrow=TRUE }
@@ -623,8 +641,14 @@ if(model %in% c("LogLogistic","Logistic"))   {
      ######################################################
       if(model %in% c("LogLogistic"))
        sim=exp(mm)*(sim1/sim2)^((1/param$shape))/(gamma(1+1/param$shape)*gamma(1-1/param$shape))
+      # sim=exp(mm)*(exp(sim1)-1)^((1/param$shape))/(gamma(1+1/param$shape)*gamma(1-1/param$shape))
     if(model %in% c("Logistic"))
-       sim=mm+log(sim1/sim2)*(param$sill)^(0.5)
+       {
+      sim=mm+log(sim1/sim2)      *(vv)^(0.5)
+      #sim=mm+log(exp(sim2)-1)*(vv)^(0.5)
+     }
+
+
   if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)

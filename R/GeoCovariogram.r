@@ -538,7 +538,8 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
    #                   
    if(binary||binomial||binomial2||geom||binomialneg||binomialnegZINB) {
                     if(bivariate) {}
-                    if(!bivariate) {          
+                    if(!bivariate) {      
+                            
                            pp=pnorm(mu)
                            if(binary||binomial||binomial2) vv=min(fitted$n)*pp*(1-pp)
                            if(geom)             vv=(1-pp)/pp^2;

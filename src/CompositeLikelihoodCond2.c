@@ -521,10 +521,38 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; vv=(int) v; 
                           l1=dbinom(uu,NN[0],p1,1);
-    //printf("l1:%f uu:%d NN:%d p1:%f \n\n",l1,uu,NN[0],p1);
                           l2=dbinom(vv,NN[0],p2,1);
                         bl=2*log(biv_binom (NN[0],uu,vv,p1,p2,p11))-(l1+l2);
-    //bl=2*log(0.1)-(l1+l2);
+                    *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+/******************************************************************************************/
+void Comp_Cond_BinomLogi2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+    if( nugget>=1 || nugget<0){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                 ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+    //Rprintf("p11: %f\n",p11);
+                p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                u=data1[i];v=data2[i];
+                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                          uu=(int) u; vv=(int) v; 
+                          l1=dbinom(uu,NN[0],p1,1);
+                          l2=dbinom(vv,NN[0],p2,1);
+                        bl=2*log(biv_binom (NN[0],uu,vv,p1,p2,p11))-(l1+l2);
                     *res+= weights*bl;
                 }}
     if(!R_FINITE(*res))*res = LOW;
@@ -560,6 +588,34 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+void Comp_Cond_BinomNNLogi2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{ 
+    int i=0, uu=0,vv=0,n1,n2;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+    if( nugget>=1 || nugget<0){*res=LOW; return;}
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                 ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+                 p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                 p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                 u=data1[i];v=data2[i];
+                 n1=NN[i];n2=NN[i+npairs[0]];
+                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                 uu=(int) u; vv=(int) v; 
+                 l1=dbinom(uu,n1,p1,1);
+                 l2=dbinom(vv,n2,p2,1);
+                 bl=2*log(biv_binom222(n1,n2,uu,vv,p1,p2,p11))-(l1+l2);
+                 *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 /*********************************************************/
 void Comp_Cond_BinomnegGauss2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -592,6 +648,37 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+/*********************************************************/
+void Comp_Cond_BinomnegLogi2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0,  uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+       if( nugget>=1 || nugget<0){*res=LOW; return;}
+    //compute the composite log-likelihood:
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                  ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+                    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                    u=data1[i];v=data2[i];
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                          uu=(int) u; 
+                         vv=(int) v; 
+                         l1=one_log_negbinom_marg(uu,NN[0],p1);
+                         l2=one_log_negbinom_marg(vv,NN[0],p2);
+                        bl=2*log(biv_binomneg(NN[0],uu,vv,p1,p2,p11))-(l1+l2);  
+                    *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 void Comp_Cond_TWOPIECETukeyh2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -1322,6 +1409,36 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /******************************************************************************************/
+void Comp_Cond_BinomLogi_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+    if( nugget>=1 || nugget<0){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                 ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                u=data1[i];v=data2[i];
+                            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                          uu=(int) u; vv=(int) v; 
+
+                           l1=dbinom(uu,NN[0],p1,1);
+                           l2=dbinom(vv,NN[0],p2,1);
+                        bl=2*log(biv_binom (NN[0],uu,vv,p1,p2,p11))-(l1+l2);
+                    *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+/******************************************************************************************/
 void Comp_Cond_BinomNNGauss_st2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
@@ -1340,6 +1457,37 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     p11=pbnorm22(ai,aj,(1-nugget)*corr);
                 p1=pnorm(ai,0,1,1,0);
                 p2=pnorm(aj,0,1,1,0);
+                u=data1[i];v=data2[i];
+                n1=NN[i];n2=NN[i+npairs[0]];
+                            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                            uu=(int) u; vv=(int) v; 
+                           l1=dbinom(uu,n1,p1,1);
+                           l2=dbinom(vv,n2,p2,1);
+                        bl=2*log(biv_binom222(n1,n2,uu,vv,p1,p2,p11))-(l1+l2);
+                    *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
+/******************************************************************************************/
+void Comp_Cond_BinomNNLogi_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, uu=0,vv=0,n1,n2;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+    if( nugget>=1 || nugget<0){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                 ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
                 u=data1[i];v=data2[i];
                 n1=NN[i];n2=NN[i+npairs[0]];
                             if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
@@ -1384,6 +1532,37 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 
+
+/*********************************************************/
+void Comp_Cond_BinomnegLogi_st2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0,  uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l1=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+       if( nugget>=1 || nugget<0){*res=LOW; return;}
+    //compute the composite log-likelihood:
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                  ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                    u=data1[i];v=data2[i];
+                            if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                          uu=(int) u;  vv=(int) v; 
+                         l1=one_log_negbinom_marg(uu,NN[0],p1);
+                         l2=one_log_negbinom_marg(vv,NN[0],p2);
+                        bl=2*log(biv_binomneg(NN[0],uu,vv,p1,p2,p11))-(l1+l2);  
+                    *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
 
 
 

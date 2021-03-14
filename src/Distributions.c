@@ -3511,8 +3511,27 @@ double pbnorm22(double lim1,double lim2,double corr)
     int     infin[2] = {0,0};
     value            = F77_CALL(bvnmvn)(lowe,uppe,infin,corre); 
     return(value);
-    //return(0.1);
 }
+
+double pblogi22(double lim1,double lim2,double corr)
+{
+double value=0.0,sum=0.0,term=0.0;
+double corr21=1-corr*corr;
+int m=0;
+while(m<1000)
+{
+term=exp(2*m*log(corr)+log(igam(m+1,lim1/(corr21)))
+                      +log(igam(m+1,lim2/(corr21))));
+
+sum=sum+ term;
+//Rprintf("%f %f %f %d\n",term,sum,corr,m);
+   if(term<1e-10) {break;}
+ m=m+1;            
+}
+value=corr21 * sum;
+ return(value);
+}
+
 
 // cdf bivariate half-normal distribution
 double pbhalf_gauss(double zi,double zj,double rho,double nugget)

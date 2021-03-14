@@ -842,6 +842,7 @@ double  wendintegral(double x, double *param);
 double pbnorm(int *cormod, double h, double u, double lim1, double lim2, double nugget, double var,double *par, double thr);
 double phalf_gauss (double z);
 double pbnorm22(double lim1,double lim2,double corr);
+double pblogi22(double lim1,double lim2,double corr);
 double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, double u1,double u2, 
                  double *nuis, double *par, double thr);
 double pbhalf_gauss (double zi,double zj,double rho,double nugget);

@@ -241,6 +241,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Wrapped'){ process <- 'Wrapped'; model <- 'Wrapped'}
   if(x$model=='Weibull'){ process <- 'Weibull'; model <- 'Weibull'}
   if(x$model=='Binomial'){ process <- 'Binomial';model <- 'Binomial'}
+  if(x$model=='BinomialLogistic'){ process <- 'BinomialLogistic';model <- 'BinomialLogistic'}
   if(x$model=='Kumaraswamy'){ process <- 'Kumaraswamy';model <- 'Kumaraswamy'}
   if(x$model=='Kumaraswamy2'){ process <- 'Kumaraswamy2';model <- 'Kumaraswamy2'}
   if(x$model=='Beta'){ process <- 'Beta';model <- 'Beta'}
@@ -248,6 +249,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='BinomialNeg_TwoPieceGaussian'||x$model=='BinomialNeg_TwoPieceGauss'){ process <- 'Negative Binomial TwoPiece Gaussian';model <- 'BinomialNeg_TwoPieceGauss'}
   if(x$model=='Binomial2'){ process <- 'Binomial';model <- 'Binomial2'}     
   if(x$model=='BinomialNeg'){ process <- 'BinomialNeg'; model <- 'BinomialNeg'}
+  if(x$model=='BinomialNegLogistic'){ process <- 'BinomialNegLogistic'; model <- 'BinomialNegLogistic'}
   if(x$model=='BinomialNegZINB'){ process <- 'BinomialNegZINB'; model <- 'BinomialNegZINB'}
   if(x$model=='Geom'||x$model=='Geometric'){ process <- 'Geometric';model <- 'Geometric'}
   if(x$model=='PoisBin'){ process <- 'Poisson Binomial';model <- 'PoisBin'}

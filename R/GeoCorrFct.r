@@ -343,12 +343,11 @@ if(model=="Binomial"||model=="BinomialNeg"||model=="Geometric"||model=="Binomial
                     if(bivariate) {}
                     if(!bivariate) {          
                            pp=pnorm(mu)
-                           if(binary||binomial||binomial2) vs=min(n)*pp*(1-pp)
-                           if(geom)             vs=(1-pp)/pp^2;
-                           if(binomialneg)      vs=(n)*(1-pp)/pp^2;
-                           if(binomialnegZINB) { 
+                           if(model=="Binomial") vs=min(n)*pp*(1-pp)
+                           if(model=="BinomialNeg")      vs=(n)*(1-pp)/pp^2;
+                           if(model=="BinomialnegZINB") { 
                                      pg=pnorm(as.numeric(nuisance['pmu']))
-                                     vs=n*(1-pp)*(1-pg)*(1+fitted$n*pg*(1-pp)) /pp^2
+                                     vs=n*(1-pp)*(1-pg)*(1+n*pg*(1-pp)) /pp^2
                                                }
                            cova=vs*correlation#variogram=vv*(1-correlation)
                            }
