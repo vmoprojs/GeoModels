@@ -2355,6 +2355,13 @@ double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
   return(dens1+dens2);
 }
 
+void biv_binomneg_call(int *NN,int *u, int *v, double *p01, double *p10,double *p11,double *res)
+{
+    *res = biv_binomneg (*NN,*u,*v,*p01, *p10,*p11);
+}
+
+
+
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
 {
 double dens=0.0;
@@ -2375,16 +2382,22 @@ return(dens);
 }
 
 
+void biv_binom_call(int *NN,int *u, int *v, double *p01, double *p10,double *p11,double *res)
+{
+    *res = biv_binom (*NN,*u,*v,*p01, *p10,*p11);
+}
+
+
 double biv_binom(int NN, int u, int v, double p01,double p10,double p11)
 {
     
 int a;
 double kk=0.0,dens=0.0;
 for(a=fmax_int(0,u+v-NN);a<=fmin_int(u,v);a++){
-//kk=exp(logfac(NN)-(logfac(a)+logfac(u-a)+logfac(v-a)+logfac(NN-u-v+a)));
 kk=exp(lgammafn(NN+1)-(lgammafn(a+1)+lgammafn(u-a+1)+lgammafn(v-a+1)+lgammafn(NN-u-v+a+1)));
-dens+=kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p10),NN-u-v+a));
+dens=dens+ kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p10),NN-u-v+a));
  }
+ //Rprintf("%f %f %f %f %f\n",dens,kk,p01,p10,p11);
     return(dens);
 }
 
@@ -3513,22 +3526,61 @@ double pbnorm22(double lim1,double lim2,double corr)
     return(value);
 }
 
+/*
 double pblogi22(double lim1,double lim2,double corr)
 {
 double value=0.0,sum=0.0,term=0.0;
-double corr21=1-corr*corr;
+//corr=sqrt(corr);
+double corr21=1-R_pow(corr,2);
 int m=0;
-while(m<1000)
+while(m<10000)
 {
 term=exp(2*m*log(corr)+log(igam(m+1,lim1/(corr21)))
                       +log(igam(m+1,lim2/(corr21))));
-
 sum=sum+ term;
-//Rprintf("%f %f %f %d\n",term,sum,corr,m);
-   if(term<1e-10) {break;}
+if(term<1e-15) {break;}
  m=m+1;            
 }
 value=corr21 * sum;
+ return(value);
+}
+*/
+
+double pblogi22(double lim1,double lim2,double corr)
+{
+double value=0.0,sum1=0.0,sum2=0.0,term=0.0,term2=0.0,kk=0,bb=0.0;
+double corr21=1-R_pow(corr,2);
+int m=0,n=0;
+
+double a1=1+exp(lim1);
+double a2=1+exp(lim2);
+
+while(n<100){
+//bb=exp(2*n*log(corr) + n*(lim1+lim2)-n*log(a1*a2));
+bb=R_pow(corr,2*n)*exp(n*(lim1+lim2))/(R_pow(a1*a2,n)*R_pow(n+1,2));
+sum1=0.0;
+while(m<100)
+{
+/*term=exp(2*m*log(corr)+log(hypergeo(2+n+m,1,2+n,exp(lim1)/a1))
+                      +log(hypergeo(2+n+m,1,2+n,exp(lim2)/a2))
+                      -2*lbeta(n+1,m+1)-m*log(a1*a2));*/
+
+term=R_pow(corr,2*m)*hypergeo(2+n+m,1,2+n,exp(lim1)/a1)*
+                     hypergeo(2+n+m,1,2+n,exp(lim2)/a2)/
+                     (R_pow(beta(n+1,m+1),2)*R_pow(a1*a2,m));
+Rprintf("%f %f %d %f %f\n",term,bb,m,corr,exp(lim1)/a1);
+sum1=sum1+ term;
+if(term<1e-10) {break;}
+ m=m+1;            
+}
+
+term2=bb*sum1;
+sum2=sum2+term2;
+if(term2<1e-10) {break;}
+n=n+1;
+}
+kk=R_pow(corr21,2)*exp(lim1+lim2)/(a1*a1*a2*a2);
+value= sum2*kk;
  return(value);
 }
 
@@ -3964,6 +4016,7 @@ void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,d
 {
     *res = biv_Poisson(*corr,*r,*t,*mean_i,*mean_j);
 }
+
 
 
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j)

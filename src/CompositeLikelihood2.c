@@ -446,11 +446,13 @@ void Comp_Pair_BinomLogi2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  ai=mean1[i];aj=mean2[i];
                  u=data1[i];v=data2[i];
+                // Rprintf("%f %f \n",nugget,par[1]);
                  corr=CorFct(cormod,lags[i],0,par,0,0);
-                 p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
-                 p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
-                   
+                // p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                p11=pblogi22(ai,aj,(1-nugget)*corr);
 
+                 p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
+                // Rprintf("%f %f %f %f\n",p11,p1,p2,corr);
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; vv=(int) v; 
                         bl=biv_binom (NN[0],uu,vv,p1,p2,p11);
