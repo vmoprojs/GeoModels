@@ -365,7 +365,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                   ai=mean1[i];aj=mean2[i];
                  corr=CorFct(cormod,lags[i],0,par,0,0);
 
-                    p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                    p11=pblogi22(ai,aj,(1-nugget)*corr);
                     p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
 
                     u=data1[i];v=data2[i];
@@ -446,13 +446,9 @@ void Comp_Pair_BinomLogi2mem(int *cormod, double *data1,double *data2,int *NN,
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  ai=mean1[i];aj=mean2[i];
                  u=data1[i];v=data2[i];
-                // Rprintf("%f %f \n",nugget,par[1]);
                  corr=CorFct(cormod,lags[i],0,par,0,0);
-                // p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
                 p11=pblogi22(ai,aj,(1-nugget)*corr);
-
                  p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
-                // Rprintf("%f %f %f %f\n",p11,p1,p2,corr);
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                           uu=(int) u; vv=(int) v; 
                         bl=biv_binom (NN[0],uu,vv,p1,p2,p11);
@@ -505,7 +501,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  ai=mean1[i];aj=mean2[i];
                  corr=CorFct(cormod,lags[i],0,par,0,0);
 
-                 p11=pblogi22(log(exp(ai)+1),log(exp(aj)+1),(1-nugget)*corr);
+                 p11=pblogi22(ai,aj,(1-nugget)*corr);
                  p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
                  u=data1[i];v=data2[i];
                  n1=NN[i];n2=NN[i+npairs[0]];
@@ -1549,7 +1545,7 @@ void Comp_Pair_BinomLogi_st2mem(int *cormod, double *data1,double *data2,int *NN
              if(!ISNAN(u)&&!ISNAN(w) ){
                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0);    
                             a=mean1[i];b=mean2[i];
-                            psj=pblogi22(log(exp(a)+1),log(exp(b)+1),(1-nugget)*corr);
+                            psj=pblogi22(a,b,(1-nugget)*corr);
                             p1=1/(1+exp(-a));p2=1/(1+exp(-b));
                             uu=(int) u;  ww=(int) w;
                           if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
@@ -1606,7 +1602,7 @@ void Comp_Pair_BinomNNLogi_st2mem(int *cormod, double *data1,double *data2,int *
              if(!ISNAN(u)&&!ISNAN(w) ){
                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                             a=mean1[i];b=mean2[i];
-                            psj=pblogi22(log(exp(a)+1),log(exp(b)+1),(1-nugget)*corr);
+                            psj=pblogi22(a,b,(1-nugget)*corr);
                             p1=1/(1+exp(-a));p2=1/(1+exp(-b));
                             uu=(int) u;  ww=(int) w;
                             n1=NN[i];n2=NN[i+npairs[0]];
@@ -1664,7 +1660,7 @@ void Comp_Pair_BinomnegLogi_st2mem(int *cormod, double *data1,double *data2,int 
                              corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                             a=mean1[i];b=mean2[i];
 
-                            psj=pblogi22(log(exp(a)+1),log(exp(b)+1),(1-nugget)*corr);
+                            psj=pblogi22(a,b,(1-nugget)*corr);
                             p1=1/(1+exp(-a));p2=1/(1+exp(-b));
 
                             uu=(int) u;  ww=(int) w;

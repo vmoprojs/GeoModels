@@ -190,7 +190,7 @@ if(alpha>0 &&  b>1000000 && x>1000000)  // new bad approximation
 {
 
     if(b<x+a+1){
-        aux1=exp(lgammafn(b)+x+(a-1)*log(1-alpha)-lgammafn(a)-lgammafn(b-a));
+        aux1=exp(lgammafn(b)+x+(a-1)*log1p(-alpha)-lgammafn(a)-lgammafn(b-a));
         aux2=exp((alpha*x)*(log(alpha)-1)+0.5*(log(2*alpha*M_PI)-log(x)));
         aux3=((2-a*alpha)*(1-a))/((2*pow(1-alpha,2)))+(1/(12*alpha));
         res=aux1*aux2*(1+aux3/x);
@@ -2397,7 +2397,7 @@ for(a=fmax_int(0,u+v-NN);a<=fmin_int(u,v);a++){
 kk=exp(lgammafn(NN+1)-(lgammafn(a+1)+lgammafn(u-a+1)+lgammafn(v-a+1)+lgammafn(NN-u-v+a+1)));
 dens=dens+ kk*(R_pow(p11,a)*R_pow(p01-p11,u-a)*R_pow(p10-p11,v-a)*R_pow(1+p11-(p01+p10),NN-u-v+a));
  }
- //Rprintf("%f %f %f %f %f\n",dens,kk,p01,p10,p11);
+
     return(dens);
 }
 
@@ -2409,7 +2409,7 @@ int k;
 double dens=0.0;
 int N=n1-n2;
 for(k=0;k<=N;k++)
-dens+= exp( lgammafn(N+1)-lgammafn(k+1)-lgammafn(N-k+1)+k*log(p01)+(N-k)*log(1-p01)+log(biv_binom(n2, u-k,  v, p01,p10,p11)));
+dens+= exp( lgammafn(N+1)-lgammafn(k+1)-lgammafn(N-k+1)+k*log(p01)+(N-k)*log1p(-p01)+log(biv_binom(n2, u-k,  v, p01,p10,p11)));
  return(dens);   
 }
 
@@ -3293,11 +3293,11 @@ double biv_T(double rho,double zi,double zj,double nuu,double nugget)
   while( k<=3000 )
    {
    // pp1=hypergeo(cc+k,cc+k,0.5,aux);
-    pp1=(0.5-2*(cc+k))*log(1-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
+    pp1=(0.5-2*(cc+k))*log1p(-aux)+log(hypergeo(0.5-(cc+k),0.5-(cc+k),0.5,aux)); //euler
     bb1=pp1+k*log(aux1)+2*(lgammafn(cc+k)-lgammafn(cc))-lgammafn(k+1)-lgammafn(nu2+k)+lgammafn(nu2);
     a1 = a1 + exp(bb1);
    // pp2=hypergeo(nu2+1+k,nu2+1+k,1.5,aux);
-    pp2=(1.5-2*(nu2+1+k))*log(1-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
+    pp2=(1.5-2*(nu2+1+k))*log1p(-aux)+log(hypergeo(1.5-(nu2+1+k),1.5-(nu2+1+k),1.5,aux));//euler
     bb2=pp2+k*log(aux1)+2*log((1+k/nu2))+lgammafn(nu2+k)-lgammafn(k+1)-lgammafn(nu2);
     a2 = a2 + exp(bb2);
 
@@ -3326,7 +3326,7 @@ double RR=0.0,bb=0.0;int k=0;
     {
     bb=exp(k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
-               +(c-(a+k)-(b+k))*log(1-x)+log(hypergeo(c-a-k,c-b-k,c,x))); //euler
+               +(c-(a+k)-(b+k))*log1p(-x)+log(hypergeo(c-a-k,c-b-k,c,x))); //euler
               // +log(hypergeo(a+k,b+k,c,x));
     if((fabs(bb)<1e-10||!R_FINITE(bb))  ) {break;}
         RR=RR+bb;
@@ -3457,7 +3457,7 @@ if(rho) {
   rho2=rho*rho;
 
     p1=pow(zi*zj,shape1/2-1)*pow(ki*kj,shape2/2-1);
-    p3=exp(2*lgammafn(aa)-(2*lgammafn(shape1/2)+2*lgammafn(shape2/2)-aa*log(1-rho2)));
+    p3=exp(2*lgammafn(aa)-(2*lgammafn(shape1/2)+2*lgammafn(shape2/2)-aa*log1p(-rho2)));
     p2= appellF4(aa,aa,shape1/2,shape2/2,rho2*zi*zj,rho2*ki*kj);
   res=p1*p2*p3;
 } else  {p1=pow(zi,shape1/2-1)*pow(ki,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
@@ -3496,7 +3496,7 @@ double biv_Kumara2(double rho,double zi,double zj,double ai,double aj,double sha
 {
   double xx=0.0,yy=0.0,ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0;
   double mi=1/(1+exp(-ai)), mj=1/(1+exp(-aj));
-  double dd=(max-min), shapei=log(0.5)/log(1-pow(mi,shape2)),shapej=log(0.5)/log(1-pow(mj,shape2));
+  double dd=(max-min), shapei=log(0.5)/log1p(-pow(mi,shape2)),shapej=log(0.5)/log1p(pow(mj,shape2));
   zi=(zi-min)/dd;zj=(zj-min)/dd;
 
  ki=1-pow(zi,shape2); kj=1-pow(zj,shape2);
@@ -3526,64 +3526,36 @@ double pbnorm22(double lim1,double lim2,double corr)
     return(value);
 }
 
-/*
-double pblogi22(double lim1,double lim2,double corr)
-{
-double value=0.0,sum=0.0,term=0.0;
-//corr=sqrt(corr);
-double corr21=1-R_pow(corr,2);
-int m=0;
-while(m<10000)
-{
-term=exp(2*m*log(corr)+log(igam(m+1,lim1/(corr21)))
-                      +log(igam(m+1,lim2/(corr21))));
-sum=sum+ term;
-if(term<1e-15) {break;}
- m=m+1;            
-}
-value=corr21 * sum;
- return(value);
-}
-*/
-
+/**********************************************************************/
 double pblogi22(double lim1,double lim2,double corr)
 {
 double value=0.0,sum1=0.0,sum2=0.0,term=0.0,term2=0.0,kk=0,bb=0.0;
 double corr21=1-R_pow(corr,2);
-int m=0,n=0;
+int m=0,n=0,p1,p2,p3;
+double e1=exp(lim1);double e2=exp(lim2);
+while(n<=600){
+bb=exp(2*n*log(corr)+n*(lim1+lim2)- 2*log(n+1));
+sum1=0.0;m=0;
+p1=1+n;p3=p1+1;
+while(m<=600)
+{ 
+      p2=2+n+m;
+      term=exp(2*m*log(corr)+log(hypergeo(p1,p2,p3,-e1))+
+                           log(hypergeo(p1,p2,p3,-e2))-2*lbeta(p1,m+1));
+     sum1=sum1+ term;
+     if(term<1e-7) {break;}
+     m=m+1;      
 
-double a1=1+exp(lim1);
-double a2=1+exp(lim2);
-
-while(n<100){
-//bb=exp(2*n*log(corr) + n*(lim1+lim2)-n*log(a1*a2));
-bb=R_pow(corr,2*n)*exp(n*(lim1+lim2))/(R_pow(a1*a2,n)*R_pow(n+1,2));
-sum1=0.0;
-while(m<100)
-{
-/*term=exp(2*m*log(corr)+log(hypergeo(2+n+m,1,2+n,exp(lim1)/a1))
-                      +log(hypergeo(2+n+m,1,2+n,exp(lim2)/a2))
-                      -2*lbeta(n+1,m+1)-m*log(a1*a2));*/
-
-term=R_pow(corr,2*m)*hypergeo(2+n+m,1,2+n,exp(lim1)/a1)*
-                     hypergeo(2+n+m,1,2+n,exp(lim2)/a2)/
-                     (R_pow(beta(n+1,m+1),2)*R_pow(a1*a2,m));
-Rprintf("%f %f %d %f %f\n",term,bb,m,corr,exp(lim1)/a1);
-sum1=sum1+ term;
-if(term<1e-10) {break;}
- m=m+1;            
 }
-
-term2=bb*sum1;
+term2=bb*sum1; 
 sum2=sum2+term2;
-if(term2<1e-10) {break;}
+if(term2<1e-7) {break;}
 n=n+1;
 }
-kk=R_pow(corr21,2)*exp(lim1+lim2)/(a1*a1*a2*a2);
+kk=exp(2*log(corr21)+lim1+lim2);
 value= sum2*kk;
  return(value);
 }
-
 
 // cdf bivariate half-normal distribution
 double pbhalf_gauss(double zi,double zj,double rho,double nugget)
@@ -3888,7 +3860,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
         while(m<=iter1){
             res0=0.0;
                 for(k=0;k<=iter2;k++){
-                        aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
+                        aux2= (k+m)*(log(rho2)-log1p(-rho2))+lgammafn(t+m);
                         aux3= lgammafn(m+1)+lgammafn(t);
                         aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
                         q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));  
@@ -3899,7 +3871,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
                          if((fabs(sum-res0)<1e-10)  ) {break;}
                   else {res0=sum;}
             }
-        aux= m*(log(rho2)-log(1-rho2)); 
+        aux= m*(log(rho2)-log1p(-rho2)); 
         aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
         q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
         if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
@@ -3973,7 +3945,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
     int n,m=0, iter=5000;
     n= r-t;
         while(m<=iter){
-            aux= m*(log(rho2)-log(1-rho2)); 
+            aux= m*(log(rho2)-log1p(-rho2)); 
             aux1= (m+n)*log(mean_i);
             q2=exp(log(hyperg(n,m+n+1, rho2*auxi))-lgammafn(m+n+1));         
             term=exp(aux+aux1+log(q2)+log(igam(m+1, auxj)));
@@ -4126,10 +4098,10 @@ double p2=pnorm(mean_j,0,1,1,0);
 if(r==0&&t==0)
      dens=ap00  + ap01*pow(p1,N) + ap10*pow(p2,N)+ap11*biv_binomneg(N,0, 0 ,p1, p2, p11);
 if(r==0&&t>0)
-      dens=      ap01*  exp(lgammafn(N+t)-lgammafn(t+1)-lgammafn(N) +N*log(p2)+t*log(1-p2) ) +
+      dens=      ap01*  exp(lgammafn(N+t)-lgammafn(t+1)-lgammafn(N) +N*log(p2)+t*log1p(-p2) ) +
                                ap11*biv_binomneg(N,0, t, p1, p2, p11);
 if(r>0&&t==0)
-      dens=      ap10* exp(lgammafn(N+r)-lgammafn(r+1)-lgammafn(N) +N*log(p1)+r*log(1-p1) ) +
+      dens=      ap10* exp(lgammafn(N+r)-lgammafn(r+1)-lgammafn(N) +N*log(p1)+r*log1p(-p1) ) +
                                ap11*biv_binomneg(N,r, 0, p1, p2, p11);
 if(r>0&&t>0)
       dens=      ap11*biv_binomneg(N,r, t,p1, p2, p11);
@@ -4427,7 +4399,7 @@ double one_log_T(double z,double m, double sill, double df)
 {
   double  res;
   double q=(z-m)/sqrt(sill);
-    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log(1+q*q/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
+    res=lgammafn(0.5*(df+1))-(0.5*(df+1))*log1p(q*q/df)-log(sqrt(M_PI*df))-lgammafn(df/2)-0.5*log(sill);
   return(res);
 }
 
@@ -4447,7 +4419,7 @@ double one_log_beta(double z, double shape1,double shape2,double min,double  max
 {
   double  res;
   double q=(z-min)/(max-min);
-  res=(shape1/2-1)*log(q)+(shape2/2-1)*log(1-q)+lgammafn(0.5*(shape1+shape2))-lgammafn(shape1/2)-lgammafn(shape2/2)-log(max-min);
+  res=(shape1/2-1)*log(q)+(shape2/2-1)*log1p(-q)+lgammafn(0.5*(shape1+shape2))-lgammafn(shape1/2)-lgammafn(shape2/2)-log(max-min);
   return(res);
 }
 
@@ -4456,7 +4428,7 @@ double one_log_kumma2(double z,double m, double shape1,double shape2,double min,
   double  res,k;
   double q=(z-min)/(max-min);k=1-pow(q,shape2);
   double m1=1/(1+exp(-m));
-  double shapei=log(0.5)/log(1-pow(m1,shape2));
+  double shapei=log(0.5)/log1p(-pow(m1,shape2));
   res=log(shapei)+log(shape2)+(shape2-1)*log(q)+(shapei-1)*log(k)-log(max-min);
   return(res);
 }
@@ -4532,10 +4504,10 @@ double one_log_bomidal(double z,double m, double sill,double nu,double delta, do
   double alpha=2*(delta+1)/nu;
   double nn=R_pow(2,1-alpha/2);
  if(z>=m){
-    res=log(alpha)+(alpha-1)*log(q)-(alpha-1)*log(1-eta)-log(2)+one_log_gammagem(R_pow(z/(1-eta),alpha),nu,nn)-0.5*log(sill);    
+    res=log(alpha)+(alpha-1)*log(q)-(alpha-1)*log1p(-eta)-log(2)+one_log_gammagem(R_pow(z/(1-eta),alpha),nu,nn)-0.5*log(sill);    
           }
   if(z<m){
-    res=log(alpha)+(alpha-1)*log(-q)-(alpha-1)*log(1+eta)-log(2)+one_log_gammagem(R_pow(-z/(1+eta),alpha),nu,nn)-0.5*log(sill);
+    res=log(alpha)+(alpha-1)*log(-q)-(alpha-1)*log1p(eta)-log(2)+one_log_gammagem(R_pow(-z/(1+eta),alpha),nu,nn)-0.5*log(sill);
          }
   return(res);
 }
@@ -4548,7 +4520,7 @@ double one_log_BinomnegZIP(int z,double n, double mu, double mup)
     res=log(p+(1-p)*dnbinom(0,n,pp,0));    
           }
   if(z>0){
-   res=log(1-p)+ dnbinom(z,n,pp,1);
+   res=log1p(-p)+ dnbinom(z,n,pp,1);
          }
   return(res);
 }
@@ -4560,7 +4532,7 @@ double one_log_PoisZIP(int z,double lambda, double mup)
     res=log(p+(1-p)*dpois(0,lambda,0));    
           }
   if(z>0){
-    res=log(1-p)+dpois(z,lambda,1);   
+    res=log1p(-p)+dpois(z,lambda,1);   
          }
   return(res);
 }
@@ -4577,7 +4549,7 @@ double one_log_dpoisgamma(int z,double lambda, double a)
 double one_log_negbinom_marg(int u,int N, double p)
 {
   double  res;
-    res=lgammafn(u+N)-(lgammafn(u+1)+lgammafn(N))+N*log(p)+u*log(1-p);
+    res=lgammafn(u+N)-(lgammafn(u+1)+lgammafn(N))+N*log(p)+u*log1p(-p);
   return(res);
 }
 

@@ -50,8 +50,7 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
     if(sum(x<0)>=1) stop("Distances must be positive\n")
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
-    if(is.null(CkCorrModel (corrmodel))) stop("The name of the coorelation model  is not correct\n")
-  
+   
 mu=0;nuisance=0
 mm=0
 num_beta=c(1,1)
@@ -79,6 +78,8 @@ mu=as.numeric(param$mean)
     }
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
+
+
 ####### Gaussian
    if(model=="Gaussian"){
         vs=as.numeric(nuisance["sill"])
@@ -145,7 +146,6 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
                               vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                               cc=(p1+p2+2*p3-mm^2)/vs
-                         
                           cova=sill*vs*cc;#variogram=sill*vs*(1-cc)  
                              } 
                   }   
@@ -185,6 +185,122 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                             vs=sill
                             }  
                 }}
+
+
+if(model=="Kumaraswamy"||model=="Kumaraswamy2")  { if(bivariate) {}
+                            else {
+
+corr_kuma=function(eta,gam,rho){
+  mean_kuma=function(eta,gam){
+    out=eta*beta(1+(1/gam),eta)
+    return(out)
+  }
+  var_kuma=function(eta,gam){
+    out=eta*beta(1+2*(1/gam),eta)-mean_kuma(eta,gam)^2
+  }
+  
+  if (eta==1 & gam==1){
+    corr=ifelse(rho<1e-07,0,((2*(rho^2*(3*rho^2-1)-(rho^2-1)^2*log1p(-rho^2)))/rho^4)-3)
+    return(corr)
+  } else if (eta==1){
+    k=0
+    res_K=0
+    iter=10000
+    tol=1e-9
+    while(k<=iter){
+      res_M=0;m=0
+      bb=     2*(log1p(-rho^2) + k*log(rho))
+      while(m<=k){
+        A=exp(lbeta(1+k-m,1+(1/gam)+m))
+        aa=    -2*lbeta(k-m+1,m+1)
+        sum_M= exp(aa+ bb) *A^2
+        res_M=res_M+  sum_M
+        if (all(sum_M<tol)| aa>1e300){
+          break
+        }
+        m=m+1
+      }
+      res_K=res_K+res_M
+      if (all(res_M<tol)){
+        break
+      }
+      k=k+1
+    }
+    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
+    return(corr)
+  } else if (gam==1){
+    k=0
+    res_K=0
+    iter=10000
+    tol=1e-9
+    while(k<=iter){
+      res_M=0;m=0
+        bb= 2*(log1p(-rho^2) + k*log(rho))
+      while(m<=k){
+        A=exp(lgamma(1+m)+lgamma(1+k-m)-lgamma(2+k))-exp(lgamma(1+m)+lgamma(1+(1/eta)+k-m)-lgamma(2+(1/eta)+k))
+        aa=-2*lbeta(k-m+1,m+1)
+        sum_M= exp(aa + bb) *A^2
+        res_M=res_M+  sum_M
+        if (all(sum_M<tol)| aa>1e300){
+          break
+        }
+        m=m+1
+      }
+      res_K=res_K+res_M
+      if (all(res_M<tol)){
+        break
+      }
+      k=k+1
+    }
+    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
+    return(corr)
+  } else{
+    int1<-function(x,k,m){((1-x^(1/eta))^(1/gam))*(x^(k-m))*((1-x)^m)}
+    k=0
+    res_K=0
+    iter=10000
+    tol=1e-9
+    while (k<=iter){
+      res_M=0;m=0
+      bb= 2*(log1p(-rho^2) + k*log(rho))
+      while(m<=k){
+        p1=integrate(int1,lower=0,upper=1, rel.tol = 1e-14,k=k,m=m)
+        aa=-2*lbeta(k-m+1,m+1)
+        p2=exp(aa+bb)
+        sum_M=p2*(p1$value)^2
+        res_M=res_M+  sum_M
+        if (all(sum_M<tol) | aa>1e300){break}
+        m=m+1
+      }
+      res_K=res_K+res_M
+      if (all(res_M<tol)){
+        break
+      }
+      k=k+1
+    }
+    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
+    return(corr)
+  }
+}
+
+
+correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+if(model=="Kumaraswamy"){
+ga=as.numeric(nuisance['shape2'])
+eta=as.numeric(nuisance['shape1'])
+}
+if(model=="Kumaraswamy2"){
+ga=as.numeric(nuisance['shape2'])
+eta=log1p(-(1+exp(mu))^(-ga))/log(0.5)
+}
+mm=eta*beta(1+1/ga,eta)
+sill=eta*beta(1+2/ga,eta)-mm^2
+rho=corr_kuma(eta,ga,correlation)
+cova=sill*rho;#variogram=sill*(1-rho)
+vs=sill
+ }
+}
+
 ##########################
  if(model=="SinhAsinh") { if(bivariate) {}
                         else {
