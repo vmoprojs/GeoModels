@@ -238,6 +238,7 @@ double igam_series(double, double);
 double igamc_series(double, double);
 double asymptotic_series(double, double, int);
 void igam_call(double *a,double *x,double *res);
+void corr_kuma_vec(double *rho,double *eta,double *gam,double *res, int *n);
 double igam(double a, double x);
 double igamc(double a, double x);
 
@@ -1311,6 +1312,9 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
+
+
 
 
 

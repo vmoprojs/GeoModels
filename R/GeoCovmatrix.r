@@ -476,100 +476,6 @@ if(model==33||model==42)   ##  Kumaraswamy case
       if(!bivariate) {
 #######################
 
-corr_kuma=function(eta,gam,rho){
-  mean_kuma=function(eta,gam){
-    out=eta*beta(1+(1/gam),eta)
-    return(out)
-  }
-  var_kuma=function(eta,gam){
-    out=eta*beta(1+2*(1/gam),eta)-mean_kuma(eta,gam)^2
-  }
-  
-  if (eta==1 & gam==1){
-    corr=ifelse(rho<1e-07,0,((2*(rho^2*(3*rho^2-1)-(rho^2-1)^2*log1p(-rho^2)))/rho^4)-3)
-    return(corr)
-  } else if (eta==1){
-    k=0
-    res_K=0
-    iter=1000
-    tol=1e-8
-    while(k<=iter){
-      res_M=0;m=0
-      bb=     2*(log1p(-rho^2) + k*log(rho))
-      while(m<=k){
-        A=exp(lbeta(1+k-m,1+(1/gam)+m))
-        aa=    -2*lbeta(k-m+1,m+1)
-        sum_M= exp(aa+ bb) *A^2
-        res_M=res_M+  sum_M
-        if (all(sum_M<tol)| aa>1e300){
-          break
-        }
-        m=m+1
-      }
-      res_K=res_K+res_M
-      if (all(res_M<tol)){
-        break
-      }
-      k=k+1
-    }
-    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
-    return(corr)
-  } else if (gam==1){
-    k=0
-    res_K=0
-    iter=1000
-    tol=1e-8
-    while(k<=iter){
-      res_M=0;m=0
-        bb= 2*(log1p(-rho^2) + k*log(rho))
-      while(m<=k){
-        A=exp(lgamma(1+m)+lgamma(1+k-m)-lgamma(2+k))-exp(lgamma(1+m)+lgamma(1+(1/eta)+k-m)-lgamma(2+(1/eta)+k))
-        aa=-2*lbeta(k-m+1,m+1)
-        sum_M= exp(aa + bb) *A^2
-        res_M=res_M+  sum_M
-        if (all(sum_M<tol)| aa>1e300){
-          break
-        }
-        m=m+1
-      }
-      res_K=res_K+res_M
-      if (all(res_M<tol)){
-        break
-      }
-      k=k+1
-    }
-    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
-    return(corr)
-  } else{
-    int1<-function(x,k,m){((1-x^(1/eta))^(1/gam))*(x^(k-m))*((1-x)^m)}
-    k=0
-    res_K=0
-    iter=1000
-    tol=1e-8
-    while (k<=iter){
-      res_M=0;m=0
-      bb= 2*(log1p(-rho^2) + k*log(rho))
-      while(m<=k){
-        p1=integrate(int1,lower=0,upper=1, rel.tol = 1e-14,k=k,m=m)
-        aa=-2*lbeta(k-m+1,m+1)
-        p2=exp(aa+bb)
-        sum_M=p2*(p1$value)^2
-        res_M=res_M+  sum_M
-        if (all(sum_M<tol) | aa>1e300){break}
-        m=m+1
-      }
-      res_K=res_K+res_M
-      if (all(res_M<tol)){
-        break
-      }
-      k=k+1
-    }
-    corr=(res_K-mean_kuma(eta,gam)^2)/var_kuma(eta,gam)
-    return(corr)
-  }
-}
-
-##########
       corr=cr$corr*(1-as.numeric(nuisance['nugget']))
       if(model==33){
                 ga=as.numeric(nuisance['shape2'])
@@ -581,8 +487,12 @@ corr_kuma=function(eta,gam,rho){
                    }
 
       mm=eta*beta(1+1/ga,eta)
+      NN=length(corr);
+      res=double(NN)
+      bb=.C("corr_kuma_vec",as.double(corr),as.double(eta),as.double(ga), 
+      res=as.double(res),as.integer(NN),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+      corr=bb$res
       vv=eta*beta(1+2/ga,eta)-mm^2
-      corr=corr_kuma(eta,ga,corr)
       }
       if(bivariate){}  
 }

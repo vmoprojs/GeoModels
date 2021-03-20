@@ -747,51 +747,6 @@ double p1evl(double x, const double coef[], int N)
     return (ans);
 }
 
-// Integrand for hypergeometric computation:
-
-
-
-/* integrand  in  hypergeometric function*/
-double int_gen_hyp(double x,double a, double b,double z,double c)
-{
-    double res=0.0;
-    res=R_pow(x,b-1)*R_pow(1-x,c-b-1)* R_pow(1-z*x,-a);
-    return (res);///(R_pow(2,alpha-1)*gamma(alpha)*R_pow(supp,2*alpha)));
-}
-void integr_gen_hyp(double *x, int n, void *ex){
-    int i;double a,b,c,y;
-    a =    ((double*)ex)[0];  //a
-    b = ((double*)ex)[1];  //b
-    c=     ((double*)ex)[2];  //c
-    y =     ((double*)ex)[3];  //y
-    for (i=0;i<n;i++) {x[i]=int_gen_hyp(x[i],a,b,y,c);}
-    return;
-}
-// function computing generalized wendland
-double HyperG_integral(double x, double *param) {
-    
-    double ex[4], lower, upper, epsabs, epsrel, result, abserr, *work;
-    int neval, ier, subdiv, lenw, last, *iwork;
-    subdiv = 100;
-    epsabs = R_pow(DOUBLE_EPS, 0.25);
-    epsrel = epsabs;
-    lenw = 4 * subdiv;         /* as instructed in WRE */
-    iwork =   (int *) Calloc(subdiv, int);  /* idem */
-    work = (double *) Calloc(lenw, double); /* idem */
-    ex[0] = param[0]; ex[1] = param[1]; ex[2] = param[2];ex[3]=x;
-    lower=0;
-    upper=1;
-    // Compute the integral
-    Rdqags(integr_gen_hyp, (void *) &ex,
-               &lower, &upper, &epsabs, &epsrel, &result,
-               &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
-
-    Free(iwork);Free(work);
-    return(result);
-}
-
-
-
 
 //************************************** ST igam.c*****************************************
 
@@ -4351,6 +4306,185 @@ return(dens);
 
 }
 
+
+
+
+
+
+/*####*/
+double int_kuma(double x,double eta, double gam,double k,double m)
+{
+    double res=0.0;
+
+    res=R_pow( 1-R_pow(x,1/eta),1/gam)*R_pow(x,k-m)*R_pow(1-x,m);
+    return (res);
+}
+
+/*####*/
+void integr_kuma(double *x, int n, void *ex){
+    int i;double eta,gam,k,m;
+    eta =    ((double*)ex)[0];  
+    gam =    ((double*)ex)[1];  
+    k=       ((double*)ex)[2];  
+    m=       ((double*)ex)[3];  
+
+    for (i=0;i<n;i++) {
+        x[i]=int_kuma(x[i],eta,gam,k,m);}
+    return;
+}
+
+
+double kumaintegral(double *param) {
+    double ex[4], lower, upper, epsabs, epsrel, result, abserr, *work;
+    int neval, ier, subdiv, lenw, last, *iwork;
+    subdiv = 100;epsabs = R_pow(DOUBLE_EPS, 0.25);epsrel = epsabs;    lenw = 4 * subdiv;           /* as instructed in WRE */
+    iwork =   (int *) Calloc(subdiv, int);  /* idem */
+    work = (double *) Calloc(lenw, double); /* idem */
+    ex[0] = param[0]; //eta
+    ex[1] = param[1]; //gam 
+    ex[2] = param[2];  //k
+    ex[3] = param[3];  //m
+    lower=0;
+    upper=1;
+    Rdqags(integr_kuma, (void *) &ex,&lower, &upper, 
+               &epsabs, &epsrel, &result,
+               &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
+    Free(iwork);Free(work);
+    return(result);
+}
+
+
+
+
+
+
+
+/*######*/
+  double mean_kuma(double eta,double gam){
+    double out=eta*beta(1+(1/gam),eta);
+    return(out);
+  }
+/*******/
+   double var_kuma(double eta, double gam){
+    double mm=mean_kuma(eta,gam);
+    double out=eta*beta(1+2*(1/gam),eta)-mm*mm;
+    return(out);
+  }
+
+/******/
+double corr_kuma(double rho,double eta,double gam){
+
+  double corr, tol=1e-6; int iter=0;
+  double rho2=R_pow(rho,2);
+  int k=0;int m=0;
+
+  if(fabs(rho)< tol) return(0.0);
+
+  /*###############*/
+if (eta==1.0&&gam==1.0){
+    corr=((2*(rho2*(3*rho2-1)-R_pow(rho2-1,2)*log1p(-rho2)))/R_pow(rho2,2))-3;
+    return(corr);
+  }
+else
+{
+  if (eta==1.0&&gam!=1.0){
+    double res_K=0.0,res_M=0.0,sum_M=0.0, bb,aa;
+    iter=5000;
+    tol=1e-8;
+    while(k<=iter){
+      res_M=0;m=0;
+      bb=     2*(log1p(-rho2) + k*log(rho));
+      while(m<=k){
+
+        //A=exp(lbeta(1+k-m,1+(1/gam)+m));
+        aa=    -2*lbeta(k-m+1,m+1);
+        sum_M= exp(aa + bb + 2*lbeta(1+k-m,1+(1/gam)+m));
+        res_M=res_M+  sum_M;
+        if (sum_M<tol){break;}
+       m=m+1;
+      }
+      res_K=res_K+res_M;
+      if (res_M<tol){ break;}
+      k=k+1;
+    }
+    double mm=mean_kuma(eta,gam);
+    double vv=var_kuma(eta,gam);
+    corr=(res_K-R_pow(mm,2))/vv;
+    return(corr);
+  }
+/******/
+if (eta!=1.0&&gam==1.0){
+   double res_K=0.0,res_M=0.0,sum_M=0.0,bb,aa,c1,c2,c3;
+    iter=5000;
+    tol=1e-8;
+    while(k<=iter){
+      res_M=0;m=0;
+        bb= 2*(log1p(-rho2) + k*log(rho));
+      while(m<=k){
+        aa=-2*lbeta(k-m+1,m+1);
+        c1=lgammafn(1+m)+lgammafn(1+k-m)-lgammafn(2+k);
+        c2=lgammafn(1+m)+lgammafn(1+(1/eta)+k-m)-lgammafn(2+(1/eta)+k);
+        c3=aa + bb;
+        sum_M= exp(2*c1+c3)+exp(2*c2+c3)-2*exp(c1+c2+c3);
+        res_M=res_M+  sum_M;
+        if (sum_M<tol){ break;}
+        m=m+1;
+      }
+      res_K=res_K+res_M;
+      if (res_M<tol){break;}
+      k=k+1;
+    }
+    double mm=mean_kuma(eta,gam);
+    double vv=var_kuma(eta,gam);
+    corr=(res_K-R_pow(mm,2))/vv;
+    return(corr);
+  }
+  
+ 
+
+
+  /**+*********************/
+  if ((eta!=1.0)&&(gam!=1.0)){
+   
+       double *param;;
+       param=(double *) Calloc(4,double);
+       param[0]=eta;param[1]=gam;  //mu,alpha //beta
+       
+ 
+    double res_K=0.0,res_M=0.0,sum_M=0.0,aa,bb,p2,p1;
+    k=0;res_K=0;iter=10000;tol=1e-9;
+     while (k<=iter){
+      res_M=0.0;m=0;
+      bb= 2*(log1p(-rho2) + k*log(rho));
+       param[2]=k;
+      while(m<=k){
+        param[3]=m;
+        p1=kumaintegral(param);
+        aa=-2*lbeta(k-m+1,m+1);
+        p2=exp(aa+bb);
+        sum_M=p2*p1*p1;
+        res_M=res_M+  sum_M;
+        if (sum_M<tol | aa>1e300){break;}
+        m=m+1;
+      }
+      res_K=res_K+res_M;
+      if (res_M<tol){ break;}
+      k=k+1;
+    }
+    double mm=mean_kuma(eta,gam);
+    double vv=var_kuma(eta,gam);
+    corr=(res_K-R_pow(mm,2))/vv;
+    return(corr);
+  }
+ }
+}
+
+  /*********************/
+void corr_kuma_vec(double *rho,double *eta,double *gam,double *res, int *n)
+{
+int i=0;
+for(i=0;i<=*n;i++)  res[i]=corr_kuma(rho[i],eta[0],gam[0]);
+}
 
 
 
