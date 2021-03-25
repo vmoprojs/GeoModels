@@ -13,7 +13,7 @@
 
 ### Optim call for Composite log-likelihood maximization
 
-CompLik <- function(bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
+CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
                            numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
                            upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity)

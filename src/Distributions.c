@@ -1365,7 +1365,7 @@ double wendintegral(double x, double *param) {
     subdiv = 100;
     epsabs = R_pow(DOUBLE_EPS, 0.25);
     epsrel = epsabs;
-    lenw = 4 * subdiv;		     /* as instructed in WRE */
+    lenw = 4 * subdiv;           /* as instructed in WRE */
     iwork =   (int *) Calloc(subdiv, int);  /* idem */
     work = (double *) Calloc(lenw, double); /* idem */
     ex[0] = param[0]; ex[1] = param[1]; ex[2] = param[2];ex[3]=x;
@@ -2265,7 +2265,7 @@ double pbnorm(int *cormod, double h, double u, double mean1, double mean2,
 
 // compute a sequence (depending on space and time) of bivariate normal cdf:
 void vpbnorm(int *cormod, double *h, double *u, int *nlags, int *nlagt,
-	     double *nuis, double *par, double *rho, double *thr)
+         double *nuis, double *par, double *rho, double *thr)
 {
   int i,j,t=0;
   for(j=0;j<*nlagt;j++)

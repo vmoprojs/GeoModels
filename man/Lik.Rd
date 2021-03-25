@@ -8,12 +8,13 @@
   log-likelihood.
 }
 \usage{
-Lik(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
+Lik(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
            grid,lower,mdecomp,model,namescorr,namesnuis,namesparam,numcoord,
            numpairs,numparamcor,numtime,optimizer,onlyvar,parallel,param,radius,setup,
            spacetime,sparse,varest,taper,type,upper,ns,X)
 }
 \arguments{
+  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
   \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field.
         Otherwise from a univariate random field.}
     \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where

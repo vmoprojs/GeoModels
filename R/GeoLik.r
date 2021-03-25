@@ -14,7 +14,7 @@
 ### Procedures are in alphabetical order.
 
 ### Optim call for log-likelihood maximization 
-Lik <- function(bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
+Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
                        mdecomp,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
                        optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X)
 {

@@ -10,9 +10,8 @@
   variances. Moreover the function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
-      fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
-      lower=NULL,maxdist=Inf,neighb=NULL,
+GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
+     local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE,
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
@@ -39,6 +38,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
     then a spatial RF is expected.}
   \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
        containing dynamical (in time) spatial coordinates. Optional argument, the default is \code{NULL}}
+  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
   \item{corrmodel}{String; the name of a correlation model, for the
     description see the Section \bold{Details}.}
   \item{distance}{String; the name of the spatial distance. The default is \code{Eucl}, the euclidean distance.
@@ -342,6 +342,7 @@ Rf with marginal counts data
   \item{coordt}{A \eqn{t}{t}-dimensional vector of temporal coordinates;}
   \item{coordx_dyn}{A  list of dynamical (in time) spatial coordinates;}
   \item{convergence}{A string that denotes if convergence is reached;}
+  \item{copula}{The type of copula;}
   \item{corrmodel}{The correlation model;}
   \item{data}{The vector or matrix or array of data;}
   \item{distance}{The type of spatial distance;}

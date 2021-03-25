@@ -15,7 +15,7 @@
 
 ### Fitting procedure:
 
-GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",
+GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=Inf,neighb=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
@@ -29,6 +29,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     #CMdl<-CkCorrModel(corrmodel)
     #Stime <- CheckST(CMdl)  
     memdist=TRUE
+    if(!is.null(copula))
+     { if((copula!="Beta")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
+
     ### Check the parameters given in input:
       if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -99,7 +102,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
-         fitted <- Lik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn, initparam$corrmodel,
+         fitted <- Lik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn, initparam$corrmodel,
                                unname(initparam$data),initparam$fixed,initparam$flagcorr,
                                initparam$flagnuis,grid,initparam$lower,method,initparam$model,initparam$namescorr,
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
@@ -111,7 +114,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
     if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2'){
   
     if(!memdist)
-          fitted <- CompLik(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
+          fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
                                    initparam$namescorr,initparam$namesnuis,#19
@@ -121,7 +124,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    unname(initparam$X),sensitivity)
     if(memdist)
-        fitted <- CompLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+        fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
@@ -157,6 +160,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                          coordt = initparam$coordt,
                          coordx_dyn=coordx_dyn,
                          convergence = fitted$convergence,
+                         copula=copula,
                          corrmodel = corrmodel,
                          data = initparam$data,
                          distance = distance,

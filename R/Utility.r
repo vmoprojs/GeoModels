@@ -727,7 +727,8 @@ CkModel <- function(model)
                          PoissonGamma=46,poissongamma=46,
                          Gaussian_misp_PoissonGamma=47,
                          PoissonWeibull=48,poissonweibull=48,
-                         BinomialLogistic=49,Binomiallogistic=49
+                         BinomialLogistic=49,Binomiallogistic=49,
+                         Beta2=50
                          )
     return(CkModel)
   }
@@ -962,12 +963,12 @@ if(!bivariate)      {
     return(param)
   }
 
-if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic","PoissonGamma","PoissonWeibull")){
+if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic","PoissonGamma","PoissonWeibull",
+    'Beta2','Kumaraswamy','Kumaraswamy2')){
       param <- c(mm, 'nugget', 'sill','shape')
       return(param)} 
    
-if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy','Kumaraswamy2'))) {
-      #param <- c(mm, 'nugget', 'sill','shape1','shape2')
+if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
       param <- c(mm, 'nugget', 'sill','shape1','shape2','min','max')
       return(param)}     
   # Skew Gaussian univariate random field:
@@ -1184,7 +1185,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
      {
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
-          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)) 
+          if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)) 
           {
            if(!bivariate) {
                            mu <- mean(unlist(data))
@@ -1198,7 +1199,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                             if(model %in% c(39))      nuisance <- c(0,0,nuisance,0)
                            if(model %in% c(21,24,12,26,34,35,46,48))   nuisance <- c(0,nuisance)
                            #if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
-                           if(model %in% c(23,28,33,42))  nuisance <- c(0,0,0,nuisance,0,0)
+                           if(model %in% c(23,28,33,42,50))  nuisance <- c(0,0,0,nuisance,0,0)
                        }
      if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
@@ -1208,7 +1209,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            else fixed <- list(mean_1=mu1,mean_2=mu2)
                            nuisance <- c(mu1,mu2)
                            if(model %in% c(10,29,31,32))  {nuisance <- c(nuisance,0.1,0.2)}
-                           if(model %in% c(26,46,48))  {nuisance <- c(nuisance,0.1,0.2)}
+                           if(model %in% c(26,46,48,42,50))  {nuisance <- c(nuisance,0.1,0.2)}
                            if(model %in% c(21))  {nuisance <- c(nuisance,0.1)}
 
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
@@ -1232,7 +1233,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
  #if(num_betas>1)
  if((!bivariate&&num_betas>1)||(bivariate&&num_betas[1]>1&&num_betas[2]>1) )
      {
-    if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)) {
+    if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)) {
     if(!bivariate) {
          if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
             if(is.list(fixed)) {
@@ -1247,7 +1248,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              if(model %in% c(18,20,27,37,38,40,41))     nuisance=c(1,nuisance,1) 
              if(model %in% c(39))     nuisance=c(1,1,nuisance,1) 
           #  if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
-            if(model %in% c(23,28,33,42))         nuisance=c(nuisance,1,1,1,1,1)  
+            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1,1,1)  
              }
     if(bivariate) {
             if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
@@ -1272,11 +1273,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             for(i in 1:num_betas[2]) nuisance2=c(nuisance2,1);
             nuisance=c(nuisance1,nuisance2 )
              if(model %in% c(10,29,31,32))        nuisance=c(nuisance,1,1)  
-             if(model %in% c(21,24,12,26,34,35,46,48))  nuisance=c(nuisance,1,1) 
+             if(model %in% c(21,24,12,26,34,35,46,48,42,50))  nuisance=c(nuisance,1,1) 
              if(model %in% c(18,20,27,37,38,40,41))     nuisance=c(1,nuisance,1) 
               if(model %in% c(39))     nuisance=c(1,1,nuisance,1) 
             #if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)
-            if(model %in% c(23,28,33,42))         nuisance=c(nuisance,1,1,1,1,1)  
+            if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1,1,1)  
 
             }
          }
@@ -1316,11 +1317,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             namesstart <- names(start)
             if(any(type == c(1, 3, 7))){
                 if(!bivariate) {   # univariate case
-                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)))
+                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                        if(any(namesstart == 'mean'))  start <- start[!namesstart == 'mean']
                        if(num_betas>1)
                        for(i in 1:(num_betas-1)) {  if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
-                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)))
+                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                                                  start <- start[!namesstart == paste("mean",i,sep="")]}}
                 }
                 if(bivariate) {          
@@ -1329,11 +1330,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                       
                        if(num_betas[1]>1)
                        for(i in 1:(num_betas[1]-1)) {  if(any(namesstart == paste("mean_1",i,sep="")))  {namesstart <- names(start) ; 
-                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)))
+                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                                                  start <- start[!namesstart == paste("mean_1",i,sep="")]}}            
                        if(num_betas[2]>1)
                        for(i in 1:(num_betas[2]-1)) {  if(any(namesstart == paste("mean_2",i,sep="")))  {namesstart <- names(start) ; 
-                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48)))
+                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                                                  start <- start[!namesstart == paste("mean_2",i,sep="")]}}  
                                   }
                 }

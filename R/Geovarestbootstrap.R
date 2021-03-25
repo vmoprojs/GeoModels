@@ -52,6 +52,7 @@ data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
 
 res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
+   copula=fit$copula,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,

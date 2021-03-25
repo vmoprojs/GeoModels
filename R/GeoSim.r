@@ -2,7 +2,7 @@
 ### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
 ### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
 ### Universidad de Valparaiso, Departamento de Estad?stica
-### File name: Simulation.r
+### File name: GeoSim.r
 ### Description:
 ### This file contains a set of procedures
 ### for the simulation of Gaussian random fields and
