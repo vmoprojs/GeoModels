@@ -963,11 +963,15 @@ if(!bivariate)      {
     return(param)
   }
 
-if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic","PoissonGamma","PoissonWeibull",
-    'Beta2','Kumaraswamy','Kumaraswamy2')){
+if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic","PoissonGamma","PoissonWeibull")){
       param <- c(mm, 'nugget', 'sill','shape')
       return(param)} 
-   
+  
+  if(model %in% c('Beta2','Kumaraswamy2')){
+      param <- c(mm, 'nugget', 'sill','shape','min','max')
+      return(param)} 
+
+
 if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
       param <- c(mm, 'nugget', 'sill','shape1','shape2','min','max')
       return(param)}     

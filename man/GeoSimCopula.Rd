@@ -131,30 +131,28 @@ data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=para
 
 ################################################################
 ###
-### Example 2. Simulation of a reparametrized Beta 
-### for mean regression
+### Example 2. Simulation of a reparametrized Beta RF
+### for beta regression
 ### with Gaussian and Beta Copula 
 ### with  underlying Wendland correlation.
 ###
 ###############################################################
-
+X=cbind(rep(1,NN),runif(NN))
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,sill=sill,scale=0.3,nugget=0,shape=2)
-model="Kumaraswamy2"
+             mean=0,mean1=0.2,sill=1,scale=0.3,nugget=0,shape=2)
+model="Beta2"
 data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
-  copula="Gaussian",sparse=TRUE)$data
+  copula="Gaussian",sparse=TRUE,X=X)$data
 
-param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,sill=sill,scale=0.3,nugget=0,shape=2)
-model="Kumaraswamy2"
+model="Beta2"
 data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
-  copula="Beta",sparse=TRUE)$data
+  copula="Beta",sparse=TRUE,X=X)$data
 
 par(mfrow=c(1,2))
 plot(density(data))
 plot(density(data1))
-GeoScatterplot(data,coords,maxdist=.08,numbins=6)
-GeoScatterplot(data1,coords,maxdist=.08,numbins=6)
+GeoScatterplot(data,coords,maxdist=.05,numbins=6)
+GeoScatterplot(data1,coords,maxdist=.05,numbins=6)
 
 }
 \keyword{Simulation}

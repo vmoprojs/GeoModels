@@ -3291,6 +3291,22 @@ double RR=0.0,bb=0.0;int k=0;
 return(RR);
 }
 
+double appellF42211(double x,double y)
+{
+double RR=0.0,bb=0.0;int k=0;
+  while( k<=5000 )
+    {
+    bb=exp(k*log(y)+2*(lgammafn(2+k)-lgammafn(1+k))
+       +(1-2*(2+k))*log1p(-x)+log(hypergeo(-1-k,-1-k,1,x))); 
+    if((fabs(bb)<1e-10||!R_FINITE(bb))  ) {break;}
+        RR=RR+bb;
+        k++;
+    }
+    if(!R_finite(RR)) RR=1e-320;
+return(RR);
+}
+
+
 
 
 
@@ -3422,6 +3438,20 @@ return(res/R_pow(dd,2));
 }
 
 
+
+
+
+
+
+double biv_Unif(double rho,double ui,double uj)
+{
+  double res,rho2;
+if(fabs(rho)>1e-8){
+  rho2=rho*rho;
+  res= 4*(1-rho2)*appellF4(2,2,1,1,rho2*ui*uj,rho2*(1-ui)*(1-uj));}
+ else  {res= 1.0;}
+return(res);
+}
 
 
 

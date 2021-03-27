@@ -35,7 +35,7 @@ param1=c(list(mean=0,sill=1,nugget=param$nugget),paramcorr)
 
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Gaussian', n=1, param=param1, radius=radius, sparse=sparse,X=X)
+     local=local,method=method,model='Gaussian', n=1, param=param1, radius=radius, sparse=sparse)
 unif=pnorm(sim$data)
 }
 ####beta copula #############################################
@@ -45,14 +45,14 @@ if(copula=="Beta")
 param1=c(list(shape1=2,shape2=2,sill=1,mean=0,min=0,max=1,nugget=param$nugget),paramcorr)
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Beta', n=1, param=param1, radius=radius, sparse=sparse,X=X)
+     local=local,method=method,model='Beta', n=1, param=param1, radius=radius, sparse=sparse)
 unif=sim$data
 }
 ####################################################################
 ####################################################################
 if(sim$spacetime||sim$bivariate) DD=dim(simcop)
   if(!sim$bivariate){
-
+           if(is.null(dim(X))) {X=as.matrix(rep(1,sim$numcoord*sim$numtime))}
            sel=substr(names(param),1,4)=="mean";
            num_betas=sum(sel) 
            if(num_betas==1)  mm<-as.numeric(param$mean)
@@ -63,18 +63,28 @@ if(sim$spacetime||sim$bivariate) DD=dim(simcop)
 ##############################
 #######     models     #######
 ##############################
-if(!sim$bivariate) {if(is.null(dim(X))) {X=as.matrix(rep(1,sim$numcoord*sim$numtime))}}
+if(!sim$bivariate) {}
+
 
 if(model=="Gaussian") 
-         simcop=qnorm(unif,mean=MM,sd=as.numeric(param$sill))
+         simcop=qnorm(unif,mean=mm,sd=as.numeric(param$sill))
 if(model=="Logistic") 
-         simcop=qlogis(unif,location=MM,scale=as.numeric(param$sill))
+         simcop=qlogis(unif,location=mm,scale=as.numeric(param$sill))
 #######
 if(model=="Kumaraswamy") 
 {
 p1=param$shape1;p2=param$shape2
 pmin=as.numeric(param$min);pmax=as.numeric(param$max);
 simcop=pmin + (pmax-pmin)*((1-unif^(1/p1))^(1/p2))
+}
+############
+if(model=="Kumaraswamy2") 
+{ # parametrization using beta median  regression
+mm=1/(1+exp(-mm))
+p2=as.numeric(param$shape)
+pmin=as.numeric(param$min);pmax=as.numeric(param$max);
+aa=log(1-mm^(p2))/log(0.5)
+simcop=pmin + (pmax-pmin)*((1-unif^(aa))^(1/p2))
 }
 ############
 if(model=="Beta") 
@@ -85,22 +95,12 @@ simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=param$shape1,shape2=param$shape2)
 ############
 if(model=="Beta2") 
 { # parametrization using beta mean  regression
-MM=X%*%mm
-MM=exp(MM)/(1+exp(MM))
+mm=1/(1+exp(-mm))
 p2=as.numeric(param$shape)
 pmin=as.numeric(param$min);pmax=as.numeric(param$max);
-simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=MM*p2,shape2=(1-MM)*p2)
+simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=mm*p2,shape2=(1-mm)*p2)
 }
-############
-if(model=="Kumaraswamy2") 
-{ # parametrization using beta median  regression
-MM=X%*%mm
-MM=exp(MM)/(1+exp(MM))
-p2=as.numeric(param$shape)
-pmin=as.numeric(param$min);pmax=as.numeric(param$max);
-aa=log(1-((1+exp(-MM))^(-p2)))/log(0.5)
-simcop=pmin + (pmax-pmin)*((1-unif^(aa))^(1/p2))
-}
+
 ############
 if(sim$spacetime||sim$bivariate) {dim(simcop)=DD}
 else {simcop=c(simcop)}

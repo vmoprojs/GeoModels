@@ -194,6 +194,12 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
     fname <- paste(fname,"2",sep="")
+
+    if(!is.null(copula))
+    {
+        if(copula=="Gaussian") fname <- paste(fname,"GCop",sep="")
+        if(copula=="Beta")     fname <- paste(fname,"BCop",sep="")
+    }
     path.parent <- getwd()
   
     # if(!is.null(GPU)) 

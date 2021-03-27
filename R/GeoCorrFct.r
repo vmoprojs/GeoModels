@@ -66,8 +66,12 @@ if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
 mu=as.numeric(param$mean)
   ## selecting nuisance mean annd corr parameters
       if(!bivariate){
+        print(corrmodel)
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
+        print(parcorr)
+        print(param)
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
+        #print(nuisance)
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
         nuisance=nuisance[!sel]
@@ -76,6 +80,7 @@ mu=as.numeric(param$mean)
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
     }
+    print("here")
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
 
