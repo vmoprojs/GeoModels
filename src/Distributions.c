@@ -4419,8 +4419,8 @@ else
 {
   if (eta==1.0&&gam!=1.0){
     double res_K=0.0,res_M=0.0,sum_M=0.0, bb,aa;
-    iter=5000;
-    tol=1e-8;
+    iter=10000;
+    tol=1e-14;
     while(k<=iter){
       res_M=0;m=0;
       bb=     2*(log1p(-rho2) + k*log(rho));
@@ -4430,7 +4430,7 @@ else
         aa=    -2*lbeta(k-m+1,m+1);
         sum_M= exp(aa + bb + 2*lbeta(1+k-m,1+(1/gam)+m));
         res_M=res_M+  sum_M;
-        if (sum_M<tol){break;}
+        if (sum_M<tol|sum_M>1e300){break;}
        m=m+1;
       }
       res_K=res_K+res_M;
@@ -4445,8 +4445,8 @@ else
 /******/
 if (eta!=1.0&&gam==1.0){
    double res_K=0.0,res_M=0.0,sum_M=0.0,bb,aa,c1,c2,c3;
-    iter=5000;
-    tol=1e-8;
+    iter=10000;
+    tol=1e-14;
     while(k<=iter){
       res_M=0;m=0;
         bb= 2*(log1p(-rho2) + k*log(rho));
@@ -4457,7 +4457,7 @@ if (eta!=1.0&&gam==1.0){
         c3=aa + bb;
         sum_M= exp(2*c1+c3)+exp(2*c2+c3)-2*exp(c1+c2+c3);
         res_M=res_M+  sum_M;
-        if (sum_M<tol){ break;}
+        if (sum_M<tol|sum_M>1e300){ break;}
         m=m+1;
       }
       res_K=res_K+res_M;
@@ -4482,7 +4482,7 @@ if (eta!=1.0&&gam==1.0){
        
  
     double res_K=0.0,res_M=0.0,sum_M=0.0,aa,bb,p2,p1;
-    k=0;res_K=0;iter=10000;tol=1e-9;
+    k=0;res_K=0;iter=10000;tol=1e-14;
      while (k<=iter){
       res_M=0.0;m=0;
       bb= 2*(log1p(-rho2) + k*log(rho));
@@ -4494,7 +4494,7 @@ if (eta!=1.0&&gam==1.0){
         p2=exp(aa+bb);
         sum_M=p2*p1*p1;
         res_M=res_M+  sum_M;
-        if (sum_M<tol | aa>1e300){break;}
+        if (sum_M<tol | sum_M>1e300){break;}
         m=m+1;
       }
       res_K=res_K+res_M;
