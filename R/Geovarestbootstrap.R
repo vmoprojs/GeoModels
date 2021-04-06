@@ -1,16 +1,7 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Institutions: 
-### Instituto de Estadistica
-### Universidad de Valparaiso
-### File name: Geo_varest_bootstrap.r
-### Description:
-### This file contains function to compute stderr res_est
-### for composite likelihoodres_est
-### and model selection critera given an object of class GeoFit
-### Last change: 28/03/2020.
+### File name: GeoVarestboostrap.r
 ####################################################
+
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",
   lower=NULL, upper=NULL,memdist=TRUE, seed=1)

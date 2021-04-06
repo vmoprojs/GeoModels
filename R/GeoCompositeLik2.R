@@ -1,15 +1,7 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: CompLik2.r
-### Description:
-### This file contains a set of procedures
-### for maximum composite-likelihood fitting of
-### random fields.
-### Last change: 28/04/2020
 ####################################################
+
 
 ### Optim call for Composite log-likelihood maximization
 
@@ -33,6 +25,8 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
         res=double(1)
+       # print(other_nuis)
+       # print(fan)
        # result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
@@ -280,8 +274,17 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
+
+        if(!is.null(copula))
+    {
+        if(copula=="Gaussian") fname <- paste(fname,"GCop",sep="")
+        if(copula=="Clayton")     fname <- paste(fname,"CCop",sep="")
+    }
+
     fname <- paste(fname,"2mem",sep="")
+
     path.parent <- getwd()
+
   
     # if(!is.null(GPU)) 
     # {
@@ -301,6 +304,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
       setwd(path)
       .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
+
+
 
 
      if((spacetime||bivariate)&&(!spacetime_dyn))    data=c(t(data))

@@ -8,15 +8,14 @@
   composite log-likelihood.
 }
 \usage{
-CompLik(copula,bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data, distance,  
-               flagcorr, flagnuis, fixed, GPU, grid,likelihood,local,lower, 
+CompLik(copula,bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data,distance,  flagcorr, flagnuis, fixed, GPU, grid,likelihood,local,lower, 
                  model, n, namescorr, namesnuis, namesparam,
                numparam, numparamcorr, optimizer, onlyvar, parallel, param,
                spacetime, type,upper, varest, vartype,
                weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity)
 }
 \arguments{
-  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
+  \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
                 Otherwise from a univariate random field.}
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where

@@ -7,13 +7,14 @@
   random field model.
 }
 \usage{
-NuisParam(model, bivariate=FALSE,num_betas=c(1,1))
+NuisParam(model, bivariate=FALSE,num_betas=c(1,1),copula=NULL)
 }
 \arguments{
   \item{model}{String; the name of a random field.}
   \item{bivariate}{Logical; if \code{FALSE} (the default) the correlation  model is univariate spatial or spatial-temporal.  
        Otherwise is bivariate.}
   \item{num_betas}{Numerical; the nunber of mean parameters in the linear specification (default is 1)     }
+  \item{copula}{The type of copula.} 
 }
 
 \details{The function returns a list with the nuisance parameters of a given
@@ -38,6 +39,8 @@ NuisParam("Weibull",num_betas=2)
 NuisParam("SkewGaussian", num_betas=3)
 
 NuisParam("SinhAsinh")
+
+NuisParam("Beta2",copula="Clayton")
 
 NuisParam("StudentT")
 ## note that in the bivariate case sill and nugget are considered as correlation parameteres

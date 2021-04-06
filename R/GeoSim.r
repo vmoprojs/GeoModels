@@ -1,13 +1,5 @@
 ####################################################
-### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Universidad de Valparaiso, Departamento de Estad?stica
 ### File name: GeoSim.r
-### Description:
-### This file contains a set of procedures
-### for the simulation of Gaussian random fields and
-### related functions.
-### Last change: 28/04/2020
 ####################################################
 
 
@@ -316,7 +308,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
                    distance=distance,grid=grid,model="Gaussian", n=n,
-                param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,X=X)
+                param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,copula=NULL,X=X)
 
 
 

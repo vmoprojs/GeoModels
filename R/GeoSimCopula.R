@@ -1,19 +1,11 @@
 ####################################################
-### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Universidad de Valparaiso, Departamento de Estad?stica
-### File name: GeoSim_Copula.R
-### Description:
-### This file contains a set of procedures
-### for the simulation of Gaussian random fields and
-### related functions.
-### Last change: 28/04/2020
+### File name: GeoSimCopula.r
 ####################################################
 
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSimCopula <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6371, sparse=FALSE,copula="Beta",X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6371, sparse=FALSE,copula="Gaussian",X=NULL)
 {
 
 if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
@@ -22,7 +14,7 @@ if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
 
-if((copula!="Beta")&&(copula!="Gaussian")) stop("the type of copula is wrong")
+if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")
 
 
 
@@ -36,17 +28,17 @@ param1=c(list(mean=0,sill=1,nugget=param$nugget),paramcorr)
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
      local=local,method=method,model='Gaussian', n=1, param=param1, radius=radius, sparse=sparse)
-unif=pnorm(sim$data)
+unif=pnorm(sim$data,mean=0,sd=1);
 }
 ####beta copula #############################################
-if(copula=="Beta")
+if(copula=="Clayton")
 {
-
-param1=c(list(shape1=2,shape2=2,sill=1,mean=0,min=0,max=1,nugget=param$nugget),paramcorr)
+pp=round(as.numeric(param['nu']))
+param1=c(list(shape1=pp,shape2=2,sill=1,mean=0,min=0,max=1,nugget=param$nugget),paramcorr)
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
      local=local,method=method,model='Beta', n=1, param=param1, radius=radius, sparse=sparse)
-unif=sim$data
+unif=(sim$data)^(pp/2)
 }
 ####################################################################
 ####################################################################
@@ -66,10 +58,13 @@ if(sim$spacetime||sim$bivariate) DD=dim(simcop)
 if(!sim$bivariate) {}
 
 
-if(model=="Gaussian") 
-         simcop=qnorm(unif,mean=mm,sd=as.numeric(param$sill))
+if(model=="Gaussian") {
+         simcop=qnorm(unif,mean=mm,sd=sqrt(as.numeric(param$sill)))
+         }
 if(model=="Logistic") 
-         simcop=qlogis(unif,location=mm,scale=as.numeric(param$sill))
+         {
+         simcop=qlogis(unif,location=mm,scale=sqrt(as.numeric(param$sill)))
+         }
 #######
 if(model=="Kumaraswamy") 
 {
@@ -103,7 +98,8 @@ simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=mm*p2,shape2=(1-mm)*p2)
 
 ############
 if(sim$spacetime||sim$bivariate) {dim(simcop)=DD}
-else {simcop=c(simcop)}
+else {if (!grid) simcop=c(simcop)
+     }
 ##############################
 ##############################
 ##############################

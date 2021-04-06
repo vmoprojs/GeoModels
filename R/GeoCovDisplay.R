@@ -1,3 +1,6 @@
+####################################################
+### File name: GeoCovDisplay.r
+####################################################
 
 GeoCovDisplay=function(covmatrix,limits=FALSE,pch=2)   {
 if(class(covmatrix)!="CovMat") stop("A CovMat object is needed as input\n")

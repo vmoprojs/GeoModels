@@ -2062,3 +2062,227 @@ void Comp_Pair_SkewGauss_biv2mem(int *cormod, double *data1,double *data2,int *N
     return;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/********************* SPATIAL Gaussian COPULA *****************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+
+// Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
+void Comp_Pair_GaussGCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=1; int model=1;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+
+
+void Comp_Pair_BetaGCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=1; int model=28;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+void Comp_Pair_Beta2GCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=1; int model=50;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+void Comp_Pair_KumaGCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=1; int model=33;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+void Comp_Pair_Kuma2GCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=1; int model=42;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/********************* SPATIAL Clayton COPULA *****************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+/******************************************************************************************/
+
+
+
+// Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
+void Comp_Pair_GaussCCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=2; int model=1;
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+  //Rprintf("%f %f %f  %f %f \n",lags[i],data1[i],data2[i],par[0],par[1]);
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                       bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}

@@ -1,14 +1,5 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
-### File name: Lik.r
-### Description:
-### This file contains a set of procedures
-### for maximum likelihood fitting of
-### random fields.
-### Last change: 27/01/2020
+### File name: GeoLik.r
 ####################################################
 
 ### Procedures are in alphabetical order.

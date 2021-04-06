@@ -1,17 +1,8 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: CompLik.r
-### Description:
-### This file contains a set of procedures
-### for maximum composite-likelihood fitting of
-### random fields.
-### Last change: 28/04/2020.
 ####################################################
 
-### Optim call for Composite log-likelihood maximization
+
 
 CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
@@ -198,7 +189,7 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
     if(!is.null(copula))
     {
         if(copula=="Gaussian") fname <- paste(fname,"GCop",sep="")
-        if(copula=="Beta")     fname <- paste(fname,"BCop",sep="")
+        if(copula=="Clayton")     fname <- paste(fname,"BCop",sep="")
     }
     path.parent <- getwd()
   

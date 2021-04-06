@@ -108,7 +108,7 @@ NuisParam("Poisson")
 
 x = seq(0,1,0.005)
 param=list(sill=1,scale=0.2/3,nugget=0,smooth=0.5,mean=2)
-corr= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Poisson",covariance=TRUE)
-plot(x,corr,ylim=c(0,exp(2)),type="l")
+cova= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Poisson",covariance=TRUE)
+plot(x,cova,ylim=c(0,exp(2)),type="l")
 }
 

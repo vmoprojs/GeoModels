@@ -2,17 +2,17 @@
 \alias{GeoSimCopula}
 \alias{print.GeoSimCopula}
 \encoding{UTF-8}
-\title{Simulation of Gaussian and non Gaussian Random Fields.}
+\title{Simulation of Gaussian and non Gaussian Random Fields using copula.}
 \description{
   Simulation of Gaussian and some non Gaussian spatial, spatio-temporal and spatial bivariate 
- random fields using Gaussian or Beta copula.
+ random fields using Gaussian or Clayton copula.
   The function return a realization of a Random Field for a given covariance model and covariance parameters.
   Simulation is based on Cholesky decomposition.
 }
 \usage{
 GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      radius=6371, sparse=FALSE, copula="Beta",X=NULL)
+      radius=6371, sparse=FALSE, copula="Gaussian",X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -54,7 +54,7 @@ GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, dista
   \item{sparse}{Logical; if \code{TRUE} then  cholesky decomposition is performed
   using sparse matrices algorithms (spam packake). It should be used
   with compactly supported covariance models.\code{FALSE} is the default.}
-  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
+  \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{X}{Numeric; Matrix of space-time covariates.}
 }
 
@@ -77,7 +77,7 @@ GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, dista
   \item{n}{The number of trial for Binomial RFs;the number of successes in a negative Binomial RFs;} 
   \item{numcoord}{The number of spatial coordinates;}
   \item{numtime}{The number the temporal realisations of the RF;}
-  \item{param}{The vector of  parameters' estimates;}
+  \item{param}{A list of the parameters}
   \item{radius}{The radius of the sphere if coordinates are passed in lon/lat format;}
   \item{randseed}{The seed used for the random simulation;}
   \item{spacetime}{\code{TRUE} if spatio-temporal and \code{FALSE} if
@@ -118,35 +118,34 @@ corrmodel="GenWend"
 min=0;max=1
 param=list(smooth=smooth,power2=4, min=min,max=max,
              mean=0,sill=sill,scale=0.2,nugget=0,shape1=shape1,shape2=shape2)
-k=1
-res=NULL
-model="Beta"
-data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
+
+data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta",param=param,
   copula="Gaussian",sparse=TRUE)$data
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,sill=sill,scale=0.3,nugget=0,shape1=shape1,shape2=shape2)
-model="Beta"
-data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
-  copula="Beta",sparse=TRUE)$data
+             mean=0,sill=sill,scale=0.2,nugget=0,shape1=shape1,shape2=shape2,nu=2)
+
+data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta",param=param,
+  copula="Clayton",sparse=TRUE)$data
 
 ################################################################
 ###
 ### Example 2. Simulation of a reparametrized Beta RF
 ### for beta regression
-### with Gaussian and Beta Copula 
+### with Gaussian and Clayton Copula 
 ### with  underlying Wendland correlation.
 ###
 ###############################################################
 X=cbind(rep(1,NN),runif(NN))
 param=list(smooth=smooth,power2=4, min=min,max=max,
              mean=0,mean1=0.2,sill=1,scale=0.3,nugget=0,shape=2)
-model="Beta2"
-data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
+
+data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
   copula="Gaussian",sparse=TRUE,X=X)$data
 
-model="Beta2"
-data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,
-  copula="Beta",sparse=TRUE,X=X)$data
+param=list(smooth=smooth,power2=4, min=min,max=max,
+             mean=0,mean1=0.2,sill=1,scale=0.3,nugget=0,shape=2,nu=1)
+data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
+  copula="Clayton",sparse=TRUE,X=X)$data
 
 par(mfrow=c(1,2))
 plot(density(data))

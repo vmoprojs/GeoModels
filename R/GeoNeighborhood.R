@@ -1,3 +1,7 @@
+####################################################
+### File name: GeoNeighborhood.r
+####################################################
+
 GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
                   distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
 {

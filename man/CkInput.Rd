@@ -11,7 +11,7 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
            fcall, fixed, grid,likelihood, maxdist, maxtime, 
             model, n,  optimizer, param, radius,
            start, taper, tapsep,  type, varest, vartype, 
-           weighted,X)
+           weighted,copula,X)
 }
 \arguments{
    \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -76,6 +76,7 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
   \item{weighted}{Logical; if \code{TRUE} the likelihood objects are
     weighted. If \code{FALSE} (the
     default) the composite likelihood is not weighted.}
+      \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
 }
 

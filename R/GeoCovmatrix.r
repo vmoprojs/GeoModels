@@ -1,15 +1,7 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: GeoCovmatrix.r
-### Description:
-### This file contains a set of procedures
-### for computing a covariance (tapered) matrix for a given
-### space(time) covariance model.
-### Last change: 28/05/2020.
 ####################################################
+
 
 ### decomposition of a square  matrix
 MatDecomp<-function(mtx,method)    {
@@ -58,15 +50,14 @@ MatLogDet<-function(mat.decomp,method)    {
 
 GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl", grid=FALSE,
                        maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, radius=6371, 
-                       sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",X=NULL)
+                       sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL)
 
 {
   ########################################################################################################
   ##########  Internal function: computing covariance matrix #############################################
   ########################################################################################################
-
     Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, NS, nuisance, numpairs,
-                           numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,X)
+                           numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,copula,X)
     {
    
 ###################################################################################
@@ -766,7 +757,7 @@ if(sparse) {
 
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
-                              param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,X)
+                              param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,copula,X)
   
     if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
@@ -775,7 +766,7 @@ if(sparse) {
     initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
                            NULL, grid, NULL, maxdist, NULL,maxtime, model, n, 
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
-                           NULL, NULL, FALSE, NULL, NULL,NULL,NULL,X,FALSE)
+                           NULL, NULL, FALSE, NULL, NULL,NULL,NULL,copula,X,FALSE)
    
     cc=cbind(initparam$coordx,initparam$coordy)  
 
@@ -824,7 +815,7 @@ if(sparse) {
                         initparam$NS,
                         initparam$param[initparam$namesnuis],
                         initparam$numpairs,numpairstot,initparam$model,
-                        initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,initparam$X)
+                        initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,copula,initparam$X)
    
     
     if(type=="Tapering") sparse=TRUE
@@ -842,6 +833,7 @@ if(sparse) {
                    coordt = initparam$coordt,
                    coordx_dyn = coordx_dyn,
                    covmatrix=covmatrix,
+                   copula=copula,
                    corrmodel = corrmodel,
                    distance = distance,
                    grid=   grid,

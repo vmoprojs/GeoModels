@@ -1,14 +1,5 @@
 ####################################################
-### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: WeightedLeastSquare.r
-### Description:
-### This file contains a set of procedures in order
-### to estimate the parameters of some covariance
-### function models for a given dataset.
-### Last change: 28/03/2020.
 ####################################################
 
 
@@ -48,7 +39,7 @@ print.GeoWLS <- function(x, digits = max(3, getOption("digits") - 3), ...)
 WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                     likelihood, maxdist, neighb,maxtime, model, n, param, parscale,
                     paramrange, radius, start, taper, tapsep, type, varest, vartype,
-                    weighted, winconst,winconst_t, winstp_t, winstp,X,memdist)
+                    weighted, winconst,winconst_t, winstp_t, winstp,copula,X,memdist)
   {
     # Determines the range of the parameters for a given correlation
     SetRangeParam <- function(namesparam, numparam)
@@ -157,7 +148,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                            grid, likelihood, maxdist,neighb, maxtime, model, n, 
                            param, parscale, paramrange, radius,  start, taper, tapsep,
                            "GeoWLS", type, varest, vartype,
-                           weighted, winconst,winconst_t, winstp_t, winstp, X, memdist)
+                           weighted, winconst,winconst_t, winstp_t, winstp,copula, X, memdist)
 
        
   
@@ -305,7 +296,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
     ### Check the parameters given in input:
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance,"Fitting", fixed, grid, 'None',
                               maxdist, maxtime,  model,NULL,  optimizer, NULL, radius, start, NULL,
-                             NULL, 'GeoWLS', FALSE, 'SubSamp', weighted, NULL)
+                             NULL, 'GeoWLS', FALSE, 'SubSamp', weighted, NULL,NULL)
     
 
     if(!is.null(checkinput$error))
@@ -341,7 +332,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
     initparam <- StartParam(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance, "Fitting", fixed, grid,
     'None', maxdist, neighb,maxtime,  model, NULL,  NULL,
                            parscale, optimizer=='L-BFGS-B', radius, start,NULL,  NULL,
-                           'GeoWLS', 'GeoWLS', FALSE, 'SubSamp', FALSE, 1, 1,1,1, NULL,0)
+                           'GeoWLS', 'GeoWLS', FALSE, 'SubSamp', FALSE, 1, 1,1,1,NULL, NULL,0)
     if(!is.null(initparam$error))
       stop(initparam$error)
      coordx=initparam$coordx

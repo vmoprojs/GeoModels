@@ -15,7 +15,7 @@ GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,dista
     model="Gaussian", n=1,nloc=NULL,mse=FALSE, lin_opt=TRUE, 
     param, radius=6371, sparse=FALSE,taper=NULL,tapsep=NULL, 
      time=NULL, type="Standard",type_mse=NULL,
-     type_krig="Simple",weigthed=TRUE,which=1, X=NULL,Xloc=NULL)
+     type_krig="Simple",weigthed=TRUE,which=1,copula=NULL, X=NULL,Xloc=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -85,6 +85,7 @@ GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,dista
   with compact support \code{maxdist} (\code{maxtime})are used in the pairwise kriging.}
       \item{which}{Numeric; In the case of bivariate (tapered) cokriging it indicates which variable to predict.
       	   It can be 1 or 2}
+    \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
     \item{Xloc}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification
      associated to predicted locations.}

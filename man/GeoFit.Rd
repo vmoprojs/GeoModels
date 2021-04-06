@@ -13,7 +13,7 @@
 GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
-      optimizer='Nelder-Mead', parallel=FALSE,
+      optimizer='Nelder-Mead', parallel=FALSE, 
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
       winconst_t=NULL, winstp_t=NULL,X=NULL)
@@ -38,7 +38,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
     then a spatial RF is expected.}
   \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
        containing dynamical (in time) spatial coordinates. Optional argument, the default is \code{NULL}}
-  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
+  \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{corrmodel}{String; the name of a correlation model, for the
     description see the Section \bold{Details}.}
   \item{distance}{String; the name of the spatial distance. The default is \code{Eucl}, the euclidean distance.
@@ -203,16 +203,11 @@ RF with with possibly asymmetric marginal distribution:
     \item \code{SkewGaussian} for a skew Gaussian  RF (see   Alegrıa et al. (2017))
     \item \code{SinhAsinh} for a Sinh-arcsinh  RF.
  }
- RF with bounded supported data
- \itemize{   
-    \item \code{Beta} for a Beta   RF.
-    \item \code{Kumaraswamy} for a  Kumaraswamy  RF.
-    }
  RF with for directional data
  \itemize{   
     \item \code{Wrapped} for a wrapped Gaussian  RF (see  Alegria A., Bevilacqua, M., Porcu, E. (2016))
     }
-Rf with marginal counts data
+RF with marginal counts data
  \itemize{  
      \item \code{Poisson} for a Poisson  RF.
      \item \code{PoissonZIP} for a zero inflated Poisson  RF.
@@ -220,6 +215,12 @@ Rf with marginal counts data
      \item \code{BinomialNeg} for a negative Binomial RF.
      \item \code{BinomialNegZINB} for a zero inflated negative Binomial RF.
   }
+RF using Gaussian and Clayton copula with the following marginal distribution:
+ \itemize{   
+    \item \code{Gaussian} 
+    \item \code{Beta} for a Beta   RF, \code{Beta2} using mean parametrization.
+    \item \code{Kumaraswamy} for a  Kumaraswamy  RF,\code{Kumaraswamy2} using median parametrization.
+    }
 
   For  a given \code{model} the associated parameters are given by nuisance and covariance parameters. In order to obtain the nuisance parameter associated to a specific 
   model use \code{\link{NuisParam}}. 
@@ -364,7 +365,7 @@ Rf with marginal counts data
   \item{numcoord}{The number of spatial coordinates;}
   \item{numtime}{The number of the temporal realisations of the RF;}
   \item{param}{The vector of  parameters' estimates;}
-  \item{param}{The radius of the sphere in the case of great  circle distance;}
+  \item{radius}{The radius of the sphere in the case of great  circle distance;}
    \item{stderr}{The vector of standard errors;}
   \item{sensmat}{The sensitivity matrix;}
   \item{varcov}{The matrix of the variance-covariance of the estimates;}

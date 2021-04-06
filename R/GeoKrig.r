@@ -1,19 +1,12 @@
 ####################################################
-### Authors: Moreno Bevilacqua Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
-### File name: GeoKrig.r  
-### Description:  
-### This file contains a set of procedures
-### for computing simple (tapered)  kriging
-### predictor  at an unknown space (time) locations.
-### Last change: 28/04/2020.
-#################################################### 
+### File name: GeoKrig.r
+####################################################
+
+
 GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
                maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE, lin_opt=TRUE, param, radius=6371, sparse=FALSE, 
                taper=NULL, tapsep=NULL, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE, 
-               which=1, X=NULL,Xloc=NULL)
+               which=1, copula=NULL,X=NULL,Xloc=NULL)
 
 { 
 ######################################
@@ -106,7 +99,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, 
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n, 
-          param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,X=X) 
+          param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X) 
     ###########
  
     bivariate = covmatrix$bivariate;   
@@ -867,6 +860,7 @@ if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
                    coordx_dyn=covmatrix$coordx_dyn,
                    covmatrix=covmatrix$covmatrix,
                    corrmodel = corrmodel,
+                   copula=copula,
                    data=data,
                    distance = distance,
                    grid=covmatrix$grid,

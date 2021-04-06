@@ -1,3 +1,7 @@
+####################################################
+### File name: GeoScatterplot.r
+####################################################
+
 GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
                            distance="Eucl", grid=FALSE, maxdist=NULL, neighb=NULL,
                            times=NULL, numbins=4, radius=6371, bivariate=FALSE)
@@ -17,7 +21,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
     # Checks the input:
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, grid,
                              'None', maxdist, maxtime, model,NULL, 'Nelder-Mead', NULL,
-                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL)
+                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL,NULL)
     # Checks if there are errors in the input:
   if(is.null(maxdist))         stop('maxdist must be specified\n')
   if(!is.null(checkinput$error))
@@ -39,7 +43,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
                            NULL, grid, 'None', maxdist,neighb,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)
+                           'SubSamp', FALSE, 1, 1,1,1,NULL,NULL,FALSE)
 
 
     ### END -- Specific checks of the Empirical Variogram    

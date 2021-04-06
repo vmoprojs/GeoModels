@@ -11,7 +11,7 @@ StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall,
           fixed, grid,likelihood,  maxdist, neighb, maxtime, model, n,  param, 
           parscale, paramrange, radius,  start, taper, tapsep,
           type,typereal,varest, vartype, weighted, winconst,
-          winstp, winconst_t, winstp_t,X,memdist)
+          winstp, winconst_t, winstp_t,copula,X,memdist)
 }
 \arguments{
  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -86,6 +86,7 @@ StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall,
          in the sub-sampling procedure.}
  \item{winstp_t}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
       overlapping in the temporal  sub-sampling procedure.}
+       \item{copula}{The type of copula.}
     \item{X}{Numeric; Matrix of space-time covariates.}   
         \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
       are computed before  the optmization. }

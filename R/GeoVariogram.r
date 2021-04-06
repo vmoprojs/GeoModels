@@ -1,13 +1,5 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: GeoVariogram.r
-### Description:
-### This file contains a set of procedures in order
-### to estimate the empirical variogram
-### Last change: 28/03/2013.
 ####################################################
 
 ### Procedures are in alphabetical order.
@@ -37,7 +29,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
     # Checks the input:
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, grid,
                              'None', maxdist, maxtime, model,NULL, 'Nelder-Mead', NULL,
-                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL)
+                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL,NULL)
                              
 
     # Checks if there are errors in the input:
@@ -61,7 +53,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                            NULL, grid, 'None', maxdist,neighb,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL,FALSE)
+                           'SubSamp', FALSE, 1, 1,1,1,NULL,NULL,FALSE)
     spacetime_dyn=NULL
     coordx=initparam$coordx;coordy=initparam$coordy;coordt=initparam$coordt                 
     # Checks if there are inconsistences:

@@ -1,19 +1,7 @@
 ####################################################
-### Emails: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
-### File name: Fitting.r
-### Description:
-### This file contains a set of procedures
-### for maximum composite-likelihood fitting of
-### random fields.
-### Last change: 27/01/2020.
+### File name: GeoFit.r
 ####################################################
 
-
-### Procedures are in alphabetical order.
-
-### Fitting procedure:
 
 GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
@@ -30,8 +18,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     #Stime <- CheckST(CMdl)  
     memdist=TRUE
     if(!is.null(copula))
-     { if((copula!="Beta")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
-
+     { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
     ### Check the parameters given in input:
       if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -46,11 +33,11 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
             neighb=round(neighb)
             if(neighb<1)  stop("neighb must be an integer >=1")
           }
- 
+    
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
-                             type, varest, vartype, weighted, X)
+                             type, varest, vartype, weighted,copula, X)
    
     if(!is.null(checkinput$error))
       stop(checkinput$error)
@@ -61,12 +48,13 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     unname(coordt);
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
+
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist,neighb,maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
-                         type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, X,memdist)#32
+                         type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist)#32
 
-
+      
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
@@ -97,7 +85,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
 
    #updating starting parameters
-
+  
    #print(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')

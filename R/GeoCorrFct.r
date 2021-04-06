@@ -1,15 +1,7 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email: moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Instituto de Estadistica
-### Universidad de Valparaiso
 ### File name: GeoCorrFct.r
-### Description:
-### This file contains a set of procedures
-### for computing a correlation model
-### given a set of spatial(temporal) distances
-### Last change: 28/05/2021.
 ####################################################
+
 
 
 ######################################################################################################
@@ -66,10 +58,9 @@ if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
 mu=as.numeric(param$mean)
   ## selecting nuisance mean annd corr parameters
       if(!bivariate){
-        print(corrmodel)
+       
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
-        print(parcorr)
-        print(param)
+    
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
         #print(nuisance)
         sel=substr(names(nuisance),1,4)=="mean"
@@ -80,7 +71,7 @@ mu=as.numeric(param$mean)
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
     }
-    print("here")
+ 
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
 

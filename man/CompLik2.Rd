@@ -15,7 +15,7 @@ CompLik2(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, di
          colidx,rowidx,neighb)
 }
 \arguments{
-  \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
+  \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
                 Otherwise from a univariate random field.}
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where

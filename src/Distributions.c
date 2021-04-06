@@ -2039,9 +2039,24 @@ double log_biv_Norm(double corr,double zi,double zj,double mi,double mj,double v
     s1=vari;
     s12=vari*corr*(1-nugget);
     det=R_pow(s1,2)-R_pow(s12,2);
-    dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));
+    dens=-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det);
 return(dens);
 }
+
+double biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari1,double vari2, double nugget)
+{
+    double u,v,u2,v2,det,s1,s12,dens;
+    u=zi-mi;
+    v=zj-mj;
+    u2=R_pow(u,2);v2=R_pow(v,2);
+    s1=sqrt(vari1*vari2);
+    s12=s1*corr*(1-nugget);
+    det=R_pow(s1,2)-R_pow(s12,2);
+    dens=(-0.5*(2*log(2*M_PI)+log(det)+(s1*(u2+v2)-2*s12*u*v)/det));
+return(exp(dens));
+}
+
+
 
 /*multivariate gaussian PDF*/
 double dNnorm(int N,double **M, double *dat)
@@ -4402,6 +4417,7 @@ double kumaintegral(double *param) {
   }
 
 /******/
+/******/
 double corr_kuma(double rho,double eta,double gam){
 
   double corr, tol=1e-6; int iter=0;
@@ -4419,8 +4435,8 @@ else
 {
   if (eta==1.0&&gam!=1.0){
     double res_K=0.0,res_M=0.0,sum_M=0.0, bb,aa;
-    iter=5000;
-    tol=1e-8;
+    iter=10000;
+    tol=1e-14;
     while(k<=iter){
       res_M=0;m=0;
       bb=     2*(log1p(-rho2) + k*log(rho));
@@ -4430,7 +4446,7 @@ else
         aa=    -2*lbeta(k-m+1,m+1);
         sum_M= exp(aa + bb + 2*lbeta(1+k-m,1+(1/gam)+m));
         res_M=res_M+  sum_M;
-        if (sum_M<tol){break;}
+        if (sum_M<tol|sum_M>1e300){break;}
        m=m+1;
       }
       res_K=res_K+res_M;
@@ -4445,8 +4461,8 @@ else
 /******/
 if (eta!=1.0&&gam==1.0){
    double res_K=0.0,res_M=0.0,sum_M=0.0,bb,aa,c1,c2,c3;
-    iter=5000;
-    tol=1e-8;
+    iter=10000;
+    tol=1e-14;
     while(k<=iter){
       res_M=0;m=0;
         bb= 2*(log1p(-rho2) + k*log(rho));
@@ -4457,7 +4473,7 @@ if (eta!=1.0&&gam==1.0){
         c3=aa + bb;
         sum_M= exp(2*c1+c3)+exp(2*c2+c3)-2*exp(c1+c2+c3);
         res_M=res_M+  sum_M;
-        if (sum_M<tol){ break;}
+        if (sum_M<tol|sum_M>1e300){ break;}
         m=m+1;
       }
       res_K=res_K+res_M;
@@ -4482,7 +4498,7 @@ if (eta!=1.0&&gam==1.0){
        
  
     double res_K=0.0,res_M=0.0,sum_M=0.0,aa,bb,p2,p1;
-    k=0;res_K=0;iter=10000;tol=1e-9;
+    k=0;res_K=0;iter=10000;tol=1e-14;
      while (k<=iter){
       res_M=0.0;m=0;
       bb= 2*(log1p(-rho2) + k*log(rho));
@@ -4494,7 +4510,7 @@ if (eta!=1.0&&gam==1.0){
         p2=exp(aa+bb);
         sum_M=p2*p1*p1;
         res_M=res_M+  sum_M;
-        if (sum_M<tol | aa>1e300){break;}
+        if (sum_M<tol | sum_M>1e300){break;}
         m=m+1;
       }
       res_K=res_K+res_M;
@@ -4518,8 +4534,80 @@ for(i=0;i<=*n;i++)  res[i]=corr_kuma(rho[i],eta[0],gam[0]);
 
 
 
+double biv_cop(double rho,int type_cop, 
+             double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN)
+             {
+double dens;
+double g1,g2,d1,d2,a1,a2,s1,s2;
+double rho1=(1-nuis[0])*rho;
 
 
+switch(model) // Correlation functions are in alphabetical order
+    {
+    case 1: // gaussian
+      s1=(z1-mu1)/sqrt(nuis[1]);
+      s2=(z2-mu2)/sqrt(nuis[1]);
+      a1=pnorm(s1,0,1,1,0);
+      a2=pnorm(s2,0,1,1,0);
+      //d1=dnorm(s1,0,1,0); 
+      //d2=dnorm(s2,0,1,0);
+      g1=dnorm(s1,0,1,0); //marginal 1
+      g2=dnorm(s2,0,1,0); //marginal 2
+
+    break;
+    case 25:  // logistic
+      g1=1;
+      g2=1;
+      d1=1; 
+      d2=1;
+   break;
+   case 24: // loglogistic
+      g1=1;
+      g2=1;
+      d1=1; 
+      d2=1;
+   break;
+   case 28: //Beta
+      g1=1;
+      g2=1;
+      g1=1; 
+      g2=1;
+   break;   
+   case 50:  // Beta regression
+      g1=1;
+      g2=1;
+      d1=1; 
+      d2=1;
+   break;
+   case 33:  // kuma
+      g1=1;
+      g2=1;
+      d1=1; 
+      d2=1;
+   break;
+   case 42:  // kuma regression
+      g1=1;
+      g2=1;
+      d1=1; 
+      d2=1;
+   break;
+       }
+
+
+if(type_cop==1) {
+    dens=biv_Norm(rho1,s1,s2,0,0,1,1,0)/nuis[1] ;///(d1*d2))*(g1*g2);
+                }
+if(type_cop==2) 
+{
+    double nu=nuis[2];
+    double nu2; nu2=nu/2;
+  //  Rprintf("%f %f \n",nu2,rho);
+    double rho2=R_pow(rho1,2);
+    dens=g1*g2*R_pow(1-rho2,nu2+1) * appellF4(nu2+1, nu/2+1, nu2, 1, rho2*R_pow(a1*a2,1/nu2),rho2*(1-R_pow(a1,1/nu2))*(1-R_pow(a2,1/nu2)))/nuis[1];
+}
+//Rprintf("%f\n",dens);
+return(dens);
+}
 
 /******* some marginals (log)pdf  *****************/
 

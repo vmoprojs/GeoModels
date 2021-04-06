@@ -1,17 +1,7 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Institutions: 
-### Instituto de Estadistica
-### Universidad de Valparaiso
-### File name: GeoCovariogram.r
-### Description:
-### This file contains a set of procedures
-### to compute and plot the estimated covariance
-### function and the variogram after fitting a
-### random field by composite-likelihood.
-### Last change: 1/12/2020.
+### File name: GeoCovVariogram.r
 ####################################################
+
    
 ### Procedures are in alphabetical order.
 

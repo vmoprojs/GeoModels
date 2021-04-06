@@ -11,7 +11,7 @@
 GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
           distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
           model="Gaussian", n=1, param, radius=6371, sparse=FALSE,
-          taper=NULL, tapsep=NULL, type="Standard",X=NULL)
+          taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL)
 }
 
 \arguments{
@@ -64,6 +64,7 @@ GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
      spatial taper (see \bold{Details}).} 
    \item{type}{String; the type of covariance matrix
    \code{Standard} (the default) or \code{Tapering} for tapered covariance matrix. }
+     \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
    \item{X}{Numeric; Matrix of space-time covariates.}
    }
 

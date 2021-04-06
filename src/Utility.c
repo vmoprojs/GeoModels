@@ -828,6 +828,8 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
 		  int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
       int *ns, int *NS, int *dyn)
 {
+
+
   //Spatial settings: //Spatial settings:
   maxdist=(double *) Calloc(3,double);//spatial threshould
   if(maxdist==NULL) {*ismal=0; return;}
@@ -890,8 +892,11 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   *REARTH=*radius;
   *type=*tp;
   
+
+
  // case of not saving distances
   if(!ismem[0]) {
+
                    if(srange[1]) maxdist[0]=srange[1];
                    else maxdist[0]=-LOW;
 
@@ -920,6 +925,7 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   {     // start  saving distances
   /***********************************************************/  
 if(!isst[0]&&!isbiv[0]) {// spatial case
+
            // settting compact support
             if(srange[1]) maxdist[0]=srange[1];
             else maxdist[0]=-LOW;   
@@ -931,7 +937,9 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
             }  // end tapering case
           else 
             { // distances composite likelihood  
+
             *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
+            //REprintf("%d\n",*npairs);
             tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
             } // end  no tapering case

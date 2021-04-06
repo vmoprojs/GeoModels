@@ -1,15 +1,6 @@
-######################################################
-### Authors: Moreno Bevilacqua, Víctor Morales Oñate.
-### Emails:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Institutions: 
-### Universidad de Valparaiso
-### File name: GeoTests.r
-### Description: 
-### This file contains a set of procedures
-### for the computation of composite likelihood-based
-### statistics and tests.
-### Last change: 28/03/2017.
-######################################################
+####################################################
+### File name: GeoTest.r
+####################################################
 
 ### Procedures are in alphabetical order.
 

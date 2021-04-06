@@ -499,6 +499,9 @@ double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double da
 double cond_exp_bin(int *cormod,double data_i,double data_j,double lags_i,double lags_j,double lags,double *nuis,double *par,double psm);
 
 
+double biv_cop(double rho,int type_cop,
+             double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN);
+
 double marg_binom(int n,double x,double p);
 
 double marg_binomneg(int n,int x,double p);
@@ -1312,6 +1315,7 @@ File name: Utility.c
 Description: procedures for the computation of useful quantities.
 End
  ---------------------------------------------------------------*/
+
 
 
 

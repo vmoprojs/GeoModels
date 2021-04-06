@@ -1,13 +1,5 @@
 ####################################################
-### Authors:  Moreno Bevilacqua, Víctor Morales Oñate.
-### Email:  moreno.bevilacqua@uv.cl, victor.morales@uv.cl
-### Departamento de Estadistica
-### Universidad de Valparaiso
 ### File name: Utility.r
-### Description:
-### This file contains a set of procedures
-### for the set up of all the package routines.
-### Last change: 28/03/2021.
 ####################################################
 
 # Check if the correlation is bivariate
@@ -197,6 +189,7 @@ CheckSph<- function(numbermodel)
 CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                       likelihood, maxdist, maxtime,  model, n,  optimizer, param,
                        radius, start, taper, tapsep, type, varest, vartype, weighted,
+                       copula,
                        X)
   {
     error <- NULL
@@ -251,6 +244,11 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     #spacetime<-CheckST(CheckCorrModel(corrmodel))
     #if(is.null(bivariate)&&is.null(bivariate))
     # END Include internal functions
+    if(!is.null(copula)) {
+       {if(copula!="Gaussian"&&copula!="Clayton") 
+       error <- 'Copula model is wrong\n'
+        return(list(error=error))}
+    }
     if(fcall!="Kriging"){
     ### START Checks inserted input
     # START common check fitting and simulation
@@ -312,7 +310,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
 
         if(!is.null(fixed)){
             namfixed <- names(fixed)
-        if(!all(namfixed %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas),CorrelationPar(CkCorrModel(corrmodel))))){
+        if(!all(namfixed %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas,copula),CorrelationPar(CkCorrModel(corrmodel))))){
                 error <- 'some names of the fixed parameters is/are not correct\n'
                 return(list(error=error))}
         if(!CheckParamRange(unlist(fixed))){
@@ -415,7 +413,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                 return(list(error=error)) }}}
 
 
-                if(!all(namstart %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas), CorrelationPar(CkCorrModel(corrmodel))))){
+                if(!all(namstart %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas,copula), CorrelationPar(CkCorrModel(corrmodel))))){
                 error <- 'some names of the starting parameters is/are not correct\n'
                 return(list(error=error))}
 
@@ -613,14 +611,14 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
        #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
-             if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas),
-                    NuisParam(model,biv,num_betas))),
+             if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas,copula),
+                    NuisParam(model,biv,num_betas,copula))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
              {
             error <- "some parameters are missing or does not match with the declared model\n"
             return(list(error=error))}
 
-        if(!all( names(param) %in% c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),
+        if(!all( names(param) %in% c(unique(c(NuisParam("Gaussian",biv,num_betas,copula),NuisParam(model,biv,num_betas,copula))),
                                       CorrelationPar(CkCorrModel(corrmodel))))){
             error <- 'some names of the parameters are not correct\n'
             return(list(error=error))}
@@ -939,7 +937,7 @@ CorrelationPar <- function(corrmodel)
   }
   #############################################################  
   #############################################################
-NuisParam <- function(model,bivariate=FALSE,num_betas=c(1,1))
+NuisParam <- function(model,bivariate=FALSE,num_betas=c(1,1),copula=NULL)
 {
   param <- NULL
  if(!bivariate&&num_betas==c(1,1)) num_betas=1 
@@ -955,53 +953,65 @@ if(!bivariate)      {
       'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic')))
   {
     param <- c(mm, 'nugget', 'sill')
+    if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
     return(param)}
 
  if( (model %in% c('PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB')))
   {
     param <- c(mm, 'nugget1','nugget2','pmu','sill')
+    if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
     return(param)
   }
 
 if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic","PoissonGamma","PoissonWeibull")){
       param <- c(mm, 'nugget', 'sill','shape')
+     if(!is.null(copula))  if(copula=="Clayton") param=c(param,'nu')
       return(param)} 
   
   if(model %in% c('Beta2','Kumaraswamy2')){
       param <- c(mm, 'nugget', 'sill','shape','min','max')
+     if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
       return(param)} 
 
 
 if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
       param <- c(mm, 'nugget', 'sill','shape1','shape2','min','max')
+     if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
       return(param)}     
   # Skew Gaussian univariate random field:
    if((model %in% c('SkewGaussian','SkewGauss','TwoPieceGaussian','TwoPieceGauss',
      'Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
      'BinomialNeg_TwoPieceGaussian','BinomialNeg_TwoPieceGauss'))  ){
       param <- c(mm, 'nugget', 'sill','skew')
+      if(!is.null(copula))if(copula=="Clayton") param=c(param,'nu')
       return(param)}
     # T univariate ra
   # Skew T univariate random field:
   if((model %in% c('SkewStudentT',"TwoPieceStudentT","Gaussian_misp_SkewStudentT")) ){
       param <- c(mm, 'df','nugget', 'sill','skew')
+   if(!is.null(copula))   if(copula=="Clayton") param=c(param,'nu')
       return(param)}
   if((model %in% c("TwoPieceBimodal")) ){
       param <- c(mm, 'df','nugget', 'sill','shape','skew')
+     if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
       return(param)}
     # T univariate random field:
   if((model %in% c('StudentT','Gaussian_misp_StudentT')) ){
       param <- c(mm, 'df','nugget', 'sill')
+      if(!is.null(copula))if(copula=="Clayton") param=c(param,'nu')
       return(param)}  
      if( (model %in% c('Tukeyh','tukeyh'))){
       param <- c(mm, 'nugget', 'sill','tail')
+      if(!is.null(copula))if(copula=="Clayton") param=c(param,'nu')
       return(param)}
    if( (model %in% c('Tukeyh2','tukeyh2'))){
       param <- c(mm, 'nugget', 'sill','tail1','tail2')
+      if(!is.null(copula))if(copula=="Clayton") param=c(param,'nu')
       return(param)}
    # Tukeygh  or SinhAsinhGaussian univariate random field: 
   if( (model %in% c('Tukeygh','SinhAsinh',"TwoPieceTukeyh","Gaussian_misp_Tukeygh"))) {
       param <- c(mm, 'nugget', 'sill','skew','tail')
+      if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
       return(param)}
 }
   #############################################################  
@@ -1052,7 +1062,7 @@ if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                       likelihood,  maxdist, neighb,maxtime, model, n, param, parscale,
                       paramrange, radius, start, taper, tapsep, type,
-                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,X,memdist)
+                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,copula, X,memdist)
 {
     ### START Includes internal functions:
     replicates=1
@@ -1106,7 +1116,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         else
         { if(is.list(X))  num_betas=c(ncol(X[[1]]),ncol(X[[2]]))
             else  num_betas=c(ncol(X),ncol(X)) }}
-    namesnuis <- NuisParam(model,bivariate,num_betas)
+    namesnuis <- NuisParam(model,bivariate,num_betas,copula)
   
 
 
@@ -1290,8 +1300,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 0,1)
      #if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,1)
      if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,0,1)
+     #
 
      }
+
+       if(!is.null(copula))if(copula=="Clayton") nuisance=c(nuisance,2)
         # Update the parameter vector      
         names(nuisance) <- namesnuis
         namesparam <- sort(c(namescorr, namesnuis))
@@ -1390,7 +1403,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
 
        
-        namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas))))
+        namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas,copula))))
         param <- unlist(param)
         numparam <- length(param)
         namesparam <- names(param)
@@ -1444,18 +1457,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     if(CheckSph(corrmodel))   radius=1
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
  
-# gb=.C('SetGlobalVar',as.integer(bivariate),as.double(coordx),as.double(coordy),as.double(coordt),
-#           as.integer(grid),ia=ia,idx=idx,
-#           isinit=isinit,ja=ja,as.integer(mem),as.integer(numcoord),as.integer(numcoordx), as.integer(numcoordy),
-#           numpairs=numpairs,as.double(radius),srange, as.double(tapsep), as.integer(spacetime),
-#           as.integer(numtime),trange,as.integer(tapering),as.integer(tapmodel),
-#           as.integer(distance),as.integer(weighted),
-#           colidx=as.integer(colidx),rowidx=as.integer(rowidx),
-#           as.integer(ns),as.integer(NS),as.integer(isdyn),
-#           PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
   
 
 if(is.null(neighb)){
+
  gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
@@ -1483,6 +1489,7 @@ if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
 ## number  of selected pairs
 numpairs <- gb$numpairs
+#print(numpairs)
 ## indexes for composite 
     colidx=gb$colidx
     rowidx=gb$rowidx
@@ -1574,8 +1581,10 @@ if(!spacetime&&!bivariate)   #  spatial case
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
+  #print(system.time(nn2Geo(x,K+1 ,distance)))
   sol = nn2Geo(x,K+1 ,distance) ##### K or K+1
   nn = length(sol$lags)
+  #print(nn)
   sol$lagt=0
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;

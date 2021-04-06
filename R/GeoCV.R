@@ -1,3 +1,7 @@
+####################################################
+### File name: GeoCv.r
+####################################################
+
 GeoCV=function(fit, K=100, estimation=FALSE, n.fold=0.05, local=FALSE,neighb=NULL,
                           maxdist=NULL,maxtime=NULL,
                           sparse=FALSE, which=1,seed=1)
