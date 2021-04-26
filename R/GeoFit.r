@@ -139,6 +139,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     # Delete the global variables:
     if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     if(is.numeric(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
+    if(is.null(copula)) copula="None"
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,
@@ -214,6 +215,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
   if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
   if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
+  if(x$model=='Beta2') { process <- 'Beta2'; model <- 'Beta2'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}
   if(x$model=='Gaussian_misp_Tukeygh') { process <- 'Tukeygh'; model <- 'Misspecified Gaussian Tukeygh '}
@@ -250,6 +252,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   else { biv <- 'univariate'}                       
     cat('\n##################################################################')
     cat('\nMaximum', missp, method, 'Fitting of', process, 'Random Fields\n')
+    cat('\nCopula:', x$copula,'\n')
     cat('\nSetting:', x$likelihood, method, '\n')
     cat('\nModel:', model, '\n')
     cat('\nType of the likelihood objects:', x$type, x$method,'\n')

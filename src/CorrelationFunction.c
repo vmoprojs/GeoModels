@@ -2051,18 +2051,19 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
        }
 
-    if(*model==43||*model==44) // poisson inflado
+  if(*model==43||*model==44) // poisson inflado
        {
            ai=exp(mean[i]);aj=exp(mean[j]);
           // Rprintf("%f\n",nuis[1]);
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance poisson
 
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
           rho[h]=p1*dd +  ai*aj*(p1-pow((1-p),2));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
-       } 
+       }
+
             h++;
         }}
     return;
@@ -2107,16 +2108,19 @@ void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *
           aux1=exp(mu1[i]);aux2=exp(mu2[i]);
           rho[i]=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2);
        }
-        if(*model==43||*model==44)
+
+         if(*model==43||*model==44) // poisson inflado
        {
            aux1=exp(mu1[i]);aux2=exp(mu2[i]);
-           dd=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+          // Rprintf("%f\n",nuis[1]);
+           dd=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2); // it's the  covariance poisson
+
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
-          rho[i]=p1*dd +  aux1*aux2*(p1-(1-p)*(1-p));
+          rho[i]=p1*dd +   aux1*aux2*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
-       } 
+       }
    /***************************************************************/
       }
   return;
@@ -2181,12 +2185,14 @@ void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, doubl
        {
            aux1=exp(mu1[i]);aux2=exp(mu2[i]);
            dd=sqrt(aux1*aux2)*corr_pois((1-nuis[0])*corr,aux1, aux2); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
            rho[i]=p1*dd +  aux1*aux2*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
        } 
+
+
       }
   return;
 }
@@ -2270,8 +2276,8 @@ if(*model==30||*model==36) {       //poisson
            ai=exp(mean[i+ns[t]*t]);
            aj=exp(mean[j+ns[t]*v]); 
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
           rho[h]=p1*dd+ai*aj*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
@@ -2313,8 +2319,8 @@ if(*model==30||*model==36) {       //poisson
              ai=exp(mean[i+ns[v]*t]);
              aj=exp(mean[j+ns[v]*v]); 
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
           rho[h]=p1*dd+ai*aj*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
@@ -2502,8 +2508,8 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
        {
            ai=exp(mean[i]);aj=exp(mean[j]);
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
            cc[h]=p1*dd +  ai*aj*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
@@ -2555,8 +2561,8 @@ if(*spt) {
            ai=exp(mean[j+*nloc * v]);      
            aj=exp(mean[i+*nloc * t]);
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance
-           p=pnorm(nuis[1],0,1,1,0);
-           psj=pbnorm22(nuis[1],nuis[1],corr);
+           p=pnorm(nuis[2],0,1,1,0);
+           psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
            cc[h]=p1*dd +  ai*aj*(p1-(1-p)*(1-p));
          // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);

@@ -610,8 +610,9 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert the parameters as a list\n'
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
+       # print(length(param))
        #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
-             if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas,copula),
+             if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas,NULL),
                     NuisParam(model,biv,num_betas,copula))),
                     CorrelationPar(CkCorrModel(corrmodel)))))
              {
@@ -974,7 +975,7 @@ if(model %in% c("Weibull","weibull",'Gamma','gamma','LogLogistic',"Loglogistic",
       return(param)} 
 
 
-if((model %in% c('Gamma2','gamma2','Beta','Kumaraswamy'))) {
+if((model %in% c('Beta','Kumaraswamy'))) {
       param <- c(mm, 'nugget', 'sill','shape1','shape2','min','max')
      if(!is.null(copula)) if(copula=="Clayton") param=c(param,'nu')
       return(param)}     
@@ -1213,7 +1214,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                             if(model %in% c(39))      nuisance <- c(0,0,nuisance,0)
                            if(model %in% c(21,24,12,26,34,35,46,48))   nuisance <- c(0,nuisance)
                            #if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance)
-                           if(model %in% c(23,28,33,42,50))  nuisance <- c(0,0,0,nuisance,0,0)
+                           if(model %in% c(23,28,33))  nuisance <- c(0,0,0,nuisance,0,0)
+                           if(model %in% c(42,50))  nuisance <- c(0,nuisance,0,0)
                        }
      if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
@@ -1263,6 +1265,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
              if(model %in% c(39))     nuisance=c(1,1,nuisance,1) 
           #  if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1)  
             if(model %in% c(23,28,33))         nuisance=c(nuisance,1,1,1,1,1)  
+            if(model %in% c(42,50))  nuisance=c(nuisance,1,1,1) 
              }
     if(bivariate) {
             if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
@@ -1305,7 +1308,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      }
 
        if(!is.null(copula))if(copula=="Clayton") nuisance=c(nuisance,2)
-        # Update the parameter vector      
+        # Update the parameter vector     
+        #print(nuisance);print(namesnuis) 
         names(nuisance) <- namesnuis
         namesparam <- sort(c(namescorr, namesnuis))
         param <- c(nuisance, paramcorr)
@@ -1333,13 +1337,17 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             start <- unlist(start)
             namesstart <- names(start)
             if(any(type == c(1, 3, 7))){
+
                 if(!bivariate) {   # univariate case
                        if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                        if(any(namesstart == 'mean'))  start <- start[!namesstart == 'mean']
                        if(num_betas>1)
-                       for(i in 1:(num_betas-1)) {  if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
-                       if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
+                       for(i in 1:(num_betas-1)) {  
+                         if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
+                         if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,48,50)))
                                                  start <- start[!namesstart == paste("mean",i,sep="")]}}
+                        #print(start)
+
                 }
                 if(bivariate) {          
                                   if(any(namesstart == 'mean_1'))  start <- start[!namesstart == 'mean_1']        
@@ -1462,7 +1470,11 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
 if(is.null(neighb)){
 
- gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
+
+
+
+#ptm <- proc.time()
+gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
          "integer","double","double","double", "integer",  #5
@@ -1482,12 +1494,12 @@ if(is.null(neighb)){
              "w", "w",#2
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
-  ##
+  #print(proc.time() - ptm)
 rm(colidx);rm(rowidx)
 if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
 ## number  of selected pairs
+
 numpairs <- gb$numpairs
 #print(numpairs)
 ## indexes for composite 

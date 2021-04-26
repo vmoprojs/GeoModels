@@ -630,9 +630,8 @@ if(!bivariate){
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])   
 if(type=="Standard")  {
+  #print(other_nuis)
   corr=double(numpairstot)
-             
-
               cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),

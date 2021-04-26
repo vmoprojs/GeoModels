@@ -25,7 +25,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
         res=double(1)
-       # print(other_nuis)
+      # print(other_nuis)
        # print(fan)
        # result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
@@ -105,6 +105,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}#ok
     if(all(model==28,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta'
                                               if(varest & vartype==2) hessian <- TRUE}#ok
+    if(all(model==50,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta'
+                                              if(varest & vartype==2) hessian <- TRUE}#ok  
     if(all(model==33,likelihood==1,type==2)){ fname <- 'Comp_Cond_Kumaraswamy'
                                               if(varest & vartype==2) hessian <- TRUE}#ok
     if(all(model==42,likelihood==1,type==2)){ fname <- 'Comp_Cond_Kumaraswamy2'
@@ -220,6 +222,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(all(model==42,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy2'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==50,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta2'
                                               if(varest & vartype==2) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
                                               if(varest & vartype==2) hessian <- TRUE}                                      

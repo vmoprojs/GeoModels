@@ -65,6 +65,10 @@ if(model=="Logistic")
          {
          simcop=qlogis(unif,location=mm,scale=sqrt(as.numeric(param$sill)))
          }
+if(model=="Gamma") 
+         {
+        # simcop=qgamma(unif,shape=as.numeric(param$shape),scale=1/mm)
+         }
 #######
 if(model=="Kumaraswamy") 
 {
@@ -90,9 +94,12 @@ simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=param$shape1,shape2=param$shape2)
 ############
 if(model=="Beta2") 
 { # parametrization using beta mean  regression
+
+
 mm=1/(1+exp(-mm))
 p2=as.numeric(param$shape)
 pmin=as.numeric(param$min);pmax=as.numeric(param$max);
+
 simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=mm*p2,shape2=(1-mm)*p2)
 }
 

@@ -626,6 +626,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     // if(fabs(corr)>1|| !R_FINITE(corr)) {*res=LOW; return;}
                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                       uu=(int) data1[i];  ww=(int) data2[i];
+                      Rprintf("%f %f \n",mui,muj);
                       bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2);
                       *res+= log(bl)*weights;
                     }}        
@@ -2184,7 +2185,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
-
+     
 void Comp_Pair_Beta2GCop2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
@@ -2207,8 +2208,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
-
-void Comp_Pair_KumaGCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+void Comp_Pair_KumaraswamyGCop2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
@@ -2229,7 +2229,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
-void Comp_Pair_Kuma2GCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+void Comp_Pair_Kumaraswamy2GCop2mem(int *cormod, double *data1,double *data2,int *NN, 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
@@ -2274,10 +2274,9 @@ void Comp_Pair_GaussCCop2mem(int *cormod, double *data1,double *data2,int *NN,
     double  weights=1.0,sill,nugget,corr,bl;
     sill=nuis[1];nugget=nuis[0];
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
-
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-  //Rprintf("%f %f %f  %f %f \n",lags[i],data1[i],data2[i],par[0],par[1]);
+
                       corr=CorFct(cormod,lags[i],0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                        bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
@@ -2286,3 +2285,93 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
+void Comp_Pair_BetaCCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=2; int model=28;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+     
+void Comp_Pair_Beta2CCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=2; int model=50;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+
+
+void Comp_Pair_KumaraswamyCCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=2; int model=33;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+void Comp_Pair_Kumaraswamy2CCop2mem(int *cormod, double *data1,double *data2,int *NN, 
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int type_cop=2; int model=42;
+    /*############*/
+    int i=0;
+    double  weights=1.0,sill,nugget,corr,bl;
+    sill=nuis[1];nugget=nuis[0];
+    if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                      corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+           bl=biv_cop(corr,type_cop,data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[0]);
+                      *res+= log(bl)*weights;
+                    }}                          
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+

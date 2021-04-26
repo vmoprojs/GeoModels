@@ -1571,6 +1571,65 @@ return(a);
 }
 /*****************************************/
 
+double corrPGs(double corr,double mean,double a){ //alpha=a
+
+    double rho2= R_pow(corr,2);
+    double beta= a/mean; double res, aux, aux1, aux2;
+    aux=beta*(1-rho2);
+    aux1= exp(log(beta)+0.5*log(aux)+a*log(2+aux)-log(1+beta)-(a+0.5)*log(4+aux));
+    aux2= (a+1)/(2+aux);
+    res = rho2*(1-aux1*(hypergeo((1-a)/2,-a/2, 1, 4/R_pow(2+aux,2))+aux2*hypergeo((2-a)/2,(1-a)/2, 2, 4/R_pow(2+aux,2))));
+    return(res);
+   } 
+
+double CorrPGns(double corr,double mean_i, double mean_j, double a){ //alpha=a
+
+    if( (corr>(1-1e-3)) &&  corr<=1){return(1.0);}
+    if(fabs(corr)<1e-12){return(0.0);}
+    else{
+    double rho2= R_pow(corr,2);
+    double beta_i= a/mean_i;
+    double beta_j= a/mean_j;
+    int r = 0, m = 0;
+
+    double res,sum = 0.0,res0=0.0,term=0.0, aux, aux1=0.0, aux2=0.0;
+    
+    double vvi= mean_i*(1+1/beta_i);
+    double vvj= mean_j*(1+1/beta_j);
+    
+    int iter=100000;  
+    while(r<iter){
+        m=0;
+        while(m<iter){
+            aux1= m*(log(rho2)+log(beta_i*beta_j))-(r+m)*log((beta_i+1)*(beta_j+1));
+            aux2=2*lgammafn(r+a+m+1)-lgammafn(m+1)-lgammafn(m+a)-2*lgammafn(r+2);    
+            term= exp(aux1+log(hypergeo(1, 1-a-m, r+2, -1/(beta_i)))+log(hypergeo(1,1-a-m, r+2, -1/(beta_j)))+aux2);
+            if((fabs(term)<1e-320)||!R_finite(term))   {break;}
+            sum =sum+term;
+             m++;
+        }
+        if((fabs(sum-res0)<1e-50 )) {break;}
+             else {res0=sum;}
+        r++;}
+    aux=R_pow(beta_i*beta_j,a-1)*R_pow((beta_i+1)*(beta_j+1),-a)*rho2*R_pow(1-rho2,a+1)/gammafn(a);    
+    res = (aux*sum+(rho2*a/(beta_i*beta_j)))/sqrt(vvi*vvj);
+    return(res);}
+   }
+
+
+
+
+
+double corr_pois_gen(double corr,double mean_i, double mean_j, double a){ 
+
+    double res;
+
+    if (fabs(mean_i-mean_j)<1e-320) res=corrPGs(corr,mean_i,a);
+    else                            res=CorrPGns(corr,mean_i,mean_j,a);
+    return(res);
+}
+
+/*
 double corr_pois_gen(double corr,double mean_i, double mean_j, double a){ //alpha=a
 
     double rho2= R_pow(corr,2);
@@ -1600,7 +1659,7 @@ double corr_pois_gen(double corr,double mean_i, double mean_j, double a){ //alph
         r++;}
     res = sum+(rho2*a/(beta_i*beta_j));
     return(res);
-   }
+   }*/
 /*****************************************/
 double corr_pois(double rho,double mi,double mj)
 {
@@ -4037,14 +4096,17 @@ p11=1-2*p+p00;
 if(r==0&&t==0)
      dens=p00  + p01*exp(-mean_i) + p10*exp(-mean_j)+p11*biv_Poisson((1-nugget1)*corr,0, 0, mean_i, mean_j);
 if(r==0&&t>0)
-      dens=      p01*  exp(-mean_i+t*log(mean_i)-lgammafn(t+1))  + p11*biv_Poisson((1-nugget1)*corr,0, t, mean_i, mean_j);
+      //dens=      p01*  exp(-mean_i+t*log(mean_i)-lgammafn(t+1))  + p11*biv_Poisson((1-nugget1)*corr,0, t, mean_i, mean_j);
+      dens=      p01*  exp(-mean_j+t*log(mean_j)-lgammafn(t+1))  + p11*biv_Poisson((1-nugget1)*corr,0, t, mean_i, mean_j);
 if(r>0&&t==0)
-      dens=      p10*  exp(-mean_j+r*log(mean_j)-lgammafn(r+1))  + p11*biv_Poisson((1-nugget1)*corr,r, 0, mean_i, mean_j);
+      //dens=      p10*  exp(-mean_j+r*log(mean_j)-lgammafn(r+1))  + p11*biv_Poisson((1-nugget1)*corr,r, 0, mean_i, mean_j);
+      dens=      p10*  exp(-mean_i+r*log(mean_i)-lgammafn(r+1))  + p11*biv_Poisson((1-nugget1)*corr,r, 0, mean_i, mean_j);
 if(r>0&&t>0)
       dens=      p11*biv_Poisson((1-nugget1)*corr,r, t, mean_i, mean_j);
 return(dens);
 
 }
+
 
 double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
                              double mean_i, double mean_j,double mup,double nugget1,double nugget2)
@@ -4532,28 +4594,56 @@ int i=0;
 for(i=0;i<=*n;i++)  res[i]=corr_kuma(rho[i],eta[0],gam[0]);
 }
 
+ /*********************/
+double biv_unif_CopulaGauss(double dat1,double dat2,double rho)
+{
+double a1=qnorm(dat1,0,1,1,0);
+double a2=qnorm(dat2,0,1,1,0);
+double g1=dnorm(a1,0,1,0); 
+double g2=dnorm(a2,0,1,0); 
+double res=biv_Norm(rho,a1,a2,0,0,1,1,0)/(g1*g2);
+return(res);
+}
+ /*********************/
+
+double biv_unif_CopulaClayton(double dat1,double dat2,double rho,double nu)
+{
+double nu2=nu/2;
+double rho2=rho*rho;
+ double res=R_pow(1-rho2,nu2+1) *
+      appellF4(nu2+1, nu/2+1, nu2, 1, rho2*R_pow(dat1*dat2,1/nu2),rho2*(1-R_pow(dat1,1/nu2))*(1-R_pow(dat2,1/nu2)));
+return(res);
+}
+
+
+
+double cdf_kuma(double y,double a, double b){
+double res=1-R_pow(1-R_pow(y,a),b);
+return(res);
+}
+double pdf_kuma(double y,double a, double b){
+double res=(a*b)* R_pow(y,a-1)*R_pow(1-R_pow(y,a),b-1);
+return(res);
+}
 
 
 double biv_cop(double rho,int type_cop, 
              double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN)
              {
 double dens;
-double g1,g2,d1,d2,a1,a2,s1,s2;
+double g1,g2,d1,d2,a1,a2,b1,b2,s1,s2;
 double rho1=(1-nuis[0])*rho;
 
 
 switch(model) // Correlation functions are in alphabetical order
     {
     case 1: // gaussian
-      s1=(z1-mu1)/sqrt(nuis[1]);
-      s2=(z2-mu2)/sqrt(nuis[1]);
-      a1=pnorm(s1,0,1,1,0);
-      a2=pnorm(s2,0,1,1,0);
-      //d1=dnorm(s1,0,1,0); 
-      //d2=dnorm(s2,0,1,0);
-      g1=dnorm(s1,0,1,0); //marginal 1
-      g2=dnorm(s2,0,1,0); //marginal 2
-
+      b1=(z1-mu1)/sqrt(nuis[1]);
+      b2=(z2-mu2)/sqrt(nuis[1]);
+      a1=pnorm(b1,0,1,1,0);
+      a2=pnorm(b2,0,1,1,0);
+      g1=dnorm(b1,0,1,0)/sqrt(nuis[1]); //marginal 1
+      g2=dnorm(b2,0,1,0)/sqrt(nuis[1]); //marginal 2
     break;
     case 25:  // logistic
       g1=1;
@@ -4568,44 +4658,57 @@ switch(model) // Correlation functions are in alphabetical order
       d2=1;
    break;
    case 28: //Beta
-      g1=1;
-      g2=1;
-      g1=1; 
-      g2=1;
+      b1=(z1- nuis[4])/(nuis[5]-nuis[4]);
+      b2=(z2- nuis[4])/(nuis[5]-nuis[4]);
+      a1=pbeta(b1,nuis[2],nuis[3],0,0);
+      a2=pbeta(b2,nuis[2],nuis[3],0,0);
+      g1=dbeta(b1,nuis[2],nuis[3],0)/(nuis[5]-nuis[4]);//marginal 1
+      g2=dbeta(b2,nuis[2],nuis[3],0)/(nuis[5]-nuis[4]);//marginal 2
    break;   
    case 50:  // Beta regression
-      g1=1;
-      g2=1;
-      d1=1; 
-      d2=1;
+      mu1=1/(1+exp(-mu1));
+      mu2=1/(1+exp(-mu2));
+      b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
+      b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
+      a1=pbeta(b1, nuis[2]*mu1,(1-mu1)*nuis[2],0,0);
+      a2=pbeta(b2, nuis[2]*mu2,(1-mu2)*nuis[2],0,0);
+      g1=dbeta(b1, nuis[2]*mu1,(1-mu1)*nuis[2],0)/(nuis[4]-nuis[3]); //marginal 1
+      g2=dbeta(b2, nuis[2]*mu2,(1-mu2)*nuis[2],0)/(nuis[4]-nuis[3]); //marginal 2
    break;
    case 33:  // kuma
-      g1=1;
-      g2=1;
-      d1=1; 
-      d2=1;
+      b1=(z1- nuis[4])/(nuis[5]-nuis[4]);
+      b2=(z2- nuis[4])/(nuis[5]-nuis[4]);
+      a1= cdf_kuma(b1,nuis[2],nuis[3]);
+      a2= cdf_kuma(b2,nuis[2],nuis[3]);
+      g1= pdf_kuma(b1,nuis[2],nuis[3])/(nuis[5]-nuis[4]);
+      g2= pdf_kuma(b2,nuis[2],nuis[3])/(nuis[5]-nuis[4]);
    break;
    case 42:  // kuma regression
-      g1=1;
-      g2=1;
-      d1=1; 
-      d2=1;
+      mu1=1/(1+exp(-mu1));
+      mu2=1/(1+exp(-mu2));
+      s1=log(1-R_pow(  mu1    ,nuis[2]))/log(0.5) ;
+      s2=log(1-R_pow(  mu2    ,nuis[2]))/log(0.5) ;
+      //Rprintf("%f %f %f \n",nuis[2],nuis[4],nuis[3]);
+      b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
+      b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
+
+
+      a1= cdf_kuma(b1, nuis[2],1/s1 );
+      a2= cdf_kuma(b2, nuis[2],1/s2 );
+      g1= pdf_kuma(b1, nuis[2],1/s1 )/(nuis[4]-nuis[3]);
+      g2= pdf_kuma(b2, nuis[2],1/s2 )/(nuis[4]-nuis[3]);
    break;
        }
 
+/*******************************************/
 
-if(type_cop==1) {
-    dens=biv_Norm(rho1,s1,s2,0,0,1,1,0)/nuis[1] ;///(d1*d2))*(g1*g2);
-                }
+if(type_cop==1)  { dens=biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2;}
+                
 if(type_cop==2) 
 {
     double nu=nuis[2];
-    double nu2; nu2=nu/2;
-  //  Rprintf("%f %f \n",nu2,rho);
-    double rho2=R_pow(rho1,2);
-    dens=g1*g2*R_pow(1-rho2,nu2+1) * appellF4(nu2+1, nu/2+1, nu2, 1, rho2*R_pow(a1*a2,1/nu2),rho2*(1-R_pow(a1,1/nu2))*(1-R_pow(a2,1/nu2)))/nuis[1];
+    dens= biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2;
 }
-//Rprintf("%f\n",dens);
 return(dens);
 }
 
