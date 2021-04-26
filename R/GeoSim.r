@@ -463,6 +463,7 @@ if(model %in% c("PoissonWeibull"))   {
  if(model %in% c("Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
 
    if(model %in% c("poisson","Poisson","PoissonGamma","PoissonWeibull"))   {sim=colSums(sel);byrow=TRUE}
+    
     if(model %in% c("PoissonZIP"))   {
      ####
       decompvarcov1 <- MatDecomp(ccov_with_nug,method)

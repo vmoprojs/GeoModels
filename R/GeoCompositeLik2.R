@@ -105,7 +105,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}#ok
     if(all(model==28,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta'
                                               if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==50,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta'
+    if(all(model==50,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta2'
                                               if(varest & vartype==2) hessian <- TRUE}#ok  
     if(all(model==33,likelihood==1,type==2)){ fname <- 'Comp_Cond_Kumaraswamy'
                                               if(varest & vartype==2) hessian <- TRUE}#ok

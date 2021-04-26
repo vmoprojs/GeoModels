@@ -4627,7 +4627,7 @@ return(res);
 }
 
 
-double biv_cop(double rho,int type_cop, 
+double biv_cop(double rho,int type_cop, int cond,
              double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN)
              {
 double dens;
@@ -4668,6 +4668,7 @@ switch(model) // Correlation functions are in alphabetical order
    case 50:  // Beta regression
       mu1=1/(1+exp(-mu1));
       mu2=1/(1+exp(-mu2));
+    //  Rprintf("%f %f %f %f %f \n",mu1,rho,nuis[2],nuis[4],nuis[3]);
       b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
       b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
       a1=pbeta(b1, nuis[2]*mu1,(1-mu1)*nuis[2],0,0);
@@ -4702,13 +4703,16 @@ switch(model) // Correlation functions are in alphabetical order
 
 /*******************************************/
 
-if(type_cop==1)  { dens=biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2;}
+if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2);}
                 
 if(type_cop==2) 
 {
     double nu=nuis[2];
-    dens= biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2;
+    dens= log(biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2);
 }
+
+if(cond)  dens=2*dens-(log(g1)+log(g2));
+
 return(dens);
 }
 
