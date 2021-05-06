@@ -762,6 +762,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45))
           ##########################################################
        if(covmatrix$model==30||covmatrix$model==36){  ### poisson
         p0=exp(mu0); pmu=exp(mu) 
+        #print(p0[1]);print(pmu[1]);print(c(dataT[1]))
             if(!bivariate) 
                    {  pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) }  ## simple kriging
             else{} #todo

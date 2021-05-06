@@ -1629,38 +1629,26 @@ double corr_pois_gen(double corr,double mean_i, double mean_j, double a){
     return(res);
 }
 
-/*
-double corr_pois_gen(double corr,double mean_i, double mean_j, double a){ //alpha=a
+double corr_pois(double rho,double mi,double mj)
+{
 
-    double rho2= R_pow(corr,2);
-    double beta_i= a/mean_i;
-    double beta_j= a/mean_j;
-    int r = 0, m = 0;
-
-    double res,sum = 0.0,res0=0.0,term=0.0, aux1=0.0, aux2=0.0;
-    
-    double auxi= 1/(1+beta_i);
-    double auxj= 1/(1+beta_j);
-    
-    int iter1=1000;  int iter2=1000;
-    while(r<iter1){
-        m=0;
-        while(m<iter2){
-            aux1= R_pow(beta_i*beta_j,m+a)*R_pow(rho2,m+1)*R_pow(auxi*auxj,r+a+m+1)*R_pow(1-rho2,a+1);
-            aux2= 2*lgammafn(r+a+m+1)-lgammafn(a)-lgammafn(m+1)-lgammafn(m+a)-2*lgammafn(r+2)+log(hypergeo(1, r+a+m+1, r+2, auxi))+log(hypergeo(1,r+a+m+1, r+2, auxj));
-
-            term= aux1*exp(aux2);
-            if((fabs(term)<1e-10)||!R_finite(term))   {break;}
-            sum =sum+term;
-             m++;
-        }
-        if((fabs(sum-res0)<1e-10 )) {break;}
-             else {res0=sum;}
+if( (rho>(1-1e-6)) &&  rho<=1 &&  fabs(mi-mj)<1e-320){return(1.0);}
+if(fabs(rho)<1e-10){return(0.0);}
+    else{
+if( (rho>(1-1e-2)) &&  fabs(mi-mj)>1e-320){rho=1-1e-2;}
+int r=0; double res0=0.0,sum=0.0;
+double rho2=rho*rho;
+double ki=mi/(1-rho2);
+double kj=mj/(1-rho2);
+double K=rho2*(1-rho2)/sqrt(mi*mj);
+while(r<10000){
+  sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
+if((fabs(sum-res0)<1e-100)  ) {break;}
+else {res0=sum;}
         r++;}
-    res = sum+(rho2*a/(beta_i*beta_j));
-    return(res);
-   }*/
-/*****************************************/
+return(sum*K);}
+}
+/****************************************
 double corr_pois(double rho,double mi,double mj)
 {
 if( (rho>(1-1e-6)) &&  rho<=1){return(1.0);}
@@ -1677,7 +1665,7 @@ if((fabs(sum-res0)<1e-32)  ) {break;}
 else {res0=sum;}
         r++;}
 return(sum*K);}
-}
+}*/
 
 double corr_tukeygh(double rho,double eta,double tail)
 {   
