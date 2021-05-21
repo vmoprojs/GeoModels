@@ -1584,25 +1584,26 @@ double corrPGs(double corr,double mean,double a){ //alpha=a
 
 double CorrPGns(double corr,double mean_i, double mean_j, double a){ //alpha=a
 
-    if( (corr>(1-1e-3)) &&  corr<=1){return(1.0);}
+    //if( (corr>(1-1e-3)) &&  corr<=1){return(1.0);}
     if(fabs(corr)<1e-12){return(0.0);}
     else{
+    if( (corr>(1-1e-3)) ){corr=1-1e-3;}
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
     int r = 0, m = 0;
 
     double res,sum = 0.0,res0=0.0,term=0.0, aux, aux1=0.0, aux2=0.0;
-    
+
     double vvi= mean_i*(1+1/beta_i);
     double vvj= mean_j*(1+1/beta_j);
-    
-    int iter=100000;  
+
+    int iter=100000;
     while(r<iter){
         m=0;
         while(m<iter){
             aux1= m*(log(rho2)+log(beta_i*beta_j))-(r+m)*log((beta_i+1)*(beta_j+1));
-            aux2=2*lgammafn(r+a+m+1)-lgammafn(m+1)-lgammafn(m+a)-2*lgammafn(r+2);    
+            aux2=2*lgammafn(r+a+m+1)-lgammafn(m+1)-lgammafn(m+a)-2*lgammafn(r+2);
             term= exp(aux1+log(hypergeo(1, 1-a-m, r+2, -1/(beta_i)))+log(hypergeo(1,1-a-m, r+2, -1/(beta_j)))+aux2);
             if((fabs(term)<1e-320)||!R_finite(term))   {break;}
             sum =sum+term;
@@ -1611,7 +1612,7 @@ double CorrPGns(double corr,double mean_i, double mean_j, double a){ //alpha=a
         if((fabs(sum-res0)<1e-50 )) {break;}
              else {res0=sum;}
         r++;}
-    aux=R_pow(beta_i*beta_j,a-1)*R_pow((beta_i+1)*(beta_j+1),-a)*rho2*R_pow(1-rho2,a+1)/gammafn(a);    
+    aux=R_pow(beta_i*beta_j,a-1)*R_pow((beta_i+1)*(beta_j+1),-a)*rho2*R_pow(1-rho2,a+1)/gammafn(a);
     res = (aux*sum+(rho2*a/(beta_i*beta_j)))/sqrt(vvi*vvj);
     return(res);}
    }

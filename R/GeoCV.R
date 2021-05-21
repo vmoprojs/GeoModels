@@ -18,6 +18,7 @@ spacetime<-CheckST(CkCorrModel(fit$corrmodel))
 bivariate<-CheckBiv(CkCorrModel(fit$corrmodel))
 K=round(K)
 if(K<2) stop("K must be grater or equal  to 2")
+if(fit$copula=="None")  fit$copula=NULL
 if(K>10000) stop("K is  too large")
 if(bivariate)
    {if(!(which==1||which==2))

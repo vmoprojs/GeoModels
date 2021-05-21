@@ -179,7 +179,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
         if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','Beta','Beta2','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
           'Tukeygh','Tukeyh','Tukeyh2','Kumaraswamy','Kumaraswamy2','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
           "Gaussian_misp_StudentT","Gaussian_misp_Poisson","Gaussian_misp_Tukeygh",
-          "Gaussian_misp_SkewStudentT","PoissonGamma","PoissonWeibull",
+          "Gaussian_misp_SkewStudentT","PoissonGamma","PoissonWeibull","Gaussian_misp_PoissonGamma",
           "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh","TwoPieceBimodal")) & 
           (type %in% c('Standard','Pairwise','Tapering')))
         {

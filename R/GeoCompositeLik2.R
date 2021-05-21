@@ -186,6 +186,10 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==37,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_SkewT'
                                               if(varest & vartype==2) hessian <- TRUE} 
+    if(all(model==47,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_PoisGamma'
+                                           if(varest & vartype==2) hessian <- TRUE} 
+
+
 ###################### pairwise ###############################################
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -275,6 +279,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==45,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGaussZINB'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==47,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisGamma'
+                                           if(varest & vartype==2) hessian <- TRUE} 
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")

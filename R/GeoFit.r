@@ -127,6 +127,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     missp=FALSE 
     if(model=="Gaussian_misp_Tukeygh"){model="Tukeygh";missp=TRUE}
     if(model=="Gaussian_misp_Poisson"){model="Poisson";missp=TRUE}
+    if(model=="Gaussian_misp_PoissonGamma"){model="PoissonGamma";missp=TRUE}
     if(model=="Gaussian_misp_PoissonZIP"){model="PoissonZIP";missp=TRUE}
     if(model=="Gaussian_misp_StudentT"){model="StudentT";missp=TRUE}
     if(model=="Gaussian_misp_SkewStudentT"){model="SkewStudentT";missp=TRUE}
@@ -214,6 +215,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Gaussian_misp_PoissonZIP') { process <- 'PoissonZIP'; model <- 'Misspecified Gaussian Poisson Inflated'}
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
   if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
+  if(x$model=='Gaussian_misp_PoissonGamma') { process <- 'PoissonGamma'; model <- 'Misspecified Gaussian PoissonGamma'}
   if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
   if(x$model=='Beta2') { process <- 'Beta2'; model <- 'Beta2'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}

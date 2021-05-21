@@ -511,6 +511,7 @@ double marg_pois(int n,double x,double p);
 double marg_geom(int x,double p);
 
 double corr_pois(double rho,double mi,double mj);
+double corr_pois_gen(double corr,double mean_i, double mean_j, double a);
 double corr_tukeygh(double rho,double eta,double tail);
 double corr_skewt(double corr,double df,double skew);
 double corr_pois1(double rho,double lambda1,double lambda2);

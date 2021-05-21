@@ -527,7 +527,7 @@ if(model %in% c("BinomialLogistic"))   {
 #############################################
 ############### formatting data #############
 #############################################
-print(length(sim))
+
     if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=byrow)
