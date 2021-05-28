@@ -102,7 +102,8 @@ if(!bivariate&&!spacetime)
 
        if(length(v111) == 0 || length(v222) == 0  ){print(paste("There is no points between ",signif(bins[i],3),"and ", signif(bins[i+1],3)))}
        else{
-         main = c(paste("cor =",signif(cor(v111,v222),3)),paste("(",signif(bins[i],3)," , ",signif(bins[i+1],3),"]"))
+          main = c(paste("(",signif(bins[i],3)," , ",signif(bins[i+1],3),"]"))
+         #main = c(paste("cor =",signif(cor(v111,v222),3)),paste("(",signif(bins[i],3)," , ",signif(bins[i+1],3),"]"))
          plot(v111,v222,col = "#481567FF",xlab="",ylab="",main=main) 
          abline(0,1)
           }
