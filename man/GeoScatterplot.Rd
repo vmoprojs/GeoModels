@@ -52,15 +52,12 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
 }
 
 \details{
-  some details
-}
+  h-scatterplot is the plot of the pair values  that are neighborhood of a certain order or  with distances belonging to a certain interval.
+  In the first case a (vector of)  neighborhood must  be specified. In the second case a maximum distance (maxdist) and a number of lag-bins
+  (numbins) must be specified.
+  The method based on neighborhoods is recommended in particular for large datasets.
 
-\value{
-  The returned object is eventually a list with:
-    \item{covariance}{The vector of the estimated covariance function;}
-    \item{variogram}{The vector of the estimated variogram function;} 
 }
-
 
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
@@ -86,8 +83,8 @@ corrmodel = "GenWend"; model = "Gaussian"
 data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = model,param = param)$data
 
-
-GeoScatterplot(data,coords,distance="Eucl",maxdist=.15,numbins=6)
+# h-scatterplots for given a vector of neighborhoods
+GeoScatterplot(data,coords,neighb=c(5,10,20,40))
 
 }
 \keyword{Scatterplot}

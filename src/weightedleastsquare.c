@@ -11,17 +11,12 @@ void pairs(int *ncoords,double *data,double *coordx, double *coordy, double *num
   max_dist = *maxdist; //printf("max distance =  %f \n",max_dist);
 
   double distance=0.0;
-  
-
   for(h=0;h<=numbin;h++){
-      //printf("HERE");
       for(i=0; i<(ncrd-1);i++){
         for(j=(i+1);j<ncrd;j++){
           distance = dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
           if(distance <= max_dist){
-            //printf("dist =  %f \n",distance);
             if((bins[h] < distance) && (distance <= bins[(h+1)])){
-              //printf("yes, dist =  %f \n",distance);
               v0[k] = bins[(h)];
               v1[k] = data[i];
               v2[k] = data[j];

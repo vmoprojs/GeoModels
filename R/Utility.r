@@ -1517,86 +1517,17 @@ numpairs <- gb$numpairs
 }
 else   ######## case  with neighboord!!!
 { 
-      ###### useful functions #######
-          indices <- function(X,Y)
-          {
-             res = NULL;res_d = NULL
-             for(i in 2:ncol(X))
-             {
-                sol = cbind(X[,1],X[,i])
-                res = rbind(res,sol)
-                sol_d = cbind(Y[,1],Y[,i])
-                res_d = rbind(res_d,sol_d)
-             }
-            xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
-            sol=xx+yy+xx*yy+xx^2+yy^2
-            ids <- !duplicated(sol)
-            return(list(xy = res[ids,],d = res_d[ids,][,2]))
-         }
-     ##########################################
-         nn2Geo <- function(x, K = 1,distance)  
-         {
-           
-            nearest = RANN::nn2(x,k = K)
-            #nearest = FNN::get.knn(k, k=K)
-            #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
-            if(distance==2||distance==1){
-                  agc=NULL;
-                  nnn=nrow(x)
-                  #agc=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
-                  for(i in 1:nnn){   ## can we improve that?
-                  a=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
-                  agc=rbind(agc,a)
-                 }
-             if(distance==2)  agc=radius*agc   # geodesic
-             if(distance==1)  agc=2*radius*sin(0.5*agc)   # chordal  
-             nearest$nn.dists=cbind(rep(0,nnn),agc)
-             }
-            ########################################### 
-            sol = indices(nearest$nn.idx,nearest$nn.dists)
-            lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
-         return(list (lags=lags, rowidx = rowidx, colidx = colidx))
-         }
- ##########################################
-   spacetime_index=function(coords,N,K,tiempos,T,maxtime,distance)
-       {
-         ##############
-         inf=nn2Geo(coords,K+1,distance)
-         aa=cbind(inf$rowidx,inf$colidx)
-         ## building marginal spatial indexes
-         m_s=list()
-         for(i in 1:T) m_s[[i]]=aa+N*(i-1)
-         ## building  temporal  and spatiotemporal indexes
-         m_t=m_st=NULL;
-         for(j in 1:maxtime){
-          for(k in 1:(T-j)){
-           m_t=rbind(m_t,cbind(m_s[[k]][,1],m_s[[k+j]][,1],rep(tiempos[j],nrow(m_s[[k]]))))
-           m_st=rbind(m_st,cbind(m_s[[k]][,1],m_s[[k+j]][,2],rep(tiempos[j],nrow(m_s[[k]]))))
-         }}
-        ######
-        ll=length(inf$lags)
-        TT=cbind(m_t,rep(0,nrow(m_t)))
-        SS_temp=do.call(rbind,args=c(m_s))
-        ff=nrow(SS_temp) 
-        SS=cbind(SS_temp,rep(0,ff),rep(inf$lags,ff/ll))
-        ST=cbind(m_st,rep(inf$lags,nrow(m_st)/ll))
-        ##final space-time indexes and distances
-        final=rbind(SS,TT,ST)
-        return(final)
-       }
-  ##########################
-  ##########################   
-  ##########################
-  ##########################     
+
+  ########################## 
+if(distance==0) distance1="Eucl";if(distance==2) distance1="Geod";if(distance==1) distance1="Chor";
+
 if(!spacetime&&!bivariate)   #  spatial case
 {
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
-  #print(system.time(nn2Geo(x,K+1 ,distance)))
-  sol = nn2Geo(x,K+1 ,distance) ##### K or K+1
+  sol=GeoNeighIndex(coordx=x,distance=distance1,neighb=K)
   nn = length(sol$lags)
-  #print(nn)
   sol$lagt=0
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
@@ -1612,15 +1543,15 @@ if(spacetime)   #  space time  case
 { 
   K=neighb
   x=cbind(coordx, coordy)
-  sol=spacetime_index(x[1:numcoord,],numcoord,K,coordt,numtime,maxtime,distance)
-  nn = nrow(sol)
-  gb=list(); gb$colidx=sol[,2];
-             gb$rowidx=sol[,1] ;
+  sol=GeoNeighIndex(coordx=x[1:numcoord,],coordt=coordt,distance=distance1,neighb=K,maxtime=maxtime,radius=radius)
+  gb=list(); gb$colidx=sol$colidx;
+             gb$rowidx=sol$rowidx ;
              gb$numpairs=n
+  nn=length(gb$colidx)
   ## loading space time distances in memory           
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
-    as.double(sol[,4]),as.integer(nn),
-    as.double(sol[,3]),as.integer(nn),
+    as.double(sol$lags),as.integer(nn),
+    as.double(sol$lagt),as.integer(nn),
     as.integer(spacetime),as.integer(bivariate)) 
     ## number  of selected pairs
 } #### end spacetime case

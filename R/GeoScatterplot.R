@@ -22,8 +22,9 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, grid,
                              'None', maxdist, maxtime, model,NULL, 'Nelder-Mead', NULL,
                              radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL,NULL)
+
     # Checks if there are errors in the input:
-  if(is.null(maxdist))         stop('maxdist must be specified\n')
+  #if(is.null(maxdist))         stop('maxdist must be specified\n')
   if(!is.null(checkinput$error))
       stop(checkinput$error)
   if(spatial||bivariate){
@@ -39,15 +40,15 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
      }
 
          n=1
-    initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
+    if(is.null(neighb)) {initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
                            NULL, grid, 'None', maxdist,neighb,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL,NULL,FALSE)
+                           'SubSamp', FALSE, 1, 1,1,1,NULL,NULL,FALSE)}
 
 
     ### END -- Specific checks of the Empirical Variogram    
-    if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2] }
+    if(grid)     {a=as.matrix(expand.grid(coordx,coordy));coordx=a[,1];coordy=a[,2] }
 
     if(is.null(coordx_dyn))
     {
@@ -71,10 +72,15 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
        ns=lengths(coordx_dyn)/2 
     }
 
-    ##################
-    # 1. spatial case 
-    ##################
+##################################################    
+##### scatterplot based on distances 
+##################################################
+if(is.null(neighb)) {
 
+
+#########################
+# spatial univariate case 
+########################
 if(!bivariate&&!spacetime)
  {
     numcoords   = nrow(coords)
@@ -85,7 +91,7 @@ if(!bivariate&&!spacetime)
     v0 = rep(-1,n_pairs)
     v1 = rep(exp(-99),n_pairs)
     v2 = rep(exp(-99),n_pairs)
-    #print(numcoords)
+
 
     V  = .C("pairs",as.integer(numcoords),as.double(data),as.double(coords[,1]),as.double(coords[,2]),as.double(numbins), 
             as.double(bins),as.double(v0),as.double(v1),as.double(v2),as.double(maxdist),PACKAGE='GeoModels', DUP = TRUE,NAOK = TRUE) 
@@ -109,6 +115,9 @@ if(!bivariate&&!spacetime)
           }
     }
 }
+#########################
+# spatial bivariate case 
+########################
 if(bivariate)
  {
   if(length(maxdist)==1) maxdist=c(maxdist,maxdist)
@@ -147,7 +156,6 @@ if(bivariate)
     v22 = as.numeric(unlist(V2[9]));v22 = v22[v22 != exp(-99)]        
     vvv2 = data.frame(v02,v12,v22)
 
-
 ##############
     par(mfrow = c(squares_2,squares*2))
     for(i in 1:numbins){
@@ -155,18 +163,57 @@ if(bivariate)
        v222_1 = vvv1[vvv1$v01 == bins1[i],3]
        main = c(paste("cor =",signif(cor(v111_1,v222_1),3)),paste("(",signif(bins1[i],3)," , ",signif(bins1[i+1],3),"]"))
        plot(v111_1,v222_1,col = "#481567FF",xlab="",ylab="",main=main) 
-       abline(0,1)
-    }
-
-      for(i in 1:numbins){
+       abline(0,1)}
+    for(i in 1:numbins){
        v111_2 = vvv2[vvv2$v02 == bins2[i],2]
        v222_2 = vvv2[vvv2$v02 == bins2[i],3]
        main = c(paste("cor =",signif(cor(v111_2,v222_2),3)),paste("(",signif(bins2[i],3)," , ",signif(bins2[i+1],3),"]"))
        plot(v111_2,v222_2,col = "#481567FF",xlab="",ylab="",main=main) 
        abline(0,1)
     }
-
-
  }
+#########################
+# spatio temporal  case 
+########################
+ if(spacetime){}
+}
 
+##################################################    
+##### scatterplot based on neighboord
+##################################################
+
+if(!is.null(neighb)) {
+
+
+#########################
+# spatial univariate case 
+########################
+ln=length(neighb)
+squares     = ceiling(sqrt(ln))
+squares_2   = round(sqrt(ln))
+
+
+if(!bivariate&&!spacetime)
+ {
+ par(mfrow = c(squares_2,squares))
+for(i in 1:ln){
+  sel=GeoNeighIndex(coordx=coords,neighb=neighb[i])  
+  data1=data[sel$colidx]; data2=data[sel$rowidx]
+   plot(data1,data2,col = "#481567FF",xlab="",ylab="",main =paste("Neighb =",neighb[i])) 
+  }
+
+ }   
+#########################
+# spatial bivariate case 
+########################
+ if(bivariate){}
+
+
+#########################
+# spatio temporal  case 
+########################
+ if(spacetime){}
+
+}
+###### end scatterplot based on neighb
 }
