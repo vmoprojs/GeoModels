@@ -547,7 +547,7 @@ if(model %in% c("SkewGaussian","SkewGauss","SkewStudentT","StudentT","TwoPieceGa
 
 if(model %in% c("SkewGaussian","SkewGauss"))   {
         #if(!bivariate) aa=mm+sk*abs(dd[,,1])+sqrt(vv)*dd[,,2] t(sim)
-         if(!bivariate) aa=mm+sk*abs(dd[,,1])+sqrt(vv)*t(simDD)
+         if(!bivariate) aa=mm+sk*c(abs(dd[,,1]))+sqrt(vv)*c(t(simDD))
         if(bivariate)  {aa=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
                                   mm[2]+sk[2]*abs(dd[,,1][,2])+sqrt(vv[2])*dd[,,2][,2])}
         }
@@ -574,6 +574,7 @@ if(model %in% c("TwoPieceGaussian"))   {
         pp=qnorm((1-sk)/2)
         sel=(discrete<=pp);discrete[sel]=1-sk;discrete[!sel]=-1-sk;
         aa=mm+c(sqrt(vv)*(abs(sim)*discrete))
+       
         }
 ################################################
 if(model %in% c("TwoPieceTukeyh"))   {
