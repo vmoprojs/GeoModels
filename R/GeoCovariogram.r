@@ -129,7 +129,7 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeygh<- model==9||model==41
     zero <- 0;slow=1e-3;
     if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||sas||twopiecebimodal||skewstudentT
-            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-9
+            ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-5 
     # lags associated to empirical variogram estimation
     if(isvario){

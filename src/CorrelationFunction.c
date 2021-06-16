@@ -519,13 +519,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
     case 17://  multiquadric correlation function valid on sphere
         R_power=par[0];
         scale=par[1];
-        rho=R_pow(1-R_power/2,2*scale)/R_pow(1+R_pow(R_power/2,2)-R_power*cos(h),scale);
+        rho=R_pow(1-R_power/2,2*scale)/R_pow(1+R_pow(R_power/2,2)-R_power*cos(h/REARTH[0]),scale);
 
 
     break;
     case 18://  sinsphere correlation function valid on sphere
         R_power=par[0];
-        rho=1-R_pow(sin(h/2),R_power);
+        rho=1-R_pow(sin(h/(2*REARTH[0])),R_power);
     break;
     case 19: // original   Generalised wend correlation
         R_power1=par[0];
@@ -1722,10 +1722,11 @@ double CorFunWave(double lag, double scale)
 // smoke class of correlation models:
 double CorFunSmoke(double lag, double scale, double smooth)
 {
-
+//Rprintf( "%f %f\n",lag,REARTH[0]);
   double rho=0.0,a=0.0,kk1=0.0,iscale=0.0;
-  iscale=1/scale;
-    a=0.5+smooth;
+  lag=lag/REARTH[0];
+  iscale=1/(scale);
+a=0.5+smooth;
   // Computes the correlation:
   if(lag==0) {rho=1;}
   else  {

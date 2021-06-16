@@ -157,8 +157,9 @@ double Dist_geodesic(double loni, double lati, double lonj, double latj,double r
   bj = (lonj)*M_PI/180;
   val = sin(ai) * sin(aj) + cos(ai) * cos(aj) * cos(bi - bj);
   if(val<= -1)  {val2=M_PI*radius;return(val2);}
-  if(val>=1)    {val2=0;;return(val2);}
+  if(val>=1)    {val2=0;return(val2);}
   val2 = acos(val)*radius; 
+  //Rprintf("%f %f \n",val2,radius);
   return(val2);
 }
 
