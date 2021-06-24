@@ -2501,14 +2501,16 @@ double dis=0.0;
 
 ///compute the covariance btwen loc to predict and locaton sites for binomial and geometric RF
 void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *cormod, int *grid, double *locx,  double *locy,int *ncoord, int *nloc,
-                int *model,int *tloc,int *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
+                int *model,int *tloc,int *nn,int *n, int *ns,int *NS,int *ntime, double *mean,double *nuis, double *par, int *spt, int *biv, double *time,int *type, int *which,double *radius)
 {
 
 
     if(!spt[0]&&!biv[0])  {   //spatial case
     int i=0,j=0,h=0;
     double p,dd,dis=0.0,p1=0.0,p2=0.0,psj=0.0,ai=0.0,aj=0.0,corr=0.0,p00=0.0,p11=0.0,bi,bj;
-            for(j=0;j<(*nloc);j++){
+            
+
+for(j=0;j<(*nloc);j++){
                 for(i=0;i<(*ncoord);i++){
                      dis=dist(type[0],coordx[i],locx[j],coordy[i],locy[j],radius[0]);
                      corr=CorFct(cormod,dis,0,par,0,0);
@@ -2520,7 +2522,11 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                         //psj=pbnorm(cormod,dis,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
                        // compute the covariance!
-                   if(*model==2||*model==11||*model==19) cc[h]=n[h]*(psj-p1*p2);//binomial
+
+
+                   if(*model==2||*model==11||*model==19) cc[h]=fmin2(nn[j],n[i])*(psj-p1*p2);//binomial
+                   
+
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)            cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)   {
@@ -2579,7 +2585,7 @@ if(*spt) { // spacetime
                              //   psj=pbnorm(cormod,dis,dit,ai,aj,nuis[0],nuis[1],par,0);
                                 p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
 
-                   if(*model==2||*model==11||*model==19) cc[h]=n[h]*(psj-p1*p2);//binomial
+                   if(*model==2||*model==11||*model==19) cc[h]=fmin2(nn[j],n[i+NS[t]])*(psj-p1*p2);//binomial
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)          cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)       {
