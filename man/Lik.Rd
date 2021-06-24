@@ -11,7 +11,7 @@
 Lik(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
            grid,lower,mdecomp,model,namescorr,namesnuis,namesparam,numcoord,
            numpairs,numparamcor,numtime,optimizer,onlyvar,parallel,param,radius,setup,
-           spacetime,sparse,varest,taper,type,upper,ns,X)
+           spacetime,sparse,varest,taper,type,upper,ns,X,neighb)
 }
 \arguments{
   \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
@@ -88,6 +88,7 @@ Lik(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagco
       of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
        The names of the list must be the same of the names in the   \code{start} list.}
     \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
+  \item{neighb}{Numeric;parameter for vecchia approximation using GPvecchia package}
 }
 
 \seealso{\code{\link{GeoFit}}}

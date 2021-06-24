@@ -42,7 +42,8 @@ library(GeoModels)
 
 ################################################################
 ###
-### Example 1. Matern correlation model
+### Example 1. Correlation of a Gaussian random field with underlying 
+### Matern correlation model
 ###
 ###############################################################
 
@@ -59,7 +60,8 @@ plot(x,corr,ylim=c(0,1),type="l")
 
 ################################################################
 ###
-### Example 2. Generalized Wendland-Matern correlation model
+### Example 2. Correlation of a Gaussian random field with underlying 
+### Generalized Wendland-Matern correlation model
 ###
 ###############################################################
 CorrParam("GenWend_Matern")
@@ -72,7 +74,7 @@ plot(x,corr,ylim=c(0,1),type="l")
 
 ################################################################
 ###
-### Example 3. Student t correlation with underlying 
+### Example 3. Correlation of a t random field with underlying 
 ### Generalized Wendland-Matern correlation model
 ###
 ###############################################################
@@ -84,9 +86,10 @@ param=list(smooth=1,sill=1,scale=0.1,nugget=0,power2=1/4,df=1/6,mean=0)
 corr= GeoCorrFct(x=x, corrmodel="GenWend_Matern", param=param,model="StudentT")
 plot(x,corr,ylim=c(0,1),type="l")
 
+
 ################################################################
 ###
-### Example 4. Weibull correlation with underlying 
+### Example 4. Correlation of Weibull random field with underlying 
 ### Generalized Cauchy correlation model
 ###
 ###############################################################
@@ -99,8 +102,8 @@ corr= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Weibull")
 plot(x,corr,ylim=c(0,1),type="l")
 ################################################################
 ###
-### Example 4. Weibull correlation with underlying 
-### Generalized Cauchy correlation model
+### Example 5. Covariance of Poisson random field with underlying 
+### Matern correlation model
 ###
 ###############################################################
 CorrParam("Matern")

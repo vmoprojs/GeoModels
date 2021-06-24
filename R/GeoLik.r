@@ -7,7 +7,7 @@
 ### Optim call for log-likelihood maximization 
 Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
                        mdecomp,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
-                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X)
+                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X,neighb)
 {
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
@@ -578,7 +578,32 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
       }
+  #####################################################    
 
+ loglikvecchia <- function(param,vecchia.approx,data,fixed,dimat,
+                    model,namescorr,namesnuis,namesparam,X)
+    {
+        llik <- 1.0e8
+        names(param) <- namesparam
+        # Set the parameter vector:
+        pram <- c(param, fixed)
+        paramcorr <- pram[namescorr]
+        nuisance <- pram[namesnuis]
+        sel=substr(names(nuisance),1,4)=="mean"
+        mm=as.numeric(nuisance[sel])
+
+        nuggets=as.numeric(nuisance['nugget'])+1e-6
+       # print(nuggets)
+        data=c(data-X%*%mm)
+        #print(data)
+        ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
+        #print(ppar)
+        loglik_u=GPvecchia::vecchia_likelihood(data,vecchia.approx,
+                         covparms=ppar,nuggets=nuggets,covmodel ="matern")
+        return(-loglik_u)
+      }
+
+      
 ################################################################################################                     
      loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
                        grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
@@ -604,7 +629,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
       # Computes the log-likelihood
        loglik_b <- do.call(what=fname,args=list(stdata=stdata,const=const,cova=corr,ident=ident,dimat=dimat,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
-       #print( loglik_b)
+
         return(loglik_b)
       }
 
@@ -653,6 +678,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
  ######################################################################### 
 if(model==1){  ## gaussian case
     lname <- 'loglik'
+    if(!is.null(neighb))  lname <-'loglikvecchia'
     if(bivariate)  {lname <- 'loglik_biv'}
   
     # detects the type of likelihood:
@@ -754,6 +780,28 @@ if(!onlyvar){   # performing optimization
         }
   if(length(param)>1)
         {
+
+    
+  #### vecchia  approxxx
+    if(!is.null(neighb)) { 
+            locs=cbind(coordx,coordy)
+            vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
+            Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
+                             control = list( iter.max=100000),dimat=dimat,
+                         lower=lower,upper=upper, hessian=hessian,
+                           data=t(data),fixed=fixed,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+
+            #Likelihood <-  optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
+             #              control=list(reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,data=t(data),
+             #              control = list( iter.max=100000),dimat=dimat,
+             #             hessian=hessian,
+             #             ,fixed=fixed,
+             #             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+             #             X=X,ns=ns,NS=NS)
+
+                       }
+        else{  ### no vecchia
 if(optimizer=='L-BFGS-B'&&!parallel)
                         Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
@@ -790,6 +838,10 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+
+
+
+
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
@@ -843,7 +895,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     }
-#}
+}
 
 
  if(optimizer %in% c('Nelder-Mead','L-BFGS-B','BFGS','nmk','nmkb','multiNelder-Mead'))

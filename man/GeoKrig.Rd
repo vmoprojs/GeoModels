@@ -257,48 +257,51 @@ image.plot(xx, xx, matrix(pr_wen$mse,ncol=length(xx)),col=colour,
 ###
 ###############################################################
 set.seed(312)
-model="Binomial";n=6
+model="Binomial";
 
 # Define the spatial-coordinates of the points:
 x = runif(800)
 y = runif(800)
 coords=cbind(x,y)
+n=sample(10:20,nrow(coords),replace=TRUE)    # vector of trials
 #### mean and covariance parameters ###
 mean=0
 sill=1
 nugget=0
-scale=0.2
+scale=0.2/3
 #################
-param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,power2=4)
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=0.5)
 # Simulation of the Binomial Gaussian random field:
-data = GeoSim(coordx=coords, corrmodel="Wend0",model=model,n=n,
-              sparse=TRUE,param=param)$data
+data = GeoSim(coordx=coords, corrmodel="Matern",model=model,n=n,
+              param=param)$data
 
 
 par(mfrow=c(1,2))
 
 #### map of simulated data
-quilt.plot(x, y, data,nlevel=n+1,col=rainbow(n+1),zlim=c(0,n), main="Data")
+nn=max(data)
+quilt.plot(x, y, data,nlevel=nn+1,col=rainbow(nn+1),zlim=c(0,nn), main="Data")
 
 ## estimation with pairwise likelihood
-fixed=list(nugget=nugget,power2=4,sill=1)
+fixed=list(nugget=nugget,smooth=0.5,sill=1)
 start=list(mean=0,scale=scale)
 # Maximum pairwise likelihood fitting :
-fit = GeoFit(data, coordx=coords, corrmodel="Wend0",model=model,n=n,memdist=FALSE,
+fit = GeoFit(data, coordx=coords, corrmodel="Matern",model=model,n=n,
                     likelihood='Marginal', type='Pairwise',maxdist=0.03,
                     optimizer="BFGS", start=start,fixed=fixed)
                     
 # locations to predict
 xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
-
+ # vector of trials of the locations to predict
+nloc=sample(10:20,nrow(loc_to_pred),replace=TRUE)
 ## simple kriging 
-pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,n=n,
-       sparse=TRUE,param= as.list(c(fit$param,fixed)))
+pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Matern",model=model,n=n,
+       nloc=nloc,param= as.list(c(fit$param,fixed)))
 
 #standard   binomial kriging
 map_binom=matrix(pr$pred,ncol=length(xx))
-image.plot(xx, xx, map_binom,col=rainbow(n+1),zlim=c(0,n),
+image.plot(xx, xx, map_binom,col=rainbow(100),
            xlab="",ylab="",main="Simple Kriging ")
 
 

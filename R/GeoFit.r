@@ -96,7 +96,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
                                initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,parallel,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
-                               initparam$upper,initparam$ns,unname(initparam$X))
+                               initparam$upper,initparam$ns,unname(initparam$X),neighb)
 
     # Composite likelihood:
     if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2'){

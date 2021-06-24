@@ -620,6 +620,8 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 if(model %in% c(2,11,30,16,14,43,45,46)){ #  binomial (negative)Gaussian type , Poisson (inflated)
 
+if(model==2||model==11)
+{if(length(n)==1) n=rep(n,dime)}
 #print("ff")
 if(!bivariate){
 
@@ -633,7 +635,7 @@ if(type=="Standard")  {
   #print(other_nuis)
   corr=double(numpairstot)
               cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
-              as.integer(corrmodel), as.double(c(mu)),as.integer(min(n)), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+              as.integer(corrmodel), as.double(c(mu)),as.integer(n), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
@@ -663,7 +665,7 @@ if(type=="Standard")  {
 
         cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
         as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
-           as.integer(NS),as.integer(min(n)),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+           as.integer(NS),as.integer(n[idx[,1]]),as.integer(n[idx[,2]]),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
 #      cr=dotCall64::.C64(fname,SIGNATURE =
 #         c("double","double","double","double","integer","double","double","double","integer","integer","integer","double","double","integer"),

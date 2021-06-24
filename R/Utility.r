@@ -49,9 +49,9 @@ CkCorrModel <- function(corrmodel)
                              Matern2=3,
                              exponential=4,Exponential=4,Exp=4,exp=4,Matern0=4,
                              dagum = 5, Dagum = 5,
-                             GenWend_Matern=6,GenWend_matern=6,Genwend_Matern=6,genWend_Matern=6,
-                             GenWend_Matern2=7,GenWend_matern2=7,Genwend_Matern2=7,genWend_Matern2=7,
-                             gencauchy=8,Gencauchy=8,GenCauchy=8,genCauchy=8,
+                             GenWend_Matern=6,Genwend_Matern=6,
+                             GenWend_Matern2=7,Genwend_Matern2=7,
+                             Gencauchy=8,GenCauchy=8,
                              Shkarofski=10,shkarofski=10,
                              Wend0=11,wend0=11,
                              stable=12,Stable=12,
@@ -61,7 +61,7 @@ CkCorrModel <- function(corrmodel)
                              wave=16,Wave=16,
                              Multiquadric=17,multiquadric=17,
                              Sinpower=18,sinpower=18,
-                             genWend=19,Genwend=19,GenWend=19,genwend=19,
+                             Genwend=19,GenWend=19,
                              smoke=20,Smoke=20,
              # spatial-temporal non-separable models
                              gneiting=42,Gneiting=42,  #ok

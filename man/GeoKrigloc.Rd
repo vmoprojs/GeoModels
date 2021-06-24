@@ -52,8 +52,8 @@ GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, d
      The other possible choices is \code{svd}.}
     \item{n}{Numeric; the number of trials in a binomial random fields.
          Default is \eqn{1}.}   
-     \item{nloc}{Numeric; the number of trials  of the locations sites to be predicted in a binomial random fields type II.
-         Default is \eqn{1}.} 
+     \item{nloc}{Numeric; the number of trials  of the locations sites to be predicted in the binomial random field.
+         If missing then a rounded mean of n is considered.} 
     \item{mse}{Logical; if \code{TRUE} (the default) MSE of the kriging predictor  is computed}    
    \item{model}{String; the type of RF and therefore the densities associated to the likelihood
     objects. \code{Gaussian} is the default, see the Section

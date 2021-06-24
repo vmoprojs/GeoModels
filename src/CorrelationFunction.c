@@ -2017,7 +2017,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
         int *nn,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
 {
     int i=0,j=0,h=0;// check the paramaters range:
-    double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,p=0,corr=0.0,p00=0,p11=0,bi,bj;
+    double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,p=0,corr=0.0,p00=0,p11=0,bi,bj,ni,nj;
 
 
         for(i=0;i<(ncoord[0]-1);i++){
@@ -2029,9 +2029,12 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
    if(*model==14||*model==16||*model==2||*model==11||*model==45){
 
      ai=mean[i];aj=mean[j];
+
      psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
      p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-      if(*model==2||*model==11)       rho[h]=nn[0]*(psj-p1*p2);
+      if(*model==2||*model==11)    
+      {ni=nn[i];nj=nn[j];
+         rho[h]=fmin2(nn[i],nn[j])*(psj-p1*p2);} 
       if(*model==14)       rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
       if(*model==16)       rho[h]=cov_binom_neg(nn[0],psj,p1,p2);
       if(*model==45)
@@ -2088,7 +2091,7 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
 }
 // Computation of the correlations for kringing with  sparse matrix:
 void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
-  int *ns, int *NS, int *n, double *mu1,double *mu2,int  *model)
+  int *ns, int *NS, int *n1,int *n2, double *mu1,double *mu2,int  *model)
 {
   int i=0;
   double p1,p2,psj,aux1,aux2,p,corr=0.0,dd,p00,p11;
@@ -2100,15 +2103,15 @@ void CorrelationMat_dis_tap(double *rho,double *coordx, double *coordy, double *
       psj=pbnorm22(mu1[i],mu2[i],(1-nuis[0])*corr);
       p1=pnorm(mu1[i],0,1,1,0);  p2=pnorm(mu2[i],0,1,1,0);
 
-      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p2);
+      if(*model==2||*model==11)       rho[i]=fmin2(n1[i],n2[i]) *(psj-p1*p2);
       if(*model==14)                  rho[i]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-      if(*model==16)                  rho[i]=cov_binom_neg(n[0],psj,p1,p2);
+      if(*model==16)                  rho[i]=cov_binom_neg(n1[0],psj,p1,p2);
       if(*model==45)
          {
            p=pnorm(nuis[2],0,1,1,0);
            p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr); p11=1-2*p+p00;
-           dd=cov_binom_neg(n[0],psj,p1,p2);
-           rho[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
+           dd=cov_binom_neg(n1[0],psj,p1,p2);
+           rho[i]=p11*dd +  (n1[0]*n1[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
          }
     }
       /***************************************************************/
@@ -2161,7 +2164,7 @@ return;
 
 // Computation of the correlations for spatio-temporal tapering:
 void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, double *coordt, int *cormod,  double *nuis, double *par,double *radius,
-  int *ns, int *NS, int *n, double *mu1,double *mu2,int  *model)
+  int *ns, int *NS, int *n1,int *n2, double *mu1,double *mu2,int  *model)
 {
   int i=0;
   double dd,p,p1,p2,psj,aux1,aux2,p11,p00,corr=0.0;
@@ -2172,15 +2175,15 @@ void CorrelationMat_st_dis_tap(double *rho,double *coordx, double *coordy, doubl
   if(*model==2||*model==11||*model==14||*model==16||*model==45){
       p1=pnorm(mu1[i],0,1,1,0); p2=pnorm(mu2[i],0,1,1,0);
           psj=pbnorm22(mu1[i],mu2[i],(1-nuis[0])*corr);
-      if(*model==2||*model==11)       rho[i]=n[0]*(psj-p1*p1);
+      if(*model==2||*model==11)       rho[i]=fmin2(n1[i],n2[i])*(psj-p1*p1);
       if(*model==14)                  rho[i]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
-      if(*model==16)                  rho[i]=cov_binom_neg(n[0],psj,p1,p2);
+      if(*model==16)                  rho[i]=cov_binom_neg(n1[0],psj,p1,p2);
       if(*model==45)
          {
            p=pnorm(nuis[2],0,1,1,0);
            p00=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);p11=1-2*p+p00;
-           dd=cov_binom_neg(n[0],psj,p1,p2);
-           rho[i]=p11*dd +  (n[0]*n[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
+           dd=cov_binom_neg(n1[0],psj,p1,p2);
+           rho[i]=p11*dd +  (n1[0]*n1[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p));
          }
 
 }
@@ -2264,7 +2267,8 @@ for(t=0;t<ntime[0];t++){
                         ai=mean[i+ns[t]*t];aj=mean[j+ns[t]*v];
                         psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
-      if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);                       //binomial
+      if(*model==2||*model==11)      
+        { rho[h]=fmin2(n[i+NS[t]],n[(j+NS[v])])*(psj-p1*p2);          }               //binomial
       if(*model==14)                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);        //goemettric
       if(*model==16)                  rho[h]=cov_binom_neg(n[0],psj,p1,p2);         //binomialnegative
       if(*model==45)
@@ -2315,7 +2319,8 @@ if(*model==46||*model==47) {       //poisson gamma
                          psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
                          p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
 
-             if(*model==2||*model==11)       rho[h]=n[0]*(psj-p1*p2);                    //binomial
+             if(*model==2||*model==11)       //rho[h]=n[0]*(psj-p1*p2);                    //binomial
+             { rho[h]=fmin2(n[i+NS[t]],n[(j+NS[v])])*(psj-p1*p2);          } 
              if(*model==14)                  rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);    //goemettric
              if(*model==16)                  rho[h]=cov_binom_neg(n[0],psj,p1,p2); ;      // negative binomial
              if(*model==45)  {
@@ -2515,7 +2520,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                         //psj=pbnorm(cormod,dis,0,ai,aj,nuis[0],nuis[1],par,0);
                         p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
                        // compute the covariance!
-                   if(*model==2||*model==11||*model==19) cc[h]=n[0]*(psj-p1*p2);//binomial
+                   if(*model==2||*model==11||*model==19) cc[h]=n[h]*(psj-p1*p2);//binomial
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)            cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)   {
@@ -2553,7 +2558,7 @@ void Corr_c_bin(double *cc,double *coordx, double *coordy, double *coordt, int *
                /*****************************************************************/
                     h++;}}
 
-
+//Rprintf("%d %d %d ",h,n[0],n[1]);
       }
 if(*spt) { // spacetime
       int i=0,j=0,h=0,t=0,v=0;
@@ -2574,7 +2579,7 @@ if(*spt) { // spacetime
                              //   psj=pbnorm(cormod,dis,dit,ai,aj,nuis[0],nuis[1],par,0);
                                 p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
 
-                   if(*model==2||*model==11||*model==19) cc[h]=n[0]*(psj-p1*p2);//binomial
+                   if(*model==2||*model==11||*model==19) cc[h]=n[h]*(psj-p1*p2);//binomial
                    if(*model==14)            cc[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);  // geometric
                    if(*model==16)          cc[h]=cov_binom_neg(n[0],psj,p1,p2);
                    if(*model==45)       {

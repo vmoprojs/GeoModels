@@ -706,19 +706,29 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46))
      if(type=="Standard"||type=="standard") {
 
 
-
      mu0 = Xloc%*%betas;
      if(!bivariate) mu  = X%*%betas
      if(bivariate)  mu  = c(X11%*%betas1,X22%*%betas2)
      kk=0
-     if(covmatrix$model==2||covmatrix$model==11) kk=min(n)
+     if(covmatrix$model==2||covmatrix$model==11) kk=nloc
+
+      if(covmatrix$model %in% c(2,11))
+        { if(is.null(nloc)) {nloc=rep(round(mean(n)),dimat2); kk=rep(nloc,dimat)}
+          else {if(is.numeric(nloc)) {
+              if(length(nloc)==1) {nloc=rep(nloc,dimat2);kk=rep(nloc,dimat) }
+              else                {kk=rep(nloc,dimat)}
+                }
+
+          #if(is.numeric(nloc)) {if(length(nloc)!=(dimat2*dimat)) stop("dimension of nloc is wrong\n")}
+        } 
+    }
      if(covmatrix$model==19) kk=min(nloc)
      if(covmatrix$model==16||covmatrix$model==45) kk=n
 ## ojo que es la covarianza
 if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
 {
   corri=double(dimat*dimat2)
-
+ 
     ## Computing correlation between the locations to predict and the locations observed
     ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
@@ -793,9 +803,9 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
         p0=pnorm(mu0); pmu=pnorm(mu)
             if(!bivariate)
-                       { pp = n*c(p0) + krig_weights %*% (c(dataT)-n*c(pmu)) }  ## simple kriging
+                       { pp = nloc*c(p0) + krig_weights %*% (c(dataT)-n*c(pmu)) }  ## simple kriging
             else{} #todo
-           if(mse) vvar=n*p0*(1-p0)  ### variance (possibly no stationary
+           if(mse) vvar=nloc*p0*(1-p0)  ### variance (possibly no stationary
           }
       ###########################################################
            if(covmatrix$model==19){  ### binomial2
