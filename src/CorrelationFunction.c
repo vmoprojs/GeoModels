@@ -1754,13 +1754,13 @@ double CorFunWitMat(double lag, double scale, double smooth)
   double rho=0.0;
   double a=lag/scale;
   // Computes the correlation:
-  if(lag<1e-32) {rho=1; return(rho);}
-  if(smooth==0.5) {rho=exp(-a);return(rho);}
+  if(lag<1e-64) {rho=1; return(rho);}
+  if(smooth==0.5) {rho=exp(-a); return(rho);}
   if(smooth==1.5) {rho=exp(-a)*(1+a);return(rho);}
   if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
   if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+R_pow(a,3)/15);return(rho);}
-  //rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
- rho=exp((smooth*log(a) + log(bessel_k(a,smooth,2)) -a)- ((smooth-1)*log(2)+lgammafn(smooth)));
+  rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
+ //rho=exp((smooth*log(a) + log(bessel_k(a,smooth,2)) -a)- ((smooth-1)*log(2)+lgammafn(smooth)));
   return(rho);
 }
 
@@ -1828,13 +1828,14 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
 {
     double rho=0.0,x=0.0;
 
+    x=lag/scale;
+    if(x<1e-32) {rho=1; return(rho);}
 
-    if(lag<1e-16) {rho=1; return(rho);}
-
-     x=lag/scale;
+    
 
     if(smooth==0) {
-         if(x<1)   rho=R_pow(1-x,R_power1);
+        //Rprintf("axa\n");
+         if(x<1)    rho=R_pow(1-x,R_power1);//rho=exp(R_power1*log1p(-x));
          else rho=0;
          return(rho);
     }

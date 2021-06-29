@@ -66,12 +66,14 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
 if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
 {
+
   if(type=="Standard") {
       fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
+     
 corr=double(numpairstot)
   #      cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
    #       as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
@@ -92,6 +94,7 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
         #cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
         #  as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
         #   as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
 cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
      corr=corr, coordx,coordy,coordt,corrmodel,nuisance, paramcorr,radius,ns,NS,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
@@ -99,7 +102,7 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
      ## deleting correlation equual  to 1 because there are problems  with hipergeometric function
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0
       }
-    }
+    }  
 ###################################################################################
 ###################################################################################
 ###################################################################################
@@ -700,7 +703,6 @@ if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}
 ###############################################################
 ################################ end discrete #models #########
 ###############################################################
-
 return(varcov)
 }
 
@@ -709,6 +711,7 @@ return(varcov)
   #################### end internal function ##################################################
   #############################################################################################
     # Check the user input
+
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the coorelation model  is not correct\n")
@@ -727,6 +730,7 @@ return(varcov)
     #if the covariance is compact supported  and option sparse is used
     #then set the code as a tapering and an object spam is returned
 if(sparse) {
+
     covmod=CkCorrModel(corrmodel)
     if(covmod %in% c(10,11,13,15,19,6,7,
                      63,64,65,66,67,68,
@@ -747,9 +751,8 @@ if(sparse) {
        if(covmod==63||covmod==65||covmod==67) {  tapsep=c(param$power2_s,param$power_t,param$scale_s,param$scale_t,param$sep) }
        if(covmod==64||covmod==66||covmod==68) {  tapsep=c(param$power_s,param$power2_t,param$scale_s,param$scale_t,param$sep) }
     }
-      if(!(spacetime||bivariate)){
+      if(!(spacetime||bivariate)){  ### spatial Gen Wend
         maxdist=param$scale
-        #print(param)
         if(covmod==6)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+1/param$power2+1)-lgamma(1/param$power2))/ (1+2*param$smooth) ))
         if(covmod==7)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+param$power2+1)-lgamma(param$power2))/ (1+2*param$smooth) ))
       }
@@ -760,7 +763,7 @@ if(sparse) {
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,copula,X)
-
+    
     if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
@@ -793,7 +796,8 @@ if(sparse) {
            if(!(spacetime||bivariate)) tapmod=36
            }
       else(tapmod=CkCorrModel(taper))
-    #######################
+    #######################ç
+
     tp=.C(fname,tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
       as.double(1),as.double(tapsep),as.double(1),
       PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)

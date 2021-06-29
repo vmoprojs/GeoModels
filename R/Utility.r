@@ -1387,11 +1387,13 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
                 if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
                 tapering<-1
+
                 idx<-integer((numcoord*numtime)^2)
                 ja<-integer((numcoord*numtime)^2)
                 ia<-integer(numcoord*numtime+1)
                 tapmodel<-CkCorrModel(taper)
-                              }}
+                              }
+                }
         else{              #    setting spam indexes
             numtime <- 1
             coordt <- 0
@@ -1403,25 +1405,22 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 ja<-integer((numcoord*numtime)^2)
                 ia<-integer(numcoord*numtime+1)
                 tapmodel<-CkCorrModel(taper)
-                }}
+                }
+            }
     }
     # END code for the fitting procedure
     # START code for the simulation procedure
     if(fcall=="Simulation"){
 
-
-       
         namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas,copula))))
         param <- unlist(param)
         numparam <- length(param)
         namesparam <- names(param)
 
-        if(!bivariate)
-
-       if(any(model!=c(43,45)))  namessim <- c("mean","sill","nugget","scale",namescorr[!namescorr=="scale"])
-       if(any(model==c(43,45)))  namessim <- c("mean","sill","nugget1","nugget2","scale",namescorr[!namescorr=="scale"])
-        if(bivariate)  namessim <- c("mean_1","mean_2","scale",
-                             namescorr[!namescorr=="scale"])  
+        if(!bivariate) if(any(model!=c(43,45)))  namessim <- c("mean","sill","nugget","scale",namescorr[!namescorr=="scale"])
+       
+       # if(any(model==c(43,45)))  namessim <- c("mean","sill","nugget1","nugget2","scale",namescorr[!namescorr=="scale"])
+       if(bivariate)  namessim <- c("mean_1","mean_2","scale",namescorr[!namescorr=="scale"])  
 
         if(spacetime) numtime <- ltimes
         else {numtime <- 1; coordt <- 0}
@@ -1429,18 +1428,23 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
         if((typereal=="Tapering"&&type=="Tapering")||(typereal=="Tapering1"&&type=="Tapering1")||(typereal=="Tapering2"&&type=="Tapering2")){
                 tapering<-1
-                idx<-integer((numcoord*numtime)^2)
-                ja<-integer((numcoord*numtime)^2)
-                ia<-integer(numcoord*numtime+1)
+                 #print(numcoord); print(numtime)
+                 nt=numcoord*numtime
+                 print(nt)
+                idx<-integer(nt^2)
+                ja<-integer(nt^2)
+                ia<-integer(nt+1)
                 tapmodel<-CkCorrModel(taper)
-                }
         }
-    # END code for the simulation procedure
+}
 
+    # END code for the simulation procedure
+  
     ### Compute the spatial and spatial-temporal distances:
     numpairs <- integer(1)
     srange <- double(1)
     trange <- double(1)
+
     if(is.null(maxdist)) srange<-c(srange,double(1)) else {srange<-c(srange,as.double(maxdist))}                # cutoff<-TRUE
     if(is.null(maxtime)) trange<-c(trange,double(1)) else {trange<-c(trange,as.double(maxtime))}                # cutoff<-TRUE
     isinit <- as.integer(1)
@@ -1449,13 +1453,14 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     mem=FALSE
 
     if(tapering||memdist)  { mem=TRUE }   #### NB
-
+ 
     if(mem&&!tapering)  
       {        
+
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
                 if(is.null(neighb)){
-                    colidx<-rowidx<-integer(nn*(nn-1)/2)}
+                    colidx=rowidx=integer(nn*(nn-1)/2)}
       }
     if(bivariate) {
       if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
@@ -1469,9 +1474,6 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
   
 
 if(is.null(neighb)){
-
-
-
 
 #ptm <- proc.time()
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
@@ -1495,6 +1497,8 @@ gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
   #print(proc.time() - ptm)
+
+
 rm(colidx);rm(rowidx)
 if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
@@ -1505,8 +1509,9 @@ numpairs <- gb$numpairs
 ## indexes for composite 
     colidx=gb$colidx
     rowidx=gb$rowidx
-    colidx <- colidx[1:numpairs]
-    rowidx  <- rowidx[1:numpairs]
+    #colidx <- colidx[1:numpairs]
+    #rowidx  <- rowidx[1:numpairs]
+## indexes for tapering 
     idx <- gb$idx
     ja <- gb$ja
     ia <- gb$ia;
@@ -1577,7 +1582,8 @@ if(is.null(coordt)) coordt=1
                 num_betas=num_betas,
                 numcoord=numcoord,numcoordx=numcoordx,numcoordy=numcoordy,
                 numfixed=numfixed,numpairs=numpairs,numparam=numparam,numparamcorr=numparamcorr,
-                numstart=numstart,numtime=numtime,param=param,setup=list(                ## setup is a list
+                numstart=numstart,numtime=numtime,param=param,
+                setup=list(                ## setup is a list
                 ia=ia,idx=idx,ja=ja,nozero=nozero,tapmodel=tapmodel,tapsep=tapsep),  radius=radius,                            ## with tapered matrix informations
                 spacetime=spacetime,srange=srange,start=start,upper=paramrange$upper,type=type,
                 trange=trange,vartype=vartype,weighted=weighted,winconst=winconst,winstp=winstp,
