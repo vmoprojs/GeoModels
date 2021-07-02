@@ -486,6 +486,53 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+
+
+void Comp_Pair_BinomNNGauss_misp2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *GPU,int *local)
+{
+    int i=0, N=2,n1,n2;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+
+    double **M;
+    M= (double **) Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    double *dat;
+    dat=(double *) Calloc(N,double);
+
+    double nugget=nuis[0];
+    if( nugget>=1 || nugget<0){*res=LOW; return;}
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                 ai=mean1[i];aj=mean2[i];
+                 corr=CorFct(cormod,lags[i],0,par,0,0);
+                 p11=pbnorm22(ai,aj,(1-nugget)*corr);
+                 p1=pnorm(ai,0,1,1,0);
+                 p2=pnorm(aj,0,1,1,0);
+                 u=data1[i];v=data2[i];
+                 n1=NN[i];n2=NN[i+npairs[0]];
+                 if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                 M[0][0]=n1*p1*(1-p1);   M[1][1]=n2*p2*(1-p2);  // var1 var2
+                 M[0][1]= fmin_int(n1,n2)*(p11-p1*p2) ;       // covariance
+                 M[1][0]= M[0][1];
+                 dat[0]=u-n1*p1;dat[1]=v-n2*p2; 
+                 //Rprintf("%d %f %f %f \n",fmin_int(n1,n2),p1,p2,p11 );
+                   //#####
+                 bl=dNnorm(N,M,dat);
+                 *res+= log(bl)*weights;       
+                }}
+           for(i=0;i<N;i++)  {Free(M[i]);}
+    Free(M);
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
+
+
+
 void Comp_Pair_BinomNNLogi2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)

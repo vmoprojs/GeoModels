@@ -152,6 +152,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==11,likelihood==1,type==2)&length(n)==1){ fname <- 'Comp_Cond_BinomGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==51,likelihood==1,type==2)&length(n)>=1){ fname <- 'Comp_Cond_BinomNNGauss_misp'
+                                             if(varest & vartype==2) hessian <- TRUE}
     if(all(model==11,likelihood==1,type==2)&length(n)>1){ fname <- 'Comp_Cond_BinomNNGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
 
@@ -196,6 +198,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(all(model==2,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomGauss'
                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==11,likelihood==3,type==2)&length(n)==1){ fname <- 'Comp_Pair_BinomGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==51,likelihood==3,type==2)&length(n)>=1){ fname <- 'Comp_Pair_BinomNNGauss_misp'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==11,likelihood==3,type==2)&length(n)>1){ fname <- 'Comp_Pair_BinomNNGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -316,7 +320,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     }
 
 
-
+    #print(fname)
 
      if((spacetime||bivariate)&&(!spacetime_dyn))    data=c(t(data))
      if((spacetime||bivariate)&&(spacetime_dyn))     data=unlist(data)          
@@ -327,8 +331,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
    data1=data[colidx]; data2=data[rowidx]
   
 
-   if((model==11||model==49)&&length(n)>1) {n1=n[colidx];n2=n[rowidx];
-                               n=c(n1,n2)}
+   if((model==11||model==49||model==51)&&length(n)>1)
+                       {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
    if(is.null(GPU)) GPU=0
    if(!onlyvar){
   ##############################.  spatial or space time ############################################

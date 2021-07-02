@@ -127,6 +127,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     missp=FALSE 
     if(model=="Gaussian_misp_Tukeygh"){model="Tukeygh";missp=TRUE}
     if(model=="Gaussian_misp_Poisson"){model="Poisson";missp=TRUE}
+    if(model=="Gaussian_misp_Binomial"){model="Binomial";missp=TRUE}
     if(model=="Gaussian_misp_PoissonGamma"){model="PoissonGamma";missp=TRUE}
     if(model=="Gaussian_misp_PoissonZIP"){model="PoissonZIP";missp=TRUE}
     if(model=="Gaussian_misp_StudentT"){model="StudentT";missp=TRUE}
@@ -212,6 +213,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='TwoPieceBimodal') { process <- 'TwoPieceBimodal'; model <- 'TwoPieceBimodal'}
   if(x$model=='LogLogistic') { process <- 'LogLogistic'; model <- 'LogLogistic'}
   if(x$model=='Gaussian_misp_Poisson') { process <- 'Poisson'; model <- 'Misspecified Gaussian Poisson '}
+  if(x$model=='Gaussian_misp_Binomial') { process <- 'Binomial'; model <- 'Misspecified Gaussian Binomial '}
   if(x$model=='Gaussian_misp_PoissonZIP') { process <- 'PoissonZIP'; model <- 'Misspecified Gaussian Poisson Inflated'}
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
   if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
