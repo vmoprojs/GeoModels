@@ -335,6 +335,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
    if(is.null(GPU)) GPU=0
    if(!onlyvar){
+    #print(param)
   ##############################.  spatial or space time ############################################
    if(!bivariate)           {
     if(length(param)==1) {
@@ -378,6 +379,9 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               hessian=FALSE, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
  if(optimizer=='multinlminb'){
+  print(comploglik2)
+  print(lower)
+  print(upper)
        CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik2,
         colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
@@ -386,6 +390,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               control = list( iter.max=100000),
                            typerunif = "sobol"#,nbclusters=4,
                      )
+       print(CompLikelihood)
   }
 
  if(optimizer=='multiNelder-Mead'){

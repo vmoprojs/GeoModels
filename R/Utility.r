@@ -728,7 +728,8 @@ CkModel <- function(model)
                          PoissonWeibull=48,poissonweibull=48,
                          BinomialLogistic=49,Binomiallogistic=49,
                          Beta2=50,
-                         Gaussian_misp_Binomial=51
+                         Gaussian_misp_Binomial=51,
+                         Gaussian_misp_BinomialNeg=52
                          )
     return(CkModel)
   }
@@ -942,8 +943,8 @@ CorrelationPar <- function(corrmodel)
 NuisParam <- function(model,bivariate=FALSE,num_betas=c(1,1),copula=NULL)
 {
   param <- NULL
- if(!bivariate&&num_betas==c(1,1)) num_betas=1 
- #if(bivariate) num_betas=c(1,1)
+ #if((!bivariate) && ((num_betas==c(1,1)))) num_betas=1 
+ if(!bivariate&all(num_betas==c(1,1))) num_betas=1
   ############################################################# 
 if(!bivariate)      {
 
@@ -951,7 +952,8 @@ if(!bivariate)      {
   else {mm='mean' 
         for(i in 1:(num_betas-1)) mm=c(mm,paste("mean",i,sep=""))}
 
-  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Gaussian_misp_Binomial', 'BinomialLogistic','Binomial2','BinomialNeg','Poisson','Gaussian_misp_Poisson',
+  if( (model %in% c('Gaussian' ,'Gauss' ,'Binomial','Gaussian_misp_Binomial', 'BinomialLogistic','Binomial2','BinomialNeg',
+          'Gaussian_misp_BinomialNeg','Poisson','Gaussian_misp_Poisson',
       'Geom','Geometric','Wrapped','PoisBin','PoisBinNeg','LogGaussian','LogGauss','Logistic')))
   {
     param <- c(mm, 'nugget', 'sill')
@@ -1198,7 +1200,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         vartype <- CkVarType(vartype)
         type <- CkType(type)
     
-     if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
+     #if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
+     if((!bivariate&&num_betas==1)||(bivariate&all(num_betas==c(1,1))))
      {
         #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
           if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)) 
@@ -1232,12 +1235,12 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }
         }
-        if(model %in% c(11,14,15,16,19,17,30,45,49,51)){
+        if(model %in% c(11,14,15,16,19,17,30,45,49,51,52)){
     
             p <- mean(unlist(data)[!is.na(unlist(data))])
             mu=0
             if(model==2||model==11||model==49||model==51) mu <- 0
-            if(model==14||model==16||model==19) mu <- 0
+            if(model==14||model==16||model==19||model==52) mu <- 0
             if(model==15) mu <- -1
             if(model==17||model==30) mu <- 1
             nuisance <- c(mu, 0, 1)
@@ -1299,7 +1302,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
             }
          }
-     if(model %in% c(2,11,14,15,16,19,17,30,49,51)) nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
+     if(model %in% c(2,11,14,15,16,19,17,30,49,51,52)) nuisance <- c(0,rep(1,num_betas-1) ,0, 1)
      #if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 1)
      if(model %in% c(45)) nuisance <- c(0,rep(1,num_betas-1) ,0,0, 0,1)
      #if(model %in% c(43,44)) nuisance <- c(0,rep(1,num_betas-1) ,0, 0,1)

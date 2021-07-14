@@ -220,20 +220,21 @@ lines(density(data2),lty=3)
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- seq(-1,1,0.08)
-y <- seq(-1,1,0.08)
+x <- runif(500, 0, 2)
+y <- runif(500, 0, 2)
+coords <- cbind(x,y)
 
 # Simulation of a bivariate spatial Gaussian RF:
 # with a separable Bivariate Matern
 set.seed(12)
-param=list(mean_1=0,mean_2=0,scale=0.12,smooth=0.5,
+param=list(mean_1=4,mean_2=2,scale=0.12,smooth=0.5,
            sill_1=1,sill_2=1,nugget_1=0,nugget_2=0,pcol=0.5)
-data <- GeoSim(x,y,grid=TRUE,corrmodel="Bi_matern_sep",
+data <- GeoSim(coordx=coords,corrmodel="Bi_matern_sep",
               param=param)$data
 par(mfrow=c(1,2))
 
-image.plot(x,y,data[,,1],col=terrain.colors(100),main="1",xlab="",ylab="")
-image.plot(x,y,data[,,2],col=terrain.colors(100),main="2",xlab="",ylab="")
+quilt.plot(coords,data[1,],col=terrain.colors(100),main="1",xlab="",ylab="")
+quilt.plot(coords,data[2,],col=terrain.colors(100),main="2",xlab="",ylab="")
 
 
 

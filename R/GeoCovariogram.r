@@ -68,6 +68,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
 ################    
 ### starting ###
 ################
+    old.par <- par(mfrow=c(1,1),mai=c(1.02 ,0.82, 0.82, 0.42),mgp=c(3, 1, 0))
     dyn=FALSE
     isvario <- !is.null(vario) # is empirical variogram is passed?
     bivariate <- fitted$bivariate
@@ -122,13 +123,16 @@ if(bivariate&&dyn) par(mfrow=c(1,2))
     tukeyh<- model ==34
     tukeyh2<- model ==40
     sas<- model ==20
-    poisson<- model==30||model==36
+    poisson<- model==30
     poissongamma<- model==46||model==47
     poissonZIP<- model==43||model==44
     loglogistic <- model==24
     tukeygh<- model==9||model==41
+    Gaussian_misp_Binomial<-model==51
+    Gaussian_misp_Poisson<-model==36
+    Gaussian_misp_BinomialNeg<-model==52
     zero <- 0;slow=1e-3;
-    if(gaussian||skewgausssian||gamma||loggauss||binomial||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||sas||twopiecebimodal||skewstudentT
+    if(gaussian||skewgausssian||gamma||loggauss||binomial||Gaussian_misp_Binomial||Gaussian_misp_BinomialNeg||Gaussian_misp_Poisson||binomialneg||binomialnegZINB||geom||tukeyh||tukeyh2||sas||twopiecebimodal||skewstudentT
             ||twopieceGauss||twopieceTukeyh||twopieceT) slow=1e-6
     else slow=1e-5 
     # lags associated to empirical variogram estimation
@@ -206,13 +210,16 @@ if(!bivariate) {
 
      nui=nuisance
      nui['sill']=1;
-if(!(binomial||geom||binomialneg||binomialnegZINB)) nui['nugget']=0
-else                                        nui['nugget']=nuisance['nugget']
+if(!(binomial||geom||binomialneg||binomialnegZINB||Gaussian_misp_Binomial||
+       Gaussian_misp_BinomialNeg||Gaussian_misp_Poisson)) nui['nugget']=0
+else                                     nui['nugget']=nuisance['nugget']
     #nui['nugget']=1-nui['sill']
   #   nui=nuisance
   #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
    #print(nui)
-
+    if(fitted$model=="Gaussian_misp_Binomial") fitted$model="Binomial"
+    if(fitted$model=="Gaussian_misp_BinomialNeg") fitted$model="BinomialNeg"
+    if(fitted$model=="Gaussian_misp_Poisson") fitted$model="Poisson"
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param,fitted$n)
 
@@ -526,7 +533,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                      }
                   }
    #                   
-   if(binary||binomial||binomial2||geom||binomialneg||binomialnegZINB) {
+   if(binary||binomial||binomial2||geom||binomialneg||binomialnegZINB||Gaussian_misp_Binomial||Gaussian_misp_BinomialNeg) {
                     if(bivariate) {}
                     if(!bivariate) {      
                             
@@ -538,11 +545,12 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                                      pg=pnorm(nuisance['pmu'])
                                      vv=fitted$n*(1-pp)*(1-pg)*(1+fitted$n*pg*(1-pp)) /pp^2
                                                }
+                           if(Gaussian_misp_Binomial||Gaussian_misp_BinomialNeg) vv=1                    
                            covariance=vv*correlation
                            variogram=vv*(1-correlation)
                            }
                    }
-     if(poisson) {
+     if(poisson||Gaussian_misp_Poisson) {
                     if(bivariate) {}
                     if(!bivariate) {   
                            correlation=(1-nuisance['nugget'])*correlation   
@@ -550,10 +558,11 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                            vv=exp(mu);
                            z=2*vv/(1-corr2)
                            cc=corr2*(1-(besselI(z,0,expon.scaled = TRUE)+besselI(z,1,expon.scaled = TRUE)))
+                           if(Gaussian_misp_Poisson) vv=1   
                            covariance=vv*cc
                            variogram=vv*(1-cc)}
                    }
-        if(poissongamma) {
+    if(poissongamma) {
                     if(bivariate) {}
                     if(!bivariate) {   
                            
@@ -842,6 +851,6 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                 if(gaussian) {result$variogram11 <- variogram11;result$variogram12 <- variogram12;result$variogram22 <- variogram22}
                 }}}
     if(!is.null(result))
-    #par(mfrow=c(1,1))
+    par(old.par)
     return(result)
   }

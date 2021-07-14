@@ -207,26 +207,27 @@ close(pb)
 
 if(spacetime)
 {
+
 coords=cbind(fit$coordx,fit$coordy)
 ns=fit$ns
 coordt=fit$coordt
 T=length(coordt)
 NT=sum(ns)
-if(is.null(X)) rep(1,NT)
+if(is.null(X)) X=rep(1,NT)
+
+NS=cumsum(ns)
+NS=c(c(0,NS)[-(length(ns)+1)],NT)
+
+
 
 if(!space_dyn){
-data=coordx_dyn=data_tot=list()
-for(k in 1:T) {
-              data[[k]]=fit$data[k,]
-              coordx_dyn[[k]]=coords
-              data_tot[[k]]=cbind(coords,rep(k,ns[k]),fit$data[k,])
-              }
+data_tot=NULL
+for(k in 1:T) 
+data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),fit$data[k,]))
+data_tot=cbind(coords,data_tot,fit$X)
 }
-env <- new.env()
-data_tot=do.call(rbind,args=c( data_tot),envir = env) 
-if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)
 
-data_tot=cbind(data_tot,X)
+print(data_tot)
 set.seed(round(seed))
 
 pb <- txtProgressBar(min = 0, max = K, style = 3)
@@ -240,11 +241,43 @@ data_to_pred=data_tot[-sel_data,]
 data_sel_ord=data_sel[order(data_sel[,3]),]
 data_to_pred_ord=data_to_pred[order(data_to_pred[,3]),]
 
-#pr=GeoKrig(data=datanew,    coordt=timenew, coordx_dyn=coordx_dyn,  #ok
- #        corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
-  #          model=fit$model, n=fit$n, #ok
-   #        param=as.list(c(fit$param,fit$fixed)), 
-    #       radius=fit$radius, sparse=sparse, time=time_to_pred, X=X,Xloc=Xloc) #ok
+
+
+DD=ncol(data_sel_ord)
+
+k=1 ; coordx_dynnew=Xnew=datanew=list()
+
+utt=unique(data_sel_ord[,3])
+for(k in 1:length(utt) ){
+ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
+coordx_dynnew[[k]]=ss[,1:2]
+datanew[[k]]=ss[,4]
+if(!is.null(X)) { Xnew[[k]]=ss[,5:DD] }
+}
+
+
+param=as.list(c(fit$param,fit$fixed))
+if(estimation) {
+          fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=coordt,
+                            corrmodel=fit$corrmodel,#X=Xnew,
+                            likelihood=fit$likelihood,grid=fit$grid,
+                            copula=fit$copula,
+                            model=model1,radius=fit$radius,n=fit$n,
+                            local=fit$local,GPU=fit$GPU,
+                            maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
+                            optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
+                            start=as.list(fit$param),fixed=as.list(fit$fixed))
+           param=as.list(c(fit_s$param,fit_s$fixed))
+
+              }
+             
+
+
+#pr=GeoKrig(data=datanew,    coordt=timenew, coordx_dyn=coordx_dynnew,  #ok
+#         corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
+#            model=fit$model, n=fit$n, #ok
+#           param=as.list(c(fit$param,fit$fixed)), 
+#        radius=fit$radius, sparse=sparse, time=time_to_pred, X=X,Xloc=Xloc) #ok
 
 err=c(data_to_pred)-c(pr$pred)  
 

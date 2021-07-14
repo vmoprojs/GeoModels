@@ -161,12 +161,9 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,
               sill=sill, nugget=nugget, scale=scale))$data
 
 # Empirical spatial semi-variogram estimation:
-fit = GeoVariogram(coordx=coords,data=data,maxdist=0.6)
+vario = GeoVariogram(coordx=coords,data=data,maxdist=0.6)
 
-# Results:
-plot(fit$centers, fit$variograms, xlab='h', ylab=expression(gamma(h)),
-     ylim=c(0, max(fit$variograms)), pch=20,
-     main="Semi-variogram")
+plot(vario,pch=20,ylim=c(0,1))
 
 
 ################################################################
@@ -191,40 +188,9 @@ data = GeoSim(coordx=coords, coordt=times, corrmodel="gneiting",
               nugget=0,power_s=1,power_t=1,sep=0.5))$data
 
 # Empirical spatio-temporal semi-variogram estimation:
-fit = GeoVariogram(data=data, coordx=coords, coordt=times, maxtime=7,maxdist=0.5)
+vario_st = GeoVariogram(data=data, coordx=coords, coordt=times, maxtime=7,maxdist=0.5)
 
-# Results: Marginal spatial empirical  semi-variogram
-par(mfrow=c(2,2), mai=c(.5,.5,.3,.3), mgp=c(1.4,.5, 0))
-plot(fit$centers, fit$variograms, xlab='h', ylab=expression(gamma(h)),
-     ylim=c(0, max(fit$variograms)), xlim=c(0, max(fit$centers)),
-     pch=20,main="Marginal spatial semi-variogram",cex.axis=.8)
-
-# Results: Marginal temporal empirical  semi-variogram
-plot(fit$bint, fit$variogramt, xlab='t', ylab=expression(gamma(t)),
-     ylim=c(0, max(fit$variogramt)),xlim=c(0,max(fit$bint)),
-     pch=20,main="Marginal temporal semi-variogram",cex.axis=.8)
-
-# Building space-time semi-variogram
-st.vario = matrix(fit$variogramst,length(fit$centers),length(fit$bint))
-st.vario = cbind(c(0,fit$variograms), rbind(fit$variogramt,st.vario))
-
-# Results: 3d Spatio-temporal semi-variogram
-require(scatterplot3d)
-st.grid = expand.grid(c(0,fit$centers),c(0,fit$bint))
-scatterplot3d(st.grid[,1], st.grid[,2], c(st.vario),
-              highlight.3d=TRUE, xlab="h",ylab="t",
-              zlab=expression(gamma(h,t)), pch=20,
-              main="Space-time semi-variogram",cex.axis=.7,
-              mar=c(2,2,2,2), mgp=c(0,0,0),
-              cex.lab=.7)
-
-# A smoothed version
-par(mai=c(.2,.2,.2,.2),mgp=c(1,.3, 0))
-persp(c(0,fit$centers), c(0,fit$bint), st.vario,
-      xlab="h", ylab="u", zlab=expression(gamma(h,u)),
-      ltheta=90, shade=0.75, ticktype="detailed", phi=30,
-      theta=30,main="Space-time semi-variogram",cex.axis=.8,
-      cex.lab=.8)
+plot(vario_st)
       
 ################################################################
 ###
@@ -250,16 +216,7 @@ data = GeoSim(coordx=coords, corrmodel="Bi_matern", param=param)$data
 # Empirical  semi-(cross)variogram estimation:
 biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=c(0.5,0.5,0.5))  
 
-# Variograms plots
-par(mfrow=c(2,2))
-plot(biv_vario$centers,biv_vario$variograms[1,],pch=20,xlab="h",ylim=c(0,1.2),
-                                      ylab="",main=expression(gamma[11](h)))
-plot(biv_vario$centers,biv_vario$variogramst,pch=20,xlab="h",
-                                      ylab="",main=expression(gamma[12](h)))
-plot(biv_vario$centers,biv_vario$variogramst,pch=20,xlab="h",ylab="",
-                                      main=expression(gamma[21](h)))
-plot(biv_vario$centers,biv_vario$variograms[2,],pch=20,xlab="h",,ylim=c(0,1.2),
-                                      ylab="",main=expression(gamma[22](h)))
+plot(biv_vario,pch=20)
       
 }
 

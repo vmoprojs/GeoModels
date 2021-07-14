@@ -819,9 +819,10 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
          p0=pnorm(mu0); pmu=pnorm(mu)
             if(!bivariate) ## space and spacetime
             { k1=c(p0);k2=c(pmu);
-              pp = n*(1-k1)/k1 + krig_weights %*% (c(dataT)-n*(1-k2)/k2) }
+              aa=n*(1-k1)/k1  
+              pp = aa + krig_weights %*% (c(dataT)-n*(1-k2)/k2) }
             else{}   #tood
-            if(mse) vvar=n*(1-k1)/k1^2   ### variance (possibly no stationary)
+            if(mse) vvar=aa/k1   ### variance (possibly no stationary)
 
           }
         if(covmatrix$model==45){    ###inflated negative binomial

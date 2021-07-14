@@ -50,11 +50,26 @@ if(model %in% c("Gaussian","SkewGaussian","Logistic",
                "TwoPieceGaussian","TwoPieceTukeyh","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
 {res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))}
 
+if(model=="Gaussian_misp_Binomial")
+{
+    aa=pnorm(c(mu))
+    hh=fit$n*aa
+    res1=(dd-hh)/sqrt(hh*(1-aa))
+}
+if(model=="Gaussian_misp_BinomialNeg")
+{
+    aa=pnorm(c(mu))
+    hh=fit$n*(1-aa)/aa
+    res1=(dd-hh)/sqrt(hh/aa)
+}
+if(model=="Gaussian_misp_Poisson")
+{
+    aa=exp(c(mu))
+    res1=(dd-aa)/sqrt(aa)
+}
 
 
-#if(binomial or binomialneg or geom or bernoulli)
-#
-#............
+
 
 fit$X=as.matrix(rep(1,length(dd)))
 
@@ -169,6 +184,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          coordy = fit$coordy,
                          coordt = fit$coordt,
                          coordx_dyn=fit$coordx_dyn,
+                         copula=fit$copula,
                          convergence = fit$convergence,
                          corrmodel = fit$corrmodel,
                          data= fit$data,
@@ -185,6 +201,9 @@ GeoFit <- list(bivariate=fit$bivariate,
                          numbetas=fit$numbetas,
                          numcoord=fit$numcoord,
                          numtime=fit$numtime,
+                         optimizer=fit$optimizer,
+                         lower=fit$lower,
+                         upper=fit$upper,
                          param = fit$param,
                          nozero = fit$setup$nozero,
                          score = fit$score,

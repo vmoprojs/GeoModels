@@ -29,11 +29,28 @@ q_e=quantile(dd,probabilities)
 q_e1=quantile(dd,probabilities1)
 #######################################
 #######################################
-if(model %in% c("Gaussian")) {
+if(model %in% c("Gaussian",
+              "Gaussian_misp_Binomial",
+              "Gaussian_misp_Poisson","Gaussian_misp_BinomialNeg")) {
   q_t=qnorm(probabilities)
   q_t1=qnorm(probabilities1)
   plot(q_t,q_e,main="Gaussian qq-plot",xlab=xlab,ylab=ylab,pch=20)
   #qqnorm(dd,main="Gaussian qq-plot",xlab=xlab,ylab=ylab)
+}
+if(model %in% c("Binomial")) {
+ q_t=qbinom(probabilities, size=fit$n, prob=pnorm(pp["mean"]))
+ q_t1=qbinom(probabilities1, size=fit$n, prob=pnorm(pp["mean"]))
+ plot(q_t,q_e,main="Binomial qq-plot",xlab=xlab,ylab=ylab,pch=20)
+}
+if(model %in% c("BinomialNeg")) {
+ q_t=qnbinom(probabilities, size=fit$n, prob=pnorm(pp["mean"])) 
+ q_t1=qnbinom(probabilities1, size=fit$n, prob=pnorm(pp["mean"]))
+ plot(q_t,q_e,main="Binomial Neg qq-plot",xlab=xlab,ylab=ylab,pch=20)
+}
+if(model %in% c("Poisson")) {
+ q_t=qpois(probabilities, lambda=exp(pp["mean"]))
+ q_t1==qpois(probabilities1, lambda=exp(pp["mean"]))
+ plot(q_t,q_e,main="Poisson qq-plot",xlab=xlab,ylab=ylab,pch=20)
 }
 #######################################
 if(model %in% c("SkewGaussian"))
@@ -233,7 +250,9 @@ plot(q_t,q_e,main="Two-Piece Tukey-h qq-plot",xlab=xlab,ylab=ylab,pch=20)
 ## code from qqline of R
 x <- q_t1
 y<-  q_e1
+
 slope <- diff(y)/diff(x);int <- y[1L] - slope * x[1L]
+
     abline(int, slope, pch=20)
 }
 

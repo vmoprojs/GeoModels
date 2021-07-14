@@ -811,7 +811,8 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
 
   if(optimizer=='L-BFGS-B'&&parallel){
-       ncores=max(1, parallel::detectCores() - 1)
+       #ncores=max(1, parallel::detectCores() - 1)
+       ncores=min(2, parallel::detectCores(logical = FALSE))
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
        parallel::setDefaultCluster(cl = cl)
