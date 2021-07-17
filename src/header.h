@@ -1298,8 +1298,8 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
       int *ns, int *NS, int *dyn);
 
 void SetGlobalVar2 (int *nsite, int *times, 
-                    double *h,int *nn, 
-                    double *u,int *tt,    
+                    double *h,int *nn,  double *maxh,
+                    double *u,int *tt,  double *maxu,  
                     int *st,int *biv);
 
 void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,

@@ -227,8 +227,12 @@ data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),fit$data[k,]))
 data_tot=cbind(coords,data_tot,fit$X)
 }
 
-print(data_tot)
+#print(head(data_tot))
 set.seed(round(seed))
+
+
+
+
 
 pb <- txtProgressBar(min = 0, max = K, style = 3)
 while(i<=K){
@@ -241,34 +245,39 @@ data_to_pred=data_tot[-sel_data,]
 data_sel_ord=data_sel[order(data_sel[,3]),]
 data_to_pred_ord=data_to_pred[order(data_to_pred[,3]),]
 
-
-
 DD=ncol(data_sel_ord)
-
 k=1 ; coordx_dynnew=Xnew=datanew=list()
 
 utt=unique(data_sel_ord[,3])
 for(k in 1:length(utt) ){
 ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
-coordx_dynnew[[k]]=ss[,1:2]
-datanew[[k]]=ss[,4]
-if(!is.null(X)) { Xnew[[k]]=ss[,5:DD] }
-}
+print(ss)
+print("gg")
+datanew[[k]]=as.vector((ss[,4]))
+coordx_dynnew[[k]]=as.matrix(ss[,1:2])
 
+#if(!is.null(X)) { 
+Xnew[[k]]=as.vector(ss[,5:DD])
+#}
+}
+if(is.vector(Xnew[[1]])) Xnew=NULL
 
 param=as.list(c(fit$param,fit$fixed))
 if(estimation) {
-          fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=coordt,
-                            corrmodel=fit$corrmodel,#X=Xnew,
-                            likelihood=fit$likelihood,grid=fit$grid,
+
+          fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
+                            corrmodel=fit$corrmodel,X=Xnew,
+                            likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
                             copula=fit$copula,
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
-                            optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
+                           # optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
+        print(as.list(fit_s$param))
+        print(fit_s)
            param=as.list(c(fit_s$param,fit_s$fixed))
-
+     #print("hhghgh")
               }
              
 

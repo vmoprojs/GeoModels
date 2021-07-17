@@ -1061,8 +1061,8 @@ void DeleteGlobalVar()
 
 /*#######################################################################*/
 void SetGlobalVar2 (int *nsite, int *times, 
-                    double *h,int *nn, 
-                    double *u,int *tt,    
+                    double *h,int *nn, double  *maxh,
+                    double *u,int *tt,  double *maxu,   
                     int *st,int *biv)
 {
 
@@ -1074,8 +1074,12 @@ void SetGlobalVar2 (int *nsite, int *times,
   ntime=(int *) Calloc(1,int);//number of times
   ntime[0]=*times;
 
+  maxdist=(double *) Calloc(1,double);
+  maxdist[0]=*maxh;
 
-  
+   maxtime=(double *) Calloc(1,double);
+  maxtime[0]=*maxu;
+
   npairs=(int *) Calloc(1,int);  // number of pairs involved
   npairs[0]=nn[0];
     
@@ -1108,6 +1112,8 @@ void DeleteGlobalVar2()
   //Free(ncoordx);Free(ncoordy); 
   Free(ncoord);  Free(ntime);
   Free(npairs);
+  Free(maxdist);
+  Free(maxtime);
   //Free(type);Free(REARTH);
   //Free(tapsep);
   //if(isbiv[0])for(i=0;i<ntime[0];i++)  Free(dista[i]);

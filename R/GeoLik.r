@@ -591,13 +591,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-
         nuggets=as.numeric(nuisance['nugget'])+1e-6
-       # print(nuggets)
         data=c(data-X%*%mm)
-        #print(data)
         ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
-        #print(ppar)
         loglik_u=GPvecchia::vecchia_likelihood(data,vecchia.approx,
                          covparms=ppar,nuggets=nuggets,covmodel ="matern")
         return(-loglik_u)
@@ -640,6 +636,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
 #################################################################################################################################
 #################################################################################################################################
     ### START the main code of the function:
+
     spacetime_dyn=FALSE; NS=0;fname=NULL
     if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
     if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
@@ -654,7 +651,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     else{
     if(!bivariate) num_betas=ncol(X)  
     if( bivariate) num_betas=c(ncol(X),ncol(X)) }
-    
+     
     corrmat<-"CorrelationMat"# set the type of correlation matrix     
     if(model==36) corrmat<-"CorrelationMat_dis"# set the type of correlation matrix 
     if(spacetime)  { corrmat<-"CorrelationMat_st_dyn"
@@ -672,8 +669,13 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     if(bivariate)  dd=dimat
     numpairstot <- dimat*(dimat-1)/2+dd
     const<-dimat*log(2*pi)# set the likelihood constant
-    corr<-double(numpairstot)# initialize the correlation
-    ident <- diag(dimat)# set the identity matrix
+
+     if(is.null(neighb))
+     {
+     corr<-double(numpairstot)# initialize the correlation
+     ident <- diag(dimat)# set the identity matrix}
+     }
+
  #########################################################################  
  ######################################################################### 
 if(model==1){  ## gaussian case
@@ -786,6 +788,7 @@ if(!onlyvar){   # performing optimization
     if(!is.null(neighb)) { 
             locs=cbind(coordx,coordy)
             vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
+            
             Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
                              control = list( iter.max=100000),dimat=dimat,
                          lower=lower,upper=upper, hessian=hessian,

@@ -83,13 +83,7 @@ spacetime_index=function(coords,N,K,tiempos,T,maxtime,distance,radius)
     if(bivariate) coordt=c(0,1)
     if(!is.null(coordt))
     if(is.numeric(coordt)&&is.numeric(maxtime)) if(length(coordt)>1&&length(maxtime)>=1)  spacetime=TRUE
-#checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, FALSE,
-#                             'None', 1, 1, model,NULL, 'Nelder-Mead', NULL,
-#                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL,NULL)
-#if(!is.null(checkinput$error))
-#stop(checkinput$error)
-
-distance=CheckDistance(distance)
+    distance=CheckDistance(distance)
 
 K=neighb
 ##

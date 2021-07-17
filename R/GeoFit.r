@@ -85,7 +85,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
 
    #updating starting parameters
-  
+
    #print(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')

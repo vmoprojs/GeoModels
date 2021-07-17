@@ -1542,8 +1542,11 @@ if(!spacetime&&!bivariate)   #  spatial case
              gb$rowidx=sol$rowidx ;
              gb$numpairs=n
   ## loading space distances in memory 
+  mmm=1;ttt=1
+if(weighted)  mmm=max(sol$lags)
+
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
-    as.double(sol$lags),as.integer(nn),
+    as.double(sol$lags),as.integer(nn),as.double(mmm),as.double(ttt),
     as.double(sol$lagt),as.integer(nn),
     as.integer(spacetime),as.integer(bivariate)) 
 } #### end spatial case 
@@ -1557,11 +1560,16 @@ if(spacetime)   #  space time  case
              gb$rowidx=sol$rowidx ;
              gb$numpairs=n
   nn=length(gb$colidx)
-  ## loading space time distances in memory           
+  ## loading space time distances in memory   
+
+  mmm=1;ttt=1
+if(weighted) { mmm=max(sol$lags) ;ttt=max(sol$lagt)}
+
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
-    as.double(sol$lags),as.integer(nn),
-    as.double(sol$lagt),as.integer(nn),
+    as.double(sol$lags),as.integer(nn),as.double(mmm),
+    as.double(sol$lagt),as.integer(nn),as.double(ttt),
     as.integer(spacetime),as.integer(bivariate)) 
+  #print(ss)
     ## number  of selected pairs
 } #### end spacetime case
 ############################################## 
@@ -1573,7 +1581,10 @@ if(spacetime)   #  space time  case
     isinit <- 1
     nozero <- numpairs/(numcoord*numtime)^2
     idx <- 0;ja  <- 0
-}
+}  # end neighboord case
+
+
+
 #####
 if(is.null(coordt)) coordt=1
     ### Returned list of objects:

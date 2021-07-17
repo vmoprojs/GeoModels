@@ -4696,7 +4696,9 @@ if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2);}
                 
 if(type_cop==2) 
 {
-    double nu=nuis[2];
+    double nu=2;
+    if(model==50) nu=nuis[6];   // for beta2 regression
+   // Rprintf("%f %f %f %f %f %f \n",nuis[0],nuis[1],nuis[3],nuis[4],nuis[5],nuis[6]);
     dens= log(biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2);
 }
 
