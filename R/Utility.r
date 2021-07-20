@@ -1434,7 +1434,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 tapering<-1
                  #print(numcoord); print(numtime)
                  nt=numcoord*numtime
-                 print(nt)
+                 #print(nt)
                 idx<-integer(nt^2)
                 ja<-integer(nt^2)
                 ia<-integer(nt+1)
@@ -1478,8 +1478,9 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
   
 
 if(is.null(neighb)){
-
+#print(spacetime);print(isdyn);print(ns);print(NS)
 #ptm <- proc.time()
+
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6
@@ -1555,16 +1556,19 @@ if(spacetime)   #  space time  case
 { 
   K=neighb
   x=cbind(coordx, coordy)
-  sol=GeoNeighIndex(coordx=x[1:numcoord,],coordt=coordt,distance=distance1,neighb=K,maxtime=maxtime,radius=radius)
+
+
+  sol=GeoNeighIndex(coordx=x[1:numcoord,],coordx_dyn=coordx_dyn,coordt=coordt,distance=distance1,
+                 neighb=K,maxtime=maxtime,radius=radius)
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              gb$numpairs=n
   nn=length(gb$colidx)
+
   ## loading space time distances in memory   
 
   mmm=1;ttt=1
 if(weighted) { mmm=max(sol$lags) ;ttt=max(sol$lagt)}
-
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),
     as.double(sol$lagt),as.integer(nn),as.double(ttt),

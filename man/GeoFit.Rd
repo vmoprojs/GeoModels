@@ -767,7 +767,7 @@ start<-list(mean=mean,scale_s=scale_s,scale_t=scale_t,sill=sill)
 
 # Maximum composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,coordt=time,
-                    corrmodel="Exp_Exp",maxtime=1,neighb=3,
+                    corrmodel="Exp_Exp",maxtime=1,maxdist=0.2,
                     likelihood="Marginal",type="Pairwise",
                     optimizer="BFGS" , start=start,fixed=fixed)
 print(fit)

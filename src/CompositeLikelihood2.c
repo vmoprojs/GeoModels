@@ -1104,7 +1104,9 @@ void Comp_Pair_Gauss_st2mem(int *cormod, double *data1,double *data2,int *NN,
 
 
     for(i=0;i<npairs[0];i++){
+           //Rprintf("%f %f %d %f %f \n",lags[i],lagt[i],npairs[0],data1[i],data2[i]);
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+             
              corr=CorFct(cormod,lags[i], lagt[i],par,0,0);
              bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);
                           if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);

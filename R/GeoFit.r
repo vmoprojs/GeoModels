@@ -85,7 +85,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
 
    #updating starting parameters
-
+   #print(paste("starting ",optimizer," optimization...")
    #print(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')
@@ -141,6 +141,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     # Delete the global variables:
     if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     if(is.numeric(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
+    #if(!is.null(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
     if(is.null(copula)) copula="None"
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,

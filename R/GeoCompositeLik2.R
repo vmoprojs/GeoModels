@@ -25,8 +25,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
         res=double(1)
-      # print(other_nuis)
-       # print(fan)
+  
        # result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
@@ -330,6 +329,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
    data1=data[colidx]; data2=data[rowidx]
   
+  #print(colidx)
+  #print(rowidx)
 
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}

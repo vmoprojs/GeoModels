@@ -16,21 +16,15 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   if(is.null(neighb)&&is.null(maxdist))     stop("maxdist (maxtime) or neighb must  be specified")
   if(is.numeric(maxdist)&&is.numeric(neighb))   stop("maxdist (maxtime) or neighb must  be specified")
  
-   spacetime=FALSE
-  corrmodel="Exponential"
-  
-  if(!is.null(coordt)) {spacetime=TRUE;corrmodel="Exp_Exp"}
+  spacetime=FALSE
+  if(!is.null(coordt)) {spacetime=TRUE}
   if(spacetime) if(!is.vector(time))  stop("time parameter is missing")
- # checkinput = CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
- #                            NULL, grid, 'Marginal', maxdist, maxtime, 'Gaussian', 1,
- #                             'Nelder-Mead', NULL, radius, NULL, NULL, NULL, 
- #                         'Pairwise', FALSE, 'SubSamp', FALSE, X)
- # if(!is.null(checkinput$error)) stop(checkinput$error)
+
   dyn=FALSE
   if(!is.null(coordx_dyn))  dyn=TRUE  
 ## handling spatial coordinates
     if(is.null(coordy)) coords=as.matrix(coordx)
-    else{
+    else{ ## case cooordx coordy
     if(grid) coords=as.matrix(expand.grid(coordx,coordy))
     else     coords=cbind(coordx,coordy)  
     }
@@ -42,7 +36,7 @@ colnames(loc)=NULL;colnames(coords)=NULL;
 space=!spacetime&&!bivariate 
 ##################################################################
 
-  if(distance=="Geod"||distance=="Chor")
+  if(distance=="Geod"||distance=="Chor")     ## projection
 {
    coords_p=coords; loc_p=loc
    prj=mapproj::mapproject(coords_p[,1], coords_p[,2], projection="sinusoidal") 
