@@ -610,7 +610,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert the parameters as a list\n'
             return(list(error=error))}
         biv<-CheckBiv(CkCorrModel(corrmodel))
-       # print(length(param))
+ 
        #print(length(c(unique(c(NuisParam("Gaussian",biv,num_betas),NuisParam(model,biv,num_betas))),CorrelationPar(CkCorrModel(corrmodel)))))
              if(length(param)!=length(c(unique(c(NuisParam("Gaussian",biv,num_betas,NULL),
                     NuisParam(model,biv,num_betas,copula))),
@@ -1313,7 +1313,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
        if(!is.null(copula))if(copula=="Clayton") nuisance=c(nuisance,2)
         # Update the parameter vector     
-        #print(nuisance);print(namesnuis) 
+
         names(nuisance) <- namesnuis
         namesparam <- sort(c(namescorr, namesnuis))
         param <- c(nuisance, paramcorr)
@@ -1350,7 +1350,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                          if(any(namesstart == paste("mean",i,sep="")))  {namesstart <- names(start) ; 
                          if(any(model==c(1,10,12,18,20,9,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)))
                                                  start <- start[!namesstart == paste("mean",i,sep="")]}}
-                        #print(start)
+                
 
                 }
                 if(bivariate) {          
@@ -1415,7 +1415,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     # END code for the fitting procedure
     # START code for the simulation procedure
     if(fcall=="Simulation"){
-
+        neighb=NULL;likelihood=2
         namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas,copula))))
         param <- unlist(param)
         numparam <- length(param)
@@ -1432,9 +1432,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
         if((typereal=="Tapering"&&type=="Tapering")||(typereal=="Tapering1"&&type=="Tapering1")||(typereal=="Tapering2"&&type=="Tapering2")){
                 tapering<-1
-                 #print(numcoord); print(numtime)
                  nt=numcoord*numtime
-                 #print(nt)
                 idx<-integer(nt^2)
                 ja<-integer(nt^2)
                 ia<-integer(nt+1)
@@ -1449,15 +1447,22 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     srange <- double(1)
     trange <- double(1)
 
+#################
+distC=FALSE
+    if(!tapering)
+ { if(is.null(neighb)&is.numeric(maxdist)) distC=TRUE  }### just for maxdist parameter
+################
+
+
     if(is.null(maxdist)) srange<-c(srange,double(1)) else {srange<-c(srange,as.double(maxdist))}                # cutoff<-TRUE
     if(is.null(maxtime)) trange<-c(trange,double(1)) else {trange<-c(trange,as.double(maxtime))}                # cutoff<-TRUE
     isinit <- as.integer(1)
     if(is.null(tapsep))  tapsep=c(0.5,0.5)
     else  {if(length(tapsep)==1) tapsep=c(tapsep,0)}
-    mem=FALSE
 
+     mem=FALSE
     if(tapering||memdist)  { mem=TRUE }   #### NB
- 
+
     if(mem&&!tapering)  
       {        
 
@@ -1467,19 +1472,28 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                     colidx=rowidx=integer(nn*(nn-1)/2)}
       }
     if(bivariate) {
-      if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
-      if(is.na(srange[3])) srange[3]=srange[2];
-                  if(is.na(srange[4])) srange[4]=srange[2];}
-
+    if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
+    if(is.na(srange[3])) srange[3]=srange[2];
+    if(is.na(srange[4])) srange[4]=srange[2];}
+    
+    ###
     if(CheckSph(corrmodel))   radius=1
+    ###
+
     aa=double(5);for(i in 1:length(tapsep)) aa[i]=tapsep[i];tapsep=aa
  
 
-  
 
-if(is.null(neighb)){
-#print(spacetime);print(isdyn);print(ns);print(NS)
-#ptm <- proc.time()
+if(fcall=="Fitting"&likelihood==2&!is.null(neighb)) mem=FALSE # Vecchia gp case
+##############################################################
+## loading distances in memory using brute force C routine ###
+#############################################################
+### aca paso solo para  simular o maximum likelihood o (variograma)
+### o si hay solo maxdist!!!
+if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
+
+
+if(mem==TRUE&!is.null(coordx_dyn))   {vv=length(NS); numcoord=NS[vv]+ns[vv]; numtime=1;} # number of space time point in the case of coordxdyn
 
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
@@ -1501,47 +1515,57 @@ gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
              "w", "w",#2
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-  #print(proc.time() - ptm)
 
 
 rm(colidx);rm(rowidx)
 if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
 ## number  of selected pairs
-
 numpairs <- gb$numpairs
-#print(numpairs)
 ## indexes for composite 
     colidx=gb$colidx
     rowidx=gb$rowidx
-    #colidx <- colidx[1:numpairs]
-    #rowidx  <- rowidx[1:numpairs]
+    colidx <- colidx[1:numpairs]
+    rowidx  <- rowidx[1:numpairs]
 ## indexes for tapering 
     idx <- gb$idx
-    ja <- gb$ja
+    ja <- gb$ja 
     ia <- gb$ia;
     isinit <- gb$isinit
     nozero <- numpairs/(numcoord*numtime)^2
     idx <- idx[1:numpairs]
     ja  <- ja[1:numpairs]
 }
-else   ######## case  with neighboord!!!
+
+#######################################################################
+else   
+###############################################################
+################### loading distances in memory using RANN package 
+#### it works when CL and neighb is numeric or neighb, maxdist is numeric
+#############################################################
 { 
 
   ########################## 
-if(distance==0) distance1="Eucl";if(distance==2) distance1="Geod";if(distance==1) distance1="Chor";
+if(distance==0) distance1="Eucl";
+if(distance==2) distance1="Geod";
+if(distance==1) distance1="Chor";
+
+if(all(neighb==0.5)) neighb=NULL ## ojo!!
+if(maxdist==Inf) maxdist=NULL
 
 if(!spacetime&&!bivariate)   #  spatial case
 {
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
-  sol=GeoNeighIndex(coordx=x,distance=distance1,neighb=K)
+
+  sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
   nn = length(sol$lags)
   sol$lagt=0
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
-             gb$numpairs=n
+             gb$numpairs=nn
+   
   ## loading space distances in memory 
   mmm=1;ttt=1
 if(weighted)  mmm=max(sol$lags)
@@ -1549,44 +1573,63 @@ if(weighted)  mmm=max(sol$lags)
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),as.double(ttt),
     as.double(sol$lagt),as.integer(nn),
-    as.integer(spacetime),as.integer(bivariate)) 
-} #### end spatial case 
+    as.integer(spacetime),as.integer(bivariate),as.integer(1),as.integer(1)) 
+} 
 ##############################################   
 if(spacetime)   #  space time  case
 { 
   K=neighb
   x=cbind(coordx, coordy)
-
-
-  sol=GeoNeighIndex(coordx=x[1:numcoord,],coordx_dyn=coordx_dyn,coordt=coordt,distance=distance1,
-                 neighb=K,maxtime=maxtime,radius=radius)
+  sol=GeoNeighIndex(coordx=x[1:numcoord,],
+    coordx_dyn=coordx_dyn,
+    coordt=coordt,distance=distance1,maxdist=maxdist,neighb=K,maxtime=maxtime,radius=radius)
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
-             gb$numpairs=n
-  nn=length(gb$colidx)
-
+             nn=length(gb$colidx)
+             gb$numpairs=nn
   ## loading space time distances in memory   
 
   mmm=1;ttt=1
 if(weighted) { mmm=max(sol$lags) ;ttt=max(sol$lagt)}
+
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),
     as.double(sol$lagt),as.integer(nn),as.double(ttt),
-    as.integer(spacetime),as.integer(bivariate)) 
-  #print(ss)
-    ## number  of selected pairs
-} #### end spacetime case
-############################################## 
+    as.integer(spacetime),as.integer(bivariate),as.integer(1),as.integer(1)) 
+} 
+##############################################  
+if(bivariate)   # bivariate case 
+{ 
+  K=neighb
+  x=cbind(coordx, coordy)
+  sol=GeoNeighIndex(coordx=x, coordx_dyn=coordx_dyn, distance=distance1,maxdist=maxdist,neighb=K,maxtime=maxtime,radius=radius,bivariate=TRUE)
+  gb=list(); gb$colidx=sol$colidx;
+             gb$rowidx=sol$rowidx ;
+             #gb$first=sol$first
+             #gb$second=sol$second
+             nn=length(gb$colidx)
+             gb$numpairs=nn
+## loading space time distances in memory   
+  mmm=1
+if(weighted) { mmm=max(sol$lags) }
+
+  ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(2),  
+    as.double(sol$lags),as.integer(nn),as.double(mmm),
+    as.double(1),as.integer(nn),as.double(1),
+    as.integer(spacetime),as.integer(bivariate),as.integer(sol$first),as.integer(sol$second)) 
+
+} #### end bivariate case
+
     numpairs <- gb$numpairs
-## indexes for composite 
     colidx=gb$rowidx 
     rowidx=gb$colidx
     idx <- 0;ja <- 0;ia <- 0
     isinit <- 1
     nozero <- numpairs/(numcoord*numtime)^2
     idx <- 0;ja  <- 0
-}  # end neighboord case
-
+}  
+############################################## 
+# end neighboord case
 
 
 #####

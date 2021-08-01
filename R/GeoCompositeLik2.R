@@ -25,8 +25,9 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
         res=double(1)
-  
-       # result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
+      # print(other_nuis)
+       # print(fan)
+        #result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
        #             as.double(other_nuis),
@@ -326,12 +327,15 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
      if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
 ###### selectin data with indexes from composite likelihood
-   if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}
-   data1=data[colidx]; data2=data[rowidx]
-  
-  #print(colidx)
-  #print(rowidx)
-
+   if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}  #updating if #using "my distances from C" 
+   data1=data[colidx]; data2=data[rowidx]                  ##using "RANN distances" 
+  #aux = data.frame(x=colidx,y = rowidx)
+  #rownames(aux) = 1:nrow(aux)
+ # print(aux[order(aux$x),])
+   #print(dim(aux))
+  # print(table(duplicated(aux)))
+  ## aux1 = data.frame(y = aux$y,x = aux$x)
+   #print(table(duplicated(aux1)))
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
    if(is.null(GPU)) GPU=0

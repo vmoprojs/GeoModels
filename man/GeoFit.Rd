@@ -103,7 +103,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
       of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
        The names of the list must be the same of the names in the   \code{start} list.}  
   \item{varest}{Logical; if \code{TRUE} the estimates' variances and
-    standard errors are returned.
+    standard errors are returned. For composite likelihood estimation it is deprecated.
+    Use sensitivity TRUE and update the object using the function \code{GeoVarestbootstrap}
     \code{FALSE} is the default.}
   \item{vartype}{String; (\code{SubSamp} the default) the type of
     method used for computing
@@ -300,10 +301,9 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   For Gaussian and non Gaussian  RFs and composite  likelihood estimation, standard errors estimate are computed as square root of the diagonal elements of the
   Godambe Information matrix. (asymptotic covariance matrix of the estimates under increasing domain  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
 
-  In the composite likelihood case the option  \code{varest=TRUE} allows to compute std errors using sub-sampling tecnique. 
-  This type of approximation works well for large datasets. A more robust
-  method to compute std error estimation is trough parametric bootstrap
-  using the function \code{GeoVarestbootstrap}.
+  For standard error estimation use the option \code{sensitivity=TRUE} and then update the object with the function \code{GeoVarestbootstrap}.
+  The option  \code{varest=TRUE}  is deprecated and the comments below should not be considered.
+  The \code{varest=TRUE} option allows std error estimation trough a sub-sampling procedure.
   In the  the sub-sampling procedure,\code{winconst}
    and \code{winstp} parameters represent respectively a positive constant used to
   determine the sub-window size and the the step with which the
@@ -674,7 +674,7 @@ fixed=list(power2=power2,nugget=nugget)
 start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 # Maximum pairwise likelihood:
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    maxdist=0.05,likelihood="Marginal",type="Pairwise",
+                    neighb=3,likelihood="Marginal",type="Pairwise",
                    optimizer="BFGS" , start=start,fixed=fixed)
 print(fit1$param)
 # Maximum likelihood:
@@ -719,7 +719,7 @@ data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="BinomialNeg", n=5,X=X,
               param=param)$data
 # Maximum pairwise likelihood:
 fit2 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel, n=5,X=X, start=start,
-              maxdist=0.05, model="BinomialNeg", fixed=fixed, optimizer="BFGS")
+              neighb=3, model="BinomialNeg", fixed=fixed, optimizer="BFGS")
                 
 
 print(fit2)
@@ -767,7 +767,7 @@ start<-list(mean=mean,scale_s=scale_s,scale_t=scale_t,sill=sill)
 
 # Maximum composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,coordt=time,
-                    corrmodel="Exp_Exp",maxtime=1,maxdist=0.2,
+                    corrmodel="Exp_Exp",maxtime=1,neighb=3,
                     likelihood="Marginal",type="Pairwise",
                     optimizer="BFGS" , start=start,fixed=fixed)
 print(fit)
@@ -842,7 +842,7 @@ start=list(mean_1=0,mean_2=0,sill_1=var(data[1,]),sill_2=var(data[2,]),
 fitcl<- GeoFit(data=data, coordx=coords, corrmodel="Bi_Matern_sep",
                      likelihood="Marginal",type="Pairwise",
                      optimizer="BFGS" , start=start,fixed=fixed,
-                     maxdist=c(0.05,0.05,0.05))
+                     neighb=c(4,4,4))
 print(fitcl)
 
 I=Inf

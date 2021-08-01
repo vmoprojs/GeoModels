@@ -547,7 +547,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
         rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         break;
-     case 20://  Whittle-Matern correlation function
+     case 20://  smoke correlation function
       scale=par[0];
       smooth=par[1];
       rho=CorFunSmoke(h, scale, smooth);
@@ -1724,7 +1724,7 @@ double CorFunSmoke(double lag, double scale, double smooth)
 {
 //Rprintf( "%f %f\n",lag,REARTH[0]);
   double rho=0.0,a=0.0,kk1=0.0,iscale=0.0;
-  lag=lag/REARTH[0];
+  lag=lag/1;//REARTH[0];
   iscale=1/(scale);
 a=0.5+smooth;
   // Computes the correlation:
@@ -1734,17 +1734,6 @@ a=0.5+smooth;
   kk1=(lgammafn(iscale+a)+lgammafn(iscale+smooth))-(lgammafn(2/scale+a)+lgammafn(smooth));
   rho=exp(kk1)*  pow(1-cos(lag),smooth)*hypergeo(1/scale+a,1/scale+smooth,2/scale+a,cos(lag));
     }
-
- /*   double *param;
-    param=(double *) Calloc(3,double);
-    kk1=(lgammafn(iscale+a)+lgammafn(iscale+smooth))-(lgammafn(2/scale+a)+lgammafn(smooth));
-    param[0]= iscale;  // a
-    param[1]= iscale+0.5; //b
-    param[2]= 2/scale+a;  //c
-    kk2=lgammafn(param[2])-(lgammafn(param[1])+lgammafn(param[2]-param[1]));
-    res=HyperG_integral(cos(lag), param);
-    Free(param);
-    rho=res*exp(kk1+kk2);}*/
   return(rho);
 }
 
@@ -2001,13 +1990,16 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 {
   int i=0,j=0,h=0;// check the paramaters range:
   double dd=0.0;
+
      for(i=0;i<(ncoord[0]-1);i++){
 	    for(j=(i+1);j<ncoord[0];j++){
 
         dd=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+//Rprintf("here %f %d %f  \n", *REARTH, *cormod,dd);
     rho[h]=CorFct(cormod,dd,0,par,0,0);
        h++;
     }}
+
   return;
 }
 
@@ -3735,8 +3727,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
            rho[t]=(p11*dd +  (N[0]*N[0]*(1-p1)*(1-p2)/(p1*p2)) * (p11-(1-p)*(1-p)))/
            (sqrt(N[0]*(1-p1)*(1-p)*(1+N[0]*p*(1-p1))*pow(p1,-2))*
             sqrt(N[0]*(1-p2)*(1-p)*(1+N[0]*p*(1-p2))*pow(p2,-2)));
-      }
-      }
+      }}
       /***************************************/
       t++;}
   return;

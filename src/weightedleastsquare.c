@@ -57,6 +57,33 @@ void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coo
   return;
 }
 /***********************************************************************************************************************************/
+// binned spatial variogram:
+void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2, 
+    double *vdist, int *lbins, double *moms, int *nbins,double *mm)
+{
+  int h=0,  k=0;
+  double x,y,step=0.0;
+  //Set the binnes step:
+  //if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
+  step=(mm[1]-mm[0])/(*nbins-1);
+  bins[0]= mm[0];
+  //define bins:
+  for(h=1;h<*nbins;h++)
+    bins[h]=bins[h-1]+step;
+  //Computes the binned moments:
+  for(k=0;k<*np;k++){
+  
+      if(vdist[k]<=*maxdist){
+  for(h=0;h<(*nbins-1);h++)
+    if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
+            x=data1[k];   y=data2[k];
+            if(!(ISNAN(x)||ISNAN(y)))
+              moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
+            }}
+        k=k+1;
+          }
+  return;
+}
 /***********************************************************************************************************************************/
 
 
@@ -363,106 +390,10 @@ int h=0, i=0, j=0;
                  }}}}}
         }
                }}}
-
-/*
-  for(t=0;t<ntime[0];t++){
- for(v=t;v<ntime[0];v++){
-   if(t==v){  // computes the marginal spatial variograms:
-            for(i=0;i<ns[t];i++){
-          for(j=i+1;j<ns[v];j++){
-                  //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-    lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-        if(lags<=dista[t][v]) {
-    for(h=0;h<(*nbins-1);h++)     {
-      if((bins[h]<=lags) && (lags<bins[h+1])){
-               x=data[(i+NS[t])];
-               y=data[(j+NS[v])];
-              if(!(ISNAN(x)||ISNAN(y))){
-                  marg_moms[h+t*(*nbins-1)]+=0.5*pow(x-y,2);
-                  marg_lbins[h+t*(*nbins-1)]+=1;
-                  
-              }}}
-            }}}}
-   else{// computes the   cross  variogram:
-             for(i=0;i<ns[t];i++){
-          for(j=i+1;j<ns[v];j++){
-             //lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-        if(lags<=dista[t][v]) {
-
-    for(h=0;h<(*nbins-1);h++){
-        if((bins[h]<=lags) && (lags<bins[h+1])){
-                x=data[(i+NS[t])];y=data[(j+NS[v])];
-                a=data[(i+NS[v])];b=data[(j+NS[t])];
-                 if(!(ISNAN(x)||ISNAN(y)||ISNAN(a)||ISNAN(b))){
-                     cross_moms[h+(v-t-1)*(*nbins-1)]+=0.5*(x-y)*(a-b);
-                     cross_lbins[h+(v-t-1)*(*nbins-1)]+=1;
-                 }}}}}}}
-  }}*/
   return;
 }
 
-/*
-
-void Binned_Variogram_biv2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *cross_lbins, double *cross_moms, int *nbins,
-                          int *marg_lbins, double *marg_moms)
-{
-int h=0, i=0, j=0;
-  int t=0, v=0;
-  double x,y,a,b,lags=0.0,step=0.0,*mm,md;
-    //Set the binnes step:
-  //Set the binnes step:
-
-  mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH);
-  md=fmax(dista[0][1],fmax(dista[1][1],dista[0][0])); // we consider the max of the ditances and we build bins on [0,mm]
-  if(md<mm[1]) mm[1]=md;
-  step=mm[1]/(*nbins-1);
-  bins[0]=0;
-  for(h=1;h<*nbins;h++)
-    bins[h]=bins[h-1]+step;
-  //computes the empirical variogram:
-
-   for(t=0;t<*ntime;t++){
-   for(v=t;v<*ntime;v++){
-   if(t==v){  // computes the marginal spatial variograms:
-      for(i=0;i<(ncoord[0]-1);i++){
-      for(j=i+1;j<ncoord[0];j++){
-                  lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-	      if(lags<=dista[t][v]) {
-
-
-		for(h=0;h<(*nbins-1);h++)     {
-		  if((bins[h]<=lags) && (lags<bins[h+1])){
-              x=data[(t+*ntime*i)] ; y=data[(t+*ntime*j)];
-              if(!(ISNAN(x)||ISNAN(y))){
-                  marg_moms[h+t*(*nbins-1)]+=0.5*pow(x-y,2);
-                  marg_lbins[h+t*(*nbins-1)]+=1;
-                  
-              }}}
-
-
-            }}}}
-   else{// computes the   cross  variogram:
-	      for(i=0;i<ncoord[0];i++){
-           for(j=i;j<ncoord[0];j++){
-             lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-	      if(lags<=dista[t][v]) {
-		for(h=0;h<(*nbins-1);h++){
-		    if((bins[h]<=lags) && (lags<bins[h+1])){
-                x=data[(t+*ntime*i)];y=data[(t+*ntime*j)];
-                a=data[(v+*ntime*i)];b=data[(v+*ntime*j)];
-                 if(!(ISNAN(x)||ISNAN(y)||ISNAN(a)||ISNAN(b))){
-                     cross_moms[h+(v-t-1)*(*nbins-1)]+=0.5*(x-y)*(a-b);
-                     cross_lbins[h+(v-t-1)*(*nbins-1)]+=1;
-                 }}}}}}}
-  }}
-  return;
-}
-*/
 /***********************************************************************************************************************************/
-
-
 // variogram cloud:
 void Cloud_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins)
 {

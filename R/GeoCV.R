@@ -252,6 +252,7 @@ utt=unique(data_sel_ord[,3])
 for(k in 1:length(utt) ){
 ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
 print(ss)
+print("gg")
 datanew[[k]]=as.vector((ss[,4]))
 coordx_dynnew[[k]]=as.matrix(ss[,1:2])
 

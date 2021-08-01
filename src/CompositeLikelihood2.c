@@ -1104,9 +1104,7 @@ void Comp_Pair_Gauss_st2mem(int *cormod, double *data1,double *data2,int *NN,
 
 
     for(i=0;i<npairs[0];i++){
-           //Rprintf("%f %f %d %f %f \n",lags[i],lagt[i],npairs[0],data1[i],data2[i]);
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-             
              corr=CorFct(cormod,lags[i], lagt[i],par,0,0);
              bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);
                           if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
@@ -2153,11 +2151,12 @@ void Comp_Pair_Gauss_biv2mem(int *cormod, double *data1,double *data2,int *NN,
     double *nuis, int *GPU,int *local)
 {
     int i=0;
-    double u=0.0, w=0.0, dens=0.0,weights=1.0;
+    double  dens=0.0,weights=1.0;
     if(  par[0]<0|| par[1]<0|| par[2]<0|| par[3]<0) {*res=LOW;  return;}
 
  for(i=0;i<npairs[0];i++){
-  if(!ISNAN(u)&&!ISNAN(w) ){
+       // Rprintf("%f %f %f %d %d  \n",lags[i],data1[i],data2[i],first[i],second[i]);
+  if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
           dens=log_biv2gauss(cormod,lags[i],par, data1[i]-mean1[i], data2[i]-mean2[i],first[i], second[i]);
           *res+= dens*weights;
                                 }}

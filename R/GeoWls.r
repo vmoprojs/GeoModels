@@ -466,10 +466,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
                       hessian=FALSE)
     ###### ---------- END model fitting by weighted least squares method ----------######
     ### Removes the global variobales:
-   # print("fffff")
-    # .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    if(is.numeric(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)   
+     .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)  
     ### Set the output:
     GeoWLS <- list(bins=bins,
                          bint=bint,

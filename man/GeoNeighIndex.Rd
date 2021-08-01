@@ -6,7 +6,7 @@
   The function return  the spatial or spatiotemporal  near neighbour indices for a given neighbour  and temporal distance. 
 }
 \usage{
-GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",neighb=5,maxtime=1,radius=6371,bivariate=FALSE)
+GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",neighb=4,maxdist=NULL,maxtime=1,radius=6371,bivariate=FALSE)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -27,6 +27,7 @@ GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",nei
     \bold{Details} of \code{\link{GeoFit}}.}
 \item{neighb}{Numeric; an optional (vector of) positive integer indicating the 
     order of neighborhood. See the Section \bold{Details} for more information.}
+ \item{maxdist}{A numeric value denoting the spatial  distance \bold{Details}.}
    \item{maxtime}{A numeric value denoting the temporal distance \bold{Details}.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere when 
   using the great circle distance. Default value is the radius of the earth in Km (i.e. 6371)} 
@@ -36,7 +37,7 @@ GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",nei
 }
 
 \details{
- The function return the  spatial or spatiotemporal indices of the pairs tha are neighboord of a certain order
+ The function return the  spatial or spatiotemporal indices of the pairs tha are neighboord of a certain order or with a certain fixed distance
 }
 
 
@@ -56,28 +57,25 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 
 
 \examples{
-library(GeoModels)
 
-################################################################
-###############################################################
-set.seed(514)
 
 require(GeoModels)
-NN = 800
+NN = 400
 coords = cbind(runif(NN),runif(NN))
 scale=0.5/3
 param = list(mean=0,sill=1,nugget=0,scale=0.5/3,smooth=0.5)
 corrmodel = "Matern"; 
 
 param = list(mean=0,sill=1,nugget=0,scale=scale,smooth=0.5)
+set.seed(951)
 data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = "Gaussian",param = param)$data
 
-sel=GeoNeighIndex(coordx=coords,neighb=10)        
+sel=GeoNeighIndex(coordx=coords,maxdist=0.05)        
 
 data1=data[sel$colidx]; data2=data[sel$rowidx]
 ## plotting pairs  that are neighboord of order 5
-plot(data1,data2,xlab="",ylab="",main="h-scatterplot, neighb=10")
+plot(data1,data2,xlab="",ylab="",main="h-scatterplot, dist=0.05")
 
 }
 \keyword{Scatterplot}

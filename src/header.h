@@ -238,6 +238,7 @@ double igam_series(double, double);
 double igamc_series(double, double);
 double asymptotic_series(double, double, int);
 void igam_call(double *a,double *x,double *res);
+
 void corr_kuma_vec(double *rho,double *eta,double *gam,double *res, int *n);
 double igam(double a, double x);
 double igamc(double a, double x);
@@ -440,6 +441,7 @@ double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
 double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
+double appellF4(double a,double b,double c,double d,double x,double y);
 double biv_PoissonGamma(double corr,int r, int t, double mean_i, double mean_j, double a);
 double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2);
 double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget1,double nugget2,double mup);
@@ -1300,7 +1302,7 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
 void SetGlobalVar2 (int *nsite, int *times, 
                     double *h,int *nn,  double *maxh,
                     double *u,int *tt,  double *maxu,  
-                    int *st,int *biv);
+                    int *st,int *biv,int *one, int *two);
 
 void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
         int *ismal,int *ja,int *colidx,int *rowidx ,double thres);
@@ -1323,9 +1325,13 @@ End
 
 
 
+
+
 double hyp2f1_neg_c_equal_bc(double a, double b, double x);
 double hyp2f1ra(double a, double b, double c, double x,double *loss);
 double lgam(double x);
+double biv_unif_CopulaGauss(double dat1,double dat2,double rho);
+double biv_unif_CopulaClayton(double dat1,double dat2,double rho,double nu);
 double lgam_sgn(double x, int *sign);
 double hyt2f1( double a, double b, double c, double x, double *loss );
 double hys2f1( double a,double b,double c,double x,double *loss );
@@ -1343,6 +1349,9 @@ double hyp2f0(double a, double b, double x, int type, double *err);
 double hyperg(double a, double b, double x);
 void hyperg_call(double *a,double *b,double *x,double *res);
 void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res);
+void appellF4_call(double *a,double *b,double *c,double *d,double *x,double *y, double *res);
+void biv_unif_CopulaClayton_call(double *x,double *y,double *rho, double *nu, double *res);
+void biv_unif_CopulaGauss_call(double *x,double *y,double *rho, double *res);
 // END hyperg.c
 
 

@@ -2380,6 +2380,7 @@ void biv_binomneg_call(int *NN,int *u, int *v, double *p01, double *p10,double *
 
 
 
+
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11)
 {
 double dens=0.0;
@@ -3336,23 +3337,37 @@ double biv_T(double rho,double zi,double zj,double nuu,double nugget)
   }
   return(RR);
 }
+
 /*********** Appell F4 function ********/
+
+
+
+void appellF4_call(double *a,double *b,double *c,double *d,double *x,double *y, double *res)
+{
+    *res = appellF4(*a,*b,*c,*d,*x,*y);
+}
+
+
+
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
 double RR=0.0,bb=0.0;int k=0;
-  while( k<=5000 )
+  while( k<=4000 )
     {
     bb=exp(k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
                +(c-(a+k)-(b+k))*log1p(-x)+log(hypergeo(c-a-k,c-b-k,c,x))); //euler
               // +log(hypergeo(a+k,b+k,c,x));
-    if((fabs(bb)<1e-10||!R_FINITE(bb))  ) {break;}
+    if((fabs(bb)<1e-40||!R_FINITE(bb))  ) {break;}
         RR=RR+bb;
         k++;
     }
     if(!R_finite(RR)) RR=1e-320;
 return(RR);
 }
+
+
+
 
 double appellF42211(double x,double y)
 {
@@ -4507,7 +4522,6 @@ else
     double mm=mean_kuma(eta,gam);
     double vv=var_kuma(eta,gam);
     corr=(res_K-R_pow(mm,2))/vv;
-    return(corr);
   }
 /******/
 if (eta!=1.0&&gam==1.0){
@@ -4534,7 +4548,6 @@ if (eta!=1.0&&gam==1.0){
     double mm=mean_kuma(eta,gam);
     double vv=var_kuma(eta,gam);
     corr=(res_K-R_pow(mm,2))/vv;
-    return(corr);
   }
   
  
@@ -4571,9 +4584,11 @@ if (eta!=1.0&&gam==1.0){
     double mm=mean_kuma(eta,gam);
     double vv=var_kuma(eta,gam);
     corr=(res_K-R_pow(mm,2))/vv;
-    return(corr);
+  
   }
+    return(corr);
  }
+ 
 }
 
   /*********************/
@@ -4584,23 +4599,42 @@ for(i=0;i<=*n;i++)  res[i]=corr_kuma(rho[i],eta[0],gam[0]);
 }
 
  /*********************/
+
+void biv_unif_CopulaGauss_call(double *x,double *y,double *rho, double *res)
+{
+    *res = biv_unif_CopulaGauss(*x,*y,*rho);
+}
 double biv_unif_CopulaGauss(double dat1,double dat2,double rho)
 {
 double a1=qnorm(dat1,0,1,1,0);
 double a2=qnorm(dat2,0,1,1,0);
 double g1=dnorm(a1,0,1,0); 
 double g2=dnorm(a2,0,1,0); 
-double res=biv_Norm(rho,a1,a2,0,0,1,1,0)/(g1*g2);
+double res;
+if(fabs(rho)<1e-10) {res=1;}
+else{
+res=biv_Norm(rho,a1,a2,0,0,1,1,0)/(g1*g2);
+}
 return(res);
 }
  /*********************/
 
+
+void biv_unif_CopulaClayton_call(double *x,double *y,double *rho, double *nu, double *res)
+{
+    *res = biv_unif_CopulaClayton(*x,*y,*rho,*nu);
+}
+
 double biv_unif_CopulaClayton(double dat1,double dat2,double rho,double nu)
 {
+double res;
 double nu2=nu/2;
 double rho2=rho*rho;
- double res=R_pow(1-rho2,nu2+1) *
+if(fabs(rho)<1e-10) {res=1;}
+else{
+  res=R_pow(1-rho2,nu2+1) *
       appellF4(nu2+1, nu/2+1, nu2, 1, rho2*R_pow(dat1*dat2,1/nu2),rho2*(1-R_pow(dat1,1/nu2))*(1-R_pow(dat2,1/nu2)));
+}
 return(res);
 }
 
@@ -4676,13 +4710,10 @@ switch(model) // Correlation functions are in alphabetical order
    case 42:  // kuma regression
       mu1=1/(1+exp(-mu1));
       mu2=1/(1+exp(-mu2));
-      s1=log(1-R_pow(  mu1    ,nuis[2]))/log(0.5) ;
-      s2=log(1-R_pow(  mu2    ,nuis[2]))/log(0.5) ;
-      //Rprintf("%f %f %f \n",nuis[2],nuis[4],nuis[3]);
       b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
       b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
-
-
+      s1=log(1-R_pow(  mu1    ,nuis[2]))/log(0.5) ;
+      s2=log(1-R_pow(  mu2    ,nuis[2]))/log(0.5) ;
       a1= cdf_kuma(b1, nuis[2],1/s1 );
       a2= cdf_kuma(b2, nuis[2],1/s2 );
       g1= pdf_kuma(b1, nuis[2],1/s1 )/(nuis[4]-nuis[3]);
@@ -4697,12 +4728,12 @@ if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2);}
 if(type_cop==2) 
 {
     double nu=2;
-    if(model==50) nu=nuis[6];   // for beta2 regression
+    if(model==50||model==42) nu=nuis[6];   // for beta2 regression
    // Rprintf("%f %f %f %f %f %f \n",nuis[0],nuis[1],nuis[3],nuis[4],nuis[5],nuis[6]);
     dens= log(biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2);
 }
-
-if(cond)  dens=2*dens-(log(g1)+log(g2));
+//Rprintf("%d %d\n", type_cop,cond);
+if(cond)  {dens=2*dens-(log(g1)+log(g2));}
 
 return(dens);
 }

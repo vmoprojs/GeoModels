@@ -287,7 +287,7 @@ fixed=list(nugget=nugget,smooth=0.5,sill=1)
 start=list(mean=0,scale=scale)
 # Maximum pairwise likelihood fitting :
 fit = GeoFit(data, coordx=coords, corrmodel="Matern",model=model,n=n,
-                    likelihood='Marginal', type='Pairwise',maxdist=0.03,
+                    likelihood='Marginal', type='Pairwise',neighb=4,
                     optimizer="BFGS", start=start,fixed=fixed)
                     
 # locations to predict
@@ -347,9 +347,9 @@ fixed=list(nugget=nugget,power2=power2,smooth=smooth,sill=sill)
 start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 
 ## estimation with pairwise likelihood
-maxdist=0.05
+
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
-              maxdist=maxdist,likelihood="Marginal",type="Pairwise",
+              neighb=4,likelihood="Marginal",type="Pairwise",
               start=start,fixed=fixed, model = model)
 ## computing residuals              
 res=GeoResiduals(fit2)
@@ -407,7 +407,7 @@ upper=list(mean=I, scale=I,sill=I)
 lower=list(mean=-I, scale=0,sill=0)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
-             maxdist=0.04,likelihood="Marginal",type="Pairwise",
+             neighb=4,likelihood="Marginal",type="Pairwise",
              lower=lower,upper=upper,
              optimizer="nlminb", start=start,fixed=fixed, model = model)
                     
@@ -457,7 +457,7 @@ lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
 upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
 fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel, 
              likelihood='Marginal', type='Pairwise',start=start,fixed=fixed,
-             optimizer="nlminb", maxdist=0.1,maxtime=1)
+             optimizer="nlminb", neighb=4,maxtime=1)
 
 ################################################################
 ###
@@ -520,7 +520,7 @@ start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
 
 # Maximum Composite likelihood fitting of the random field:
 fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
-        likelihood="Marginal",type="Pairwise",maxdist=0.1,
+        likelihood="Marginal",type="Pairwise",neighb=4,
         optimizer="BFGS", start=start,fixed=fixed)
 
 

@@ -5,7 +5,7 @@
 ### Procedures are in alphabetical order.
 
 GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
-                       grid=FALSE, maxdist=NULL,neighb=NULL, maxtime=NULL, numbins=NULL,
+                       grid=FALSE, maxdist=NULL,neighb=NULL, maxtime=NULL, memdist=FALSE,numbins=NULL,
                        radius=6371, type='variogram',bivariate=FALSE)
   {
     call <- match.call()
@@ -199,21 +199,25 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
   #***********************************************************************************************#
   #***********************************************************************************************#
     if(!initparam$bivariate&&!initparam$spacetime){  ## spatial univariate case
+    if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
+
+     if(!memdist)  { 
      fname <- paste(fname,"2",sep="") 
-      if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
      # Computes the spatial moments
       EV=.C(fname, bins=bins,  as.double(coordx),as.double(coordy),as.double(coordt),as.double(data), 
         lenbins=lenbins, moments=moments, as.integer(numbins),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+       }
+      else {
+       fname="Binned_Variogram2new"
+         idx=GeoNeighIndex(cbind(coordx,coordy),distance = distance, neighb = neighb, maxdist = maxdist,radius=radius)
+         mm=c(min(idx$lags),max(idx$lags))
+         print(mm)
+         EV=.C(fname, bins=bins,  as.integer(length(idx$lags)),as.double(data[idx$colidx]),
+                as.double(data[idx$rowidx]), as.double(idx$lags),
+        lenbins=lenbins, moments=moments, as.integer(numbins),as.double(mm),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+       }
 
-    #   EV=dotCall64::.C64(fname, 
-    #                 SIGNATURE = c("double","double","double","double","double",
-    #                            "integer","double","integer"),
-    #          bins=bins, coordx,coordy,coordt,data, 
-    #    lenbins=lenbins, moments=moments, numbins,
-    #             INTENT = c("w","r","r","r","r",
-    #                        "w","w","r"), 
-    #                NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
-
+   
        bins=EV$bins
        lenbins=EV$lenbins
        moments=EV$moments
@@ -227,7 +231,8 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
       lenbins <- lenbins[indbin]
       variograms <- moments/lenbins}
     # Start --- compute the extremal coefficient
-    .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    if(!memdist).C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    else .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     #dotCall64::.C64('DeleteGlobalVar', SIGNATURE =c(),NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
     GeoVariogram <- list(bins=bins,
                        bint=bint,

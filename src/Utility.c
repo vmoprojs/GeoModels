@@ -159,7 +159,6 @@ double Dist_geodesic(double loni, double lati, double lonj, double latj,double r
   if(val<= -1)  {val2=M_PI*radius;return(val2);}
   if(val>=1)    {val2=0;return(val2);}
   val2 = acos(val)*radius; 
-  //Rprintf("%f %f \n",val2,radius);
   return(val2);
 }
 
@@ -334,13 +333,16 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
   int i=0,cc=0,j=0,h,k=0,t=0,v=0;
   double dij=0.0,dtv=0.0;
 
-/////*************************************************************////////////
+
   if (*istap) {// start tapering case
+
   double *thre,*c_supp;
   c_supp=(double *) R_alloc(2, sizeof(double));   // vector of compact support in space time tapering
   thre=(double *)   R_alloc(2, sizeof(double));
   thre[0]=thres[1];thre[1]=thret[1];
+  
   h=0;
+
  if(isst[0]){  // space time case
         ia[0] = 1;
         for(t=0;t<*ntime;t++){
@@ -363,9 +365,10 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
                 k=k+1;}}
    }   // end space time case
 }    // end tapering case
-/////*************************************************************////////////
+
   else {   // no tapering
   h=0;
+        
   for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
@@ -383,8 +386,7 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
          for(j=0;j<ns[v];j++){
            dij=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
                           if(dij<=thres[1] && dtv<=thret[1]){
-                            tlags[h]=dij;
-                            tlagt[h]=dtv;
+                            tlags[h]=dij;tlagt[h]=dtv;
                            colidx[h]=i+NS[t];  rowidx[h]=j+NS[v];  
                            h++; 
                              }}}}}}    
@@ -396,6 +398,7 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
     for(i=0;i<*npairs;i++)  
         {lags[i]=tlags[i];lagt[i]=tlagt[i];  }
     // Free(tlags); Free(tlagt);   
+
   return;
 }
 
@@ -810,15 +813,8 @@ void SetSampling_biv(double *coordx, double *coordy, double *data, int n, int *n
     return;
 }
 
-
-
 // Set the global variables for the spatial and spatial-temporal fitting:
-/*
-void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int64_t *ia,
-      int64_t *idx,int64_t *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
-      int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
-      int *tap,int *tapmodel,int *tp,int *weighted, int64_t *colidx,int64_t *rowidx, 
-      int *ns, int *NS, int *dyn)*/
+
 void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
 		  int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
 		  int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
@@ -992,13 +988,9 @@ else { //spatio temporal case or bivariate case
            if(tapsep[0]==1) tapsep[0]=0.99999999;
        }  // end tapering
 else {  // distance for composite likelihood
-              
-               if(isst[0]||isbiv[0]){
-                 int i=0,ssq=0;
-                 for(i=0;i<ntime[0];i++) ssq=ssq+ns[i];
-                 npairs[0]=(int)(ssq * (ssq-1) * 0.5);
-               //Rprintf("%d %d\n",npairs[0],ssq);
-                }
+            
+               if(isst[0])  npairs[0]=(int)(qq * (qq-1) * 0.5);
+               if(isbiv[0]) npairs[0]=(int)(qq * (qq-1) * 0.5);
 
                tlags= (double *) Calloc(*npairs,double *);
               if(tlags==NULL) {*ismal=0; return;}
@@ -1063,7 +1055,7 @@ void DeleteGlobalVar()
 void SetGlobalVar2 (int *nsite, int *times, 
                     double *h,int *nn, double  *maxh,
                     double *u,int *tt,  double *maxu,   
-                    int *st,int *biv)
+                    int *st,int *biv,int *one,int *two)
 {
 
 
@@ -1088,20 +1080,34 @@ void SetGlobalVar2 (int *nsite, int *times,
     isst=(int *) Calloc(1,int);//is a spatio-temporal random field?
     isst[0]=st[0]; 
 
+
+
     if(!isst[0]&&!isbiv[0]) {  /// spatial case
         lags=(double *) Calloc(*npairs,double);
         for (i=0;i<*npairs;i++) lags[i]=h[i];
     }
+
+
     if(isst[0]) {  /// spatio teemporal case
         lags=(double *) Calloc(*npairs,double);
         lagt=(double *) Calloc(*npairs,double);
-        for (i=0;i<*npairs;i++) {lags[i]=h[i];
-                                 lagt[i]=u[i];
-                              //Rprintf("%f %f\n",lags[i],lagt[i]);
-                          }
+        for (i=0;i<*npairs;i++) {lags[i]=h[i];lagt[i]=u[i];}
     }
-      if(isbiv[0]) {  /// spatial bivariate  case
-                              }
+  
+
+  if(isbiv[0]) {  /// spatial bivariate  case
+        lags=(double *) Calloc(*npairs,double);   
+        first=(int *) Calloc(*npairs,int);
+        second=(int *) Calloc(*npairs,int);
+
+         for (i=0;i<*npairs;i++) {
+            lags[i]=h[i];
+            first[i]=one[i];
+            second[i]=two[i];
+
+        }          
+
+      }
       return;
 }
 /*#######################################################################*/
@@ -1122,8 +1128,9 @@ void DeleteGlobalVar2()
   //if(isbiv[0])for(i=0;i<ntime[0];i++)  Free(dista[i]);
   //Free(dista);
 
-  Free(lags);if(isst[0]) {Free(lagt);}
-           //if(isbiv[0])   {Free(first);Free(second);}
+  Free(lags);
+  if(isst[0]) {Free(lagt);}
+  if(isbiv[0]){Free(first);Free(second);}
 
   Free(isbiv); //Free(istap);
   Free(isst);//Free(ismem);

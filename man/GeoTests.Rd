@@ -208,48 +208,48 @@ GeoTests(fitH1, fitH0 , statistic='Wilks')
 ### Testing significance of a regression parameter 
 ###
 ###############################################################
-set.seed(31)
-# Define the spatial-coordinates of the points:
-N=1500
-x = runif(N, 0, 1)
-y = runif(N, 0, 1)
-X=cbind(rep(1,N),runif(N))
-coords=cbind(x,y)
+#set.seed(31)
+#N=500
+#x = runif(N, 0, 1)
+#y = runif(N, 0, 1)
+#X=cbind(rep(1,N),runif(N))
+#coords=cbind(x,y)
 
 # Set the model's parameters:
-corrmodel = "Exp"
-mean = 1;  mean1=0.3 ## H0: mean1=0
-sill = 1
-nugget = 0
-scale = 0.15/3
+#corrmodel = "Exp"
+#mean = 1;  mean1=0.3 ## H0: mean1=0
+#sill = 1
+#nugget = 0
+#scale = 0.15/3
 
-model="Gaussian"
+#model="Gaussian"
 
 # Simulation of the spatial Gaussian random field:
-data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,
-      param=list(mean=mean,mean1=mean1,sill=sill,
-                   nugget=nugget,scale=scale),X=X)$data
+#data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,
+#      param=list(mean=mean,mean1=mean1,sill=sill,
+#                   nugget=nugget,scale=scale),X=X)$data
 
 # Pairwise-likelihood fitting of the random field, full model:
-start=list(mean=mean,mean1=mean1,scale=scale,sill=sill)
-fixed=list(nugget=nugget)
-fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
-                    varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start,X=X)
+#start=list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+#fixed=list(nugget=nugget)
+#fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
+#                    sensitivity=TRUE,likelihood="Marginal",type="Pairwise",
+#                    fixed=fixed,start=start,X=X)
+## updating object computing std err estimation using parametric bootstrap
+#fitH1=GeoVarestbootstrap(fitH1,K=100) 
 
 # Pairwise-likelihood fitting of the random field, with a nested model:
-start=list(mean=mean,scale=scale,sill=sill)
-fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
-fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
-                    varest=TRUE,likelihood="Marginal",type="Pairwise",
-                    fixed=fixed,start=start,X=X)
-
+#start=list(mean=mean,scale=scale,sill=sill)
+#fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
+#fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
+#                    sensitivity=TRUE,likelihood="Marginal",type="Pairwise",
+#                    fixed=fixed,start=start,X=X)
+## updating object computing std err estimation using parametric bootstrap
+#fitH0=GeoVarestbootstrap(fitH0,K=100) 
 
 # Hypothesis testing results:
 # composite  Wald statistic test:
-GeoTests(fitH1, fitH0 ,statistic='Wald')
-# composite likelihood ratio statistic test with PSS adjustment:
-GeoTests(fitH1, fitH0, statistic='WilksPSS')
+#GeoTests(fitH1, fitH0 ,statistic='Wald')
 
 
 }

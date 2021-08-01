@@ -7,10 +7,8 @@
   random fields. 
 }
 \usage{
-GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALSE,
-           distance='Eucl', grid=FALSE, maxdist=NULL,neighb=NULL,
-           maxtime=NULL, numbins=NULL, radius=6371,  
-           type='variogram',bivariate=FALSE)
+GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
+              grid=FALSE, maxdist=NULL,neighb=NULL, maxtime=NULL, memdist=FALSE,numbins=NULL, radius=6371, type='variogram',bivariate=FALSE)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{n \times d}{n x d})-matrix
@@ -44,6 +42,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, cloud=FALS
     non-equispaced spatial sites.}
   \item{maxdist}{A numeric value denoting the spatial maximum distance,
    see the Section \bold{Details}.}
+       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the variogram computation. If \code{TRUE} then the RANN package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
    \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood  in the composite likelihood
     computation. See the Section \bold{Details} for more information.}
@@ -163,7 +162,7 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel, param=list(mean=mean,
 # Empirical spatial semi-variogram estimation:
 vario = GeoVariogram(coordx=coords,data=data,maxdist=0.6)
 
-plot(vario,pch=20,ylim=c(0,1))
+plot(vario,pch=20,ylim=c(0,1),ylab="Semivariogram",xlab="Distance")
 
 
 ################################################################

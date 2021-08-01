@@ -16,7 +16,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
     #CMdl<-CkCorrModel(corrmodel)
     #Stime <- CheckST(CMdl)  
-    memdist=TRUE
+    #memdist=TRUE
     if(!is.null(copula))
      { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
     ### Check the parameters given in input:
@@ -31,7 +31,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     if(!is.null(X)) X=as.matrix(X)
     if(is.numeric(neighb)) {
             neighb=round(neighb)
-            if(neighb<1)  stop("neighb must be an integer >=1")
+            if(all(neighb<1))  stop("neighb must be an integer >=1")
           }
     
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
@@ -85,7 +85,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
 
    #updating starting parameters
-   #print(paste("starting ",optimizer," optimization...")
+
    #print(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')
@@ -100,7 +100,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
     # Composite likelihood:
     if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2'){
-  
+    
     if(!memdist)
           fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
@@ -139,9 +139,13 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     dimat <- initparam$numcoord*numtime#
     if(is.null(dim(initparam$X)))  initparam$X=as.matrix(rep(1,dimat))
     # Delete the global variables:
-    if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    if(is.numeric(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
-    #if(!is.null(neighb)) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) 
+
+    #if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    #if(is.numeric(neighb))                 
+     if(memdist) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+     else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
     if(is.null(copula)) copula="None"
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
@@ -178,6 +182,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          maxdist =maxdist,
                          maxtime = maxtime,
                          neighb=neighb,
+                         numpairs=initparam$numpairs,
                          missp=missp,
                          radius = radius,
                          spacetime = initparam$spacetime,

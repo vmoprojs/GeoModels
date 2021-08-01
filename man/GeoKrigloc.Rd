@@ -259,7 +259,7 @@ start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
       pcol=cor(data[1,],data[2,]))
 # Maximum Composite likelihood fitting of the random field:
 fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
-        likelihood="Marginal",type="Pairwise",maxdist=0.1,
+        likelihood="Marginal",type="Pairwise",neighb=c(3,3,3),
         optimizer="BFGS", start=start,fixed=fixed)
 
 neigh=GeoNeighborhood(data, coordx=coords,bivariate=TRUE,

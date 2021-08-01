@@ -114,7 +114,7 @@ fixed=list(nugget=nugget,smooth=smooth)
 # Maximum composite-likelihood fitting of the Gaussian random field:
 fit = GeoFit(data=data,coordx=coords, corrmodel=corrmodel,model=model,
             likelihood="Marginal",type='Pairwise',start=start,
-            optimizer="BFGS", fixed=fixed,maxdist=0.05)
+            optimizer="BFGS", fixed=fixed,neighb=4)
 
 # Empirical estimation of the variogram:
 vario = GeoVariogram(data=data,coordx=coords,maxdist=0.5)
@@ -153,7 +153,7 @@ fixed=list(nugget=nugget)
 # Maximum composite-likelihood fitting of the BinomGaussian random field:
 fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
              likelihood="Marginal",type='Pairwise',start=start,n=n,
-             optimizer="BFGS", fixed=fixed,maxdist=0.03)
+             optimizer="BFGS", fixed=fixed,neighb=4)
 
 # Empirical estimation of the variogram:
 vario = GeoVariogram(data,coordx=coords,maxdist=0.5)
@@ -195,7 +195,7 @@ fixed=list(nugget=nugget,sill=sill,power2=power2)
 # Maximum composite-likelihood fitting of the BinomGaussian random field:
 fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
              likelihood="Marginal",type='Pairwise',start=start,
-             optimizer="BFGS", fixed=fixed,maxdist=0.03)
+             optimizer="BFGS", fixed=fixed,neighb=4)
 
 # Empirical estimation of the variogram:
 vario = GeoVariogram(data,coordx=coords,maxdist=0.5)
@@ -227,7 +227,7 @@ fixed=list(nugget=0, mean=0)
 start=list(scale_s=0.2, scale_t=0.5, sill=1)
 # Maximum composite-likelihood fitting of the space-time Gaussian random field:
 fit = GeoFit(data, coordx=coords, coordt=time, corrmodel="Exp_Exp", maxtime=2,
-             maxdist=0.1, likelihood="Marginal", type="Pairwise", 
+             neighb=4, likelihood="Marginal", type="Pairwise", 
              optimizer="BFGS",fixed=fixed, start=start)
 
 # Empirical estimation of spatio-temporal covariance:
@@ -272,7 +272,7 @@ param=list(mean_1=0,mean_2=0,scale_1=scale_1,scale_2=scale_2,scale_12=scale_12,
 data = GeoSim(coordx=coords, corrmodel="Bi_Matern", param=param)$data
 
 # Empirical bivariate variogram estimation:
-biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=c(1,1,1)) 
+biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=c(0.5,0.5,0.5)) 
 
 # selecting fixed and estimating parameters
 fixed=list(mean_1=0,mean_2=0,nugget_1=0,nugget_2=0,
@@ -284,7 +284,7 @@ start=list(sill_1=var(data[1,]),sill_2=var(data[2,]),
 # Maximum likelihood fitting of the bivariate random field:
 fit= GeoFit(data, coordx=coords, corrmodel="Bi_Matern",likelihood="Marginal",
             optimizer="BFGS", type="Pairwise",
-            start=start,fixed=fixed,maxdist=c(0.1,0.1,0.1))
+            start=start,fixed=fixed,neighb=c(3,3,3))
             
 GeoCovariogram(fit, vario=biv_vario,show.vario=TRUE,pch=20)
 
