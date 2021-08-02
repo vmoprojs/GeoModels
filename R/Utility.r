@@ -1485,6 +1485,8 @@ distC=FALSE
 
 
 if(fcall=="Fitting"&likelihood==2&!is.null(neighb)) mem=FALSE # Vecchia gp case
+if(fcall=="Fitting"&likelihood==2||fcall=="Simulation") mem=FALSE 
+if(tapering) mem=TRUE
 ##############################################################
 ## loading distances in memory using brute force C routine ###
 #############################################################
@@ -1492,8 +1494,7 @@ if(fcall=="Fitting"&likelihood==2&!is.null(neighb)) mem=FALSE # Vecchia gp case
 ### o si hay solo maxdist!!!
 if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
-
-if(mem==TRUE&!is.null(coordx_dyn))   {vv=length(NS); numcoord=NS[vv]+ns[vv]; numtime=1;} # number of space time point in the case of coordxdyn
+if(mem==TRUE&(spacetime||bivariate)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
 
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7

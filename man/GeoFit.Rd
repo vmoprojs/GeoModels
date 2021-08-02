@@ -126,13 +126,10 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
 }
 
 \details{
-  Note, that the standard likelihood may be seen as particular case of the
-  composite likelihood. In this respect \code{GeoFit} provides standard maximum likelihood
-  fitting for Gaussian models. 
+  \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
   For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs are considered. Specifically marginal and conditional  pairwise 
   likelihood is considered for each type of random field (Gaussian and not Gaussian).
   The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
-
 
   Depending on the dimension of \code{data} and on  the name of the correlation model, 
   the observations   are assumed as a realization of
@@ -223,8 +220,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
     \item \code{Kumaraswamy} for a  Kumaraswamy  RF,\code{Kumaraswamy2} using median parametrization.
     }
 
-  For  a given \code{model} the associated parameters are given by nuisance and covariance parameters. In order to obtain the nuisance parameter associated to a specific 
-  model use \code{\link{NuisParam}}. 
+  For  a given \code{model} the associated parameters are given by nuisance and covariance parameters. In order to obtain the nuisance parameter associated to a specific model use \code{\link{NuisParam}}. 
   In order to obtain the covariance parameter associated to a given covariance model use 
   \code{\link{CorrParam}}.
 
@@ -281,7 +277,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   one based on neighboords and one based on distances.
    
   In the first  case  binary weights are set to 1 and 0 otherwise
-  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' distance  in based on  the package RANN that  provides
+  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  the package RANN that  provides
   fast nearest neighbour search.
 
   In the second case, the \code{maxdist} parameter set the maximum
@@ -289,8 +285,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   Pairs with distance less than \code{maxdist} have weight 1
   and are included in the likelihood computation, instead those with
   greater distance have weight 0 and then excluded.
-  This weighting scheme is ineffecient for large-data since to find the 'useful'
-  distance all possible distances must be computed.
+  This weighting scheme is less ineffecient for large data.
   The same arguments of \code{maxdist} are valid for \code{maxtime} but
   here the weigthed composite-likelihood regards the case of
   spatial-temporal field.
@@ -301,7 +296,8 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   For Gaussian and non Gaussian  RFs and composite  likelihood estimation, standard errors estimate are computed as square root of the diagonal elements of the
   Godambe Information matrix. (asymptotic covariance matrix of the estimates under increasing domain  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
 
-  For standard error estimation use the option \code{sensitivity=TRUE} and then update the object with the function \code{GeoVarestbootstrap}.
+  For standard error estimation  of composite likelihood estimatin
+  use the option \code{sensitivity=TRUE} and then update the object with the function \code{GeoVarestbootstrap}.
   The option  \code{varest=TRUE}  is deprecated and the comments below should not be considered.
   The \code{varest=TRUE} option allows std error estimation trough a sub-sampling procedure.
   In the  the sub-sampling procedure,\code{winconst}
@@ -845,19 +841,6 @@ fitcl<- GeoFit(data=data, coordx=coords, corrmodel="Bi_Matern_sep",
                      neighb=c(4,4,4))
 print(fitcl)
 
-I=Inf
-lower=list(mean_1=-I,mean_2=-I,sill_1=0,sill_2=0,
-           scale=0,pcol=-1)
-upper=list(mean_1=I,mean_2=I,sill_1=I,sill_2=I,
-           scale=I,pcol=1)
-# Maximum likelihood :
-require(optimParallel)
-fitml<- GeoFit(data=data, coordx=coords, likelihood="Full",
-               corrmodel="Bi_Matern_sep", type="Standard",
-               upper=upper,lower=lower,optimizer="L-BFGS-B", 
-               parallel=TRUE,
-               start=start,fixed=fixed)
-print(fitml)
 
 }
 \keyword{Composite}

@@ -262,7 +262,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   else { biv <- 'univariate'}                       
     cat('\n##################################################################')
     cat('\nMaximum', missp, method, 'Fitting of', process, 'Random Fields\n')
-    cat('\nCopula:', x$copula,'\n')
+    if(x$copula!="None"){cat('\nCopula:', x$copula,'\n')}
     cat('\nSetting:', x$likelihood, method, '\n')
     cat('\nModel:', model, '\n')
     cat('\nType of the likelihood objects:', x$type, x$method,'\n')

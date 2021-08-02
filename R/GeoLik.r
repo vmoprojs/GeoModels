@@ -717,53 +717,53 @@ if(model==1){  ## gaussian case
  }
  ############################################################################
 ############################################################################
-hessian=TRUE
+hessian=FALSE
  if(model==20){   ## SAS case
      lname <- 'loglik_sh'
     if(bivariate)  {lname <- 'loglik_biv_sh'}
-    #hessian=TRUE
+
 }
  
  if(model==34){   ## Tukeyh case
      lname <- 'loglik_tukeyh'
     if(bivariate)  {lname <- 'loglik_biv_tukeyh'}
-    #hessian=TRUE
+
 }
 
  if(model==40){   ## Tukey2h case
      lname <- 'loglik_tukey2h'
     if(bivariate)  {lname <- 'loglik_biv_tukey2h'}
-    #hessian=TRUE
+   
 }
 
 
  if(model==35){   ## gaussian misspecified t
      lname <- 'loglik_miss_T'
     if(bivariate)  {lname <- 'loglik_biv_miss_T'}
-    #hessian=TRUE
+
 }
 
  if(model==36){   ## Poisson misspecified t
      lname <- 'loglik_miss_Pois'
     if(bivariate)  {lname <- 'loglik_biv_miss_Pois'}
-    #hessian=TRUE
+
 }
 
 
  if(model==37){   ## gaussian misspecified skewt
      lname <- 'loglik_miss_skewT'
     if(bivariate)  {lname <- 'loglik_biv_miss_skewT'}
-    #hessian=TRUE
+
 }
 
 
  if(model==22){   ## loggaussian  case
      lname <- 'loglik_loggauss'
     if(bivariate)  {lname <- 'loglik_biv_loggauss'}
-   # hessian=TRUE
+
 }
 
-if(varest) hessian=FALSE
+#if(varest) hessian=FALSE
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
 
@@ -984,9 +984,9 @@ if(optimizer=='L-BFGS-B'&&!parallel)
 
 if(varest) 
   {
-     aa=try(abs(det(Likelihood$hessian)),silent=T)
-   if(aa<1e-08||is.null(Likelihood$hessian)||min(eigen(Likelihood$hessian)$values)<0)
-  {  
+ #    aa=try(abs(det(Likelihood$hessian)),silent=T)
+ #  if(aa<1e-08||is.null(Likelihood$hessian)||min(eigen(Likelihood$hessian)$values)<0)
+ # {  
 
 Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
             coordt=coordt,corr=corr,corrmat=corrmat,
@@ -1001,7 +1001,7 @@ rownames(Likelihood$hessian)=namesparam
 colnames(Likelihood$hessian)=namesparam
 names(Likelihood$score)=namesparam
 }
-  }
+#}
 
 
    if(Likelihood$convergence == 'Successful' || Likelihood$convergence =='None')

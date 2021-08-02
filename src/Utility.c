@@ -921,7 +921,8 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
 
            // settting compact support
             if(srange[1]) maxdist[0]=srange[1];
-            else maxdist[0]=-LOW;   
+            else maxdist[0]=-LOW;  
+
           if(istap[0])  // tapering case
             {
               *npairs=(int)( (*ncoord)  * (*ncoord));
@@ -936,14 +937,21 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
             tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
             } // end  no tapering case
+
+
  // computing spatial distances and indexes      
  Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
  Free(tlags);
       if(!ismal[0]) return;
   /***********************************************************/  
 }  // end spatial case
-else { //spatio temporal case or bivariate case
-       int qq=(*ncoord) * (*ntime);
+
+else {  //spatio temporal case or bivariate case
+
+       //int qq=(*ncoord) * (*ntime);
+        int qq;
+        if (!istap) qq=(*ncoord);
+        if (istap)  qq=(*ncoord) * (*ntime);
     // setting compact supports for space-time and bivariate case
        if(isst[0]){ 
                    if(srange[1]) maxdist[0]=srange[1];
