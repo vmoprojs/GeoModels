@@ -931,9 +931,7 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
             }  // end tapering case
           else 
             { // distances composite likelihood  
-
             *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
-            //REprintf("%d\n",*npairs);
             tlags= (double *) Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
             } // end  no tapering case
@@ -948,10 +946,12 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
 
 else {  //spatio temporal case or bivariate case
 
-       //int qq=(*ncoord) * (*ntime);
+  
         int qq;
-        if (!istap) qq=(*ncoord);
-        if (istap)  qq=(*ncoord) * (*ntime);
+
+        if (istap[0])  qq=(*ncoord) * (*ntime);
+        else        qq=(*ncoord);
+   
     // setting compact supports for space-time and bivariate case
        if(isst[0]){ 
                    if(srange[1]) maxdist[0]=srange[1];
@@ -997,9 +997,10 @@ else {  //spatio temporal case or bivariate case
        }  // end tapering
 else {  // distance for composite likelihood
             
+               
                if(isst[0])  npairs[0]=(int)(qq * (qq-1) * 0.5);
                if(isbiv[0]) npairs[0]=(int)(qq * (qq-1) * 0.5);
-
+          
                tlags= (double *) Calloc(*npairs,double *);
               if(tlags==NULL) {*ismal=0; return;}
           // allocates the matrix of temporal distances:

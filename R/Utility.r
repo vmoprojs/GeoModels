@@ -1494,7 +1494,8 @@ if(tapering) mem=TRUE
 ### o si hay solo maxdist!!!
 if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
-if(mem==TRUE&(spacetime||bivariate)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
+
+if(fcall=="Fitting"&mem==TRUE&(spacetime||bivariate)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
 
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7

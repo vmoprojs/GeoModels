@@ -763,7 +763,6 @@ hessian=FALSE
 
 }
 
-#if(varest) hessian=FALSE
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
 
