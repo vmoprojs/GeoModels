@@ -146,7 +146,6 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
      else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
-    if(is.null(copula)) copula="None"
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,
@@ -262,7 +261,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   else { biv <- 'univariate'}                       
     cat('\n##################################################################')
     cat('\nMaximum', missp, method, 'Fitting of', process, 'Random Fields\n')
-    if(x$copula!="None"){cat('\nCopula:', x$copula,'\n')}
+    if(!is.null(x$copula)) {cat('\nCopula:', x$copula,'\n')}
     cat('\nSetting:', x$likelihood, method, '\n')
     cat('\nModel:', model, '\n')
     cat('\nType of the likelihood objects:', x$type, x$method,'\n')

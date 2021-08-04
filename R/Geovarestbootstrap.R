@@ -13,7 +13,7 @@ print("Parametric bootstrap can be time consuming ...")
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 if(!is.numeric(seed)) stop(" seed must be numeric")
 model=fit$model
-if(fit$copula=="None")  fit$copula=NULL
+
 if(fit$missp)  ### misspecification
  {if(fit$model=="StudentT")     model="Gaussian_misp_StudentT"
   if(fit$model=="Poisson")      model="Gaussian_misp_Poisson"
