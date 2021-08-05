@@ -104,7 +104,8 @@ void Comp_Pair_SkewGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *nuis, int *GPU,int *local)
 {
 
-      double sill=nuis[1];double nugget=nuis[0];
+      double sill=nuis[1];
+      double nugget=nuis[0];
      if(nugget<0|| nugget>=1||sill<0){*res=LOW;  return;}
 
     int i=0;double corr,zi,zj,weights=1.0;
@@ -113,7 +114,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
                              if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                     *res+= weights*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nuis[0]));
+                     *res+= weights*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],sill,nuis[2],nuis[0]));
                  }}
     if(!R_FINITE(*res))  *res = LOW;
     return;

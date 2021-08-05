@@ -4744,13 +4744,13 @@ return(dens);
 
 double one_log_SkewGauss(double z,double m, double vari, double skew)
 {
+    
   double  res;
   double skew2  = R_pow(skew,2);
-  double vari2  = R_pow(vari,1);
   double q=z-m;
-    res=log(2)-0.5*log(skew2+vari2)+dnorm(q/(sqrt(skew2+vari2)),0,1,1)+pnorm(sqrt(skew2)*q/(sqrt(vari2)*sqrt(skew2+vari2)),0,1,0,1);
+  double ss=skew2+vari;
+    res=log(2)-0.5*log(ss)+dnorm(q/(sqrt(ss)),0,1,1)+pnorm( (skew*q)/(sqrt(vari)*sqrt(ss)),0,1,1,1);
   return(res);
-    //return(0.5);
 }
 
 

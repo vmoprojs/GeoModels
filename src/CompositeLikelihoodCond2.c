@@ -88,20 +88,21 @@ void Comp_Cond_SkewGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *nuis, int *GPU,int *local)
 {
       double sill=nuis[1];double nugget=nuis[0],l1=0.0,l2=0.0,bb=0.0;
-     // double skew2  = R_pow(nuis[2],2);
-     // double vari2  = R_pow(nuis[1],1);
      if(nugget<0|| nugget>=1||sill<0){*res=LOW;  return;}
     int i=0;double corr,zi,zj,weights=1.0;
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
-    l1=one_log_SkewGauss(zi,mean1[i],nuis[1],nuis[2]);
-    l2=one_log_SkewGauss(zj,mean2[i],nuis[1],nuis[2]);
+    l1=one_log_SkewGauss(zi,mean1[i],sill,nuis[2]);
+    l2=one_log_SkewGauss(zj,mean2[i],sill,nuis[2]);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-    bb=2*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],nuis[1],nuis[2],nuis[0]))-(l1+l2);
 
-    //bb=2*0.5-(l1+l2);
+                    //Rprintf("%f %f -- %f %f \n",l1,l2,nuis[1],nuis[2]);
+    bb=2*log(biv_skew(corr,zi,zj,mean1[i],mean2[i],sill,nuis[2],nuis[0]))-(l1+l2);
+
+
+ 
                   *res+= weights*bb;
                  }}
     if(!R_FINITE(*res))  *res = LOW;
