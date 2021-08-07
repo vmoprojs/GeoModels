@@ -16,11 +16,9 @@ fxy <- function(x,y, tol = 15){
     if (length(ydig) < tol){
       ydig = (as.numeric(strsplit(as.character(yy-10^(-tol)), "")[[1]][-(1:2)]))
     }
-    if (y>=x){
-      z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
-    }else{z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")}  
+    if (y>=x) z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
+    else      z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")  
   })
- 
   return(as.numeric(z))
 }
 fxy <- Vectorize(fxy)

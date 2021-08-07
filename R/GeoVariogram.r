@@ -262,8 +262,9 @@ plot.GeoVariogram <- function(x,...)
   {
 if(!class(x)=='GeoVariogram')
         stop("Enter an object obtained from the function GeoVariogram")
-#old.par = par(mfrow=c(1,1),mai=c(1.02 ,0.82, 0.82, 0.42),mgp=c(3, 1, 0))
-old.par = par(mfrow=c(1,1))
+
+
+opar=par(no.readonly = TRUE)
 ispatim=bivariate=FALSE 
 if(!is.null(x$bint))  ispatim=TRUE
 if(x$bivariate)       bivariate=TRUE
@@ -340,7 +341,7 @@ plot.default(x$bint, x$variogramt, xlab='t', ylab=expression(gamma(t)),
             }
 ############################spatial case#########################################
         if(!ispatim && !bivariate)    plot.default(x$centers, x$variograms,...)
- par(old.par)
+ par(opar)
   return(invisible())
   }
 

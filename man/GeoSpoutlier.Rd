@@ -75,7 +75,6 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 rm(list=ls())
 library(GeoModels)
 library(fields)
-library(plotrix)
 set.seed(1428)
 NN = 1000
 coords = cbind(runif(NN),runif(NN))
@@ -92,5 +91,5 @@ K=15         #for outliers detection alghoritm
 alpha=0.005 # for outliers detection alghoritm
 outlier=GeoSpoutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
 quilt.plot(coords,data)
-for (i in 1:nrow(outlier))  draw.circle(outlier[i,1], outlier[i,2],radius=0.03,lwd=2) 
+for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.03,lwd=2) 
 }

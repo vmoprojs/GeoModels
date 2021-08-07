@@ -14,6 +14,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                         vario=NULL, ...)
   {
     result <- NULL
+
     CheckDistance<- function(distance)
     {
         CheckDistance <- NULL
@@ -68,7 +69,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
 ################    
 ### starting ###
 ################
-    old.par <- par(mfrow=c(1,1),mai=c(1.02 ,0.82, 0.82, 0.42),mgp=c(3, 1, 0))
+
     dyn=FALSE
     isvario <- !is.null(vario) # is empirical variogram is passed?
     bivariate <- fitted$bivariate
@@ -76,7 +77,10 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     ispatim <- fitted$spacetime
     dyn<- is.list(fitted$coordx_dyn)
     
-par(mfrow=c(1,1))
+
+opar=par(no.readonly = TRUE)
+
+
 if(!ispatim && !bivariate){ if( (show.cov && show.vario) || (show.cov)) par(mfrow=c(1,2))}
 if(show.vario && ispatim) par(mfrow=c(1,2))
 if(show.vario && ispatim && !is.null(fix.lags) && !is.null(fix.lagt)) par(mfrow=c(2,2))
@@ -692,7 +696,6 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
     # display the variogram function
     if(show.vario){
       if(bivariate&&!dyn){
-          #par(mfrow=c(2,2))
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
            xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
@@ -713,7 +716,6 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
        lines(lags_m, variogram22, type='l',...)  }
  
    if(bivariate&&dyn){
-          #par(mfrow=c(2,2))
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
        lines(lags_m, variogram11, type='l',...)
@@ -731,7 +733,6 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                 ncolp <- ncolp+1
                 if(plags || plagt) nrowp <- nrowp+1}
             else ncolp <- ncolp+plags+plagt
-            #par(mfrow=c(nrowp,ncolp))
             sup <- 0
             tup <- 0
             if(isvario){
@@ -798,7 +799,6 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
      
             ########
             if(plagt){
-
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
                 plot(lagt_m, variogram[fix.lags,], xlab="Time",cex.axis=.8,cex.lab=.8,
                      ylab=vario.ylab, type="l", ylim=c(0,max(vvv,tup)), main=paste(vario.ylab,": temporal profile",
@@ -836,7 +836,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
         
 
 
-    if(ispatim) par(mai=c(1.02 ,0.82 ,0.82 ,0.42),mgp=c(3,1,0))
+    if(ispatim) par(mai=c(1.02 ,0.85 ,0.85 ,0.45),mgp=c(3,1,0))
     # return the estimated covariance function
     if(answer.cov) {result <- list(lags=lags_m,lagt=lagt_m, covariance=covariance)}
     # return the estimated variogram/lorelogram function
@@ -850,7 +850,11 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
             if(bivariate){
                 if(gaussian) {result$variogram11 <- variogram11;result$variogram12 <- variogram12;result$variogram22 <- variogram22}
                 }}}
+
+       #print("here")
+       #par(mfrow=c(1,1))
+       #par(resetPar())
+  par(opar) 
     if(!is.null(result))
-    par(old.par)
     return(result)
   }

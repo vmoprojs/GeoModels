@@ -84,7 +84,7 @@ data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = model,param = param)$data
 
 # h-scatterplots for given a vector of neighborhoods
-GeoScatterplot(data,coords,neighb=c(5,10,20,40))
+GeoScatterplot(data,coords,neighb=c(5,10))
 
 }
 \keyword{Scatterplot}

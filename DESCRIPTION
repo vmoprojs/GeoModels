@@ -12,9 +12,9 @@ Description: This package provides a set of procedures for a) simulation and est
  Spatio (temporal) bivariate  data estimation involves estimation of both regression and covariance parameters.
  Gaussian and some non Gaussian Random fields can be analyzed using the  GeoModels package. Among them,   Weibull, logGaussian, skewGaussian, T, binomial, negative
  binomial  and poisson  random fields can be analyzed.
-Imports: methods, spam, scatterplot3d, dfoptim, dotCall64, optimParallel, parallel, pracma,mcGlobaloptim, pbivnorm, zipfR, sn, numDeriv, hypergeo, ucminf, LatticeKrig, RANN, VGAM
+Imports: methods, spam, scatterplot3d, dfoptim, dotCall64, optimParallel, parallel, plotrix, pracma,mcGlobaloptim, pbivnorm, zipfR, sn, numDeriv, hypergeo, ucminf, LatticeKrig, RANN, VGAM
 Suggests: actuar, GoFKernel, sphereplot
-Depends: R (>= 2.12.0), Rfast, fields, mapproj, plot3D, shape
+Depends: R (>= 2.12.0), fields, mapproj, plot3D, shape
 License: GPL (>= 2)
 URL: https://vmoprojs.github.io/GeoModels-page/ 
 Repository: GitHub

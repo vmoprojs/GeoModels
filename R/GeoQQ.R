@@ -13,6 +13,8 @@ xlab="Theoretical Quantiles"
 ylab="Sample Quantiles"
 
 
+opar=par(no.readonly = TRUE)
+
 pp=c(fit$param,fit$fixed)
 
 ##########################################################
@@ -299,7 +301,7 @@ if(model %in% c("SkewGaussian"))
 }
 
 ##########################################################
+par(opar) 
 
-par(mfrow=c(1,1))
   }
 }
