@@ -54,7 +54,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist)#32
 
-      
+     
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
@@ -86,7 +86,6 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
    #updating starting parameters
 
-   #print(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
@@ -99,7 +98,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                initparam$upper,initparam$ns,unname(initparam$X),neighb)
 
     # Composite likelihood:
-    if(likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2'){
+    if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')&&type=="Pairwise"){
     
     if(!memdist)
           fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
@@ -123,6 +122,22 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,neighb)
       }
+
+ if(likelihood=='Marginal'&&type=="Independence")
+   {
+
+      fitted<-CompIndLik2 (initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+                                   coordx_dyn,unname(initparam$data), 
+                                   initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
+                                    initparam$lower,initparam$model,initparam$n ,
+                                     initparam$namescorr,initparam$namesnuis,
+                                   initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
+                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
+  }
+
+
+
+
      ##misspecified models
     missp=FALSE 
     if(model=="Gaussian_misp_Tukeygh"){model="Tukeygh";missp=TRUE}
@@ -141,9 +156,12 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     # Delete the global variables:
 
     #if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    #if(is.numeric(neighb))                 
+    #if(is.numeric(neighb))    
+    if( !(likelihood=='Marginal'&&type=="Independence"))
+    {             
      if(memdist) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
      else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    }
     #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
     ### Set the output object:

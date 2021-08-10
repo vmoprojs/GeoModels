@@ -377,7 +377,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                 return(list(error=error))}}
 
         if(likelihood == "Marginal"){
-            if(!any(type == c("Difference", "Pairwise"))){
+            if(!any(type == c("Difference", "Pairwise","Independence"))){
                 error <- 'insert a type name of the likelihood objects compatible with the composite-likelihood\n'
                 return(list(error=error))}}
 
@@ -725,7 +725,7 @@ CkModel <- function(model)
                          BinomialNegZINB=45,
                          PoissonGamma=46,poissongamma=46,
                          Gaussian_misp_PoissonGamma=47,
-                         PoissonWeibull=48,poissonweibull=48,
+                         #PoissonWeibull=48,poissonweibull=48,
                          BinomialLogistic=49,Binomiallogistic=49,
                          Beta2=50,
                          Gaussian_misp_Binomial=51,
@@ -754,7 +754,8 @@ CkType <- function(type)
                         Tapering2=5,
                         Tapering1=6,
                         GeoWLS=7,
-                        CV=8)
+                        CV=8,
+                        Independence=9)
     return(CkType)
   }
 
@@ -1200,6 +1201,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         vartype <- CkVarType(vartype)
         type <- CkType(type)
     
+    
      #if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
      if((!bivariate&&num_betas==1)||(bivariate&all(num_betas==c(1,1))))
      {
@@ -1208,9 +1210,9 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
           {
            if(!bivariate) {
                            mu <- mean(unlist(data))
-                           if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
+                           if(any(type==c(1, 3, 7,8))){    # Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
-                           else fixed <- list(mean=mu)
+                           else fixed <- list(mean=mu)}
                            nuisance <- c(mu, 0, var(c(unlist(data))))
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7) ) tapering <- 1
                            if(model %in% c(10,29,31,32))         nuisance <- c(nuisance,0)
@@ -1224,9 +1226,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
      if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
                            else                   { mu1 <- mean(data[[1]]); mu2 <- mean(data[[2]])}
-                           if(any(type==c(1, 3, 7, 8)))# Checks the type of likelihood
+                           if(any(type==c(1, 3, 7, 8))) {   # Checks the type of likelihood
                            if(is.list(fixed)) {fixed$mean_1 <- mu1;fixed$mean_2<- mu2}
-                           else fixed <- list(mean_1=mu1,mean_2=mu2)
+                           else               {fixed <- list(mean_1=mu1,mean_2=mu2)  }
+                                                         }
                            nuisance <- c(mu1,mu2)
                            if(model %in% c(10,29,31,32))  {nuisance <- c(nuisance,0.1,0.2)}
                            if(model %in% c(26,46,47,48,42,50))  {nuisance <- c(nuisance,0.1,0.2)}
@@ -1518,7 +1521,6 @@ gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
              "r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
 
-
 rm(colidx);rm(rowidx)
 if(type=="Tapering") {rm(idx);rm(ja);rm(ia)}
 ##
@@ -1547,6 +1549,9 @@ else
 #############################################################
 { 
 
+
+if(typereal!="Independence") {
+
   ########################## 
 if(distance==0) distance1="Eucl";
 if(distance==2) distance1="Geod";
@@ -1560,6 +1565,7 @@ if(!spacetime&&!bivariate)   #  spatial case
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
+ 
 
   sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
   nn = length(sol$lags)
@@ -1567,7 +1573,6 @@ if(!spacetime&&!bivariate)   #  spatial case
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              gb$numpairs=nn
-   
   ## loading space distances in memory 
   mmm=1;ttt=1
 if(weighted)  mmm=max(sol$lags)
@@ -1590,10 +1595,8 @@ if(spacetime)   #  space time  case
              nn=length(gb$colidx)
              gb$numpairs=nn
   ## loading space time distances in memory   
-
   mmm=1;ttt=1
 if(weighted) { mmm=max(sol$lags) ;ttt=max(sol$lagt)}
-
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),
     as.double(sol$lagt),as.integer(nn),as.double(ttt),
@@ -1614,12 +1617,10 @@ if(bivariate)   # bivariate case
 ## loading space time distances in memory   
   mmm=1
 if(weighted) { mmm=max(sol$lags) }
-
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(2),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),
     as.double(1),as.integer(nn),as.double(1),
     as.integer(spacetime),as.integer(bivariate),as.integer(sol$first),as.integer(sol$second)) 
-
 } #### end bivariate case
 
     numpairs <- gb$numpairs
@@ -1632,10 +1633,10 @@ if(weighted) { mmm=max(sol$lags) }
 }  
 ############################################## 
 # end neighboord case
-
-
 #####
 if(is.null(coordt)) coordt=1
+
+}
     ### Returned list of objects:
     return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
                 colidx = colidx ,rowidx=rowidx,

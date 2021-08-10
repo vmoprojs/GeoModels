@@ -42,6 +42,7 @@ data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
    X=fit$X,n=fit$n,method="cholesky",
 	 distance=fit$distance,radius=fit$radius)
 
+
 res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,
@@ -51,18 +52,19 @@ res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$f
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
    X=fit$X, distance=fit$distance, radius=fit$radius)
 
-if(res_est$convergence=='Successful'){
- res=rbind(res,res_est$param)
- 
 
+if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 10000000000)&&(res_est$logCompLik> -1e+14)){
+ 
+print(res_est)
+ res=rbind(res,res_est$param)
  k=k+1
 setTxtProgressBar(pb, k)
 }               
 close(pb)
-
-
 }
 
+
+print(var(res))
 numparam=length(fit$param)
 invG=var(res); G=try(solve(invG),silent=TRUE);if(!is.matrix(G)) print("Bootstrap estimated Godambe matrix is singular")
 stderr=sqrt(diag(invG))

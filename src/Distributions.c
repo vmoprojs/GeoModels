@@ -4740,8 +4740,6 @@ return(dens);
 
 /******* some marginals (log)pdf  *****************/
 
-
-
 double one_log_SkewGauss(double z,double m, double vari, double skew)
 {
     
@@ -4749,7 +4747,7 @@ double one_log_SkewGauss(double z,double m, double vari, double skew)
   double skew2  = R_pow(skew,2);
   double q=z-m;
   double ss=skew2+vari;
-    res=log(2)-0.5*log(ss)+dnorm(q/(sqrt(ss)),0,1,1)+pnorm( (skew*q)/(sqrt(vari)*sqrt(ss)),0,1,1,1);
+  res=log(2)-0.5*log(ss)+dnorm(q/(sqrt(ss)),0,1,1)+pnorm( (skew*q)/(sqrt(vari)*sqrt(ss)),0,1,1,1);
   return(res);
 }
 

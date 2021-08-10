@@ -25,7 +25,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
         res=double(1)
-      # print(other_nuis)
+        #print(param);print(other_nuis);print(paramcorr)
        # print(fan)
         #result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
@@ -35,11 +35,12 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
        #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res  
    
 
-        result=dotCall64::.C64(as.character(fan),
+         result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,
           INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
+         #print(other_nuis);print(result)
          return(-result)
       }
 
@@ -385,14 +386,16 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                                   namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU)
  if(optimizer=='multinlminb'){
 
+
+
        CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik2,
         colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, data1=data1,data2=data2, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                                weigthed=weigthed,X=X, local=local,GPU=GPU,
-          lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+          lower=lower,upper=upper,method = "nlminb", nbtrials = 400, typerunif = "sobol",
                               control = list( iter.max=100000),
-                           typerunif = "sobol"#,nbclusters=4,
-                     )
+                           )#,nbclusters=4,
+                     
       # print(CompLikelihood)
   }
 

@@ -127,7 +127,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
 
 \details{
   \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
-  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs are considered. Specifically marginal and conditional  pairwise 
+  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs and independence composite likelihood are considered. Specifically marginal and conditional  pairwise 
   likelihood is considered for each type of random field (Gaussian and not Gaussian).
   The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
 
@@ -244,6 +244,10 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   marginal pairwise likelihoods (\code{likelihood=Marginal}) and \code{type="Pairwise"})
   or (\code{likelihood=Conditional}) and \code{type="Pairwise"})
 
+  The combination  \code{type="Independence"} and \code{likelihood=Marginal} allos independence composite 
+  likelihood i.e. maximum likelihod assuming independence. In this case only the marginal parameters can be estimated.
+  This combination can be useful to find good starting values for the margnal parameters.
+
   If a Gaussian RF is considered  (\code{model=Gaussian}) then:
     \itemize{
       \item If the composite is formed by marginal likelihoods (\code{likelihood=Marginal}):
@@ -272,6 +276,8 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
    \item \code{CV}, the objective function  is the cross validation estimation method ;           
       }
       }
+
+
 
   Two type  of binary weights can be used in  the composite likelihood estimation,
   one based on neighboords and one based on distances.
@@ -448,7 +454,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
 }
   
@@ -701,10 +707,25 @@ param=list(mean=mean,mean1=mean1,mean2=mean2,sill=1,nugget=0,scale=0.2,power2=4)
 data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="Binomial", n=10,X=X,
              param=param)$data
 
+
+
+## estimating the marginal parameters using independence cl
+fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
+start <- list(mean=mean,mean1=mean1,mean2=mean2)
+# Maximum pairwise likelihood:
+fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
+                likelihood="Marginal",type="Independence",
+                    neighb=3,model="Binomial",  fixed=fixed, optimizer="BFGS")
+                  
+print(fit0)
+
+## using the estimates as starting values
 fixed <- list(nugget=nugget,power2=4,sill=1)
-start <- list(scale=0.2,mean=mean,mean1=mean1,mean2=mean2)
+start <- as.list(fit0$param)
+start$scale=0.2
 # Maximum pairwise likelihood:
 fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
+                    likelihood="Conditional",type="Pairwise",
                     neighb=3,model="Binomial",  fixed=fixed, optimizer="BFGS")
                   
 print(fit1)
@@ -713,8 +734,23 @@ set.seed(220)
 # Simulation of the spatial Negative Binomial-Gaussian RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="BinomialNeg", n=5,X=X,
               param=param)$data
+fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
+start <- list(mean=mean,mean1=mean1,mean2=mean2)
+## estimating the marginal parameters using independence cl
+fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
+                likelihood="Marginal",type="Independence",
+                    neighb=3,model="BinomialNeg",  fixed=fixed, optimizer="BFGS")
+                  
+print(fit0)
+
+## using the estimates as starting values
+fixed <- list(nugget=nugget,power2=4,sill=1)
+start <- as.list(fit0$param)
+start$scale=0.2
+
 # Maximum pairwise likelihood:
 fit2 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel, n=5,X=X, start=start,
+              likelihood="Conditional",type="Pairwise",
               neighb=3, model="BinomialNeg", fixed=fixed, optimizer="BFGS")
                 
 

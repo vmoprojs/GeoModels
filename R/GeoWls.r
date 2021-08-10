@@ -181,7 +181,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
           "Gaussian_misp_StudentT","Gaussian_misp_Poisson","Gaussian_misp_Tukeygh",
           "Gaussian_misp_SkewStudentT","PoissonGamma","PoissonWeibull","Gaussian_misp_PoissonGamma",
           "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh","TwoPieceBimodal")) & 
-          (type %in% c('Standard','Pairwise','Tapering')))
+          (type %in% c('Standard','Pairwise','Tapering','Independence')))
         {
 ##########################################################        
         if(!initparam$bivariate){  ###spatial or temporal univariate case
