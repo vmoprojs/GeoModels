@@ -2,7 +2,7 @@
 ### File name: GeoSpoutlier.r
 ####################################################
 
-GeoSpoutlier <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
+GeoOutlier <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
                          distance="Eucl", grid=FALSE,  neighb=10,alpha=0.001,
                          method="Z-Median",radius=6371, bivariate=FALSE,X=NULL)
 

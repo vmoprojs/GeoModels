@@ -1330,7 +1330,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             fixed <- unlist(fixed)
             namesfixed <- names(fixed)
             numfixed <- length(namesfixed)
-            if(numfixed==numparam){ error <- 'there are not parameters left to estimate\n';return(list(error=error))}
+            #if(numfixed==numparam){ error <- 'there are not parameters left to estimate\n';return(list(error=error))}
             flag[pmatch(namesfixed, namesflag)] <- 0
             param <- param[-pmatch(namesfixed, namesparam)]
             numparamcorr <- numparamcorr-sum(namesfixed %in% namescorr)

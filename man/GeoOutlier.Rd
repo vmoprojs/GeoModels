@@ -1,5 +1,5 @@
-\name{GeoSpoutlier}
-\alias{GeoSpoutlier}
+\name{GeoOutlier}
+\alias{GeoOutlier}
 \encoding{UTF-8}
 \title{Spatio (temporal) outliers detection}
 \description{
@@ -7,7 +7,7 @@ Given a set of spatio (temporal) locations and data, the procedure select the sp
 using a specific algorithm.
 }
 \usage{
-GeoSpoutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
+GeoOutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
              distance="Eucl", grid=FALSE,  neighb=10,alpha=0.001,
              method="Z-Median", radius=6371, bivariate=FALSE,X=NULL)
 }
@@ -63,7 +63,7 @@ GeoSpoutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
 }
 
 \references{
- Chen D, Lu C, Kou Y, Chen F (2008) On detecting spatial outliers. Geoinfor- matica 12:455–475
+ Chen D, Lu C, Kou Y, Chen F (2008) On detecting spatial outliers. Geoinformatica 12:455–475
 }
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
@@ -87,9 +87,9 @@ param = list(mean=0,sill=1,nugget=0,scale=scale,smooth=0.5,skew=0)
 data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = "TwoPieceGaussian",param = param)$data
 
-K=15         #for outliers detection alghoritm
-alpha=0.005 # for outliers detection alghoritm
-outlier=GeoSpoutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
+K=15         #parameter for outliers detection alghoritm
+alpha=0.005  #parameter for outliers detection alghoritm
+outlier=GeoOutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
 quilt.plot(coords,data)
 for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.03,lwd=2) 
 }
