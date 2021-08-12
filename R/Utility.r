@@ -1416,6 +1416,8 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
             }
     }
     # END code for the fitting procedure
+
+
     # START code for the simulation procedure
     if(fcall=="Simulation"){
         neighb=NULL;likelihood=2
@@ -1441,22 +1443,20 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                 ia<-integer(nt+1)
                 tapmodel<-CkCorrModel(taper)
         }
-}
-
-    # END code for the simulation procedure
+}  # END code for the simulation procedure
   
     ### Compute the spatial and spatial-temporal distances:
     numpairs <- integer(1)
     srange <- double(1)
     trange <- double(1)
 
+if(typereal=="Independence"){ maxdist=NULL;maxtime=NULL}
 #################
 distC=FALSE
     if(!tapering)
  { if(is.null(neighb)&is.numeric(maxdist)) distC=TRUE  }### just for maxdist parameter
 ################
-
-
+  
     if(is.null(maxdist)) srange<-c(srange,double(1)) else {srange<-c(srange,as.double(maxdist))}                # cutoff<-TRUE
     if(is.null(maxtime)) trange<-c(trange,double(1)) else {trange<-c(trange,as.double(maxtime))}                # cutoff<-TRUE
     isinit <- as.integer(1)
@@ -1468,7 +1468,7 @@ distC=FALSE
 
     if(mem&&!tapering)  
       {        
-
+         
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
                 if(is.null(neighb)){
@@ -1495,8 +1495,8 @@ if(tapering) mem=TRUE
 #############################################################
 ### aca paso solo para  simular o maximum likelihood o (variograma)
 ### o si hay solo maxdist!!!
-if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
+if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
 if(fcall=="Fitting"&mem==TRUE&(spacetime||bivariate)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
 
@@ -1540,7 +1540,6 @@ numpairs <- gb$numpairs
     idx <- idx[1:numpairs]
     ja  <- ja[1:numpairs]
 }
-
 #######################################################################
 else   
 ###############################################################
@@ -1548,7 +1547,6 @@ else
 #### it works when CL and neighb is numeric or neighb, maxdist is numeric
 #############################################################
 { 
-
 
 if(typereal!="Independence") {
 
@@ -1597,6 +1595,7 @@ if(spacetime)   #  space time  case
   ## loading space time distances in memory   
   mmm=1;ttt=1
 if(weighted) { mmm=max(sol$lags) ;ttt=max(sol$lagt)}
+
   ss=.C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
     as.double(sol$lags),as.integer(nn),as.double(mmm),
     as.double(sol$lagt),as.integer(nn),as.double(ttt),
