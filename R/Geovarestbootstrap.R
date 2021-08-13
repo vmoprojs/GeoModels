@@ -55,7 +55,7 @@ res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$f
 
 if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 10000000000)&&(res_est$logCompLik> -1e+14)){
  
-print(res_est)
+
  res=rbind(res,res_est$param)
  k=k+1
 setTxtProgressBar(pb, k)
@@ -64,7 +64,7 @@ close(pb)
 }
 
 
-print(var(res))
+
 numparam=length(fit$param)
 invG=var(res); G=try(solve(invG),silent=TRUE);if(!is.matrix(G)) print("Bootstrap estimated Godambe matrix is singular")
 stderr=sqrt(diag(invG))

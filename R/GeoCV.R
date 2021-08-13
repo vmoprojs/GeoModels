@@ -250,8 +250,7 @@ k=1 ; coordx_dynnew=Xnew=datanew=list()
 utt=unique(data_sel_ord[,3])
 for(k in 1:length(utt) ){
 ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
-print(ss)
-print("gg")
+
 datanew[[k]]=as.vector((ss[,4]))
 coordx_dynnew[[k]]=as.matrix(ss[,1:2])
 
@@ -273,8 +272,7 @@ if(estimation) {
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
                            # optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
-        print(as.list(fit_s$param))
-        print(fit_s)
+       
            param=as.list(c(fit_s$param,fit_s$fixed))
      #print("hhghgh")
               }
