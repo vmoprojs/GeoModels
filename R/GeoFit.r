@@ -19,6 +19,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     #memdist=TRUE
     if(!is.null(copula))
      { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
+
+    if(type=='Independence'&&likelihood!='Marginal') stop("Independence likelihood must be coupled with 
+        Marginal likelihood")
     ### Check the parameters given in input:
       if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -127,6 +130,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 
  if(likelihood=='Marginal'&&type=="Independence")
    {
+
 
       fitted<-CompIndLik2 (initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,unname(initparam$data), 

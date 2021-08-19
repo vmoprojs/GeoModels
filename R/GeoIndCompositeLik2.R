@@ -134,8 +134,17 @@ if(fan== "Ind_Pair_LogLogistic")            {  shape=nuis[2]
     if(fan=="Ind_Pair_BinomGauss_misp")   { pp=pnorm(mm); mm=n*pp;vv=mm*(1-pp)
                                            res=sum(dnorm(data, mean =mm , sd =sqrt(vv), log = TRUE))}
     if(fan=="Ind_Pair_BinomnegGauss")     res=sum(dnbinom(data, n, pnorm(mm), log = TRUE))
-
-
+    if(fan=="Ind_Pair_PoisGamma")         {mm=exp(mm);res=sum(dnbinom(data, nuis[2], mu=mm, log = TRUE))}
+    if(fan=="Ind_Pair_Gauss_misp_PoisGamma") {mm=exp(mm);res=sum(dnorm(data, mean = mm, sd =sqrt(mm*(1+mm/nuis[2])), log = TRUE))}
+    if(fan=="Ind_Pair_PoisZIP")           {mm=exp(mm);pp=pnorm(nuis[3])
+                                            res1=sum(log(pp+(1-pp)*dpois(data[data==0],mm[data==0],0)));
+                                            res2=sum(log(1-pp)+dpois(data[data!=0],mm[data!=0],1)); res=res1+res2}
+    if(fan=="Ind_Pair_Gauss_misp_PoisZIP"){mm=exp(mm);pp=pnorm(nuis[3])
+                                            res1=sum(log(pp+(1-pp)*dnorm(data[data==0],mean=mm[data==0],sd =sqrt(mm[data==0]), log = FALSE)));
+                                            res2=sum(log(1-pp)+dnorm(data[data!=0],mean=mm[data!=0], sd =sqrt(mm[data!=0]), log = TRUE)); res=res1+res2}
+    if(fan=="Ind_Pair_BinomnegGaussZINB") {pm=pnorm(mm);pp=pnorm(nuis[3])
+                                            res1=sum(log(pp+(1-pp)*dnbinom(data[data==0],n,pm[data==0],log = FALSE)));
+                                            res2=sum(log(1-pp)+dnbinom(data[data!=0],n, pm[data!=0], log = TRUE)); res=res1+res2}
 ### .......
 return(-res)
 }
@@ -199,46 +208,46 @@ return(-res)
      
 
 
-
 ###################### pairwise ###############################################
-    if(all(model==1 )) fname <- 'Ind_Pair_Gauss'                #
-    if(all(model==2 )) fname <- 'Ind_Pair_BinomGauss'           #
-    if(all(model==14 )) fname <- 'Ind_Pair_BinomnegGauss'       #                                 
-    if(all(model==16 )) fname <- 'Ind_Pair_BinomnegGauss'       #                                   
-    #if(all(model==15 )) fname <- 'Ind_Pair_PoisbinGauss'   
-    #if(all(model==17 )) fname <- 'Ind_Pair_PoisbinnegGauss'
-    if(all(model==13 )) fname <- 'Ind_Pair_WrapGauss'            --
-    if(all(model==10 )) fname <- 'Ind_Pair_SkewGauss'            #
-    if(all(model==21 )) fname <- 'Ind_Pair_Gamma'                #
-   # if(all(model==33 )) fname <- 'Ind_Pair_Kumaraswamy'                                           
-    if(all(model==42 )) fname <- 'Ind_Pair_Kumaraswamy2'         #                            
-    #if(all(model==28 )) fname <- 'Ind_Pair_Beta'                                     
-    if(all(model==50 )) fname <- 'Ind_Pair_Beta2'                #      
-    if(all(model==26 )) fname <- 'Ind_Pair_Weibull'              #                                                                  
-    if(all(model==24 )) fname <- 'Ind_Pair_LogLogistic'          #
-    if(all(model==25 )) fname <- 'Ind_Pair_Logistic'             #                                                                                                                                                                                
-    if(all(model==22 )) fname <- 'Ind_Pair_LogGauss';            #                                  
-    if(all(model==27 )) fname <- 'Ind_Pair_TWOPIECET'            #                             
-    #if(all(model==39 )) fname <- 'Ind_Pair_TWOPIECEBIMODAL'
-    if(all(model==29 )) fname <- 'Ind_Pair_TWOPIECEGauss'                #
-    if(all(model==12 )) fname <- 'Ind_Pair_T'                            #                            
-    if(all(model==34 )) fname <- 'Ind_Pair_Tukeyh'                       #                                     
-    if(all(model==40 )) fname <- 'Ind_Pair_Tukeyhh'                      #                      
-    if(all(model==41 )) fname <- 'Ind_Pair_Gauss_misp_Tukeygh'           #                                 
-    if(all(model==36 )) fname <- 'Ind_Pair_Gauss_misp_Pois'              #                                  
-    if(all(model==35 )) fname <- 'Ind_Pair_Gauss_misp_T'                 #                                  
-    if(all(model==37 )) fname <- 'Ind_Pair_Gauss_misp_SkewT'             #                                 
-    if(all(model==20 )) fname <- 'Ind_Pair_SinhGauss'                    #                                  
-    if(all(model==38 )) fname <- 'Ind_Pair_TWOPIECETukeyh'               #
-    if(all(model==30 )) fname <- 'Ind_Pair_Pois'                         #
-    if(all(model==46 )) fname <- 'Ind_Pair_PoisGamma'
-    if(all(model==43 )) fname <- 'Ind_Pair_PoisZIP'
-    if(all(model==44 )) fname <- 'Ind_Pair_Gauss_misp_PoisZIP'
-    if(all(model==45 )) fname <- 'Ind_Pair_BinomnegGaussZINB'
-    if(all(model==47 )) fname <- 'Ind_Pair_Gauss_misp_PoisGamma'
-    if(all(model==11 )) fname <- 'Ind_Pair_BinomGauss'                   #                    
-    if(all(model==51 )) fname <- 'Ind_Pair_BinomGauss_misp'              #
-    #if(all(model==49)) fname <- 'Ind_Pair_BinomLogi'
+    if( model==1 ) fname <- 'Ind_Pair_Gauss'                #
+    if( model==2 ) fname <- 'Ind_Pair_BinomGauss'           #
+    if( model==14 ) fname <- 'Ind_Pair_BinomnegGauss'       #                                 
+    if( model==16 ) fname <- 'Ind_Pair_BinomnegGauss'       #                                   
+    #if( model==15 ) fname <- 'Ind_Pair_PoisbinGauss'   
+    #if( model==17 ) fname <- 'Ind_Pair_PoisbinnegGauss'
+    if( model==13) fname <- 'Ind_Pair_WrapGauss'            #
+    if( model==10) fname <- 'Ind_Pair_SkewGauss'            #
+    if( model==21 ) fname <- 'Ind_Pair_Gamma'                #
+   # if( model==33 ) fname <- 'Ind_Pair_Kumaraswamy'                                           
+    if( model==42 ) fname <- 'Ind_Pair_Kumaraswamy2'         #                            
+    #if( model==28 ) fname <- 'Ind_Pair_Beta'                                     
+    if( model==50 ) fname <- 'Ind_Pair_Beta2'                #      
+    if( model==26 ) fname <- 'Ind_Pair_Weibull'              #                                                                  
+    if( model==24 ) fname <- 'Ind_Pair_LogLogistic'          #
+    if( model==25 ) fname <- 'Ind_Pair_Logistic'             #                                                                                                                                                                                
+    if( model==22 ) fname <- 'Ind_Pair_LogGauss';            #                                  
+    if( model==27 ) fname <- 'Ind_Pair_TWOPIECET'            #                             
+    #if( model==39 ) fname <- 'Ind_Pair_TWOPIECEBIMODAL'
+    if( model==29 ) fname <- 'Ind_Pair_TWOPIECEGauss'                #
+    if( model==12 ) fname <- 'Ind_Pair_T'                            #                            
+    if( model==34 ) fname <- 'Ind_Pair_Tukeyh'                       #                                     
+    if( model==40 ) fname <- 'Ind_Pair_Tukeyhh'                      #                      
+    if( model==41 ) fname <- 'Ind_Pair_Gauss_misp_Tukeygh'           #                                 
+    if( model==36 ) fname <- 'Ind_Pair_Gauss_misp_Pois'              #                                  
+    if( model==35 ) fname <- 'Ind_Pair_Gauss_misp_T'                 #                                  
+    if( model==37 ) fname <- 'Ind_Pair_Gauss_misp_SkewT'             #                                 
+    if( model==20 ) fname <- 'Ind_Pair_SinhGauss'                    #                                  
+    if( model==38 ) fname <- 'Ind_Pair_TWOPIECETukeyh'               #
+    if( model==30 ) fname <- 'Ind_Pair_Pois'                         #
+    if( model==46 ) fname <- 'Ind_Pair_PoisGamma'
+    if( model==43 ) fname <- 'Ind_Pair_PoisZIP'
+    if( model==44 ) fname <- 'Ind_Pair_Gauss_misp_PoisZIP'
+    if( model==45 ) fname <- 'Ind_Pair_BinomnegGaussZINB'
+    if( model==47 ) fname <- 'Ind_Pair_Gauss_misp_PoisGamma'
+    if( model==11 ) fname <- 'Ind_Pair_BinomGauss'                   #                    
+    if( model==51 ) fname <- 'Ind_Pair_BinomGauss_misp'              #
+    #if( model==49) fname <- 'Ind_Pair_BinomLogi'
+   
 ########################################################################                                            
     if(sensitivity) hessian=TRUE
     
@@ -251,7 +260,7 @@ return(-res)
  namesnuis=namesnuis[namesnuis!="nugget"]
  
    if(!onlyvar){
-    #print(param)
+    
   ##############################.  spatial or space time ############################################
    if(!bivariate)           {
     if(length(param)==1) {
@@ -304,7 +313,7 @@ return(-res)
                               control = list( iter.max=100000),
                            )#,nbclusters=4,
                      
-      # print(CompLikelihood)
+      
   }
 
  if(optimizer=='multiNelder-Mead'){

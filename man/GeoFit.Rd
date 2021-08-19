@@ -244,7 +244,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   marginal pairwise likelihoods (\code{likelihood=Marginal}) and \code{type="Pairwise"})
   or (\code{likelihood=Conditional}) and \code{type="Pairwise"})
 
-  The combination  \code{type="Independence"} and \code{likelihood=Marginal} allos independence composite 
+  The combination  \code{type="Independence"} and \code{likelihood=Marginal} allows independence composite 
   likelihood i.e. maximum likelihod assuming independence. In this case only the marginal parameters can be estimated.
   This combination can be useful to find good starting values for the margnal parameters.
 
@@ -714,8 +714,7 @@ fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
 start <- list(mean=mean,mean1=mean1,mean2=mean2)
 # Maximum pairwise likelihood:
 fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
-                likelihood="Marginal",type="Independence",
-                    neighb=3,model="Binomial",  fixed=fixed, optimizer="BFGS")
+          type="Independence",neighb=3,model="Binomial",  fixed=fixed, optimizer="BFGS")
                   
 print(fit0)
 

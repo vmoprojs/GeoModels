@@ -4180,6 +4180,9 @@ return(dens);
 
 
 /************* POIsson gammma ************/
+
+
+/************* POIsson gammma ************/
 double PG00(double corr,int r, int t, double mean_i, double mean_j, double a){ //alpha=a
 
     double rho2= R_pow(corr,2);
@@ -4256,7 +4259,7 @@ double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
 
         term3 = aa1*hypergeo(1,1-l1-a,r+k+1,-1/beta_i)     *hypergeo(1,1-l1-a,r+k+1,-rho2/(1+beta_j-rho2))*R_pow((1+beta_j-rho2)*beta_i*auxi*auxj,-1)* exp(bb1 );
 
-        if(fabs(term1)<1e-30||fabs(term2)<1e-30||fabs(term3)<1e-30||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
+        if(fabs(term1)<1e-40||fabs(term2)<1e-40||fabs(term3)<1e-40||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
 
 
         sum1 = sum1+ term1;
@@ -4398,7 +4401,7 @@ else{
   if(r>0&&t==0) dens=PGr0(corr,r,t,mean_i,mean_j,a);
 
   if(r>0&&t>0)
-   {  
+   {
    if(r>t) dens=PGrt(corr,r,t,mean_i,mean_j,a);
    if(t>r) dens=PGrt(corr,t,r,mean_j,mean_i,a);
    }
@@ -4407,15 +4410,18 @@ else{
 else{
     //double lambda_i=exp(mean_i); double lambda_j=exp(mean_j);
     double beta_i= a/mean_i;
-    double beta_j= a/mean_j;   
-    double dens1= r*log(1/(1+beta_i))+a*log(beta_i/(1+beta_i))+lgammafn(a+r)-lgammafn(r+1)-lgammafn(a); 
+    double beta_j= a/mean_j;
+    double dens1= r*log(1/(1+beta_i))+a*log(beta_i/(1+beta_i))+lgammafn(a+r)-lgammafn(r+1)-lgammafn(a);
     double dens2= t*log(1/(1+beta_j))+a*log(beta_j/(1+beta_j))+lgammafn(a+t)-lgammafn(t+1)-lgammafn(a);
     dens=exp(dens1+dens2);
-} 
-
+}
+//Rprintf("%f \n",dens);
 return(dens);
 
 }
+
+
+
 
 
 
