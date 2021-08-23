@@ -19,6 +19,7 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
          #            cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
           #INTENT =    c("rw","r","r","r","r","r","r", "r", "r","r"),
           #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
+
         return(cc$cr)
     }
    ######### computing upper trinagular of covariance matrix   
@@ -154,11 +155,13 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         varcov <- (nuisance['sill'])*ident
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
-        varcov[lower.tri(varcov)] <- cova      
+        varcov[lower.tri(varcov)] <- cova    
+
         # decomposition of the covariance matrix:
         decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
         logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+        #print(logdetvarcov)
        # invarcov <- MatInv(decompvarcov,mdecomp)
        # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
          llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
@@ -767,6 +770,10 @@ hessian=FALSE
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
 
  
+
+
+
+
 if(!onlyvar){   # performing optimization
     maxit=10000
     # Optimize the log-likelihood:

@@ -330,13 +330,9 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 ###### selectin data with indexes from composite likelihood
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}  #updating if #using "my distances from C" 
    data1=data[colidx]; data2=data[rowidx]                  ##using "RANN distances" 
-  #aux = data.frame(x=colidx,y = rowidx)
-  #rownames(aux) = 1:nrow(aux)
- # print(aux[order(aux$x),])
-   #print(dim(aux))
-  # print(table(duplicated(aux)))
-  ## aux1 = data.frame(y = aux$y,x = aux$x)
-   #print(table(duplicated(aux1)))
+  
+
+
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
    if(is.null(GPU)) GPU=0

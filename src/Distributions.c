@@ -4739,7 +4739,8 @@ if(type_cop==2)
     dens= log(biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2);
 }
 //Rprintf("%d %d\n", type_cop,cond);
-if(cond)  {dens=2*dens-(log(g1)+log(g2));}
+//if(cond)  {dens=2*dens-(log(g1)+log(g2));}
+if(cond)  {dens=dens-log(g2);}
 
 return(dens);
 }

@@ -2,26 +2,75 @@
 GeoNeighIndex<-function(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,
                               distance="Eucl",neighb=4,maxdist=NULL,maxtime=1,radius=6371,bivariate=FALSE)
 {
-fxy <- function(x,y, tol = 15){
+#fxy <- function(x,y, tol = 10){
+# 
+#
+#    xx = atan(x)/(pi/2)
+#    yy = atan(y)/(pi/2)
+#   
+#    xdig = (as.numeric(strsplit(as.character(xx), "")[[1]][-(1:2)]))
+#    ydig = (as.numeric(strsplit(as.character(yy), "")[[1]][-(1:2)]))
+#    # length(xdig);length(ydig);
+#    if (length(xdig) < tol){
+#      xdig = (as.numeric(strsplit(as.character(xx-10^(-tol)), "")[[1]][-(1:2)]))
+#    }
+#    if (length(ydig) < tol){
+#      ydig = (as.numeric(strsplit(as.character(yy-10^(-tol)), "")[[1]][-(1:2)]))
+#    }
+#    xdig = xdig[1:tol]
+#    ydig = ydig[1:tol]
+#    if (y>=x){
+#     
+#      z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
+#    }else{
+#      z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")
+#     
+#      }  
+#  return(as.numeric(z))
+#}
 
-  suppressWarnings({
-    xx = atan(x)/(pi/2)
-    yy = atan(y)/(pi/2)
+fxy <- function(x,y, tol = 15){
+ 
+ 
+  xx = atan(x)/(pi/2)
+  yy = atan(y)/(pi/2)
+
+ 
+  xdig = (as.numeric(strsplit(as.character(xx), "")[[1]][-(1:2)]))
+  ydig = (as.numeric(strsplit(as.character(yy), "")[[1]][-(1:2)]))
+  # length(xdig);length(ydig);
+  if (length(xdig) < tol){
+    xdig = (as.numeric(strsplit(as.character(xx-10^(-tol)), "")[[1]][-(1:2)]))
+  }
+  if (length(ydig) < tol){
+    ydig = (as.numeric(strsplit(as.character(yy-10^-(tol)), "")[[1]][-(1:2)]))
+  }
+ 
+  xdig = xdig[1:tol]
+  ydig = ydig[1:tol]
+ 
+  if (length(xdig) > tol){print(c(x,y))}
+  if (length(ydig) > tol){print(c(x,y))}
+ 
+ 
+  if (y>=x){
    
-    xdig = (as.numeric(strsplit(as.character(xx), "")[[1]][-(1:2)]))
-    ydig = (as.numeric(strsplit(as.character(yy), "")[[1]][-(1:2)]))
-    if (length(xdig) < tol){
-      xdig = (as.numeric(strsplit(as.character(xx-10^(-tol)), "")[[1]][-(1:2)]))
-    }
-    if (length(ydig) < tol){
-      ydig = (as.numeric(strsplit(as.character(yy-10^(-tol)), "")[[1]][-(1:2)]))
-    }
-    if (y>=x) z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
-    else      z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")  
-  })
-  return(as.numeric(z))
+    z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
+  }else{
+    z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")
+   
+  }  
+  bol = (z)
+  if(is.na(bol))
+  {
+    cat("\n input: \n",c(x,y),"\n")
+    cat("xdig: \n",c(xdig),"\n")
+    cat("ydig: \n",c(ydig),"\n\n")
+  }
+  return(bol )
 }
 fxy <- Vectorize(fxy)
+
 indices <- function(X,Y)
  {
              res = NULL;res_d = NULL
@@ -33,20 +82,37 @@ indices <- function(X,Y)
                 res_d = rbind(res_d,sol_d)
              }
             xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
-            #sol=xx+yy+xx*yy+xx^2+yy^2
-            sol=fxy(xx,yy)
-            ids <- !duplicated(sol)
-            return(list(xy = res[ids,],d = res_d[ids,][,2]))
+            return(list(xy = res,d = res_d[,2]))
  }
+
+#indices <- function(X,Y)
+# {
+#             res = NULL;res_d = NULL
+#             for(i in 2:ncol(X))
+#             {
+#                sol = cbind(X[,1],X[,i])
+#                res = rbind(res,sol)
+#                sol_d = cbind(Y[,1],Y[,i])
+#                res_d = rbind(res_d,sol_d)
+#             }
+#            xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
+#            #sol=xx+yy+xx*yy+xx^2+yy^2
+#            sol=fxy(xx,yy)
+#            #print(xx);print(yy)
+#            ids <- !duplicated(sol)
+#            return(list(xy = res[ids,],d = res_d[ids,][,2]))
+# }
 ##########################################
 nn2Geo <- function(x,y, K = 1,distance,maxdist,radius)  
   {
      
              
-            if(is.null(maxdist)) nearest = RANN::nn2(x,y,k = K)
+            if(is.null(maxdist)) nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))
             else     {
 
-                     nearest = RANN::nn2(x,y,searchtype = c("radius"), radius = maxdist,k=K)  
+                     nearest = RANN::nn2(x,y,searchtype = c("radius"),
+                             treetype = c("kd"),
+                             radius = maxdist,k=K-1)  
                      sel=nearest$nn.dists<1.340781e+154
                      nearest=nearest[sel]
                      }
@@ -65,7 +131,7 @@ nn2Geo <- function(x,y, K = 1,distance,maxdist,radius)
              }
             ########################################### 
             sol = indices(nearest$nn.idx,nearest$nn.dists)
-            if( is.null(maxdist)) lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
+            if(is.null(maxdist)) lags <- sol$d;rowidx <- sol$xy[,1];colidx <- sol$xy[,2]
             if(!is.null(maxdist)){
                                     sel = sol$xy[,2]>0
                                     lags=sol$d[sel];rowidx <- sol$xy[,1][sel];colidx <- sol$xy[,2][sel]
@@ -98,7 +164,7 @@ if(!is.null(coordx_dyn))
   }
          ## building  temporal  and spatiotemporal indexes
          ## temporal distances (not zero distance)
-         nn=sort(unique(c(RANN::nn2(coordt,coordt,k=maxtime+1)$nn.dists)))[-1]  
+         nn=sort(unique(c(RANN::nn2(coordt,coordt,k=maxtime+1,treetype = c("kd"))$nn.dists)))[-1]  
          tnn=length(nn)   
          for(j in 1:tnn){
           for(k in 1:(numtime-tnn)){

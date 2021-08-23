@@ -1201,7 +1201,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         vartype <- CkVarType(vartype)
         type <- CkType(type)
     
-    
+
      #if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
      if((!bivariate&&num_betas==1)||(bivariate&all(num_betas==c(1,1))))
      {
@@ -1387,6 +1387,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if(is.null(winstp) || !is.numeric(winstp)) winstp <- 0
         if(is.null(winconst_t) || !is.numeric(winconst_t)) winconst_t <- 0
         if(is.null(winstp_t) || !is.numeric(winstp_t)) winstp_t <- 0
+
         ### Set the data format:
         if(spacetime||bivariate){ # setting spam indexes
             if(spacetime) numtime <- ltimes
@@ -1471,8 +1472,11 @@ distC=FALSE
          
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
+      
                 if(is.null(neighb)){
-                    colidx=rowidx=integer(nn*(nn-1)/2)}
+                    if(typereal=="Independence") colidx=rowidx=0
+                    else         colidx=rowidx=integer(nn*(nn-1)/2)}
+           
       }
     if(bivariate) {
     if(!srange[1]&&!srange[2])  srange=c(srange,0,0)
@@ -1566,6 +1570,7 @@ if(!spacetime&&!bivariate)   #  spatial case
  
 
   sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
+
   nn = length(sol$lags)
   sol$lagt=0
   gb=list(); gb$colidx=sol$colidx;
@@ -1636,6 +1641,7 @@ if(weighted) { mmm=max(sol$lags) }
 if(is.null(coordt)) coordt=1
 
 }
+
     ### Returned list of objects:
     return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
                 colidx = colidx ,rowidx=rowidx,

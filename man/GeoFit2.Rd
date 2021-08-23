@@ -1,15 +1,17 @@
-\name{GeoFit}
-\alias{GeoFit}
-\alias{print.GeoFit}
+\name{GeoFit2}
+\alias{GeoFit2}
 \encoding{UTF-8}
 \title{Max-Likelihood-Based Fitting of Gaussian and non Gaussian RFs.}
 \description{
   Maximum weighted composite-likelihood fitting for Gaussian  and some Non-Gaussian  
-  univariate spatial, spatio-temporal and bivariate spatial RFs
+  univariate spatial, spatio-temporal and bivariate spatial RFs.
+  A first preliminary estimation is performed using independence composite-likelihood for the 
+  marginal parameters of the model. The estimates are then used as starting values in the second 
+  final estimation step.
   The function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
+GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE, 
@@ -126,7 +128,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
 
 \details{
   \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
-  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs and independence composite likelihood are considered. Specifically marginal and conditional  pairwise 
+  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs. Specifically marginal and conditional  pairwise 
   likelihood is considered for each type of random field (Gaussian and not Gaussian).
   The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
 
@@ -243,9 +245,6 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   marginal pairwise likelihoods (\code{likelihood=Marginal}) and \code{type="Pairwise"})
   or (\code{likelihood=Conditional}) and \code{type="Pairwise"})
 
-  The combination  \code{type="Independence"} and \code{likelihood=Marginal} allows independence composite 
-  likelihood i.e. maximum likelihod assuming independence. In this case only the marginal parameters can be estimated.
-  This combination can be useful to find good starting values for the margnal parameters.
 
   If a Gaussian RF is considered  (\code{model=Gaussian}) then:
     \itemize{
@@ -508,8 +507,8 @@ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 ### Gaussian RFs with exponential correlation.
 ### 
 ###############################################################
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
-                    neighb=3,likelihood="Conditional",
+fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, 
+                    optimizer="BFGS",neighb=3,likelihood="Marginal",
                     type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
@@ -522,7 +521,7 @@ print(fit1)
 I=Inf
 lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
 upper<-list(mean=I,mean1=I,scale=I,sill=I)
-fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
+fit2 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel,
                     optimizer="nlminb",upper=upper,lower=lower,
                     likelihood="Full",type="Standard", 
                     start=start,fixed=fixed,X=X)
@@ -538,7 +537,7 @@ print(fit2)
 ###
 ### Example 3. Maximum pairwise likelihood fitting of spatial
 ### Gamma and Weibull  RFs with Generalized Wendland correlation
-### using Nelder-Mead 
+### using Nelder-Mead and BFGS 
 ###############################################################
 set.seed(524)
 # Define the spatial-coordinates of the points:
@@ -565,9 +564,8 @@ fixed<-list(nugget=nugget,power2=4,sill=1-nugget,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
-fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+fit <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",X=X,
-                    optimizer="Nelder-Mead",
                     start=start,fixed=fixed)
 print(fit$param)
 
@@ -575,72 +573,12 @@ model="Gamma"
 start<-list(mean=mean,mean1=mean1,scale=scale)
 fixed<-list(nugget=nugget,power2=4,sill=1-nugget,shape=6)
 # Maximum pairwise composite-likelihood fitting of the RF:
-fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
+fit <- GeoFit2(data=data,coordx=coords,corrmodel="Wend0", model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",X=X,
                     start=start,fixed=fixed)
 
 print(fit$param)
 
-
-################################################################
-###
-### Example 4. Maximum pairwise likelihood fitting of
-### StudendT spatial  RFs with Wendland correlation
-###
-###############################################################
-
-set.seed(15274)
-# Define the spatial-coordinates of the points:
-N=300
-x <- runif(N, 0, 1)
-y <- runif(N, 0, 1)
-coords <- cbind(x,y)
-X=cbind(rep(1,N),runif(N))
-mean=1; mean1=2 # regression parameters
-nugget=0
-sill=0.5
-scale=0.2
-df=4   ## degrees of freedom
-model="StudentT"
-corrmodel="Wend0"
-
-# Simulation of a studentT RF:
-param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,df=1/df,nugget=nugget,power2=4)
-data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
-           param=param)$data
-##  estimation assuming df unknown
-fixed<-list(nugget=nugget,power2=4)
-start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill,df=1/df)
-
-I=Inf
-lower<-list(mean=-I,mean1=-I,scale=0,sill=0,df=0)
-upper<-list(mean=I,mean1=I,scale=I,sill=I,df=0.5)
-
-
-# Maximum pairwise composite-likelihood fitting of the RF:
-
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                 neighb=3,likelihood="Marginal",type="Pairwise",X=X,
-               lower=lower,upper=upper,optimizer="nlminb",start=start,fixed=fixed)
-print(fit1$param)
-
-
-
-
-
-##  df must be rounded and fixed
-df=round(1/(as.numeric(fit1$param['df'])))
- fixed<-list(nugget=nugget,power2=4,df=1/df)
- start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
-
-lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
-upper<-list(mean=I,mean1=I,scale=I,sill=I)
-
-# Maximum pairwise composite-likelihood fitting of the RF:
-fit <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
-                    lower=lower,upper=upper, optimizer="nlminb" , start=start,fixed=fixed)
-print(fit$param)
 
 
 ################################################################
@@ -673,205 +611,10 @@ plot(density(data))
 fixed=list(power2=power2,nugget=nugget)
 start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 # Maximum pairwise likelihood:
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
+fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",
                     start=start,fixed=fixed)
-print(fit1$param)
-# Maximum likelihood:
-fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    likelihood="Full",type="Standard",
-                    start=start,fixed=fixed)
-print(fit2$param)
 
-
-################################################################
-###
-### Example 6. Maximum pairwise likelihood fitting of 
-### Binomial and negative Binomial   RFs 
-### with exponential correlation 
-###
-###############################################################
-
-set.seed(422)
-N=350
-x <- runif(N, 0, 1)
-y <- runif(N, 0, 1)
-coords <- cbind(x,y)
-mean=0.1; mean1=0.8; mean2=-0.5 # regression parameters
-X=cbind(rep(1,N),runif(N),runif(N)) # marix covariates
-corrmodel <- "Wend0"
-param=list(mean=mean,mean1=mean1,mean2=mean2,sill=1,nugget=0,scale=0.2,power2=4)
-# Simulation of the spatial Binomial-Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="Binomial", n=10,X=X,
-             param=param)$data
-
-
-
-## estimating the marginal parameters using independence cl
-fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
-start <- list(mean=mean,mean1=mean1,mean2=mean2)
-# Maximum pairwise likelihood:
-fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
-          type="Independence",neighb=3,model="Binomial",  fixed=fixed)
-                  
-print(fit0)
-
-## using the estimates as starting values
-fixed <- list(nugget=nugget,power2=4,sill=1)
-start <- as.list(fit0$param)
-start$scale=0.2
-# Maximum pairwise likelihood:
-fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, 
-                    likelihood="Conditional",type="Pairwise",  neighb=3
-         ,model="Binomial", start=start, fixed=fixed, optimizer="BFGS")
-                  
-print(fit1)
-
-set.seed(220)
-# Simulation of the spatial Negative Binomial-Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="BinomialNeg", n=5,X=X,
-              param=param)$data
-fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
-start <- list(mean=mean,mean1=mean1,mean2=mean2)
-## estimating the marginal parameters using independence cl
-fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X,
-                likelihood="Marginal",type="Independence",
-                neighb=3,model="BinomialNeg",  start=start, fixed=fixed)
-                  
-print(fit0)
-
-## using the estimates as starting values
-fixed <- list(nugget=nugget,power2=4,sill=1)
-start <- as.list(fit0$param)
-start$scale=0.2
-
-# Maximum pairwise likelihood:
-fit2 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel, n=5,X=X, start=start,
-              likelihood="Conditional",type="Pairwise",
-              neighb=3, model="BinomialNeg", fixed=fixed, optimizer="BFGS")
-                
-
-print(fit2)
-
-
-###############################################################
-######### Examples of spatio-temporal RFs ###########
-###############################################################
-set.seed(52)
-# Define the temporal sequence:
-time <- seq(1, 10, 1)
-
-# Define the spatial-coordinates of the points:
-x <- runif(20, 0, 1)
-set.seed(42)
-y <- runif(20, 0, 1)
-coords=cbind(x,y)
-
-# Set the covariance model's parameters:
-corrmodel="Exp_Exp"
-scale_s=0.2/3
-scale_t=1
-sill=1
-nugget=0
-mean=0
-
-param<-list(mean=0,scale_s=scale_s,scale_t=scale_t,
-            sill=sill,nugget=nugget)
-
-# Simulation of the spatial-temporal Gaussian RF:
-data <- GeoSim(coordx=coords,coordt=time,corrmodel=corrmodel,
-              param=param)$data
-
-################################################################
-###
-### Example 7. Maximum pairwise likelihood fitting of a
-### space time Gaussian RF with double-exponential correlation
-###
-###############################################################
-# Fixed parameters
-fixed<-list(nugget=nugget)
-# Starting value for the estimated parameters
-start<-list(mean=mean,scale_s=scale_s,scale_t=scale_t,sill=sill)
-
-# Maximum composite-likelihood fitting of the RF:
-fit <- GeoFit(data=data,coordx=coords,coordt=time,
-                    corrmodel="Exp_Exp",maxtime=1,neighb=3,
-                    likelihood="Marginal",type="Pairwise",
-                     start=start,fixed=fixed)
-print(fit)
-
-
-################################################################
-###
-### Example 8. Maximum standard likelihood fitting of a
-### space time Gaussian RF observed on  dynamical spatial coordinates
-### with double-exponential correlation using  BFGS
-### 
-###############################################################
-
-maxN=50
-coordx_dyn=list()
-set.seed(31)
-for(k in 1:length(time))
-{
-NN=sample(1:maxN,size=1)
-x <- runif(NN, 0, 1)
-y <- runif(NN, 0, 1)
-coordx_dyn[[k]]=cbind(x,y)
-}
-
-data <- GeoSim(coordx_dyn=coordx_dyn, coordt=time, corrmodel="Exp_Exp",
-                param=param)$data
-I=Inf
-lower<-list(mean=-I,scale_s=0,scale_t=0,sill=0)
-upper<-list(mean=-I,scale_s=I,scale_t=I,sill=I)
-fit <- GeoFit(data=data,coordx_dyn=coordx_dyn,coordt=time,
-              corrmodel="Exp_Exp",likelihood="Full",type="Standard",
-              lower=lower,upper=upper,
-              start=start,fixed=fixed)
-print(fit)
-
-
-
-
-###############################################################
-######### Examples of  spatial bivariate RFs ###########
-###############################################################
-
-
-################################################################
-###
-### Example 9. Maximum, and pairwise  likelihood fitting of a
-### bivariate Gaussian RF with separable Bivariate  matern 
-### (cross) correlation model using BFGS and a parallel 
-### implementation of L-BFGS-B
-###############################################################
-
-# Define the spatial-coordinates of the points:
-set.seed(5)
-x <- runif(250, 0, 1)
-y <- runif(250, 0, 1)
-coords=cbind(x,y)
-# parameters
-param=list(mean_1=0,mean_2=0,scale=0.1,smooth=0.5,sill_1=1,sill_2=1,
-           nugget_1=0,nugget_2=0,pcol=0.2)
-# Simulation of a spatial Gaussian RF:
-data <- GeoSim(coordx=coords, corrmodel="Bi_Matern_sep", 
-              param=param)$data
-
-# selecting fixed and estimated parameters
-fixed=list(nugget_1=0,nugget_2=0,smooth=0.5)
-start=list(mean_1=0,mean_2=0,sill_1=var(data[1,]),sill_2=var(data[2,]),
-           scale=0.1,pcol=cor(data[1,],data[2,]))
-
-
-# Maximum pairwise likelihood
-
-fitcl<- GeoFit(data=data, coordx=coords, corrmodel="Bi_Matern_sep",
-                     likelihood="Marginal",type="Pairwise",
-                     optimizer="BFGS" , start=start,fixed=fixed,
-                     neighb=c(4,4,4))
-print(fitcl)
 
 
 }

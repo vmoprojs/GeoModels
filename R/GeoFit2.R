@@ -3,7 +3,7 @@
 ####################################################
 
 
-GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
+GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=Inf,neighb=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
@@ -86,10 +86,20 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
       uu[uu==Inf]=1e+12
       initparam$upper <- uu;initparam$lower <- ll
      }}
-      #if(length(param)==1)  {initparam$upper=1000}
 
 
+################################################################################################
+
+    fitted_ini<-CompIndLik2 (initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+                                   coordx_dyn,unname(initparam$data), 
+                                   initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
+                                    initparam$lower,initparam$model,initparam$n ,
+                                     initparam$namescorr,initparam$namesnuis,
+                                   initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
+                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
    #updating starting parameters
+initparam$param=fitted_ini$par
+
 
    # Full likelihood:
     if(likelihood=='Full')
@@ -129,20 +139,9 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                    unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,neighb)
       }
 
- if(likelihood=='Marginal'&&type=="Independence")
-   {
 
 
-      fitted<-CompIndLik2 (initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
-                                   coordx_dyn,unname(initparam$data), 
-                                   initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
-                                    initparam$lower,initparam$model,initparam$n ,
-                                     initparam$namescorr,initparam$namesnuis,
-                                   initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
-  }
-
-
+ 
 
 
      ##misspecified models
