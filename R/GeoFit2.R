@@ -97,10 +97,9 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
-   #updating starting parameters
-initparam$param=fitted_ini$par
-
-
+   #updating starting and names  parameters 
+initparam$param=append(fitted_ini$par,c(initparam$param,initparam$fixed)[initparam$namescorr])
+initparam$namesparam=names(initparam$param)
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:

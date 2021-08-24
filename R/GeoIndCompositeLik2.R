@@ -153,6 +153,7 @@ return(-res)
                               namesnuis,namesparam,X)
       {
 
+
         names(param) <- namesparam
         param <- c(param, fixed)
         #paramcorr <- param[namescorr]
@@ -256,9 +257,14 @@ return(-res)
      if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
 
-     
- namesnuis=namesnuis[namesnuis!="nugget"]
- 
+####     
+  namesfixed=names(fixed)
+  namesnuis=namesnuis[namesnuis!="nugget"]
+  param=param[!is.na(param[namesnuis])]
+  aa=pmatch(namescorr,names(param));aa=aa[!is.na(aa)]
+  if(length(aa)>=1)param=param[-aa]
+ namesparam=names(param)
+ ###
    if(!onlyvar){
     
   ##############################.  spatial or space time ############################################
