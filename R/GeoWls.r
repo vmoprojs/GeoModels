@@ -39,7 +39,7 @@ print.GeoWLS <- function(x, digits = max(3, getOption("digits") - 3), ...)
 WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                     likelihood, maxdist, neighb,maxtime, model, n, param, parscale,
                     paramrange, radius, start, taper, tapsep, type, varest, vartype,
-                    weighted, winconst,winconst_t, winstp_t, winstp,copula,X,memdist)
+                    weighted, winconst,winconst_t, winstp_t, winstp,copula,X,memdist,nosym)
   {
     # Determines the range of the parameters for a given correlation
     SetRangeParam <- function(namesparam, numparam)
@@ -148,7 +148,7 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
                            grid, likelihood, maxdist,neighb, maxtime, model, n, 
                            param, parscale, paramrange, radius,  start, taper, tapsep,
                            "GeoWLS", type, varest, vartype,
-                           weighted, winconst,winconst_t, winstp_t, winstp,copula, X, memdist)
+                           weighted, winconst,winconst_t, winstp_t, winstp,copula, X, memdist, nosym)
 
        
   

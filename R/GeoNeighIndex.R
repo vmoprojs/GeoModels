@@ -85,23 +85,7 @@ indices <- function(X,Y)
             return(list(xy = res,d = res_d[,2]))
  }
 
-#indices <- function(X,Y)
-# {
-#             res = NULL;res_d = NULL
-#             for(i in 2:ncol(X))
-#             {
-#                sol = cbind(X[,1],X[,i])
-#                res = rbind(res,sol)
-#                sol_d = cbind(Y[,1],Y[,i])
-#                res_d = rbind(res_d,sol_d)
-#             }
-#            xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
-#            #sol=xx+yy+xx*yy+xx^2+yy^2
-#            sol=fxy(xx,yy)
-#            #print(xx);print(yy)
-#            ids <- !duplicated(sol)
-#            return(list(xy = res[ids,],d = res_d[ids,][,2]))
-# }
+
 ##########################################
 nn2Geo <- function(x,y, K = 1,distance,maxdist,radius)  
   {
@@ -109,10 +93,13 @@ nn2Geo <- function(x,y, K = 1,distance,maxdist,radius)
              
             if(is.null(maxdist)) nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))
             else     {
+                    # print(K)
+                    # print(maxdist)
 
                      nearest = RANN::nn2(x,y,searchtype = c("radius"),
                              treetype = c("kd"),
                              radius = maxdist,k=K-1)  
+
                      sel=nearest$nn.dists<1.340781e+154
                      nearest=nearest[sel]
                      }

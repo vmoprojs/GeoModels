@@ -11,7 +11,7 @@
 WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall,
         fixed, grid,likelihood, maxdist, neighb,maxtime, model, n, param, 
         parscale, paramrange, radius,start, taper, tapsep, type, varest,
-        vartype, weighted, winconst,winconst_t, winstp_t, winstp,copula,X,memdist)
+        vartype, weighted, winconst,winconst_t, winstp_t, winstp,copula,X,memdist,nosym)
 }
 \arguments{
  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -86,6 +86,7 @@ WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall,
     \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}  
         \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
       are computed before  the optmization. }
+      \item{nosym}{Logical; if TRUE two simmetric weights are not considered }
 }
 
 \seealso{\code{\link{GeoFit}}.}

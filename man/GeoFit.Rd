@@ -15,7 +15,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
       optimizer='Nelder-Mead', parallel=FALSE, 
       radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-      winconst_t=NULL, winstp_t=NULL,X=NULL)
+      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
 }
 
 \arguments{
@@ -122,6 +122,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
       overlapping in the temporal  sub-sampling procedure. The case \eqn{1} 
     correspond to no overlapping. See \bold{Details} for more information.}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
+    \item{nosym}{Logical; if TRUE two simmetric weights are not considered }
 }
 
 \details{

@@ -43,7 +43,7 @@ data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
 	 distance=fit$distance,radius=fit$radius)
 
 
-res_est=GeoFit( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
+res_est=GeoFit2( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,

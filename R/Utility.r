@@ -1067,7 +1067,7 @@ if((model %in% c('Beta','Kumaraswamy'))) {
 StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                       likelihood,  maxdist, neighb,maxtime, model, n, param, parscale,
                       paramrange, radius, start, taper, tapsep, type,
-                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,copula, X,memdist)
+                      typereal, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t,copula, X,memdist,nosym)
 {
     ### START Includes internal functions:
     replicates=1
@@ -1149,9 +1149,6 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     flagcorr <- NULL
     ### START settings the data structure:
     # set the coordinates sizes:
-
-
-
 
     if(is.null(coordx_dyn))  
     {
@@ -1392,29 +1389,20 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if(spacetime||bivariate){ # setting spam indexes
             if(spacetime) numtime <- ltimes
             if(bivariate) numtime <- 2
-
-                if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
-                tapering<-1
-
-                idx<-integer((numcoord*numtime)^2)
-                ja<-integer((numcoord*numtime)^2)
-                ia<-integer(numcoord*numtime+1)
-                tapmodel<-CkCorrModel(taper)
-                              }
                 }
         else{              #    setting spam indexes
             numtime <- 1
             coordt <- 0
             data <- matrix(data, ncol=numcoord, nrow=replicates)
-            if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
-                tapering<-1
-                
-                idx<-integer((numcoord*numtime)^2)
-                ja<-integer((numcoord*numtime)^2)
-                ia<-integer(numcoord*numtime+1)
-                tapmodel<-CkCorrModel(taper)
-                }
             }
+
+        if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
+        tapering<-1
+        idx<-integer((numcoord*numtime)^2)
+        ja<-integer((numcoord*numtime)^2)
+        ia<-integer(numcoord*numtime+1)
+        tapmodel<-CkCorrModel(taper)
+                }
     }
     # END code for the fitting procedure
 
@@ -1497,8 +1485,8 @@ if(tapering) mem=TRUE
 ##############################################################
 ## loading distances in memory using brute force C routine ###
 #############################################################
-### aca paso solo para  simular o maximum likelihood o (variograma)
-### o si hay solo maxdist!!!
+### aca paso solo para  simular o maximum likelihood o (variograma) tapering
+### o si hay CL with  maxdist!!!
 
 if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
@@ -1548,7 +1536,7 @@ numpairs <- gb$numpairs
 else   
 ###############################################################
 ################### loading distances in memory using RANN package 
-#### it works when CL and neighb is numeric or neighb, maxdist is numeric
+#### it works when CL  using neighb  or maxdist AND neighb 
 #############################################################
 { 
 
@@ -1567,10 +1555,18 @@ if(!spacetime&&!bivariate)   #  spatial case
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
- 
 
   sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
 
+ ###    deleting symmetric indexes with associate distances
+ print(nosym)
+ if(nosym){
+  aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
+  sol$rowidx=c(aa$xy[,1])
+  sol$colidx=c(aa$xy[,2])
+  sol$lags=c(aa$d) }
+
+###
   nn = length(sol$lags)
   sol$lagt=0
   gb=list(); gb$colidx=sol$colidx;
@@ -1593,6 +1589,14 @@ if(spacetime)   #  space time  case
   sol=GeoNeighIndex(coordx=x[1:numcoord,],
     coordx_dyn=coordx_dyn,
     coordt=coordt,distance=distance1,maxdist=maxdist,neighb=K,maxtime=maxtime,radius=radius)
+
+ # ###    deleting symmetric indexes with associate distances
+  if(nosym){
+  aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
+  sol$rowidx=c(aa$xy[,1])
+  sol$colidx=c(aa$xy[,2])
+  sol$lags=c(aa$d)}
+
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              nn=length(gb$colidx)
@@ -1612,6 +1616,14 @@ if(bivariate)   # bivariate case
   K=neighb
   x=cbind(coordx, coordy)
   sol=GeoNeighIndex(coordx=x, coordx_dyn=coordx_dyn, distance=distance1,maxdist=maxdist,neighb=K,maxtime=maxtime,radius=radius,bivariate=TRUE)
+  
+  ###    deleting symmetric indexes with associate distances
+  if(nosym){
+  aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
+  sol$rowidx=c(aa$xy[,1])
+  sol$colidx=c(aa$xy[,2])
+  sol$lags=c(aa$d)}
+
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              #gb$first=sol$first
