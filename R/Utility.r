@@ -1559,7 +1559,7 @@ if(!spacetime&&!bivariate)   #  spatial case
   sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
 
  ###    deleting symmetric indexes with associate distances
- print(nosym)
+
  if(nosym){
   aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
   sol$rowidx=c(aa$xy[,1])

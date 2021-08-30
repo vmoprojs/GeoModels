@@ -11,7 +11,7 @@
 CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
               lower, model, n, namescorr, namesnuis, namesparam,
               numparam, optimizer, onlyvar, parallel, param, spacetime, type,
-              upper, varest, ns, X,sensitivity)
+              upper, varest, ns, X,sensitivity,copula)
 }
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
@@ -72,6 +72,7 @@ CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnu
    \item{ns}{Numeric; Number of (dynamical) temporal instants. }   
   \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
   \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
+   \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
 }
 
 \seealso{\code{\link{GeoFit}}}

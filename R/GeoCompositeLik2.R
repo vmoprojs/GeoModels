@@ -335,6 +335,12 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
 
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
+
+# print(param)
+#print(namesparam)
+#print(namesnuis)
+#print(fixed)
+
    if(is.null(GPU)) GPU=0
    if(!onlyvar){
    

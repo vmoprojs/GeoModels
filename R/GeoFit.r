@@ -57,6 +57,12 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
 
+        ## moving sill from starting to fixed parameters if necessary
+        if(sum(initparam$namesparam=='sill')==1)
+        {
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+          {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
+           a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
      
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
@@ -70,6 +76,10 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")
 
        if(sum(unlist(lower)>unlist((upper)))>0) stop("some values of the lower bound is greater of the upper bound \n")
+
+ if(sum(names(lower)=='sill')==1){
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+            {lower=lower[names(lower)!='sill'];upper=upper[names(upper)!='sill']; }}
     #setting alphabetic order
       lower=lower[order(names(lower))]
       upper=upper[order(names(upper))] 
@@ -139,7 +149,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
+                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity,copula)
   }
 
 

@@ -57,7 +57,13 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
 
-     
+    ## moving sill from starting to fixed parameters if necessary
+        if(sum(initparam$namesparam=='sill')==1){
+    if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+    {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
+    a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
+
+
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
@@ -71,6 +77,11 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
 
        if(sum(unlist(lower)>unlist((upper)))>0) stop("some values of the lower bound is greater of the upper bound \n")
     #setting alphabetic order
+
+      if(sum(names(lower)=='sill')==1){
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+            {lower=lower[names(lower)!='sill'];upper=upper[names(upper)!='sill']; }}
+
       lower=lower[order(names(lower))]
       upper=upper[order(names(upper))] 
       npar<-length(initparam$param) 
@@ -84,7 +95,10 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
            stop("the names of  parameters in the lower and/or  upper bounds do not match with starting parameters names .\n") }
       ll[ll==0]=.Machine$double.eps ## when 0 we don't want exactly zero
       uu[uu==Inf]=1e+12
+
       initparam$upper <- uu;initparam$lower <- ll
+
+    
      }}
 
 
@@ -96,21 +110,20 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity)
-   #updating starting and names  parameters 
-
-
-
-
-
+                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity,copula)
+   
+######################################################
+######updating starting and names  parameters 
+######################################################
 namespp=names(fitted_ini$par) # names of the parameters estimaded with Ind cl
-
 aa=append(initparam$param,initparam$fixed) ## all the parameters
 sel=match(namespp,names(aa));sel=sel[!is.na(sel)]  # indices to replace
 aa[sel]=fitted_ini$par      #replacing
 #nn=names(initparam$param)  ## selecting new starting parameters
 sel=match(names(aa),initparam$namesparam);sel=sel[!is.na(sel)]  
 initparam$param=aa[sel]   
+######################################################
+
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:

@@ -7,7 +7,7 @@
 CompIndLik2 <- function(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
                            lower, model, n, namescorr, namesnuis, namesparam,
                            numparam,  optimizer, onlyvar, parallel, param, spacetime, type,
-                           upper, varest, ns, X,sensitivity)
+                           upper, varest, ns, X,sensitivity,copula)
   {
 
 
@@ -161,6 +161,7 @@ return(-res)
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
         MM=c(X%*%mm)
+        #print(mm);print(other_nuis)
         result=indloglik(fan,data,MM,other_nuis)
         return(result)
       }
@@ -187,7 +188,7 @@ return(-res)
       }
 
    ##################################################################################################
-   ############### starting functtion ###############################################################
+   ############### starting function ###############################################################
    ##################################################################################################
 
 
@@ -256,12 +257,30 @@ return(-res)
 
 
 ####     
-  namesfixed=names(fixed)
-  namesnuis=namesnuis[namesnuis!="nugget"]
-  param=param[!is.na(param[namesnuis])]
-  aa=pmatch(namescorr,names(param));aa=aa[!is.na(aa)]
-  if(length(aa)>=1)param=param[-aa]
- namesparam=names(param)
+
+tot=c(param,fixed) ## all the parameters
+## deleting corr para
+tot=tot[is.na(pmatch(names(tot),namescorr))]
+## deleting nugget
+tot=tot[names(tot)!='nugget'];namesnuis=namesnuis[namesnuis!="nugget"]
+param=tot[pmatch(namesparam,names(tot))];param=param[!is.na(param)]
+
+
+if(model  %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11))
+ {param=param[names(param)!='sill'];a=1; names(a)="sill";fixed=c(fixed,a)}
+
+if(!is.null(copula))
+    {if(copula=="Clayton")
+           {param=param[names(param)!='nu'];a=2; names(a)="nu";fixed=c(fixed,a)}}
+
+namesparam=names(param)
+  
+
+  #print(namesnuis)
+  #print(param)
+ # print(namesparam)
+
+
  ###
    if(!onlyvar){
     
