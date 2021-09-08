@@ -189,8 +189,7 @@ CheckSph<- function(numbermodel)
 CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, fcall, fixed, grid,
                       likelihood, maxdist, maxtime,  model, n,  optimizer, param,
                        radius, start, taper, tapsep, type, varest, vartype, weighted,
-                       copula,
-                       X)
+                       copula,X)
   {
     error <- NULL
     replicates=1
@@ -635,6 +634,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'some parameters are out of the range\n'
           return(list(error=error))}
      }# END check simulation
+  
     }
  else{   
 
@@ -1102,12 +1102,44 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
                                 Proj=3)
         return(CheckDistance)
     }
+##############################################################################################    
+newtap<- function(coords,numcoord, coordt,numtime, distance,maxdist,maxtime,spacetime,bivariate,radius)
+    {
+
+      if(distance==0) method1="euclidean"
+      if(distance==2||distance==1) method1="greatcircle"
+
+if(method1=="greatcircle"){
+      gb=spam::nearest.dist( x=coords,method = method1,
+             delta = maxdist*360/(radius*2*pi), upper = NULL,miles=FALSE, R=radius)
+      if(distance==2) gb@entries=radius*gb@entries             ##GC
+      if(distance==1) gb@entries=2*radius*sin(0.5*gb@entries)  ##CH
+      }
+if(method1=="euclidean")
+      gb=spam::nearest.dist( x=coords,method = method1,
+                         delta = maxdist, upper =NULL,miles=FALSE, R=1)
+    
+      numpairs=length(gb@entries)
+ ##loading only good distances..
+      .C("SetGlobalVar2", as.integer(numcoord),  as.integer(numtime),  
+       as.double(gb@entries),as.integer(numpairs),as.double(srange[2]),
+       as.double(1),as.double(1),as.integer(1), # to change for spacetime sparse
+       as.integer(spacetime),as.integer(bivariate),as.integer(1),as.integer(1)) 
+    colidx=gb@colindices
+    rowidx=gb@rowpointers
+    nozero=numpairs/(numcoord)^2
+  return(list(colidx=colidx,rowidx=rowidx,numpairs=numpairs,nozero=nozero))
+    }
+################################################################################################
+
+
     ### END Includes internal functions
     # Set the correlation and  if the correlation is space-time(T or F) or bivariate (T o F)  or univariate (case spacetime=F and bivariate=F)p
     corrmodel<-CkCorrModel(corrmodel)
     bivariate <- CheckBiv(corrmodel); if(bivariate) coordt=c(1,2)
     spacetime <- CheckST(corrmodel)
     isdyn=!is.null(coordx_dyn)
+    space=!(spacetime||bivariate)
 
     if(!bivariate)
        {
@@ -1176,10 +1208,10 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
     }
 
 
-   if((spacetime||bivariate)&&is.null(coordx_dyn)) {coordx=rep(coordx,ltimes);coordy=rep(coordy,ltimes);}
+   if(!space && is.null(coordx_dyn)) {coordx=rep(coordx,ltimes);coordy=rep(coordy,ltimes);}
     
     NS=cumsum(ns)
-    if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
+    if(!space)   NS=c(0,NS)[-(length(ns)+1)]
 
 
     # initialize tapering variables:
@@ -1386,7 +1418,7 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if(is.null(winstp_t) || !is.numeric(winstp_t)) winstp_t <- 0
 
         ### Set the data format:
-        if(spacetime||bivariate){ # setting spam indexes
+        if(!space){ # setting spam indexes
             if(spacetime) numtime <- ltimes
             if(bivariate) numtime <- 2
                 }
@@ -1398,16 +1430,22 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
 
         if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
         tapering<-1
+        if(!space){
         idx<-integer((numcoord*numtime)^2)
         ja<-integer((numcoord*numtime)^2)
-        ia<-integer(numcoord*numtime+1)
+        ia<-integer(numcoord*numtime+1)}
+          else {idx=ja=ia=0}
         tapmodel<-CkCorrModel(taper)
                 }
+              ###### ojo aca!! if conditional then I used nn2 using "all" the indeces
+        if(likelihood==1&&is.numeric(maxdist)&&is.null(neighb))   
+                          neighb= min(numcoord*numtime,500)
+                       
+                            
     }
     # END code for the fitting procedure
-
-
-    # START code for the simulation procedure
+##################################################################################################################
+# START code for the simulation procedure
     if(fcall=="Simulation"){
         neighb=NULL;likelihood=2
         namesnuis <- sort(unique(c(namesnuis,NuisParam("Gaussian",bivariate,num_betas,copula))))
@@ -1427,22 +1465,26 @@ StartParam <- function(coordx, coordy, coordt,coordx_dyn, corrmodel, data, dista
         if((typereal=="Tapering"&&type=="Tapering")||(typereal=="Tapering1"&&type=="Tapering1")||(typereal=="Tapering2"&&type=="Tapering2")){
                 tapering<-1
                  nt=numcoord*numtime
+               if(!space){  
                 idx<-integer(nt^2)
                 ja<-integer(nt^2)
                 ia<-integer(nt+1)
+                 }
+                else {idx=ja=ia=0}
                 tapmodel<-CkCorrModel(taper)
         }
+        K=neighb
 }  # END code for the simulation procedure
-  
-    ### Compute the spatial and spatial-temporal distances:
+#####################################################################################
+
     numpairs <- integer(1)
     srange <- double(1)
     trange <- double(1)
 
-if(typereal=="Independence"){ maxdist=NULL;maxtime=NULL}
+if(typereal=="Independence"){ maxdist=NULL;maxtime=NULL;K=neighb}
 #################
 distC=FALSE
-    if(!tapering)
+if(!tapering)
  { if(is.null(neighb)&is.numeric(maxdist)) distC=TRUE  }### just for maxdist parameter
 ################
   
@@ -1452,7 +1494,7 @@ distC=FALSE
     if(is.null(tapsep))  tapsep=c(0.5,0.5)
     else  {if(length(tapsep)==1) tapsep=c(tapsep,0)}
 
-     mem=FALSE
+    mem=FALSE
     if(tapering||memdist)  { mem=TRUE }   #### NB
 
     if(mem&&!tapering)  
@@ -1460,7 +1502,6 @@ distC=FALSE
          
                 nn=numcoord*numtime
                 if(spacetime&&isdyn)  nn=sum(ns)
-      
                 if(is.null(neighb)){
                     if(typereal=="Independence") colidx=rowidx=0
                     else         colidx=rowidx=integer(nn*(nn-1)/2)}
@@ -1471,6 +1512,7 @@ distC=FALSE
     if(is.na(srange[3])) srange[3]=srange[2];
     if(is.na(srange[4])) srange[4]=srange[2];}
     
+  
     ###
     if(CheckSph(corrmodel))   radius=1
     ###
@@ -1482,6 +1524,19 @@ distC=FALSE
 if(fcall=="Fitting"&likelihood==2&!is.null(neighb)) mem=FALSE # Vecchia gp case
 if(fcall=="Fitting"&likelihood==2||fcall=="Simulation") mem=FALSE 
 if(tapering) mem=TRUE
+
+###################### using new "spam" with neighdist(just for space)#########################################################
+if(tapering&space){
+    cc=cbind(coordx, coordy);numcoord=nrow(cc);numtime=length(coordt)
+    atap=newtap(cc,numcoord, coordt,numtime, distance,maxdist,maxtime,spacetime,bivariate,radius)
+    ja=colidx=atap$colidx
+    ia=rowidx=atap$rowidx
+    numpairs=atap$numpairs
+    nozero=atap$nozero
+}
+
+else{          # all the rest
+
 ##############################################################
 ## loading distances in memory using brute force C routine ###
 #############################################################
@@ -1490,7 +1545,7 @@ if(tapering) mem=TRUE
 
 if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
-if(fcall=="Fitting"&mem==TRUE&(spacetime||bivariate)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
+if(fcall=="Fitting"&mem==TRUE&(!space)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
 
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
@@ -1531,6 +1586,7 @@ numpairs <- gb$numpairs
     nozero <- numpairs/(numcoord*numtime)^2
     idx <- idx[1:numpairs]
     ja  <- ja[1:numpairs]
+    K=neighb
 }
 #######################################################################
 else   
@@ -1550,12 +1606,11 @@ if(distance==1) distance1="Chor";
 if(all(neighb==0.5)) neighb=NULL ## ojo!!
 if(maxdist==Inf) maxdist=NULL
 
-if(!spacetime&&!bivariate)   #  spatial case
+if(space)   #  spatial case
 {
 ##########################################
   K=neighb
   x=cbind(coordx, coordy)
-
   sol=GeoNeighIndex(coordx=x,distance=distance1,maxdist=maxdist,neighb=K,radius=radius)
 
  ###    deleting symmetric indexes with associate distances
@@ -1649,11 +1704,17 @@ if(weighted) { mmm=max(sol$lags) }
 }  
 ############################################## 
 # end neighboord case
-#####
+##############################################
 if(is.null(coordt)) coordt=1
 
+ }
 }
 
+
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
     ### Returned list of objects:
     return(list(bivariate=bivariate,coordx=coordx,coordy=coordy,coordt=coordt,corrmodel=corrmodel,
                 colidx = colidx ,rowidx=rowidx,
@@ -1662,7 +1723,7 @@ if(is.null(coordt)) coordt=1
                 lower=paramrange$lower,model=model,n=n,namescorr=namescorr,namesfixed=namesfixed,
                 namesnuis=namesnuis,namesparam=namesparam,namessim=namessim,namesstart=namesstart,ns=ns,NS=NS,
                 num_betas=num_betas,
-                numcoord=numcoord,numcoordx=numcoordx,numcoordy=numcoordy,
+                numcoord=numcoord,numcoordx=numcoordx,numcoordy=numcoordy,neighb=K,
                 numfixed=numfixed,numpairs=numpairs,numparam=numparam,numparamcorr=numparamcorr,
                 numstart=numstart,numtime=numtime,param=param,
                 setup=list(                ## setup is a list

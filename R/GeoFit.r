@@ -110,7 +110,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
                                initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,parallel,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
-                               initparam$upper,initparam$ns,unname(initparam$X),neighb)
+                               initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb)
 
     # Composite likelihood:
     if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')&&type=="Pairwise"){
@@ -136,7 +136,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,neighb)
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb)
       }
 
  if(likelihood=='Marginal'&&type=="Independence")
@@ -215,7 +215,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          score = fitted$score,
                          maxdist =maxdist,
                          maxtime = maxtime,
-                         neighb=neighb,
+                         neighb=initparam$neighb,
                          numpairs=initparam$numpairs,
                          missp=missp,
                          radius = radius,

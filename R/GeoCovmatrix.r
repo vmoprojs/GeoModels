@@ -66,7 +66,6 @@ GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
 
 if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
 {
-
   if(type=="Standard") {
       fname <-"CorrelationMat2"
       if(spacetime) fname <- "CorrelationMat_st_dyn2"
@@ -88,6 +87,7 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
       }
 ###############################################################
    if(type=="Tapering")  {
+
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
@@ -220,7 +220,6 @@ if(bivariate){}
      if(!bivariate)
 {
     corr=cr$corr*(1-as.numeric(nuisance['nugget']))
-
     nu=as.numeric(1/nuisance['df']); sk=as.numeric(nuisance['skew'])
     skew2=sk*sk;l=nu/2; f=(nu-1)/2; w=sqrt(1-skew2);y=corr;
     CorSkew=(2*skew2/(pi*w*w+skew2*(pi-2)))*(sqrt(1-y*y)+y*asin(y)-1)+w*w*cr$corr/(w*w+skew2*(1-2/pi)) ;
@@ -295,7 +294,6 @@ if(!bivariate)
  delta=as.numeric(nuisance['shape'])
  alpha=2*(delta+1)/nu
  nn=2^(1-alpha/2)
-
  ll=qnorm((1-sk)/2)
  p11=pbivnorm::pbivnorm(ll,ll, rho = cr$corr, recycle = TRUE)
  corr2=corr^2;sk2=sk^2
@@ -358,7 +356,6 @@ if(model==29)   ##  two piece gaussian case
     {
       if(!bivariate)
 {
-
           corr1=cr$corr*(1-as.numeric(nuisance['nugget']))
           sk=as.numeric(nuisance['skew']);
           corr2=sqrt(1-corr1^2); sk2=sk^2
@@ -374,11 +371,6 @@ if(bivariate){}
 if(model==10)  {  ##  skew Gaussian case
 
           if(!bivariate){
-              #corr=cr$corr*(1-as.numeric(nuisance['nugget']))
-              #sk=as.numeric(nuisance['skew'])
-              #corr2=corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
-              #corr=(2*sk2)*(sqrt(1-corr2) + corr*asin(corr)-1)/(pi*vv+sk2*(pi-2)) + (cr$corr*vv)/(vv+sk2*(1-2/pi))
-              #vv=vv+as.numeric(nuisance['skew'])^2*(1-2/pi)
               corr=cr$corr*(1-as.numeric(nuisance['nugget']))
               sk=as.numeric(nuisance['skew'])
               corr2=cr$corr^2; ; sk2=sk^2; vv=as.numeric(nuisance['sill'])
@@ -402,6 +394,8 @@ if(!bivariate)
         varcov=varcov*vv
       }
     if(type=="Tapering")  {
+        
+        #print(setup)
           vcov <- vv*corr;
           varcov <- new("spam",entries=vcov,colindices=setup$ja,
                              rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
@@ -419,6 +413,7 @@ if(!bivariate)
           varcov[lower.tri(varcov,diag=TRUE)] <- corr
         }
         if(type=="Tapering")  {
+
           varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
@@ -715,6 +710,7 @@ return(varcov)
 
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
+    space=!(spacetime||bivariate)
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the coorelation model  is not correct\n")
     ## setting zero mean and nugget if no mean or nugget is fixed
     if(!bivariate){
@@ -731,7 +727,6 @@ return(varcov)
     #if the covariance is compact supported  and option sparse is used
     #then set the code as a tapering and an object spam is returned
 if(sparse) {
-
     covmod=CkCorrModel(corrmodel)
     if(covmod %in% c(10,11,13,15,19,6,7,
                      63,64,65,66,67,68,
@@ -752,7 +747,7 @@ if(sparse) {
        if(covmod==63||covmod==65||covmod==67) {  tapsep=c(param$power2_s,param$power_t,param$scale_s,param$scale_t,param$sep) }
        if(covmod==64||covmod==66||covmod==68) {  tapsep=c(param$power_s,param$power2_t,param$scale_s,param$scale_t,param$sep) }
     }
-      if(!(spacetime||bivariate)){  ### spatial Gen Wend
+      if(space){  ### spatial Gen Wend (reparametrized)
         maxdist=param$scale
         if(covmod==6)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+1/param$power2+1)-lgamma(1/param$power2))/ (1+2*param$smooth) ))
         if(covmod==7)  maxdist=as.numeric(param$scale*exp((lgamma(2*param$smooth+param$power2+1)-lgamma(param$power2))/ (1+2*param$smooth) ))
@@ -794,7 +789,7 @@ if(sparse) {
       if(sparse){
            if(spacetime) tapmod=230
            if(bivariate) tapmod=147
-           if(!(spacetime||bivariate)) tapmod=36
+           if(space) tapmod=36
            }
       else(tapmod=CkCorrModel(taper))
     #######################ç
@@ -808,7 +803,7 @@ if(sparse) {
 
     if(bivariate) {if(is.null(X))  initparam$X=as.matrix(rep(1,initparam$ns[1]+initparam$ns[2])) }
 
-    if(spacetime||bivariate){
+    if(!space){
           initparam$NS=cumsum(initparam$ns);
             if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}
             else{               initparam$NS=rep(0,initparam$numtime)}
@@ -818,6 +813,7 @@ if(sparse) {
 
     if(initparam$model %in% c(43,45)) initparam$namesnuis=initparam$namesnuis[!initparam$namesnuis %in% "nugget"]
 
+######  calling main correlation functions
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
                         initparam$NS,
                         initparam$param[initparam$namesnuis],
@@ -828,7 +824,10 @@ if(sparse) {
     if(type=="Tapering") sparse=TRUE
 
     # Delete the global variables:
-               .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    if(!space)
+                      .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+    else                     
+                      .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
 
 

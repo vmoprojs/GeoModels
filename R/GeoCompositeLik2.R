@@ -23,7 +23,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])   ## mean paramteres
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)
-        MM=c(X%*%mm)
+        MM=c(X%*%mm);  
         res=double(1)
         #print(param);print(other_nuis);print(paramcorr)
        # print(fan)
@@ -32,12 +32,12 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
        #             as.double(other_nuis),
        #             as.integer(local),as.integer(GPU),
-       #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res  
+       #             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res   
    
 
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
-                        corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx],MM[rowidx],other_nuis,local,GPU,
+                        corrmodel,data1, data2, n,paramcorr,weigthed, res=res,MM[colidx], MM[rowidx], other_nuis,local,GPU,
           INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
          #print(other_nuis);print(result)
@@ -63,7 +63,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
         res=double(1)
        # result <-  .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #          as.integer(n),as.double(paramcorr), as.integer(weigthed), 
-       #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
+       #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),  
        #             as.double(other_nuis),
        #             as.integer(local),as.integer(GPU),
       #            PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)$res
@@ -327,19 +327,19 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
      if((spacetime||bivariate)&&(spacetime_dyn))     data=unlist(data)          
      if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
-###### selectin data with indexes from composite likelihood
-   if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}  #updating if #using "my distances from C" 
-   data1=data[colidx]; data2=data[rowidx]                  ##using "RANN distances" 
-  
 
+###### selectin data with indexes from composite likelihood
+ 
+   if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}  #updating if #using "my distances from C" 
+   
+   data1=data[colidx]; data2=data[rowidx]                  ##using "RANN distances" 
+
+ 
 
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
 
-# print(param)
-#print(namesparam)
-#print(namesnuis)
-#print(fixed)
+
 
    if(is.null(GPU)) GPU=0
    if(!onlyvar){
@@ -399,7 +399,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               control = list( iter.max=100000),
                            )#,nbclusters=4,
                      
-      # print(CompLikelihood)
+   
   }
 
  if(optimizer=='multiNelder-Mead'){

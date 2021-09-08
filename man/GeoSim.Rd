@@ -281,18 +281,19 @@ data[[3]]
 ###############################################################
 distance="Geod";radius=6371
 
-NN=1000 ## total point on the sphere on lon/lat format
+NN=8000 ## total point on the sphere on lon/lat format
 set.seed(80)
 coords=cbind(runif(NN,-180,180),runif(NN,0,90))
 ## Set the wendland parameters
 corrmodel <- "Wend0"
-param<-list(mean=0,sill=1,nugget=0,scale=radius*0.1,power2=3)
+param<-list(mean=0,sill=1,nugget=0,scale=1000,power2=3)
 # Simulation of a spatial Gaussian RF on the sphere
 #set.seed(2)
 data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
-        distance=distance,radius=radius,param=param)$data
-
-
+               distance=distance,radius=radius,param=param)$data
+#require(globe)
+#globe::globeearth(eye=place("newyorkcity"))
+#globe::globepoints(loc=coords,pch=20,col =  cm.colors(length(data),alpha=0.1)[rank(data)])
 
 ################################################################
 ###
@@ -301,19 +302,19 @@ data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
 ###
 ###############################################################
 
-distance="Geod";radius=6378.88
-NN=40
-x=seq(-125,-64,length.out=NN)
-y=seq(27,50, length.out =NN)
-nrow(expand.grid(x,y))
+distance="Geod";radius=6371
+NN=5000
+x=runif(NN,-125,-67)
+y=runif(NN,27,49)
+coords=cbind(x,y)
 ## Set the wendland parameters
 corrmodel <- "Wend0"
-param<-list(mean=0,sill=1,nugget=0,scale=radius*0.3,power2=3)
+param<-list(mean=0,sill=1,nugget=0,scale=600,power2=3)
 # Simulation of a spatial Gaussian RF on the sphere
 #set.seed(2)
-data <- GeoSim(x,y,grid=TRUE,corrmodel=corrmodel,sparse=TRUE,
+data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
         distance=distance,radius=radius,param=param)$data
-image.plot(x,y,data,col=terrain.colors(100),xlab="",ylab="")
+quilt.plot(coords,data,col=terrain.colors(100),xlab="",ylab="")
 map("usa", add = TRUE)
 
 

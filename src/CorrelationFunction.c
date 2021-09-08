@@ -2079,7 +2079,8 @@ void CorrelationMat_tap(double *rho,double *coordx, double *coordy, double *coor
   int *ns, int *NS)
 {
   int i=0;// check the paramaters range:
-  for(i=0;i<*npairs;i++) {rho[i]=CorFct(cormod,lags[i],0,par,0,0);}
+  for(i=0;i<*npairs;i++) {
+       rho[i]=CorFct(cormod,lags[i],0,par,0,0);}
   return;
 }
 // Computation of the correlations for kringing with  sparse matrix:

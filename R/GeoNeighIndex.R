@@ -2,32 +2,6 @@
 GeoNeighIndex<-function(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,
                               distance="Eucl",neighb=4,maxdist=NULL,maxtime=1,radius=6371,bivariate=FALSE)
 {
-#fxy <- function(x,y, tol = 10){
-# 
-#
-#    xx = atan(x)/(pi/2)
-#    yy = atan(y)/(pi/2)
-#   
-#    xdig = (as.numeric(strsplit(as.character(xx), "")[[1]][-(1:2)]))
-#    ydig = (as.numeric(strsplit(as.character(yy), "")[[1]][-(1:2)]))
-#    # length(xdig);length(ydig);
-#    if (length(xdig) < tol){
-#      xdig = (as.numeric(strsplit(as.character(xx-10^(-tol)), "")[[1]][-(1:2)]))
-#    }
-#    if (length(ydig) < tol){
-#      ydig = (as.numeric(strsplit(as.character(yy-10^(-tol)), "")[[1]][-(1:2)]))
-#    }
-#    xdig = xdig[1:tol]
-#    ydig = ydig[1:tol]
-#    if (y>=x){
-#     
-#      z = paste0(c('0.',as.vector(rbind(xdig,ydig))), collapse = "")
-#    }else{
-#      z = paste0(c('0.',as.vector(rbind(ydig,xdig))), collapse = "")
-#     
-#      }  
-#  return(as.numeric(z))
-#}
 
 fxy <- function(x,y, tol = 15){
  
@@ -87,34 +61,34 @@ indices <- function(X,Y)
 
 
 ##########################################
-nn2Geo <- function(x,y, K = 1,distance,maxdist,radius)  
+nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)  
   {
-     
-             
-            if(is.null(maxdist)) nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))
+   # print(distance);print(maxdist)
+            if(is.null(maxdist)) 
+               {nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
             else     {
-                    # print(K)
-                    # print(maxdist)
+                     nn=nrow(x) 
+                     K=min(K-1,500) # case of  maxdist
 
+                     
                      nearest = RANN::nn2(x,y,searchtype = c("radius"),
-                             treetype = c("kd"),
-                             radius = maxdist,k=K-1)  
-
-                     sel=nearest$nn.dists<1.340781e+154
-                     nearest=nearest[sel]
+                               treetype = c("kd"),radius = maxdist,k=K  )
                      }
-
+             # print(nearest)
             #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
             if(distance==2||distance==1){
-                  agc=NULL;
-                  nnn=nrow(x)
-                  for(i in 1:nnn){   ## can we improve that?
-                  a=fields::rdist.earth(matrix(x[i,],ncol=2), x[nearest$nn.idx[i,2:K],], miles = FALSE, R = 1)
-                  agc=rbind(agc,a)
+                  nn=nrow(x); nnd=ncol(nearest$nn.dists)
+                  mm=matrix(0,nrow=nn,ncol=nnd)
+                  for(i in 1:nn){   ## can we improve that?
+                  si=nearest$nn.idx[i,];sel1=si[si>0]
+                  a=fields::rdist.earth.vec(x1=matrix(x[i,],ncol=2),
+                                            x2=matrix(x[sel1,],ncol=2), miles = FALSE, R = 1)
+                  mm[i,][1:length(a)]=a
+                  mm[,1]=0 # just to be sure
                  }
-             if(distance==2)  agc=radius*agc   # geodesic
-             if(distance==1)  agc=2*radius*sin(0.5*agc)   # chordal  
-             nearest$nn.dists=cbind(rep(0,nnn),agc)
+             if(distance==2)  mm=radius*mm   # geodesic
+             if(distance==1)  mm=2*radius*sin(0.5*mm)   # chordal  
+             nearest$nn.dists=mm
              }
             ########################################### 
             sol = indices(nearest$nn.idx,nearest$nn.dists)
@@ -197,16 +171,14 @@ if(!is.null(coordx_dyn))
 ##final bivariate  indexes and distances
 return(SS)
   }
+
+######################################
+######### start ######################
 ######################################
 
-
-
-##########################################
-
-##########################
-######### start ########## 
     spatial=TRUE
     spacetime=FALSE
+    
     if(!is.null(coordx_dyn))  
                 if(!is.list(coordx_dyn)) stop(" coordx_dyn must be a list")
     ### Check the parameters given in input
@@ -215,6 +187,7 @@ return(SS)
     if(is.numeric(coordt)&&is.numeric(maxtime)) 
     if(length(coordt)>1&&length(maxtime)>=1)  spacetime=TRUE
     distance=CheckDistance(distance)
+    spatial= !spacetime&&!bivariate
 
 K=neighb
 ## for spacetime or bivariate
@@ -223,6 +196,7 @@ K=neighb
                           coordx <- coordx[,1]
                           coords=cbind(coordx,coordy)
                           numcoord=nrow(coords)
+
                           }
       else {
                        if(!bivariate)
@@ -238,10 +212,10 @@ K=neighb
 ##########################
 ########################## 
 
-if(!spacetime&&!bivariate)   #  spatial case
+if(spatial)   #  spatial case
 {
 ##########################################
-  sol = nn2Geo(coords,coords,K+1 ,distance,maxdist,radius) ##### K or K+1
+  sol = nn2Geo(coords,coords,K+1 ,distance,maxdist,radius) ##### 
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;
              gb$lags=sol$lags
