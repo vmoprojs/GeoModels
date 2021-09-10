@@ -1747,7 +1747,7 @@ double CorFunWitMat(double lag, double scale, double smooth)
   if(smooth==0.5) {rho=exp(-a); return(rho);}
   if(smooth==1.5) {rho=exp(-a)*(1+a);return(rho);}
   if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
-  if(smooth==3.5) {rho=exp(-a)*(1+a/2+ R_pow(a,2)*6/15+R_pow(a,3)/15);return(rho);}
+  if(smooth==3.5) {rho=exp(-a)*(1+a+ R_pow(a,2)*0.4+R_pow(a,3)*0.0666667);return(rho);}
   rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
  //rho=exp((smooth*log(a) + log(bessel_k(a,smooth,2)) -a)- ((smooth-1)*log(2)+lgammafn(smooth)));
   return(rho);

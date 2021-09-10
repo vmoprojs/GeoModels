@@ -12,7 +12,7 @@ importFrom("methods","is", "new", "slot<-")
 importFrom("utils", "setTxtProgressBar", "txtProgressBar")
 importFrom("plotrix", "draw.circle")
 importFrom("lamW","lambertW0")
-import("fields", "mapproj", "plot3D", "shape")
+import( "fields", "mapproj", "plot3D", "shape")
 
 
 

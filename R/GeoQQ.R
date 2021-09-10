@@ -113,9 +113,9 @@ if(model %in% c("Gamma"))
 #######################################
 if(model %in% c("LogGaussian"))
 {
-   SS=pp["sill"]; mm=pp["mean"]
-   q_t = qlnorm(probabilities, mm/exp(SS/2), sqrt(SS/exp(SS)))
-   q_t1 = qlnorm(probabilities1, mm/exp(SS/2), sqrt(SS/exp(SS)))
+   SS=as.numeric(pp["sill"]); mm=as.numeric(pp["mean"])
+   q_t = qlnorm(probabilities, mm-SS/2, sqrt(SS))
+   q_t1 = qlnorm(probabilities1, mm-SS/2, sqrt(SS))
    plot(q_t,q_e,xlab=xlab,ylab=ylab,main = "LogGaussian qq-plot",pch=20)
 }
 #######################################
