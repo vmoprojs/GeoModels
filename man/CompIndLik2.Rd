@@ -11,7 +11,7 @@
 CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
               lower, model, n, namescorr, namesnuis, namesparam,
               numparam, optimizer, onlyvar, parallel, param, spacetime, type,
-              upper, varest, ns, X,sensitivity,copula)
+              upper, namesupper, varest, ns, X,sensitivity,copula)
 }
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
@@ -67,6 +67,7 @@ CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnu
   \item{upper}{An optional named list giving the values  for the upper bound 
       of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
        The names of the list must be the same of the names in the   \code{start} list.}
+   \item{namesupper}{String; the names of the upper limit of the parameters.}
   \item{varest}{Logical; if \code{TRUE} the estimate variances and standard errors are returned.
     \code{FALSE} is the default.}
    \item{ns}{Numeric; Number of (dynamical) temporal instants. }   

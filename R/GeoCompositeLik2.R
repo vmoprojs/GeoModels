@@ -88,10 +88,7 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if((spacetime||bivariate)) dimat <- sum(ns)
     NS=cumsum(ns)
     if(is.null(dim(X))){X=as.matrix(rep(1,dimat))}
-    #else(if(bivariate) X=rbind(X,X))
-
     
-
     fname <- NULL; hessian <- FALSE
     if(all(model==1,likelihood==3,type==1)) fname <- 'Comp_Diff_Gauss'
 
@@ -327,20 +324,13 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
      if((spacetime||bivariate)&&(spacetime_dyn))     data=unlist(data)          
      if(spacetime||bivariate)   NS=c(0,NS)[-(length(ns)+1)]
 
-
 ###### selectin data with indexes from composite likelihood
  
    if(is.null(neighb)) {colidx=colidx+1; rowidx=rowidx+1}  #updating if #using "my distances from C" 
-   
    data1=data[colidx]; data2=data[rowidx]                  ##using "RANN distances" 
-
- 
 
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
-
-
-
    if(is.null(GPU)) GPU=0
    if(!onlyvar){
    
@@ -348,7 +338,6 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
    if(!bivariate)           {
     if(length(param)==1) {
          optimizer="optimize"  
-      
      CompLikelihood <- optimize(f=comploglik2, colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                               data1=data1,data2=data2, fixed=fixed, fan=fname,  lower=lower, n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, maximum = FALSE,

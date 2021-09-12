@@ -7,7 +7,7 @@
 CompIndLik2 <- function(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
                            lower, model, n, namescorr, namesnuis, namesparam,
                            numparam,  optimizer, onlyvar, parallel, param, spacetime, type,
-                           upper, varest, ns, X,sensitivity,copula)
+                           upper,namesupper, varest, ns, X,sensitivity,copula)
   {
 
 
@@ -115,8 +115,9 @@ if(fan== "Ind_Pair_LogLogistic")            {  shape=nuis[2]
 ## non Gassian bounded support
   if(fan== "Ind_Pair_Beta2")                {    mmax=nuis[4];mmin=nuis[3]
                                                  shape=nuis[2]
+                                    
                                                  me=1/(1+exp(-mm))
-                                                 res=sum(dbeta((data-mmin)/(mmax-mmin), me*shape, (1-me)*shape,log=TRUE)-log(mmax-mmin) )
+                                                 res=sum(dbeta((data-mmin)/(mmax-mmin), me*shape, (1-me)*shape,log=TRUE)-log(mmax-mmin))
                                             }
  if(fan== "Ind_Pair_Kumaraswamy2")                {  
                                              mmax=nuis[4];mmin=nuis[3]
@@ -263,23 +264,26 @@ tot=c(param,fixed) ## all the parameters
 tot=tot[is.na(pmatch(names(tot),namescorr))]
 ## deleting nugget
 tot=tot[names(tot)!='nugget'];namesnuis=namesnuis[namesnuis!="nugget"]
-param=tot[pmatch(namesparam,names(tot))];param=param[!is.na(param)]
+param=tot[pmatch(namesparam,names(tot))];param=param[!is.na(names(param))];param=param[!is.na(param)];
 
 
-if(model  %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11))
- {param=param[names(param)!='sill'];a=1; names(a)="sill";fixed=c(fixed,a)}
+if(model  %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11))  ## model where sill must be fixed = to 1
+ {param=param[names(param)!='sill'];a=1; names(a)="sill";
+  if(is.null(unlist(fixed['sill']))) fixed=c(fixed,a)}
+
 
 if(!is.null(copula))
     {if(copula=="Clayton")
-           {param=param[names(param)!='nu'];a=2; names(a)="nu";fixed=c(fixed,a)}}
+           {param=param[names(param)!='nu'];a=2; names(a)="nu";
+           if(is.null(unlist(fixed['nu']))) fixed=c(fixed,a)}}
 
 namesparam=names(param)
   
 
-  #print(namesnuis)
-  #print(param)
- # print(namesparam)
-
+###updating upper and lower bound if necessary
+sel=pmatch(namesparam,namesupper)
+lower=lower[sel]
+upper=upper[sel]
 
  ###
    if(!onlyvar){
@@ -482,6 +486,7 @@ namesparam=names(param)
 
    }
  }  
+
                    
       ########################################################################################   
       ########################################################################################

@@ -4631,15 +4631,18 @@ void biv_unif_CopulaClayton_call(double *x,double *y,double *rho, double *nu, do
     *res = biv_unif_CopulaClayton(*x,*y,*rho,*nu);
 }
 
+// this is the exponential of the biv_unif
 double biv_unif_CopulaClayton(double dat1,double dat2,double rho,double nu)
 {
-double res;
+double res,a,a1,a2;
 double nu2=nu/2;
 double rho2=rho*rho;
-if(fabs(rho)<1e-10) {res=1;}
+if(fabs(rho)<1e-200) {res=1;}
 else{
-  res=R_pow(1-rho2,nu2+1) *
-      appellF4(nu2+1, nu/2+1, nu2, 1, rho2*R_pow(dat1*dat2,1/nu2),rho2*(1-R_pow(dat1,1/nu2))*(1-R_pow(dat2,1/nu2)));
+a=nu2+1;
+a1=R_pow(dat1,1/nu2);
+a2=R_pow(dat2,1/nu2);
+  res= a*log1p(-rho2)+log( appellF4(a, a, nu2, 1, rho2*a1*a2,rho2*(1-a1)*(1-a2)));
 }
 return(res);
 }
@@ -4734,9 +4737,10 @@ if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2);}
 if(type_cop==2) 
 {
     double nu=2;
-    if(model==50||model==42) nu=nuis[6];   // for beta2 regression
-   // Rprintf("%f %f %f %f %f %f \n",nuis[0],nuis[1],nuis[3],nuis[4],nuis[5],nuis[6]);
-    dens= log(biv_unif_CopulaClayton(a1,a2,rho1,nu)*g1*g2);
+    if(model==50||model==42) nu=nuis[5];   // for beta2 regression
+   // Rprintf("%f %f %f %f %f %f \n",nuis[0],nuis[1],nuis[2],nuis[3],nuis[4],nuis[5]);
+    // ojo 
+    dens= biv_unif_CopulaClayton(a1,a2,rho1,nu)+ log(g1)+log(g2);
 }
 //Rprintf("%d %d\n", type_cop,cond);
 //if(cond)  {dens=2*dens-(log(g1)+log(g2));}

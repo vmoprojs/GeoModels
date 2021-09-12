@@ -87,16 +87,13 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
       ll<-as.numeric(lower);uu<-as.numeric(upper)
       if(length(ll)!=npar||length(uu)!=npar)
            stop("lower and upper bound must be of the same length of starting values\n") 
-
-      #if(sum(uu<=initparam$upper)<npar||sum(ll>=initparam$lower)>npar)
-      #     stop("one or more values of the lower and upper bounds are out of the valid  range\n")  
       if(sum(names(initparam$param)==names(upper))<npar || sum(names(initparam$param)==names(lower))<npar){
            stop("the names of  parameters in the lower and/or  upper bounds do not match with starting parameters names .\n") }
       ll[ll==0]=.Machine$double.eps ## when 0 we don't want exactly zero
       uu[uu==Inf]=1e+12
       initparam$upper <- uu;initparam$lower <- ll
      }}
-      #if(length(param)==1)  {initparam$upper=1000}
+    
 
 
    #updating starting parameters
@@ -149,11 +146,8 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity,copula)
+                                   initparam$upper,names(upper),varest, initparam$ns, unname(initparam$X),sensitivity,copula)
   }
-
-
-
 
      ##misspecified models
     missp=FALSE 
@@ -172,15 +166,14 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     if(is.null(dim(initparam$X)))  initparam$X=as.matrix(rep(1,dimat))
     # Delete the global variables:
 
-    #if(is.null(neighb)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    #if(is.numeric(neighb))    
+     
     if( !(likelihood=='Marginal'&&type=="Independence"))
     {             
-     if(memdist) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-     else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+     if(memdist) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) # my distances
+     else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) # distances with rann
     }
-    #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
+if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,
@@ -326,7 +319,6 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
         print.default(x$stderr, digits = digits, print.gap = 2,
                       quote = FALSE)
       }
-
     #if(!is.null(x$varcov))
       #{
       #  cat('\nVariance-covariance matrix of the estimates:\n')

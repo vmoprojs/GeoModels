@@ -87,31 +87,26 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
       npar<-length(initparam$param) 
       ll<-as.numeric(lower);uu<-as.numeric(upper)
       if(length(ll)!=npar||length(uu)!=npar)
-           stop("lower and upper bound must be of the same length of starting values\n") 
-
-      #if(sum(uu<=initparam$upper)<npar||sum(ll>=initparam$lower)>npar)
-      #     stop("one or more values of the lower and upper bounds are out of the valid  range\n")  
+           stop("lower and upper bound must be of the same length of starting values\n")   
       if(sum(names(initparam$param)==names(upper))<npar || sum(names(initparam$param)==names(lower))<npar){
            stop("the names of  parameters in the lower and/or  upper bounds do not match with starting parameters names .\n") }
       ll[ll==0]=.Machine$double.eps ## when 0 we don't want exactly zero
       uu[uu==Inf]=1e+12
 
       initparam$upper <- uu;initparam$lower <- ll
-
-    
      }}
 
 
-################################################################################################
-
-    fitted_ini<-CompIndLik2 (initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+###############################################################################################
+    fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,unname(initparam$data), 
                                    initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest, initparam$ns, unname(initparam$X),sensitivity,copula)
-   
+                                   initparam$upper,names(upper),varest, initparam$ns, unname(initparam$X),sensitivity,copula)
+
+
 ######################################################
 ######updating starting and names  parameters 
 ######################################################
@@ -192,6 +187,8 @@ initparam$param=aa[sel]
      else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     }
     #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+
+if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
 
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
