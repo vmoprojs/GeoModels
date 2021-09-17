@@ -793,20 +793,28 @@ if(!onlyvar){   # performing optimization
     if(!is.null(neighb)) { 
             locs=cbind(coordx,coordy)
             vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
-            optimizer="Nelder-Mead"
+            
             #Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
              #                control = list( iter.max=100000),dimat=dimat,
               #           lower=lower,upper=upper, hessian=hessian,
                #            data=t(data),fixed=fixed,
                 #          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+       
+              if(optimizer=="nmkb")
+                # Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
+                 #   vecchia.approx=vecchia.approx,lower=lower,upper=upper,
+                  #           dimat=dimat,method=optimizer,data=t(data),fixed=fixed,
+                   #       model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
 
-           
-            Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
-                             control=list(
-                             reltol=1e-14, maxit=maxit),dimat=dimat,
-                         hessian=hessian,method=optimizer,
-                           data=t(data),fixed=fixed,
+                  Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
+                        lower=lower,upper=upper,  vecchia.approx=vecchia.approx,
+                        dimat=dimat,data=t(data),fixed=fixed,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+                        
+            if(optimizer=="Nelder-Mead")
+                  Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
+                             control=list(reltol=1e-14, maxit=maxit),dimat=dimat,hessian=hessian, data=t(data),fixed=fixed,
+                             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
 
              #Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
               #            corrmodel=corrmodel,control=list(
