@@ -67,7 +67,7 @@ dtp[[i]]=data_to_pred
 
 param=as.list(c(fit$param,fit$fixed))
 if(estimation) {
-          fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
+          fit_s= GeoFit2(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,grid=fit$grid,
                             copula=fit$copula,
                             model=model1,radius=fit$radius,n=fit$n,

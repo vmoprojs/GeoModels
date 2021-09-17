@@ -597,6 +597,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuggets=as.numeric(nuisance['nugget'])+1e-6
         data=c(data-X%*%mm)
         ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
+    if(ppar[2]<0|| ppar[3]<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1){return(llik)}
         loglik_u=GPvecchia::vecchia_likelihood(data,vecchia.approx,
                          covparms=ppar,nuggets=nuggets,covmodel ="matern")
         return(-loglik_u)
@@ -788,27 +789,35 @@ if(!onlyvar){   # performing optimization
         }
   if(length(param)>1)
         {
-
-    
   #### vecchia  approxxx
     if(!is.null(neighb)) { 
             locs=cbind(coordx,coordy)
             vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
-            
-            Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
-                             control = list( iter.max=100000),dimat=dimat,
-                         lower=lower,upper=upper, hessian=hessian,
+            optimizer="Nelder-Mead"
+            #Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
+             #                control = list( iter.max=100000),dimat=dimat,
+              #           lower=lower,upper=upper, hessian=hessian,
+               #            data=t(data),fixed=fixed,
+                #          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+
+           
+            Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
+                             control=list(
+                             reltol=1e-14, maxit=maxit),dimat=dimat,
+                         hessian=hessian,method=optimizer,
                            data=t(data),fixed=fixed,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
 
-            #Likelihood <-  optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
-             #              control=list(reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,data=t(data),
-             #              control = list( iter.max=100000),dimat=dimat,
-             #             hessian=hessian,
-             #             ,fixed=fixed,
-             #             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-             #             X=X,ns=ns,NS=NS)
+             #Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+              #            corrmodel=corrmodel,control=list(
+               #              reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
+                #         fixed=fixed,method="Nelder-Mead",
+                 #         model=model,namescorr=namescorr,hessian=hessian,
+                  #        namesnuis=namesnuis,namesparam=namesparam,X=X)
 
+
+
+         
                        }
         else{  ### no vecchia
 if(optimizer=='L-BFGS-B'&&!parallel)
