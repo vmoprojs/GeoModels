@@ -5,7 +5,7 @@
 \description{
   The procedure update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
 \usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1),optimizer="Nelder-Mead",
-                     lower=NULL, upper=NULL, memdist=TRUE,seed=1)}
+                     lower=NULL, upper=NULL, method="cholesky",memdist=TRUE,seed=1)}
 \arguments{
   \item{fit}{A fitted object obtained from the
     \code{\link{GeoFit}}.}
@@ -20,7 +20,9 @@
     when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}.}
        \item{upper}{An optional named list giving the values  for the upper bound of the space parameter
     when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}.}
-            \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
+       \item{method}{String; The method of simulation. Default is \code{cholesky}.
+           For large data set two options are \code{Vecchia} or {TB}}
+        \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
       are computed before  the optimization. }
         \item{seed}{Numeric; The seed used in the  n-fold  kriging cross-validation. Default is 1.}
      }

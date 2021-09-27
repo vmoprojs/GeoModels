@@ -9,7 +9,8 @@
   The function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
+GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
+      corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE, 
@@ -127,7 +128,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrm
 
 \details{
   \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
-  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs and independence composite likelihood are considered. Specifically marginal and conditional  pairwise 
+  For Gaussian and non Gaussian models, only weighted composite likelihood  based on pairs and independence composite likelihood estimation are considered. Specifically, marginal and conditional  pairwise 
   likelihood is considered for each type of random field (Gaussian and not Gaussian).
   The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
 
@@ -179,6 +180,22 @@ Specifically:
     \item \code{Full}, the composite-likelihood turns out to be the standard likelihood;
   }
 
+  It must be coupled with the  \code{type} parameter that can be fixed to 
+    \enumerate{
+    \item \code{Pairwise}, the composite-likelihood is based on pairs;
+    \item \code{Independence}, the composite-likelihood is based on indepedence;
+    \item \code{Standard}, this is the option for  the standard likelihood;
+  }
+
+The possible combinations are:
+ \enumerate{
+    \item  \code{likelihood="Marginal"} and \code{type="Pairwise"} for  maximum marginal pairwise likelihood estimation (the default setting)
+    \item  \code{likelihood="Conditional"} and \code{type="Pairwise"} for maximum  conditional pairwise likelihood estimation
+    \item  \code{likelihood="Marginal"} and \code{type="Independence"} for  maximum independence composite likelihood estimation
+   \item  \code{likelihood="Full"} and \code{type="Standard"} for  maximum stardard likelihood estimation
+}
+The first three combinations can be used for any model. The standard likelihood can be used only for some specific model.
+
   The \code{model} parameter indicates the type of RF
   considered. The available options are:
 
@@ -207,7 +224,7 @@ RF with with possibly asymmetric marginal distribution:
     }
 RF with marginal counts data
  \itemize{  
-     \item \code{Poisson} for a Poisson  RF.
+     \item \code{Poisson} for a Poisson  RF. (see Morales-Navarrete et. al 2021)
      \item \code{PoissonZIP} for a zero inflated Poisson  RF.
      \item \code{Binomial} for a Binomial  RF.
      \item \code{BinomialNeg} for a negative Binomial RF.
@@ -220,8 +237,8 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
     \item \code{Kumaraswamy} for a  Kumaraswamy  RF,\code{Kumaraswamy2} using median parametrization.
     }
 
-  For  a given \code{model} the associated parameters are given by nuisance and covariance parameters. In order to obtain the nuisance parameter associated to a specific model use \code{\link{NuisParam}}. 
-  In order to obtain the covariance parameter associated to a given covariance model use 
+  For  a given \code{model} the associated parameters are given by nuisance and correlation parameters. In order to obtain the nuisance parameter associated to a specific model use \code{\link{NuisParam}}. 
+  In order to obtain the correlation parameter associated to a given correlation model use 
   \code{\link{CorrParam}}.
 
    All the nuisance and covariance parameters must be specified
@@ -235,63 +252,16 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
    In this case a matrix of covariates with suitable dimension can be specified using the parameter  \code{X}. 
    In the case of a single mean then \code{X} should not be specified and it is interpreted as a vector of ones.
 
-   The \code{taper} parameter, optional in case that
-   \code{type=Tapering}, indicates the type of taper
-   correlation model. (See \code{\link{GeoCovmatrix}})
 
-
-  If a Gaussian or (any) non Gaussian RF is considered then the possible combination is
-  marginal pairwise likelihoods (\code{likelihood=Marginal}) and \code{type="Pairwise"})
-  or (\code{likelihood=Conditional}) and \code{type="Pairwise"})
-
-  The combination  \code{type="Independence"} and \code{likelihood=Marginal} allows independence composite 
-  likelihood i.e. maximum likelihod assuming independence. In this case only the marginal parameters can be estimated.
-  This combination can be useful to find good starting values for the margnal parameters.
-
-  If a Gaussian RF is considered  (\code{model=Gaussian}) then:
-    \itemize{
-      \item If the composite is formed by marginal likelihoods (\code{likelihood=Marginal}):
-      \itemize{
-	\item \code{Pairwise}, the composite-likelihood is defined by
-	the pairwise likelihoods;
-	\item \code{Difference}, the composite-likelihood is defined by
-	likelihoods
-	which are obtained as difference of the pairwise likelihoods.}
-      \item If the composite is formed by conditional likelihoods
-      (\code{likelihood=Conditional})
-      \itemize{
-	\item \code{Pairwise}, the composite-likelihood is defined by
-	the pairwise conditional likelihoods.}
-      \item If the composite is formed by a full likelihood
-      (\code{likelihood=Full}):
-      \itemize{
-	\item \code{Standard}, the objective function is the classical
-        multivariate likelihood;
-	\item \code{Restricted}, the objective function is the
-        restricted version of the full likelihood (e.g. Harville 1977, see \bold{References});
-	\item \code{Tapering}, the objective function is the tapered 2 (unbiased estimating equation)
-        version of the full likelihood (e.g. Kaufman et al. 2008, see \bold{References});
-    \item \code{Tapering1}, the objective function is the tapered 1 (biased estimating equation)
-        version of the full likelihood (e.g. Kaufman et al. 2008, see \bold{References}); 
-   \item \code{CV}, the objective function  is the cross validation estimation method ;           
-      }
-      }
-
-
-
-  Two type  of binary weights can be used in  the composite likelihood estimation,
+  Two types  of binary weights can be used in  the weighted composite likelihood estimation based on pairs,
   one based on neighboords and one based on distances.
    
   In the first  case  binary weights are set to 1 and 0 otherwise
-  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  the package RANN that  provides
-  fast nearest neighbour search.
+  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  the package RANN that  provides fast nearest neighbour search.
 
-  In the second case, the \code{maxdist} parameter set the maximum
-  spatial distance below which pairs of sites with inferior distances
-  Pairs with distance less than \code{maxdist} have weight 1
-  and are included in the likelihood computation, instead those with
-  greater distance have weight 0 and then excluded.
-  This weighting scheme is less ineffecient for large data.
+  In the second case, binary weights are set to 1 and 0 otherwise
+  depending if the pairs have distance lower than  (\code{maxdist}).
+  This weighting scheme is less inefficient for large data.
   The same arguments of \code{maxdist} are valid for \code{maxtime} but
   here the weigthed composite-likelihood regards the case of
   spatial-temporal field.
@@ -302,9 +272,10 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   For Gaussian and non Gaussian  RFs and composite  likelihood estimation, standard errors estimate are computed as square root of the diagonal elements of the
   Godambe Information matrix. (asymptotic covariance matrix of the estimates under increasing domain  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
 
-  For standard error estimation  of composite likelihood estimatin
-  use the option \code{sensitivity=TRUE} and then update the object with the function \code{GeoVarestbootstrap}.
-  The option  \code{varest=TRUE}  is deprecated and the comments below should not be considered.
+  For standard error estimation  of weighted composite likelihood estimation
+   the option \code{sensitivity=TRUE} must be used. Then the  resulting  object  must be updated   using the function \code{GeoVarestbootstrap}. This allows to perform standard error estimation (it could be computationally intensive).
+   
+  The option  \code{varest=TRUE}  is deprecated for composite likelihood estimation and the comments below should not be considered.
   The \code{varest=TRUE} option allows std error estimation trough a sub-sampling procedure.
   In the  the sub-sampling procedure,\code{winconst}
    and \code{winstp} parameters represent respectively a positive constant used to
@@ -386,19 +357,6 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
 
 \references{
 
-  Maximum Restricted Likelihood Estimator:
-
-  Harville, D. A. (1977)
-  Maximum Likelihood Approaches to Variance Component Estimation and to Related Problems.
-  \emph{Journal of the American Statistical Association}, \bold{72},
-  320--338.
-
-  Tapered likelihood:
-
-    Kaufman, C. G., Schervish, M. J. and Nychka, D. W. (2008)
-  Covariance Tapering for Likelihood-Based Estimation in Large Spatial Dataset.
-  \emph{Journal of the American Statistical Association}, \bold{103},
-  1545--1555.
 
   Composite-likelihood:
 
@@ -450,6 +408,12 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   \emph{Journal of the Royal Statistical Society. Series B},
   \bold{64}, 837--854.
 
+ Lee, Y. D. and Lahiri S. N. (2002) Variogram Fitting by Spatial
+  Subsampling.
+
+  Modelling Point Referenced Spatial Count Data: A Poisson Process Approach (2021)
+  Morales-Navarrete D. and Bevilacqua M.,  Caamaño-Carrillo C., Castro L. M.
+  arXiv:2105.03734 
 }
 
 

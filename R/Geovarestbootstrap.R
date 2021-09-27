@@ -4,15 +4,21 @@
 
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",
-  lower=NULL, upper=NULL,memdist=TRUE, seed=1)
+  lower=NULL, upper=NULL,method="cholesky",memdist=TRUE, seed=1)
 {
 
 
 if(fit$coordt==0)  fit$coordt=NULL
-print("Parametric bootstrap can be time consuming ...")
+
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
+if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
+
+if(method!="cholesky"||method!="Vecchia"||method!="TB") stop("The method of simulation is not correct")
+
 if(!is.numeric(seed)) stop(" seed must be numeric")
 model=fit$model
+
+print("Parametric bootstrap can be time consuming ...")
 
 if(fit$missp)  ### misspecification
  {if(fit$model=="StudentT")     model="Gaussian_misp_StudentT"
@@ -32,19 +38,30 @@ k=1;res=NULL
 set.seed(seed)
 
   pb <- txtProgressBar(min = 0, max = K, style = 3)
+  coords=cbind(fit$coordx,fit$coordy)
+  N=nrow(coords)
 while(k<=K){
 Sys.sleep(0.1)
-data_sim = GeoSim(coordx=cbind(fit$coordx,fit$coordy),coordt=fit$coordt,
+if(method=="cholesky") 
+data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
 	 param=as.list(c(fit$param,fit$fixed)),
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
-   X=fit$X,n=fit$n,method="cholesky",
+   X=fit$X,n=fit$n,method=method,
 	 distance=fit$distance,radius=fit$radius)
+if(method=="Vecchia"||method=="TB") 
+data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,
+     coordx_dyn=fit$coordx_dyn, 
+     corrmodel=fit$corrmodel,model=fit$model,
+   param=as.list(c(fit$param,fit$fixed)), method=method,M=30,L=200,
+   GPU=GPU,  local=local,#grid=fit$grid, 
+   X=fit$X,n=fit$n,
+   distance=fit$distance,radius=fit$radius)
 
 
 res_est=GeoFit2( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
-   coordx=cbind(fit$coordx,fit$coordy), coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
+   coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,

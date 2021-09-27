@@ -3352,13 +3352,13 @@ void appellF4_call(double *a,double *b,double *c,double *d,double *x,double *y, 
 double appellF4(double a,double b,double c,double d,double x,double y)
 {
 double RR=0.0,bb=0.0;int k=0;
-  while( k<=4000 )
+  while( k<=2000 )
     {
     bb=exp(k*log(y)+(lgammafn(a+k)+lgammafn(b+k)+lgammafn(d))
                -(lgammafn(a)+lgammafn(b)+lgammafn(d+k)+lgammafn(k+1))
                +(c-(a+k)-(b+k))*log1p(-x)+log(hypergeo(c-a-k,c-b-k,c,x))); //euler
               // +log(hypergeo(a+k,b+k,c,x));
-    if((fabs(bb)<1e-40||!R_FINITE(bb))  ) {break;}
+    if((fabs(bb)<1e-10||!R_FINITE(bb))  ) {break;}
         RR=RR+bb;
         k++;
     }
@@ -4637,13 +4637,12 @@ double biv_unif_CopulaClayton(double dat1,double dat2,double rho,double nu)
 double res,a,a1,a2;
 double nu2=nu/2;
 double rho2=rho*rho;
-if(fabs(rho)<1e-200) {res=1;}
-else{
+//if(fabs(rho)<1e-200) {res=1;}else{
 a=nu2+1;
 a1=R_pow(dat1,1/nu2);
 a2=R_pow(dat2,1/nu2);
-  res= a*log1p(-rho2)+log( appellF4(a, a, nu2, 1, rho2*a1*a2,rho2*(1-a1)*(1-a2)));
-}
+  res= a*log1p(-rho2)+log(appellF4(a, a, nu2, 1, rho2*a1*a2,rho2*(1-a1)*(1-a2)));
+//}
 return(res);
 }
 

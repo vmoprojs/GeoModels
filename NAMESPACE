@@ -7,11 +7,13 @@ S3method(plot,GeoVariogram)
 importFrom("grDevices", dev.cur,gray.colors)
 importFrom("graphics", abline, lines, par, persp, plot,points,image,plot.default)
 importFrom("stats", median, nlminb, dist, quantile, qqnorm, qbinom,qpois,qnbinom,  pweibull, nlm, optim, optimize, integrate, pchisq,pnorm,qnorm,dnorm,dpois,dbeta,dnbinom,dbinom,dweibull,dgamma,dlnorm,
-pbeta,dt,dlogis,qlnorm,qgamma,qweibull, qbeta,qlogis,lm, rnorm, pt,qt,qunif,uniroot, var,cor)
+pbeta,dt,dlogis,qlnorm,qgamma,qweibull, qbeta,qlogis,lm, rnorm, runif, rgamma, pt,qt,qunif,uniroot, var,cor)
 importFrom("methods","is", "new", "slot<-")
 importFrom("utils", "setTxtProgressBar", "txtProgressBar")
+importFrom("utils", "head")
 importFrom("plotrix", "draw.circle")
 importFrom("lamW","lambertW0")
+importFrom("GpGp","fast_Gp_sim")
 import("GPvecchia", "fields", "mapproj", "plot3D", "shape")
 
 

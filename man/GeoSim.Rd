@@ -72,6 +72,7 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
   \item{data}{The vector or matrix or array of data, see
     \code{\link{GeoFit}};}
   \item{distance}{The type of spatial distance;}
+    \item{method}{The method of simulation}
   \item{model}{The type of RF, see \code{\link{GeoFit}}.}
   \item{n}{The number of trial for Binomial RFs;the number of successes in a negative Binomial RFs;} 
   \item{numcoord}{The number of spatial coordinates;}

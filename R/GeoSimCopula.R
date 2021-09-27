@@ -121,6 +121,7 @@ else {if (!grid) simcop=c(simcop)
     distance = sim$distance,
     grid = sim$grid,
     model = sim$model,
+    method=method,
     n=sim$n,
     numcoord = sim$numcoord,
     numtime = sim$numtime,

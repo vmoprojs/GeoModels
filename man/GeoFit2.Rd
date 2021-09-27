@@ -128,207 +128,11 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
 }
 
 \details{
-  \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
-  For Gaussian and non Gaussian models, only composite likelihood estimation based on pairs. Specifically marginal and conditional  pairwise 
-  likelihood is considered for each type of random field (Gaussian and not Gaussian).
-  The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
-
-  Depending on the dimension of \code{data} and on  the name of the correlation model, 
-  the observations   are assumed as a realization of
-  a spatial, spatio-temporal or bivariate RF.
-  Specifically, with \code{data}, \code{coordx}, \code{coordy}, \code{coordt} parameters:
-  \itemize{
-    \item If \code{data} is a numeric \eqn{d}{d}-dimensional vector, \code{coordx} and \code{coordy} are two
-    numeric \eqn{d}{d}-dimensional vectors (or \code{coordx} is (\eqn{d \times 2}{d x 2})-matrix and \code{coordy=NULL}), then the data are interpreted as a single spatial
-    realisation observed on \eqn{d}{d} spatial sites;
-    \item If \code{data} is a numeric (\eqn{t \times d}{t x d})-matrix, \code{coordx} and \code{coordy} are two
-    numeric \eqn{d}{d}-dimensional vectors (or \code{coordx} is (\eqn{d \times 2}{d x 2})-matrix and \code{coordy=NULL}),
-    \code{coordt} is a numeric \eqn{t}{t}-dimensional vector, then the data
-    are interpreted as a single spatial-temporal realisation of a RF observed on \code{d} spatial sites and for \code{t} times.
-      \item If \code{data} is a numeric (\eqn{2 \times d}{2 x d})-matrix, \code{coordx} and \code{coordy} are two
-    numeric \eqn{d}{d}-dimensional vectors (or \code{coordx} is (\eqn{d \times 2}{d x 2})-matrix and \code{coordy=NULL}), then the data
-    are interpreted as a single spatial realisation of a bivariate RF observed on \code{d} spatial sites. 
-    \item If \code{data} is a list,  \code{coordxdyn}  is a list and   \code{coordt} is a numeric \eqn{t}{t}-dimensional vector, then the data
-    are interpreted as a single spatial-temporal realisation of a RF observed on dynamical spatial sites (different locations sites for each temporal instants) and for \code{t} times.
- }
-
-Is is also possible to specify a matrix of covariates using \code{X}.
-Specifically:
-  \itemize{
-    \item  In the spatial case  \code{X} must be a (\eqn{d \times k}{d x k}) covariates matrix associated to  \code{data}  a numeric \eqn{d}{d}-dimensional vector;
-     \item  In the spatiotemporal case  \code{X} must be a (\eqn{N \times k}{N x k}) covariates matrix associated to  \code{data}  a numeric (\eqn{t \times d}{t x d})-matrix, where \eqn{N=t\times d};
-     \item  In the spatiotemporal case  \code{X} must be a (\eqn{N \times k}{N x k}) covariates matrix associated to  \code{data}  a numeric (\eqn{t \times d}{t x d})-matrix, where \eqn{N=2\times d};
- }
-
-  The \code{corrmodel} parameter allows to select a specific correlation
-  function for the RF. (See   \code{\link{GeoCovmatrix}} ).
-
-  The \code{distance} parameter allows to consider differents kinds of spatial distances.
-  The settings alternatives are:
-  \enumerate{
-    \item \code{Eucl}, the euclidean distance (default value);
-    \item \code{Chor}, the chordal distance;
-    \item \code{Geod}, the geodesic distance;
-  }
-
-  The \code{likelihood} parameter represents the composite-likelihood
-  configurations. The settings alternatives are:
-  \enumerate{
-    \item \code{Conditional}, the composite-likelihood is formed by
-    conditionals likelihoods;
-    \item \code{Marginal}, the composite-likelihood is formed by
-  marginals likelihoods (default value);
-    \item \code{Full}, the composite-likelihood turns out to be the standard likelihood;
-  }
-
-  The \code{model} parameter indicates the type of RF
-  considered. The available options are:
-
-  RF with marginal symmetric distribution:
-  \itemize{
-    \item \code{Gaussian}, for a Gaussian RF.   
-    \item \code{StudentT}, for a StudentT RF (see  Bevilacqua M., Caamaño C., Arellano Valle R.B., Morales-Oñate V., 2020).
-    \item \code{Tukeyh}, for a Tukeyh RF.
-    \item \code{Logistic}, for a Logistic RF.
- }   
-   RF with positive values and  right skewed marginal distribution:
-  \itemize{
-    \item \code{Gamma} for a Gamma  RF (see  Bevilacqua M., Caamano C.,  Gaetan, 2020)
-    \item \code{Weibull} for a Weibull  RF (see  Bevilacqua M., Caamano C.,  Gaetan, 2020)
-    \item \code{LogGaussian} for a  LogGaussian  RF (see  Bevilacqua M., Caamano C.,  Gaetan, 2020)
-    \item \code{LogLogistics} for a  LogLogistic RF. 
-}
-RF with with possibly asymmetric marginal distribution:
-  \itemize{
-    \item \code{SkewGaussian} for a skew Gaussian  RF (see   Alegrıa et al. (2017))
-    \item \code{SinhAsinh} for a Sinh-arcsinh  RF.
- }
- RF with for directional data
- \itemize{   
-    \item \code{Wrapped} for a wrapped Gaussian  RF (see  Alegria A., Bevilacqua, M., Porcu, E. (2016))
-    }
-RF with marginal counts data
- \itemize{  
-     \item \code{Poisson} for a Poisson  RF.
-     \item \code{PoissonZIP} for a zero inflated Poisson  RF.
-     \item \code{Binomial} for a Binomial  RF.
-     \item \code{BinomialNeg} for a negative Binomial RF.
-     \item \code{BinomialNegZINB} for a zero inflated negative Binomial RF.
-  }
-RF using Gaussian and Clayton copula with the following marginal distribution:
- \itemize{   
-    \item \code{Gaussian} 
-    \item \code{Beta} for a Beta   RF, \code{Beta2} using mean parametrization.
-    \item \code{Kumaraswamy} for a  Kumaraswamy  RF,\code{Kumaraswamy2} using median parametrization.
-    }
-
-  For  a given \code{model} the associated parameters are given by nuisance and covariance parameters. In order to obtain the nuisance parameter associated to a specific model use \code{\link{NuisParam}}. 
-  In order to obtain the covariance parameter associated to a given covariance model use 
-  \code{\link{CorrParam}}.
-
-   All the nuisance and covariance parameters must be specified
-   by the user using  the  \code{start}  and  the \code{fixed} parameter.
-   Specifically:
-
-   The \code{start} parameter allows to specify (as starting values for the optimization)  the parameters  to be estimated.
-   The \code{fixed} parameter allows to fix  some of the parameters.
-
-   Regression parameters in the linear specfication must be specified as \code{mean,mean1,..meank} (see \code{\link{NuisParam}}).
-   In this case a matrix of covariates with suitable dimension can be specified using the parameter  \code{X}. 
-   In the case of a single mean then \code{X} should not be specified and it is interpreted as a vector of ones.
-
-   The \code{taper} parameter, optional in case that
-   \code{type=Tapering}, indicates the type of taper
-   correlation model. (See \code{\link{GeoCovmatrix}})
-
-
-  If a Gaussian or (any) non Gaussian RF is considered then the possible combination is
-  marginal pairwise likelihoods (\code{likelihood=Marginal}) and \code{type="Pairwise"})
-  or (\code{likelihood=Conditional}) and \code{type="Pairwise"})
-
-
-  If a Gaussian RF is considered  (\code{model=Gaussian}) then:
-    \itemize{
-      \item If the composite is formed by marginal likelihoods (\code{likelihood=Marginal}):
-      \itemize{
-	\item \code{Pairwise}, the composite-likelihood is defined by
-	the pairwise likelihoods;
-	\item \code{Difference}, the composite-likelihood is defined by
-	likelihoods
-	which are obtained as difference of the pairwise likelihoods.}
-      \item If the composite is formed by conditional likelihoods
-      (\code{likelihood=Conditional})
-      \itemize{
-	\item \code{Pairwise}, the composite-likelihood is defined by
-	the pairwise conditional likelihoods.}
-      \item If the composite is formed by a full likelihood
-      (\code{likelihood=Full}):
-      \itemize{
-	\item \code{Standard}, the objective function is the classical
-        multivariate likelihood;
-	\item \code{Restricted}, the objective function is the
-        restricted version of the full likelihood (e.g. Harville 1977, see \bold{References});
-	\item \code{Tapering}, the objective function is the tapered 2 (unbiased estimating equation)
-        version of the full likelihood (e.g. Kaufman et al. 2008, see \bold{References});
-    \item \code{Tapering1}, the objective function is the tapered 1 (biased estimating equation)
-        version of the full likelihood (e.g. Kaufman et al. 2008, see \bold{References}); 
-   \item \code{CV}, the objective function  is the cross validation estimation method ;           
-      }
-      }
-
-
-
-  Two type  of binary weights can be used in  the composite likelihood estimation,
-  one based on neighboords and one based on distances.
-   
-  In the first  case  binary weights are set to 1 and 0 otherwise
-  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  the package RANN that  provides
-  fast nearest neighbour search.
-
-  In the second case, the \code{maxdist} parameter set the maximum
-  spatial distance below which pairs of sites with inferior distances
-  Pairs with distance less than \code{maxdist} have weight 1
-  and are included in the likelihood computation, instead those with
-  greater distance have weight 0 and then excluded.
-  This weighting scheme is less ineffecient for large data.
-  The same arguments of \code{maxdist} are valid for \code{maxtime} but
-  here the weigthed composite-likelihood regards the case of
-  spatial-temporal field.
-
-  The \code{varest=TRUE} parameter specifies if the standard error estimation of the estimated parameters must be computed.
-  For Gaussian RFs and standard  likelihood estimation, standard  errors  are computed as square root of the diagonal elements of the Fisher
-  Information matrix (asymptotic covariance matrix of the estimates under increasing domain).
-  For Gaussian and non Gaussian  RFs and composite  likelihood estimation, standard errors estimate are computed as square root of the diagonal elements of the
-  Godambe Information matrix. (asymptotic covariance matrix of the estimates under increasing domain  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
-
-  For standard error estimation  of composite likelihood estimatin
-  use the option \code{sensitivity=TRUE} and then update the object with the function \code{GeoVarestbootstrap}.
-  The option  \code{varest=TRUE}  is deprecated and the comments below should not be considered.
-  The \code{varest=TRUE} option allows std error estimation trough a sub-sampling procedure.
-  In the  the sub-sampling procedure,\code{winconst}
-   and \code{winstp} parameters represent respectively a positive constant used to
-  determine the sub-window size and the the step with which the
-  sub-window moves. 
-  In the spatial case (subset of \eqn{R^2}{R^2}), the domain is seen as
-  a rectangle \eqn{B \times H}{BxH}, therefore the size of the
-  sub-window side \eqn{b}{b} is given by \eqn{b=winconst \times
-  \sqrt(B)}{b=winconst x sqrt(B)} (similar is of \eqn{H}{H}).
-  For a complete description see Lee and Lahiri (2002).
-  By default \code{winconst} is set \eqn{B / (4 \times \sqrt(B))}{B / (4
-  x sqrt(B))}.  The \code{winstp} parameter is used to determine the sub-window step. The latter is given by the
-  proportion of the sub-window size, so that when \code{winstp=1} there
-  is not overlapping between contiguous sub-windows.
-  In the spatial case by default \code{winstp=0.5}.
-  The sub-window is moved
-  by successive steps in order to cover the entire spatial
-  domain.
-  Observations, that fall in disjoint or overlapping windows
-  are considered indipendent samples.
-
-  In the spatio-temporal case  \code{winconst_t} represents
-  the lenght of the temporal sub-window. By default the size of the
-  sub-window is computed following the rule established in Li et al. (2007).
-  By default \code{winstp} is the time step.
+   The function \code{GeoFit2} is similar to the  function \code{GeoFit}.
+   However \code{GeoFit2}  performs a preliminary estimation  using maximum   indenpendence composite likelihood 
+   of the marginal parameters of the model and then use the obtained estimates as starting value in the global
+   weighted composite likelihood estimation (that includes marginal and dependence parameters).
+   This allows to obtain "good" starting values in the optimization algorithm for the marginal parameters.
 }
 
 \value{
@@ -467,9 +271,9 @@ library(fields)
 
 ################################################################
 ###
-### Example 1, 2 :  Estimation of a spatial Gaussian RF with 
-### Matern correlation using  pairwise likelihood and 
-### maximum likelihood with  BGGS and nlminb optimization
+### Example 1 :  Estimation of a spatial Gaussian RF with 
+### Matern correlation using  conditional pairwise likelihood and 
+### maximum likelihood with  Nelder-Mead and nlminb optimization
 ###
 ###############################################################
 
@@ -500,22 +304,20 @@ data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,X=X)$data
 fixed<-list(nugget=nugget,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 
-
-
 ################################################################
 ###
-### Example 1. Maximum pairwise likelihood fitting of
+### Maximum pairwise likelihood fitting of
 ### Gaussian RFs with exponential correlation.
 ### 
 ###############################################################
 fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, 
-                    optimizer="BFGS",neighb=3,likelihood="Marginal",
+                    optimizer="Nelder-Mead",neighb=3,likelihood="Conditional",
                     type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
 ################################################################
 ###
-### Example 2. Standard Maximum likelihood fitting of
+### Standard Maximum likelihood fitting of
 ### Gaussian RFs with exponential correlation.
 ###
 ###############################################################
@@ -537,8 +339,8 @@ print(fit2)
 ################################################################
 ###
 ### Example 3. Maximum pairwise likelihood fitting of spatial
-### Gamma and Weibull  RFs with Generalized Wendland correlation
-### using Nelder-Mead and BFGS 
+### Weibull  RF with Generalized Wendland correlation
+### using Nelder-Mead  
 ###############################################################
 set.seed(524)
 # Define the spatial-coordinates of the points:
@@ -570,21 +372,10 @@ fit <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     start=start,fixed=fixed)
 print(fit$param)
 
-model="Gamma"
-start<-list(mean=mean,mean1=mean1,scale=scale)
-fixed<-list(nugget=nugget,power2=4,sill=1,shape=6)
-# Maximum pairwise composite-likelihood fitting of the RF:
-fit <- GeoFit2(data=data,coordx=coords,corrmodel="Wend0", model=model,
-                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
-                    start=start,fixed=fixed)
-
-print(fit$param)
-
-
 
 ################################################################
 ###
-### Example 5. Maximum pairwise likelihood fitting of
+### Example 4. Maximum pairwise likelihood fitting of
 ### SinhAsinh-Gaussian spatial  RFs with Wendland correlation
 ###
 ###############################################################
