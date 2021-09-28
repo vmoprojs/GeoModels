@@ -110,8 +110,8 @@ if(is.null(coordx_dyn))
    {
         
          inf=nn2Geo(coords,coords,K+1,distance,maxdist,radius)
+         aa=cbind(inf$rowidx,inf$colidx)   ## spatial index (fixed coordinates)
          for(i in 1:numtime) {
-                  aa=cbind(inf$rowidx,inf$colidx)   ## spatial index (fixed coordinates)
                   m_s[[i]]=cbind(aa+N*(i-1),0,inf$lags)
                   }
    }
@@ -124,6 +124,7 @@ if(!is.null(coordx_dyn))
                   }
   }
          ## building  temporal  and spatiotemporal indexes
+         
          ## temporal distances (not zero distance)
          nn=sort(unique(c(RANN::nn2(coordt,coordt,k=maxtime+1,treetype = c("kd"))$nn.dists)))[-1]  
          tnn=length(nn)   

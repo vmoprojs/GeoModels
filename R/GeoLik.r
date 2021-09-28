@@ -793,19 +793,15 @@ if(!onlyvar){   # performing optimization
     if(!is.null(neighb)) { 
             locs=cbind(coordx,coordy)
             vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
-            
-            #Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
-             #                control = list( iter.max=100000),dimat=dimat,
-              #           lower=lower,upper=upper, hessian=hessian,
-               #            data=t(data),fixed=fixed,
-                #          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+         # print(optimizer)
+          if(optimizer=="nlminb")
+            Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
+                             control = list( iter.max=100000),dimat=dimat,
+                         lower=lower,upper=upper, hessian=hessian,
+                           data=t(data),fixed=fixed,
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
        
               if(optimizer=="nmkb")
-                # Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
-                 #   vecchia.approx=vecchia.approx,lower=lower,upper=upper,
-                  #           dimat=dimat,method=optimizer,data=t(data),fixed=fixed,
-                   #       model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
-
                   Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
                         lower=lower,upper=upper,  vecchia.approx=vecchia.approx,
                         dimat=dimat,data=t(data),fixed=fixed,
@@ -823,9 +819,6 @@ if(!onlyvar){   # performing optimization
                  #         model=model,namescorr=namescorr,hessian=hessian,
                   #        namesnuis=namesnuis,namesparam=namesparam,X=X)
 
-
-
-         
                        }
         else{  ### no vecchia
 if(optimizer=='L-BFGS-B'&&!parallel)

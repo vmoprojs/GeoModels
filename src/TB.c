@@ -101,41 +101,41 @@ void simu_on_coords(int *Ndim,int *Mcoords,int *Mu,double *coords,double *amatri
   int i,j,ih=0,ip=0,row0 = 0;
   
   int ig=n_rows_coords,it=n_rows_u;
-  int row1 = n_rows_coords;
+  //int row1 = n_rows_coords; //
   
   for(i=0;i<(*Ndim);i++){
     
     int amatrix_index0 = 0;
-    int amatrix_index1 = 1;
+    //int amatrix_index1 = 1; //
     
     for(j=0;j<(*Mu);j++){
       
-          int jaux = j;
-          double val_phi = matrix_phi[jaux];
-          double val_a0 = amatrix[amatrix_index0];
-          double val_a1 = amatrix[amatrix_index1];
+      int jaux = j;
+      double val_phi = matrix_phi[jaux];
+      double val_a0 = amatrix[amatrix_index0];
+      //double val_a1 = amatrix[amatrix_index1]; //
       
-          double val1 = coords[ih];
-          double val2 = coords[ig];
-          double mul1 = val1*matrix_u[ip];
-          double mul2 = val2*matrix_u[it];
-        
-          matrix_out[row0] = matrix_out[row0]+(val_a0*cos(2*pi*(mul1 + mul2)+val_phi));
-          matrix_out[row1] = matrix_out[row1]+(val_a1*cos(2*pi*(mul1 + mul2)+val_phi));
-          
-          if((j+1)==(*Mu)){
-            ip=0;
-            it=n_rows_u;
-          }
-          else{
-            ip=ip+1;
-            it=it+1;
-          }
-        amatrix_index0 = amatrix_index0+2;
-        amatrix_index1 = amatrix_index1+2;
+      double val1 = coords[ih];
+      double val2 = coords[ig];
+      double mul1 = val1*matrix_u[ip];
+      double mul2 = val2*matrix_u[it];
+      
+      matrix_out[row0] = matrix_out[row0]+(val_a0*cos(2*pi*(mul1 + mul2)+val_phi));
+      //matrix_out[row1] = matrix_out[row1]+(val_a1*cos(2*pi*(mul1 + mul2)+val_phi)); //
+      
+      if((j+1)==(*Mu)){
+        ip=0;
+        it=n_rows_u;
+      }
+      else{
+        ip=ip+1;
+        it=it+1;
+      }
+      amatrix_index0 = amatrix_index0+1;
+      //amatrix_index1 = amatrix_index1+2;//
     }
     row0=row0+1;
-    row1=row1+1;
+    //row1=row1+1; //
     ih=ih+1;
     ig=ig+1;
   }

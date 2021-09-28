@@ -62,106 +62,67 @@ return(dims*dimt)
 }
 
 
-###############################
-tbm2d <- function(coord, a0, nu0, L , model){
+#########################################################
+tbm2d <- function(coord, a0, nu0,mu,sill, L , model){
   # Preparing parameters to use
   # =============================================
-
-  if(model == "Matern") {model=0}
-
-  parametersg <- list("C" = 1, "a" = a0, "nu1" = nu0, "nu2" = c())
-  parameters=parametersg
-
+  a_frecuency = 50
+  nu_frecuency = 0.5
+  if(model == "Matern"){model=0}
+  parametersg <- list("C" = 1, "a" = a_frecuency, "nu1" = nu_frecuency, "mu" = c())
+  parameters <- list("C" = sill, "a" = a0 , "nu1" = nu0, "mu" = c())
+  
+  d <- 1
   n <- dim(coord)[1]
   sequen <- c(seq(0,n-0.5, by = ceiling(1e6/2)),n)
-  index <- cbind(1:(2*L))
   coord_n <- coord[(sequen[1]+1):sequen[2], ]
   m <- dim(coord_n)[1]
-      
+  
   # Generate random frequencies and random phases
   # =============================================
   S <- ceiling(1e7*runif(3))
   set.seed(S[1])
-  G <- matrix(rgamma(2*L,nu0,scale=1),2*L,2)   ## matriz (2L x 2)
+  G <- matrix(rgamma(d*L,nu_frecuency,scale=1),d*L,2)   
   set.seed(S[2])
-  u <- matrix(rnorm(4*L),2*L,2)/sqrt(G*2)/a0/(2*pi) ## matriz (2L x 2)
+  u <- matrix(rnorm(2*d*L),d*L,2)/sqrt(G*2)/a_frecuency/(2*pi) 
   set.seed(S[3])
-  phi <- 2*pi*runif(2*L) ## vector (2L x 1)
+  phi <- 2*pi*runif(d*L)
   
   # Spectral density using C code
   # ================================
   
- 
-  f <- .C("spectral_density", L=as.integer(2*L),model=as.integer(model),p=as.integer(length(parameters$a)),
-                  matrix = as.double(u), matrix_out =as.double(rep(0, 2*length(u)*length(parameters$a))),
-                  C=as.double(parameters$C), a = as.double(parameters$a), nu1 = as.double(parameters$nu1),
-                  Cg=as.double(parametersg$C), ag = as.double(parametersg$a), nu1g = as.double(parametersg$nu1),
-                  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-
-  aux_vec <- matrix(f$matrix_out,2,0.5*length(f$matrix_out))
+  f <- .C("spectral_density", L=as.integer(d*L),model=as.integer(model),p=as.integer(length(parameters$a)),
+          matrix = as.double(u), matrix_out =as.double(rep(0, 0.5*length(u)*length(parameters$a))),
+          C=as.double(parameters$C), a = as.double(parameters$a), nu1 = as.double(parameters$nu1),
+          Cg=as.double(parametersg$C), ag = as.double(parametersg$a), nu1g = as.double(parametersg$nu1),
+          PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
   
-  # Eigenvalues/vectors preparation
-  # ================================
-  
-  matrix_to_eigen <- lapply(seq(1,ncol(aux_vec),2), function(i){as.matrix(cbind(aux_vec[,i],aux_vec[,i+1]),2,2)})
-  
-  VD <- lapply(matrix_to_eigen ,eigen)
-  aux_VD <- as.matrix(unlist(VD))+1e-100
-  
-  vector_to_get_eigen_vals <- rep(c(rep(1,2),rep(0,4)), times = length(VD))
-  vector_to_get_eigen_vec <- rep(c(rep(0,2),rep(1,4)), times = length(VD))
-  
-  eigen_vals <- aux_VD[subset(aux_VD*vector_to_get_eigen_vals != 0)] 
-  eigen_vec <- aux_VD[subset(aux_VD*vector_to_get_eigen_vec != 0)]
-  
-  neg <- which(eigen_vals<0)
-  if(length(neg)>0){eigen_vals[neg] = 0}
-  
-  lambda2 <- as.double(sqrt(eigen_vals[seq(2,length(eigen_vals),2)]))
-  lambda1 <- as.double(sqrt(eigen_vals[seq(1,length(eigen_vals)-1,2)]))
-  
-  Mvec <- matrix(eigen_vec,nrow = length(eigen_vec), ncol = 1)
-  
-  vec11 <- as.double(Mvec[seq(1,length(eigen_vec),4)])
-  vec21 <- as.double(Mvec[seq(2,length(eigen_vec),4)])
-  vec12 <- as.double(Mvec[seq(3,length(eigen_vec),4)])
-  vec22 <- as.double(Mvec[seq(4,length(eigen_vec),4)])
-
-  tempc <- .C("matrix_temp", N = as.integer(length(lambda1)), matrix = as.double(rep(0, 4*length(lambda1))), 
-               l1 = lambda1, l2 = lambda2 ,                                           # Valores propios
-               v11 = vec11 , v12 = vec12 , v21 = vec21, v22 = vec22,
-               PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE )                 # Vectores propios
-
-  A <- matrix(tempc$matrix,nrow=2, ncol=(0.5*length(tempc$matrix)))
-  vts <- .C("vector_to_select", N = as.integer(2*L), matrix = as.double(rep(0, (2*L)+1)),
-     PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-
-  AMatrix <- A[,head( vts$matrix, -1)]
   # Simulation at target locations with c code
   # ==========================================
   
-  simu <- .C("simu_on_coords", Ndim = as.integer(dim(coord)[1]) ,Mcoords = as.integer(dim(coord)[1]),
-                Mu = as.integer(dim(u[index,])[1]) , coords = as.double(coord_n),
-                amatrix = as.double(AMatrix[,index]),
-                matrix_phi = as.double(phi[index]), matrix_u = as.double(u[index,]),
-                matrix_out = as.double(rep(0, 2*dim(coord)[1])),Mcoords,
-                 PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+  AMatrix <- sqrt(f$matrix_out)
   
-  simu <- matrix(simu$matrix_out, m, 2)/sqrt(L)
+  simu <- .C("simu_on_coords", Ndim = as.integer(dim(coord)[1]) ,Mcoords = as.integer(dim(coord)[1]),
+             Mu = as.integer(dim(u)[1]) , coords = as.double(coord_n),
+             amatrix = as.double(AMatrix),
+             matrix_phi = as.double(phi), matrix_u = as.double(u),
+             matrix_out = as.double(rep(0, d*dim(coord)[1])),
+             PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+  
+  simu <- matrix(simu$matrix_out, m, 1)/sqrt(L)
   
   return(simu)
 }
 
-
+######################################################################
 
 simu_approx=function(coords,coordt,method,corrmodel,param,M,L)
 {
 ## Turning Bands
 if(method=="TB")    { 
-    simu=sqrt(as.numeric(param['sill']))*tbm2d(coords, as.numeric(param['scale']), 
-                                                       as.numeric(param['smooth']), 
-                                                       L=L, 
-                                                       model = corrmodel)
+    simu=tbm2d(coords, as.numeric(param['scale']), as.numeric(param['smooth']),NULL,as.numeric(param['sill']), 
+                                                       L=L,  model = corrmodel)
+    simu=c(simu[,1])  
                    }     
 ## Vecchia
 if(method=="Vecchia"){ 
@@ -172,6 +133,7 @@ simu=GpGp::fast_Gp_sim(covparms=c(as.numeric(param['sill']),
                                   as.numeric(param['nugget'])), 
                                   covfun_name = model1, coords, m = M)
 }
+
 return(simu)
 }
 
@@ -263,7 +225,7 @@ return(simu)
 
             mm=c(mm1,mm2)
             vv1<-param$sill_1;param$sill_1=1-param$nugget_1;
-            vv2<-param$sill_2;param$sill_2=1-param$nugget_2;;vv=c(vv1,vv2)
+            vv2<-param$sill_2;param$sill_2=1-param$nugget_2;vv=c(vv1,vv2)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
         }}
 #################################
