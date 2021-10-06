@@ -7,7 +7,7 @@
  random fields using approximate methods of simulation.
 }
 \usage{
-GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,local=c(1,1),method="Vecchia",M=30, L=NULL,model='Gaussian', n=1,
+GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1,
  param, radius=6371,X=NULL)
 }
 \arguments{
@@ -38,7 +38,8 @@ GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
     are interpreted as spatial or spatial-temporal realisations on a set
     of non-equispaced spatial sites (irregular grid).}
           \item{local}{Numeric; number of local work-items of the GPU}
-     \item{method}{String; the type of approximation method. Default is \code{Vecchia}  the Vecchia method. The other possible choice is \code{TB} (turning band).} 
+     \item{method}{String; the type of approximation method. Default is \code{TB}  that is the 
+     turning band method. The other possible choice is \code{Vecchia} that is the Vechia method.} 
      \item{M}{Numeric; the number of neighboords in the Vecchia method.} 
       \item{L}{Numeric; the number of lines in the  turning band method.} 
   \item{model}{String; the type of RF and therefore the densities associated to the likelihood
@@ -79,7 +80,13 @@ GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distan
   spatial RF;}
 }
 
+\references{
 
+J. Guiness (2018) Permutation and Grouping Methods for Sharpening Gaussian Process Approximations \emph{Technometrics} 60(4) 415-429.
+
+D. Arroyo, X. Emery (2020) An R Implementation of a Continuous Spectral Algorithm for Simulating Vector Gaussian Random Fields in Euclidean Spaces ACM Transactions on Mathematical SoftwareVolume 47(1)
+
+}
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
@@ -89,20 +96,20 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 \examples{
 library(GeoModels)
 library(fields)
-library(GpGp)
+
 
 ################################################################
 ###
-### Example 1. Simulation of a spatial Gaussian RF 
-###            with Vecchia method
+### Example 1. Simulation of a large spatial Gaussian RF 
+###            with Turning band method
 ###############################################################
 set.seed(6)
-x <- runif(5000)
-y <- runif(5000)
+x <- runif(50000)
+y <- runif(50000)
 coords=cbind(x,y)
 # Simulation of a spatial Gaussian RF with Matern correlation function
 data1 <- GeoSimapprox(coords, corrmodel="Matern", 
-            method="Vecchia",M=30,
+            method="TB",L=500,
             param=list(smooth=0.5,mean=0,sill=1,scale=0.4/3,nugget=0))$data
 quilt.plot(coords,data1)
              

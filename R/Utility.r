@@ -1439,7 +1439,7 @@ if(method1=="euclidean")
                 }
               ###### ojo aca!! if conditional then I used nn2 using "all" the indeces
         if(likelihood==1&&is.numeric(maxdist)&&is.null(neighb))   
-                          neighb= min(numcoord*numtime,500)
+        neighb= min(numcoord*numtime,500)
                        
                             
     }
@@ -1645,12 +1645,12 @@ if(spacetime)   #  space time  case
     coordx_dyn=coordx_dyn,
     coordt=coordt,distance=distance1,maxdist=maxdist,neighb=K,maxtime=maxtime,radius=radius)
 
- # ###    deleting symmetric indexes with associate distances
+ # ###    deleting symmetric indexes with associate distances #unuseful
   if(nosym){
-  aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
-  sol$rowidx=c(aa$xy[,1])
-  sol$colidx=c(aa$xy[,2])
-  sol$lags=c(aa$d)}
+     aa=GeoNosymindices(cbind(sol$colidx,sol$rowidx),sol$lags)
+     sol$rowidx=c(aa$xy[,1])
+     sol$colidx=c(aa$xy[,2])
+     sol$lags=c(aa$d)}
 
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;

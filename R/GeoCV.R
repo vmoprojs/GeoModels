@@ -263,7 +263,7 @@ if(is.vector(Xnew[[1]])) Xnew=NULL
 param=as.list(c(fit$param,fit$fixed))
 if(estimation) {
 
-          fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
+          fit_s= GeoFit2(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
                             corrmodel=fit$corrmodel,X=Xnew,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
                             copula=fit$copula,

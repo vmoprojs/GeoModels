@@ -5,7 +5,7 @@
 
 # Simulate approximate spatial and spatio-temporal random felds:
 GeoSimapprox <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="Vecchia",M=30, L=NULL,model='Gaussian', n=1, param, radius=6371,X=NULL)
+     local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1, param, radius=6371,X=NULL)
 {
 ####################################################################
 ############ internal function #####################################
@@ -63,21 +63,31 @@ return(dims*dimt)
 
 
 #########################################################
-tbm2d <- function(coord, a0, nu0,mu,sill, L , model){
+tbm2d<- function(coord, a0, nu0,mu,sill, L,model){
   # Preparing parameters to use
   # =============================================
-  a_frecuency = 50
-  nu_frecuency = 0.5
-  if(model == "Matern"){model=0}
-  parametersg <- list("C" = 1, "a" = a_frecuency, "nu1" = nu_frecuency, "mu" = c())
-  parameters <- list("C" = sill, "a" = a0 , "nu1" = nu0, "mu" = c())
-  
+
+
+  #if(model == "Matern"){
+    a_frecuency = a0
+    nu_frecuency = nu0
+     mu_frecuency = mu
+  parametersg <- list("C" = 1, "a" = a_frecuency, "nu1" = nu_frecuency, "mu" =    mu_frecuency )
+  parameters <- list("C" = sill, "a" = a0 , "nu1" = nu0, "mu" =     mu_frecuency )
+  #}
+  #if(model == "GenWend"){
+  #   a_frecuency = a0
+  #  nu_frecuency = nu0
+  #  mu_frecuency = mu
+  #model=1
+  #parametersg <- list("C" = 1, "a" = a_frecuency, "nu1" = nu_frecuency, "mu" =  mu_frecuency)
+  #parameters <- list("C" = sill, "a" = a0 , "nu1" = nu0, "mu" = mu)
+  #}
   d <- 1
   n <- dim(coord)[1]
   sequen <- c(seq(0,n-0.5, by = ceiling(1e6/2)),n)
   coord_n <- coord[(sequen[1]+1):sequen[2], ]
   m <- dim(coord_n)[1]
-  
   # Generate random frequencies and random phases
   # =============================================
   S <- ceiling(1e7*runif(3))
@@ -87,43 +97,39 @@ tbm2d <- function(coord, a0, nu0,mu,sill, L , model){
   u <- matrix(rnorm(2*d*L),d*L,2)/sqrt(G*2)/a_frecuency/(2*pi) 
   set.seed(S[3])
   phi <- 2*pi*runif(d*L)
-  
   # Spectral density using C code
   # ================================
-  
   f <- .C("spectral_density", L=as.integer(d*L),model=as.integer(model),p=as.integer(length(parameters$a)),
           matrix = as.double(u), matrix_out =as.double(rep(0, 0.5*length(u)*length(parameters$a))),
           C=as.double(parameters$C), a = as.double(parameters$a), nu1 = as.double(parameters$nu1),
           Cg=as.double(parametersg$C), ag = as.double(parametersg$a), nu1g = as.double(parametersg$nu1),
           PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-  
   # Simulation at target locations with c code
   # ==========================================
-  
   AMatrix <- sqrt(f$matrix_out)
-  
   simu <- .C("simu_on_coords", Ndim = as.integer(dim(coord)[1]) ,Mcoords = as.integer(dim(coord)[1]),
              Mu = as.integer(dim(u)[1]) , coords = as.double(coord_n),
              amatrix = as.double(AMatrix),
              matrix_phi = as.double(phi), matrix_u = as.double(u),
              matrix_out = as.double(rep(0, d*dim(coord)[1])),
              PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-  
   simu <- matrix(simu$matrix_out, m, 1)/sqrt(L)
-  
   return(simu)
 }
 
 ######################################################################
-
 simu_approx=function(coords,coordt,method,corrmodel,param,M,L)
 {
 ## Turning Bands
-if(method=="TB")    { 
-    simu=tbm2d(coords, as.numeric(param['scale']), as.numeric(param['smooth']),NULL,as.numeric(param['sill']), 
-                                                       L=L,  model = corrmodel)
-    simu=c(simu[,1])  
-                   }     
+if(method=="TB")    
+{  
+   if(corrmodel=="Matern")  {model=0; mu=NULL}
+   if(corrmodel=="GenWend") {model=1; mu=as.numeric(param['power2'])}
+   
+   simu=tbm2d(coords, as.numeric(param['scale']), as.numeric(param['smooth']), mu, as.numeric(param['sill']), 
+                                                       L=L,  model = model)
+   simu=c(simu[,1])  
+}     
 ## Vecchia
 if(method=="Vecchia"){ 
 if(corrmodel=="Matern") model1="matern_isotropic"

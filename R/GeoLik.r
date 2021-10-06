@@ -161,10 +161,11 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
         logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
-        #print(logdetvarcov)
+
        # invarcov <- MatInv(decompvarcov,mdecomp)
        # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
          llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
+
         return(llik)
     }
     LogNormDenStand22 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
@@ -579,6 +580,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
+
         return(loglik_u)
       }
   #####################################################    
@@ -916,6 +918,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     }
 }
+
 
 
  if(optimizer %in% c('Nelder-Mead','L-BFGS-B','BFGS','nmk','nmkb','multiNelder-Mead'))
@@ -1314,5 +1317,6 @@ names(Likelihood$score)=namesparam
 if(varest)
     if(is.null(Likelihood$varcov)){
                 Likelihood$varcov <- 'none';Likelihood$stderr <- 'none'}
+
     return(Likelihood)
   }

@@ -13,7 +13,7 @@ if(fit$coordt==0)  fit$coordt=NULL
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 
-if(method!="cholesky"||method!="Vecchia"||method!="TB") stop("The method of simulation is not correct")
+if(!(method=="cholesky"||method=="Vecchia"||method=="TB")) stop("The method of simulation is not correct")
 
 if(!is.numeric(seed)) stop(" seed must be numeric")
 model=fit$model
@@ -54,7 +54,7 @@ if(method=="Vecchia"||method=="TB")
 data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
-   param=as.list(c(fit$param,fit$fixed)), method=method,M=30,L=200,
+   param=as.list(c(fit$param,fit$fixed)), method=method,M=30,L=500,
    GPU=GPU,  local=local,#grid=fit$grid, 
    X=fit$X,n=fit$n,
    distance=fit$distance,radius=fit$radius)
@@ -70,8 +70,8 @@ res_est=GeoFit2( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$
    X=fit$X, distance=fit$distance, radius=fit$radius)
 
 
-if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 10000000000)&&(res_est$logCompLik> -1e+14)){
- 
+if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 100000000000)&&(res_est$logCompLik> -1e+14)){
+ #print(res_est$param)
 
  res=rbind(res,res_est$param)
  k=k+1

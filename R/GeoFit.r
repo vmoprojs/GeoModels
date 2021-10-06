@@ -173,7 +173,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
      else        .C('DeleteGlobalVar' , PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) # distances with rann
     }
 
-if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value
+if(likelihood!="Full") {if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value}  #!!ojo
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,
