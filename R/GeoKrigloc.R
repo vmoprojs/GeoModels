@@ -36,7 +36,7 @@ if(space){
          res1=res2=NULL
          for(i in 1: Nloc)
           {
-            pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
+            pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X[[i]],Xloc= Xloc[i,],
                 model=model, param=param,mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)
@@ -53,7 +53,7 @@ if(spacetime)
          k=1
          for(i in 1: Nloc){
           for(j in 1: Tloc){
-            pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],
+            pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],n=n,
                X=neigh$X[[i]],Xloc= Xloc[i+(Nloc)*(j-1),],
              corrmodel=corrmodel,distance=distance, model=model, param=param,mse=mse, data=neigh$data[[k]],copula=copula)
             res1=c(res1,pr$pred)
@@ -67,7 +67,7 @@ neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxd
         res1=res2=NULL
          for(i in 1: Nloc)
           {
-            pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,
+            pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X,,Xloc= Xloc[i,],which=which,
                 model=model, param=param,mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)

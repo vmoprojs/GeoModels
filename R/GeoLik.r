@@ -2,7 +2,6 @@
 ### File name: GeoLik.r
 ####################################################
 
-### Procedures are in alphabetical order.
 
 ### Optim call for log-likelihood maximization 
 Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
@@ -12,14 +11,16 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
+    
         cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
         as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+
         #cc=dotCall64::.C64(corrmat,
          # SIGNATURE = c("double","double","double","double", "integer","double","double","double","integer","integer"),  
          #            cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
           #INTENT =    c("rw","r","r","r","r","r","r", "r", "r","r"),
           #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
-
+    
         return(cc$cr)
     }
    ######### computing upper trinagular of covariance matrix   
@@ -78,30 +79,73 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
         cova[cova==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
         varcovtap <- new("spam",entries=cova*setup$taps,colindices=setup$ja,
         rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
-        cholvctap <- try(spam::chol.spam(varcovtap),silent=TRUE)
-        if(class(cholvctap)=="try-error") return(lliktap)
-        logdet <- c(determinant(cholvctap)$modulus)
+        cholvctap <- spam::chol.spam(varcovtap)
+        #if(class(cholvctap)=="try-error") return(lliktap)
+        logdet <- c(spam::determinant(cholvctap)$modulus)
         inv <- spam::solve.spam(cholvctap)
         slot(varcovtap,"entries") <- inv[setup$idx]*setup$taps
         lliktap= 0.5*(const+2*logdet+drop(t(stdata)%*%varcovtap%*%stdata))
         return(lliktap)
     }
 
-######### Tapering 1 log-likelihood for multivariate normal density:
+
+######### Tapering 1 sas log-likelihood 
+#LogshDenTap1<- function(const,cova,ident,dimat,mdecomp,nuisance,setup,sill,stdata)
+#{
+#  llik<- 1.0e8
+#    tap <- new("spam",entries=setup$taps*cova,colindices=setup$ja,
+#    rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
+#        vartap=as.matrix(tap)
+#        decompvarcov <- MatDecomp(vartap,mdecomp)
+#         if(is.logical(decompvarcov)) return(llik)  
+#        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
+#    ################################################
+#        skew=as.numeric(nuisance["skew"])
+#        delta=as.numeric(nuisance["tail"])
+#        Z=sinh(delta * asinh(stdata)-skew)
+#        C=delta*sqrt((1+Z^2)/(stdata^2+1))
+#        llik <- 0.5*( const + const*log(sill)/log(2*pi)
+#                      +logdetvarcov - 2*sum(log(C))
+#                      +sum((backsolve(decompvarcov, Z, transpose = TRUE))^2))
+ #   return(llik)
+#}
+
+######### Tapering 1 sas log-likelihood 
+LogshDenTap1<- function(const,cova,ident,dimat,mdecomp,nuisance,setup,sill,stdata)
+{
+
+    varcovtap <- new("spam",entries=setup$taps*cova,colindices=setup$ja,
+    rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
+   
+          #cholvctap <-spam::chol.spam(varcovtap)
+           cholvctap <- spam::update.spam.chol.NgPeyton(setup$struct, varcovtap)
+          logdet <- 2*c(spam::determinant(cholvctap)$modulus)
+
+    ################################################
+        skew=as.numeric(nuisance["skew"])
+        delta=as.numeric(nuisance["tail"])
+        Z=sinh(delta * asinh(stdata)-skew)
+        C=delta*sqrt((1+Z^2)/(stdata^2+1))
+    llik <- 0.5*( const + const*log(sill)/log(2*pi)+logdet - 2*sum(log(C)) +sum(Z* spam::solve.spam(cholvctap, Z)))
+                    
+    return(llik)
+}
+
+
+######### Tapering 1 normal log-likelihood 
 LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 {
-    lliktap <- 1.0e8
-    # Computes the vector of the correlations:
-    cova[cova==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
+
     varcovtap <- new("spam",entries=cova*setup$taps,colindices=setup$ja,
     rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
-    cholvctap <- try(spam::chol.spam(varcovtap),silent=TRUE)
-    if(class(cholvctap)=="try-error") return(lliktap)
-    logdet <- c(determinant(cholvctap)$modulus)
+    cholvctap <- spam::update.spam.chol.NgPeyton(setup$struct, varcovtap)
+    #cholvctap <-spam::chol.spam(varcovtap)
+    logdet <- c(spam::determinant(cholvctap)$modulus)
     lliktap= 0.5*(const+2*logdet+sum(stdata* spam::solve.spam(cholvctap, stdata)))
     return(lliktap)
 }
 
+    
 ######### Tapering 2 log-likelihood for bivariate multivariate normal density:
     LogNormDenTap_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
     {
@@ -111,7 +155,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         rowpointers=setup$ia,dimension=as.integer(rep(dimat,2))),silent=TRUE)
         cholvctap <- try(spam::chol.spam(varcovtap),silent=TRUE)
         if(class(cholvctap)=="try-error") return(lliktap)
-        logdet <- c(determinant(cholvctap)$modulus)
+        logdet <- c(spam::determinant(cholvctap)$modulus)
         inv <- spam::solve.spam(cholvctap)
         slot(varcovtap,"entries") <- inv[setup$idx]*setup$taps
         lliktap= 0.5*(const+2*logdet+drop(t(stdata)%*%varcovtap%*%stdata))
@@ -123,9 +167,9 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         lliktap <- 1.0e8
         # Computes the vector of the correlations:
         cova[cova==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
-        varcovtap <- try(new("spam",entries=cova*setup$taps,colindices=setup$ja,
-        rowpointers=setup$ia,dimension=as.integer(rep(dimat,2))),silent=TRUE)
-        cholvctap <- try(spam::update.spam.chol.NgPeyton(setup$struct, varcovtap),silent=TRUE)
+        varcovtap <- new("spam",entries=cova*setup$taps,colindices=setup$ja,
+        rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
+        cholvctap <- spam::update.spam.chol.NgPeyton(setup$struct, varcovtap)
         if(inherits(cholvctap, "try-error"))  {return(lliktap)}
         logdet <- c(spam::determinant.spam.chol.NgPeyton(cholvctap)$modulus)
         lliktap <- 0.5*(const+2*logdet+sum(stdata* spam::solve.spam(cholvctap, stdata)))
@@ -141,8 +185,8 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova
-        mcov=try(spam::as.spam(varcov),silent=TRUE);if(class(mcov)=="try-error")   return(llik)
-        cholS <- try(chol(mcov) ,silent=TRUE);if(class(cholS)=="try-error")   return(llik)         
+        mcov=spam::as.spam(varcov)#,silent=TRUE);if(class(mcov)=="try-error")   return(llik)
+        cholS <- spam::chol.spam(mcov)# ,silent=TRUE);if(class(cholS)=="try-error")   return(llik)         
         llik=0.5*( const+2*c(spam::determinant.spam.chol.NgPeyton(cholS)$modulus) 
                                     + sum(stdata* spam::solve.spam(cholS,stdata)))
         return(llik)
@@ -156,15 +200,11 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         varcov[lower.tri(varcov)] <- cova
         varcov <- t(varcov)
         varcov[lower.tri(varcov)] <- cova    
-
         # decomposition of the covariance matrix:
         decompvarcov <- MatDecomp(varcov,mdecomp)
         if(is.logical(decompvarcov)) return(llik)  
         logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
-
-       # invarcov <- MatInv(decompvarcov,mdecomp)
-       # llik <- 0.5*(const+logdetvarcov+crossprod(t(crossprod(stdata,invarcov)),stdata))
-         llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
+        llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
 
         return(llik)
     }
@@ -313,8 +353,8 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         if(is.logical(decompvarcov)) return(llik)  
         logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
 ################################################
-        skew=nuisance["skew"]
-        delta=nuisance["tail"]
+        skew=as.numeric(nuisance["skew"])
+        delta=as.numeric(nuisance["tail"])
         Z=sinh(delta * asinh(stdata)-skew)
         C=delta*sqrt((1+Z^2)/(stdata^2+1))
         llik <- 0.5*( const + const*log(sill)/log(2*pi)
@@ -444,32 +484,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 
         return(loglik_u)
       }
-################################################################################################ 
-loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
-    {
 
-        llik <- 1.0e8
-
-        names(param) <- namesparam
-        # Set the parameter vector:
-        pram <- c(param, fixed)
-        paramcorr <- pram[namescorr]
-        nuisance <- pram[namesnuis]
-        sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
-        if(nuisance['tail']<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
-        # Computes the vector of the correlations:
-        sill=nuisance['sill']
-        nuisance['sill']=1
-         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-           #if(is.nan(corr[1])||sill<0||nugget<0||nugget>1) return(llik)
-        corr= corr*(1-nuisance['nugget'])
-        loglik_u <- do.call(what="LogNormDenStand_SH",
-            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
-            mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
-        return(loglik_u)
-      }
 
 ################################################################################################
    # Call to the objective functions:
@@ -557,6 +572,30 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         return(loglik_u)
     
       }
+      ################################################################################################ 
+loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+    {
+
+        llik <- 1.0e8
+        names(param) <- namesparam
+        # Set the parameter vector:
+        pram <- c(param, fixed)
+        paramcorr <- pram[namescorr]
+        nuisance <- pram[namesnuis]
+        sel=substr(names(nuisance),1,4)=="mean"
+        mm=as.numeric(nuisance[sel])
+        if(as.numeric(nuisance['tail'])<=0||as.numeric(nuisance['sill'])<=0||as.numeric(nuisance['nugget'])<0||as.numeric(nuisance['nugget'])>=1) return(llik)
+        # Computes the vector of the correlations:
+        sill=as.numeric(nuisance['sill'])
+        nuisance['sill']=1
+        corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+        corr= corr*(1-nuisance['nugget'])
+        loglik_u <- do.call(what=fname,#"LogNormDenStand_SH",
+            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
+            mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
+        return(loglik_u)
+      }
 ################################################################################################
     # Call to the objective functions:
     loglik <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
@@ -575,8 +614,6 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
-        #nuisance['nugget']=0
-        # Computes the log-likelihood
         
       loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
@@ -684,7 +721,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
 
  #########################################################################  
  ######################################################################### 
-if(model==1){  ## gaussian case
+if(model==1||model==20){  ## gaussian case
     lname <- 'loglik'
     if(!is.null(neighb))  lname <-'loglikvecchia'
     if(bivariate)  {lname <- 'loglik_biv'}
@@ -704,15 +741,21 @@ if(model==1){  ## gaussian case
                        if(type==6) fname <- 'LogNormDenTap1_biv'
                       corrmat<-"CorrelationMat_biv_tap" }
         else          {if(type==5) fname <- 'LogNormDenTap'
-                       if(type==6) fname <- 'LogNormDenTap1'}
+                       if(type==6)  fname <- 'LogNormDenTap1'
+                                   
+                      }             
         corr <- double(numpairs)
         tapcorr <- double(numpairs)
+
+    
         #tp<-.C(corrmat, tcor=tapcorr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(setup$tapmodel),as.double(c(0,0,1)),
         #   as.double(1),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+
            tcor=matr(corrmat,tapcorr,coordx,coordy,coordt,setup$tapmodel,c(0,0,1),1,ns,NS,radius)
-           tape <- try(new("spam",entries=tcor,colindices=setup$ja,rowpointers=setup$ia,dimension=as.integer(rep(dimat,2))),silent=TRUE)
+           tape <- new("spam",entries=tcor,colindices=setup$ja,rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
            setup$struct <- try(spam::chol.spam(tape,silent=TRUE))
            setup$taps<-tcor
+                 
         }
         if(type==8)
         { if(bivariate) fname<-"CVV_biv"
@@ -727,6 +770,8 @@ hessian=FALSE
  if(model==20){   ## SAS case
      lname <- 'loglik_sh'
     if(bivariate)  {lname <- 'loglik_biv_sh'}
+    fname='LogNormDenStand_SH'
+    if(type==6) fname <- 'LogshDenTap1'
 
 }
  
@@ -771,9 +816,6 @@ hessian=FALSE
 
 
  if(type!=5&&type!=6){ corrmat <- paste(corrmat,"2",sep="") }
-
- 
-
 
 
 
@@ -824,27 +866,26 @@ if(!onlyvar){   # performing optimization
                        }
         else{  ### no vecchia
 if(optimizer=='L-BFGS-B'&&!parallel)
-                        Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                        Likelihood <- optim(param,fn=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
 
-  if(optimizer=='L-BFGS-B'&&parallel){
-       #ncores=max(1, parallel::detectCores() - 1)
-       ncores=min(2, parallel::detectCores(logical = FALSE))
+   if(optimizer=='L-BFGS-B'&&parallel){
+        ncores=max(1, parallel::detectCores() - 1)
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
-       parallel::setDefaultCluster(cl = cl)
-                          Likelihood <- optimParallel::optimParallel(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+        parallel::setDefaultCluster(cl = cl)
+                          Likelihood <- optimParallel::optimParallel(param,fn=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list( 
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-       parallel::setDefaultCluster(cl=NULL)
-       parallel::stopCluster(cl)
+     parallel::setDefaultCluster(cl=NULL)
+         parallel::stopCluster(cl)
   }
   if(optimizer=='BFGS')
      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,

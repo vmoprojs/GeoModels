@@ -86,9 +86,13 @@ forGaussparam<-function(model,param,bivariate)
         if(!bivariate) {
                                sel=substr(names(nuisance),1,4)=="mean";
                                num_betas=sum(sel);mm=NULL
-                               if(num_betas==1) mm=nuisance$mean
-                               if(num_betas>1)  mm=c(mm,as.numeric((nuisance[sel])))
-                               sim <- X%*%mm+simd
+                               if(num_betas==1) {mm=nuisance$mean;
+                                                 sim = X*mm+simd
+                                                }
+                               if(num_betas>1)  { mm=c(mm,as.numeric((nuisance[sel])));
+                                                  sim = X%*%mm+simd
+                                                }
+                               
                               }
                 if(bivariate)  {
                   sel1=substr(names(nuisance),1,6)=="mean_1";

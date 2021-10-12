@@ -57,6 +57,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
 
+
         ## moving sill from starting to fixed parameters if necessary
         if(sum(initparam$namesparam=='sill')==1)
         {

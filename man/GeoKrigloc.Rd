@@ -231,7 +231,7 @@ time=c(0.5,1.2,3.7)
 pr=GeoKrig(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
   model="Gaussian", param= param, mse=TRUE)
 pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
-  maxdist=0.15,maxtime=0.5,model="Gaussian", param= param, mse=TRUE)
+  neigh=25,maxtime=0.5,model="Gaussian", param= param, mse=TRUE)
 
 ##  full and local prediction 
 pr$pred

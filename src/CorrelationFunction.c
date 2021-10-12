@@ -1990,12 +1990,11 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
 {
   int i=0,j=0,h=0;// check the paramaters range:
   double dd=0.0;
-
      for(i=0;i<(ncoord[0]-1);i++){
 	    for(j=(i+1);j<ncoord[0];j++){
 
         dd=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-//Rprintf("here %f %d %f  \n", *REARTH, *cormod,dd);
+
     rho[h]=CorFct(cormod,dd,0,par,0,0);
        h++;
     }}

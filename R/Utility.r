@@ -1115,6 +1115,8 @@ if(method1=="greatcircle"){
       if(distance==2) gb@entries=radius*gb@entries             ##GC
       if(distance==1) gb@entries=2*radius*sin(0.5*gb@entries)  ##CH
       }
+
+      
 if(method1=="euclidean")
       gb=spam::nearest.dist( x=coords,method = method1,
                          delta = maxdist, upper =NULL,miles=FALSE, R=1)
@@ -1228,13 +1230,17 @@ if(method1=="euclidean")
         nuisance=nuisance1=nuisance2=NULL
         likelihood <- CkLikelihood(likelihood)
         vartype <- CkVarType(vartype)
+   
         type <- CkType(type)
-    
+  
 
+    
+ 
      #if((!bivariate&&num_betas==1)||(bivariate&&num_betas==c(1,1)))
      if((!bivariate&&num_betas==1)||(bivariate&all(num_betas==c(1,1))))
      {
-        #if(model==1||model==10||model==18||model==9||model==20||model==12||model==13){ 
+        
+      
           if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)) 
           {
            if(!bivariate) {
@@ -1243,6 +1249,7 @@ if(method1=="euclidean")
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
                            else fixed <- list(mean=mu)}
                            nuisance <- c(mu, 0, var(c(unlist(data))))
+
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7) ) tapering <- 1
                            if(model %in% c(10,29,31,32))         nuisance <- c(nuisance,0)
                            if(model %in% c(18,20,27,37,38,40,41))      nuisance <- c(0,nuisance,0)
@@ -1263,7 +1270,7 @@ if(method1=="euclidean")
                            if(model %in% c(10,29,31,32))  {nuisance <- c(nuisance,0.1,0.2)}
                            if(model %in% c(26,46,47,48,42,50))  {nuisance <- c(nuisance,0.1,0.2)}
                            if(model %in% c(21))  {nuisance <- c(nuisance,0.1)}
-
+                          
                            if(likelihood==2 && (CkType(typereal)==5 || CkType(typereal)==7)) tapering <- 1
                  }
         }
@@ -1285,6 +1292,8 @@ if(method1=="euclidean")
  #if(num_betas>1)
  if((!bivariate&&num_betas>1)||(bivariate&&num_betas[1]>1&&num_betas[2]>1) )
      {
+
+    
     if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)) {
     if(!bivariate) {
          if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
@@ -1427,9 +1436,12 @@ if(method1=="euclidean")
             coordt <- 0
             data <- matrix(data, ncol=numcoord, nrow=replicates)
             }
+      
+       #if((typereal=="Tapering"&&type=="Tapering")||(typereal=="Tapering1"&&type=="Tapering1")||(typereal=="Tapering2"&&type=="Tapering2")){
 
         if(typereal=="Tapering"||typereal=="Tapering1"||typereal=="Tapering2"){
         tapering<-1
+
         if(!space){
         idx<-integer((numcoord*numtime)^2)
         ja<-integer((numcoord*numtime)^2)
@@ -1440,8 +1452,8 @@ if(method1=="euclidean")
               ###### ojo aca!! if conditional then I used nn2 using "all" the indeces
         if(likelihood==1&&is.numeric(maxdist)&&is.null(neighb))   
         neighb= min(numcoord*numtime,500)
-                       
-                            
+    
+                                             
     }
     # END code for the fitting procedure
 ##################################################################################################################
@@ -1525,7 +1537,10 @@ if(fcall=="Fitting"&likelihood==2&!is.null(neighb)) mem=FALSE # Vecchia gp case
 if(fcall=="Fitting"&likelihood==2||fcall=="Simulation") mem=FALSE 
 if(tapering) mem=TRUE
 
+
+
 ###################### using new "spam" with neighdist(just for space)#########################################################
+
 if(tapering&space){
     cc=cbind(coordx, coordy);numcoord=nrow(cc);numtime=length(coordt)
     atap=newtap(cc,numcoord, coordt,numtime, distance,maxdist,maxtime,spacetime,bivariate,radius)
@@ -1533,19 +1548,18 @@ if(tapering&space){
     ia=rowidx=atap$rowidx
     numpairs=atap$numpairs
     nozero=atap$nozero
+    K=NULL
 }
-
 else{          # all the rest
-
 ##############################################################
 ## loading distances in memory using brute force C routine ###
 #############################################################
 ### aca paso solo para  simular o maximum likelihood o (variograma) tapering
 ### o si hay CL with  maxdist!!!
-
 if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fitting"&typereal=="GeoWLS")) {
 
 if(fcall=="Fitting"&mem==TRUE&(!space)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
+
 
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
@@ -1709,7 +1723,6 @@ if(is.null(coordt)) coordt=1
 
  }
 }
-
 
 ########################################################################################
 ########################################################################################

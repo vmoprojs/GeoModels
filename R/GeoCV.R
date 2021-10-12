@@ -270,11 +270,10 @@ if(estimation) {
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
-                           # optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
+                            optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                             start=as.list(fit$param),fixed=as.list(fit$fixed))
        
            param=as.list(c(fit_s$param,fit_s$fixed))
-     #print("hhghgh")
               }
              
 
