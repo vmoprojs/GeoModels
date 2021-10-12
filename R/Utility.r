@@ -144,6 +144,7 @@ CkCorrModel <- function(corrmodel)
                              Wendland1=32,wendland1=32,
                              Wendland2=34, wendland2=34,
                              unit_matrix=36,
+                             Spherical=38, spherical=38,
                    ##bivariate
                              Bi_Wendland1=140,Bi_wendland1=140,
                              Bi_Wendland2=142,Bi_wendland2=142,
@@ -346,7 +347,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         if(is.null(taper) || is.null(maxdist)){
           error <- 'tapering need a taper correlation model and/or a compact support\n'
           return(list(error=error))}
-        if(!taper %in% c("Bohman","Wendland0","Wendland1","Wendland2",
+        if(!taper %in% c("Bohman","Wendland0","Wendland1","Wendland2","Spherical","spherical",
                          "Wendland0_Wendland0","Wendland0_Wendland1","Wendland0_Wendland2",
                          "Wendland1_Wendland0","Wendland1_Wendland1","Wendland1_Wendland2",
                          "Wendland2_Wendland0","Wendland2_Wendland1","Wendland2_Wendland2",
@@ -573,7 +574,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     if(fcall=="Simulation"){
         if(type=="Tapering")
           {
-           if(!taper %in% c("Bohman","Wendland1","Wendland2","Wendland3",
+           if(!taper %in% c("Bohman","Wendland1","Wendland2","Wendland3","spherical","Spherical",
                          "Wendland1_Wendland1","Wendland1_Wendland2","Wendland1_Wendland3",
                          "Wendland2_Wendland1","Wendland2_Wendland2","Wendland2_Wendland3",
                          "Wendland3_Wendland1","Wendland3_Wendland2","Wendland3_Wendland3",
@@ -1108,6 +1109,7 @@ newtap<- function(coords,numcoord, coordt,numtime, distance,maxdist,maxtime,spac
 
       if(distance==0) method1="euclidean"
       if(distance==2||distance==1) method1="greatcircle"
+
 
 if(method1=="greatcircle"){
       gb=spam::nearest.dist( x=coords,method = method1,

@@ -567,7 +567,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
    case 29:// Bohman model
       rho=CorFunBohman(h,par[0]);
         break;
-  case 30:// Wendland1 for tap
+  case 30:// Wendland0 for tap
       rho= CorFunW0(h,maxdist[0],2);
       break;
    case 31:// Wendland1 for model
@@ -579,11 +579,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
     case 33:// Wendland1 for tap
       rho=CorFunW1(h,par[0],3);
       break;
-    case 34:// Wendland1 for tap
+    case 34:// Wendland2 for tap
       rho=CorFunW2(h,maxdist[0],4);
       break;
     case 35:// Wendland1 for tap
      rho=CorFunW2(h,par[0],4);
+    case 38:// phericalfor tap
+     rho=CorFunSferical(h, maxdist[0]);
     break;
         case 36:// unit taper
         case 37:// unit taper
@@ -1704,9 +1706,10 @@ double CorFunStable(double lag, double R_power, double scale)
 // Sferical class of correlation models:
 double CorFunSferical(double lag, double scale)
 {
-  double rho=0.0;
-  if(lag<=scale) rho=1-1.5*lag/scale+0.5*R_pow(lag/scale, 3);
-  else rho=0;
+    double rho=0.0,x=0;
+    x=lag/scale;
+   if(x<=1) {rho=  R_pow(1-x,2)*(1+x/2);}   else {rho=0;}
+   // if(x<=1) {rho=1-1.5 * x+ 0.5 * R_pow(x,3);}  else {rho=0;}
   return rho;
 }
 
