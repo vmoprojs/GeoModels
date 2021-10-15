@@ -332,7 +332,6 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
    if((model==11||model==49||model==51)&&length(n)>1)
                        {n1=n[colidx];n2=n[rowidx];n=c(n1,n2)}
    if(is.null(GPU)) GPU=0
-   print(fixed)
    if(!onlyvar){
    
   ##############################.  spatial or space time ############################################
@@ -352,15 +351,17 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
                               upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE)
       if(optimizer=='L-BFGS-B'&&parallel){
-        ncores=max(1, parallel::detectCores() - 1)
+        #ncores=max(1, parallel::detectCores() - 1)
+        ncores=length(param) * 2 + 1
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
         CompLikelihood <- optimParallel::optimParallel(par=param,fn=comploglik2, 
-                              control=list(pgtol=1e-14, maxit=100000,factr=1e-10),
+                              control=list(pgtol=1e-14, maxit=100000,factr = 1e8), # factr = 1e-10
                               colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                                data1=data1,data2=data2,fixed=fixed,fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, 
+                               parallel = list(forward = FALSE),
                               upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)

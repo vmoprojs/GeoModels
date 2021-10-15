@@ -51,8 +51,9 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 
     if(is.matrix(X) &&is.null(Xloc))  stop("Covariates for locations to predict are missing ")
     if(is.null(X) &&is.matrix(Xloc))  stop("Covariates  are missing ")
-    if(CheckST(CkCorrModel(corrmodel))) if(is.null(time))
-              stop("At least one temporal instants is needed for space-time kriging ")
+    if(CheckST(CkCorrModel(corrmodel))) 
+                      {if(is.null(time)) stop("At least one temporal instants is needed for space-time kriging ")  } 
+    #if( sum(is.nan(c(data)))>0)  warning("There are  NaN values in data: prediction cannot be performed")                                   
 ######################################
 ######################################
 
@@ -802,6 +803,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
        ##########################################################
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
         p0=pnorm(mu0); pmu=pnorm(mu)
+      
             if(!bivariate)
                        { pp = kk*c(p0) + krig_weights %*% (c(dataT)-n*c(pmu)) }  ## simple kriging
             else{} #todo

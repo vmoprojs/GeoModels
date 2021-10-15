@@ -76,10 +76,9 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
     {
         lliktap <- 1.0e8
         # Computes the vector of the correlations:
-        cova[cova==(nuisance['sill'])] <- nuisance['sill']+nuisance['nugget']
         varcovtap <- new("spam",entries=cova*setup$taps,colindices=setup$ja,
         rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
-        cholvctap <- spam::chol.spam(varcovtap)
+        cholvctap <- spam::update.spam.chol.NgPeyton(setup$struct, varcovtap)
         #if(class(cholvctap)=="try-error") return(lliktap)
         logdet <- c(spam::determinant(cholvctap)$modulus)
         inv <- spam::solve.spam(cholvctap)
@@ -87,28 +86,6 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
         lliktap= 0.5*(const+2*logdet+drop(t(stdata)%*%varcovtap%*%stdata))
         return(lliktap)
     }
-
-
-######### Tapering 1 sas log-likelihood 
-#LogshDenTap1<- function(const,cova,ident,dimat,mdecomp,nuisance,setup,sill,stdata)
-#{
-#  llik<- 1.0e8
-#    tap <- new("spam",entries=setup$taps*cova,colindices=setup$ja,
-#    rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
-#        vartap=as.matrix(tap)
-#        decompvarcov <- MatDecomp(vartap,mdecomp)
-#         if(is.logical(decompvarcov)) return(llik)  
-#        logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
-#    ################################################
-#        skew=as.numeric(nuisance["skew"])
-#        delta=as.numeric(nuisance["tail"])
-#        Z=sinh(delta * asinh(stdata)-skew)
-#        C=delta*sqrt((1+Z^2)/(stdata^2+1))
-#        llik <- 0.5*( const + const*log(sill)/log(2*pi)
-#                      +logdetvarcov - 2*sum(log(C))
-#                      +sum((backsolve(decompvarcov, Z, transpose = TRUE))^2))
- #   return(llik)
-#}
 
 ######### Tapering 1 sas log-likelihood 
 LogshDenTap1<- function(const,cova,ident,dimat,mdecomp,nuisance,setup,sill,stdata)
@@ -586,11 +563,12 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
-        if(is.nan(corr[1])||as.numeric(nuisance['tail'])<=0||as.numeric(nuisance['sill'])<=0||as.numeric(nuisance['nugget'])<0||as.numeric(nuisance['nugget'])>=1) return(llik)
-        # Computes the vector of the correlations:
+         # Computes the vector of the correlations:
         sill=as.numeric(nuisance['sill'])
         nuisance['sill']=1
+        if(as.numeric(nuisance['tail'])<=0||as.numeric(nuisance['sill'])<=0||as.numeric(nuisance['nugget'])<0||as.numeric(nuisance['nugget'])>=1) return(llik)
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
+        if(is.nan(corr[1])) return(llik)
         corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what=fname,#"LogNormDenStand_SH",
             args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
@@ -876,15 +854,17 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
 
    if(optimizer=='L-BFGS-B'&&parallel){
-        ncores=max(1, parallel::detectCores() - 1)
+
+            #ncores=max(1, parallel::detectCores() - 1)
+        ncores=length(param) * 2 + 1
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,fn=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list( 
-                          pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
+                          corrmodel=corrmodel,control=list(pgtol=1e-14, maxit=100000,factr = 1e8),
+                          data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=hessian,
+                          model=model,namescorr=namescorr,hessian=hessian,  parallel = list(forward = FALSE),
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
      parallel::setDefaultCluster(cl=NULL)
      parallel::stopCluster(cl)
