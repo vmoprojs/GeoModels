@@ -297,7 +297,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 nloc=sample(10:20,nrow(loc_to_pred),replace=TRUE)
 ## simple kriging 
 pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Matern",model=model,n=n,
-       nloc=nloc,param= as.list(c(fit$param,fixed)))
+       nloc=nloc,param= append(fit$param,fixed))
 
 #standard   binomial kriging
 map_binom=matrix(pr$pred,ncol=length(xx))
@@ -360,7 +360,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging for residuals
 pr=GeoKrig(data=res$data, coordx=coords,loc=loc_to_pred,corrmodel=corrmodel,model=model,mse=TRUE,
-       sparse=TRUE,param=as.list(c(res$param,res$fixed)))
+       sparse=TRUE,param=append(res$param,res$fixed))
 
 ## map of residuals
 par(mfrow=c(1,3))
@@ -417,7 +417,7 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 #optimal linear  kriging
 pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel="Wend0",model=model,
-       sparse=TRUE,param= as.list(c(fit$param,fit$fixed)))
+       sparse=TRUE,param= append(fit$param,fit$fixed))
 
 par(mfrow=c(1,2))
 #### map of simulated data
@@ -466,7 +466,7 @@ fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel
 ### with estimated double exponential correlation.
 ###
 ###############################################################
-param=as.list(c(fit$param,fit$fixed))
+param=append(fit$param,fit$fixed)
 
 # locations to predict
 xx=seq(0,1,0.03)
@@ -530,10 +530,10 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 colour = rainbow(100)
 
 pr1=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+       param= append(fitcl$param,fitcl$fixed), data=data,which=1,mse=TRUE)
 
 pr2=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=2,mse=TRUE)
+       param= append(fitcl$param,fitcl$fixed), data=data,which=2,mse=TRUE)
 
 par(mfrow=c(2,3))
        

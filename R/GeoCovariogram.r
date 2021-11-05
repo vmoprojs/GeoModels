@@ -89,7 +89,8 @@ if(show.cov && ispatim && is.null(fix.lags) && is.null(fix.lagt)) par(mfrow=c(1,
 if(show.vario && bivariate) {par(mfrow=c(2,2))}
 if(bivariate&&dyn) par(mfrow=c(1,2))
 
-
+fitted$param=unlist(fitted$param)
+fitted$fixed=unlist(fitted$fixed)
     
     # START ---- check input --- #
     if(!class(fitted)=='GeoFit' & !class(fitted)=='GeoWLS')

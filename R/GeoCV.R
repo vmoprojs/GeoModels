@@ -65,17 +65,20 @@ data_to_pred  = fit$data[-sel_data]
 
 dtp[[i]]=data_to_pred
 
-param=as.list(c(fit$param,fit$fixed))
+#param=as.list(c(fit$param,fit$fixed))
+param=append(fit$param,fit$fixed)
 if(estimation) {
           fit_s= GeoFit2(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
-                            likelihood=fit$likelihood,grid=fit$grid,
+                            likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
                             copula=fit$copula,
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
-                            start=as.list(fit$param),fixed=as.list(fit$fixed))
-            param=as.list(c(fit_s$param,fit_s$fixed))
+                           # start=as.list(fit$param),fixed=as.list(fit$fixed))
+          start=fit$param,fixed=fit$fixed)
+            #param=as.list(c(fit_s$param,fit_s$fixed))
+            param=append(fit_s$param,fit_s$fixed)
             
               }
  
@@ -129,7 +132,8 @@ if(!is.null(X)) {
 set.seed(round(seed))
 
 pb <- txtProgressBar(min = 0, max = K, style = 3)
-param=as.list(c(fit$param,fit$fixed))
+#param=as.list(c(fit$param,fit$fixed))
+param=append(fit$param,fit$fixed)
 while(i<=K){
 Sys.sleep(0.1)
 #######################################	
@@ -157,14 +161,16 @@ dtp[[i]]=data_to_pred
 
 if(estimation) {
           fit_s= GeoFit(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
-                            likelihood=fit$likelihood,grid=fit$grid,
+                            likelihood=fit$likelihood,c,type=fit$type,grid=fit$grid,
                             model=model1,radius=fit$radius,n=fit$n,
                                copula=fit$copula,
                              local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
-                            start=as.list(fit$param),fixed=as.list(fit$fixed))
-            param=as.list(c(fit_s$param,fit_s$fixed))
+                           # start=as.list(fit$param),fixed=as.list(fit$fixed))
+                               start=fit$param,fixed=fit$fixed)
+           # param=as.list(c(fit_s$param,fit_s$fixed))
+            param=append(fit_s$param,fit_s$fixed)
               }
 #####################################
 if(!local) pr=GeoKrig(data=datanew, coordx=NULL,   coordt=NULL, coordx_dyn=coordsnew,  #ok
@@ -260,7 +266,8 @@ Xnew[[k]]=as.vector(ss[,5:DD])
 }
 if(is.vector(Xnew[[1]])) Xnew=NULL
 
-param=as.list(c(fit$param,fit$fixed))
+#param=as.list(c(fit$param,fit$fixed))
+param=append(fit$param,fit$fixed)
 if(estimation) {
 
           fit_s= GeoFit2(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
@@ -271,9 +278,11 @@ if(estimation) {
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
-                            start=as.list(fit$param),fixed=as.list(fit$fixed))
+                            start=fit$param,fixed=fit$fixed)
+                            #start=as.list(fit$param),fixed=as.list(fit$fixed))
        
-           param=as.list(c(fit_s$param,fit_s$fixed))
+           #param=as.list(c(fit_s$param,fit_s$fixed))
+           param=append(fit_s$param,fit_s$fixed)
               }
              
 

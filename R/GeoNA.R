@@ -15,19 +15,20 @@ N=length(c(unlist(data)))  #length of data
 if (setting=='spatial'){
 nasel=(is.nan(data)|is.infinite(data)|is.na(data))
 perc=sum(nasel)/N; sel=!nasel
-
-data=data[sel]
-coords=coords[sel,]
-if(!is.null(X)) X=X[sel,]
+if(perc>0){
+  data=data[sel]
+  coords=coords[sel,]
+  if(!is.null(X)) X=X[sel,]
+}
 }
 ############################
-if (setting=='spacetime'){
+if (setting=='spacetime'){}
 
-}
+
 ############################
 if (setting=='bivariate'){
 }
-nonan = list( coordx = coordx,
+nonan = list( coordx = coords,
               coordy = coordy,
               coordt = coordt,
               coordx_dyn=coordx_dyn,              

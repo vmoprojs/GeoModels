@@ -271,9 +271,10 @@ xx=seq(0,1,0.025)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+       param= append(fitcl$param,fitcl$fixed), data=data,which=1,mse=TRUE)
 
-pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,param= as.list(c(fitcl$param,fitcl$fixed)), data=data,which=1,mse=TRUE)
+pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,param= append(fitcl$param,fitcl$fixed), 
+  data=data,which=1,mse=TRUE)
 
 par(mfrow=c(2,2))
 

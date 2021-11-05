@@ -30,6 +30,8 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
               return(list(a=Invc,bb=Inv))
         }
     }
+
+
 ######################################
 ########## START #####################
 ######################################
@@ -114,6 +116,15 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(!spacetime_dyn) dimat=covmatrix$numcoord*covmatrix$numtime
     if(spacetime_dyn)  dimat =sum(covmatrix$ns)
     dimat2=numloc*tloc
+
+
+    MM=NULL
+    if(length(param$mean)==dimat) 
+    {
+      MM=param$mean     ## in the case of non constant  external mean
+      param$mean=0
+    }
+    
     ###############
     ###############
      if(model %in% c("Weibull","Gamma","LogLogistic")) {
@@ -136,9 +147,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(spacetime_dyn) Xloc=as.matrix(Xloc)
     }
     nuisance = param[covmatrix$namesnuis]
-
     sel=substr(names(nuisance),1,4)=="mean"
-
     betas=as.numeric(nuisance[sel])   ## mean paramteres
 
     if(bivariate) {
@@ -213,9 +222,10 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39,28,40,9))    ## 
     ## standard kriging  ##############
     ################################
        if(!bivariate) {
-                      mu=X%*%betas;
-                      muloc=Xloc%*%betas
-
+                      if(is.null(MM)) {mu=X%*%betas;
+                                       muloc=Xloc%*%betas}
+                      else {mu=MM                        # for non constant mean external
+                            muloc=mean(MM)}
                       }
        if(bivariate) { mu=c(X11%*%matrix(betas1),X22%*%matrix(betas2))
                        if(!is.null(Xloc))

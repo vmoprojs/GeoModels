@@ -2022,13 +2022,6 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 /******************************************************************************************/
-/******************************************************************************************/
-/******************************************************************************************/
-/********************* SPATIAL Gaussian COPULA *****************************************************/
-/******************************************************************************************/
-/******************************************************************************************/
-/******************************************************************************************/
-/******************************************************************************************/
 
 
 
@@ -2046,7 +2039,7 @@ void Comp_Cond_GaussGCop2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int type_cop=1; int model=1; int cond=0;
+    int type_cop=1; int model=1; int cond=1;
     /*############*/
     int i=0;
     double  weights=1.0,sill,nugget,corr,bl;
@@ -2072,7 +2065,7 @@ void Comp_Cond_BetaGCop2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int type_cop=1; int model=28; int cond=0;
+    int type_cop=1; int model=28; int cond=1;
     /*############*/
     int i=0;
     double  weights=1.0,sill,nugget,corr,bl;
@@ -2094,7 +2087,7 @@ void Comp_Cond_Beta2GCop2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int type_cop=1; int model=50; int cond=0;
+    int type_cop=1; int model=50; int cond=1;
     /*############*/
     int i=0;
     double  weights=1.0,sill,nugget,corr,bl;
@@ -2116,7 +2109,7 @@ void Comp_Cond_KumaraswamyGCop2mem(int *cormod, double *data1,double *data2,int 
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int type_cop=1; int model=33; int cond=0;
+    int type_cop=1; int model=33; int cond=1;
     /*############*/
     int i=0;
     double  weights=1.0,sill,nugget,corr,bl;
@@ -2137,7 +2130,7 @@ void Comp_Cond_Kumaraswamy2GCop2mem(int *cormod, double *data1,double *data2,int
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *GPU,int *local)
 {
-    int type_cop=1; int model=42; int cond=0;
+    int type_cop=1; int model=42; int cond=1;
     /*############*/
     int i=0;
     double  weights=1.0,sill,nugget,corr,bl;

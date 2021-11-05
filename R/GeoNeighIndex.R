@@ -100,48 +100,119 @@ nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)
          return(list (lags=lags, rowidx = rowidx, colidx = colidx))
    }
 #########################
-spacetime_index=function(coords,coordx_dyn,N,K,coordt,numtime,maxtime,maxdist,distance,radius)
+
+spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
+                         ,numtime,maxtime=1,maxdist=NULL,distance="Eucl",radius=6371)
+{
+  # distance="Eucl"
+  # coordx_dyn=NULL
+  # radius=6371
+  # maxdist=NULL
+  
+  ##############
+  m_s=list();m_t=m_st=NULL;
+  ##############         
+  ## building marginal spatial indexes
+  tt0 <- proc.time()
+  if(is.null(coordx_dyn)) 
   {
+    
+    inf=nn2Geo(coords,coords,K+1,distance,maxdist,radius)
+    aa=cbind(inf$rowidx,inf$colidx)   ## spatial index (fixed coordinates)
+    
+    
+    for(i in 1:numtime) {
+      # i = 1
+      # repito las coordenadas numtime veces en elementos de una lista
+      m_s[[i]]=data.frame(cbind(aa+N*(i-1),0,inf$lags))
+      
+    }
+  }
+  tt0 <- proc.time()-tt0
+  print(tt0)
+  if(!is.null(coordx_dyn))
+  {        ns=lengths(coordx_dyn)/2 
+  for(i in 1:numtime){
+    inf=nn2Geo(coordx_dyn[[i]],coordx_dyn[[i]],K+1,distance,maxdist,radius)
+    aa=cbind(inf$rowidx,inf$colidx)
+    m_s[[i]]=cbind( aa+ns[i]*(i-1),0,inf$lags)    ## spatial index (dynamic coordinates)
+  }
+  }
+  ## building  temporal  and spatiotemporal indexes
+  
+  ## temporal distances (not zero distance)
+  nn=sort(unique(c(RANN::nn2(coordt,coordt,k=round(maxtime)+1,treetype = c("kd"))$nn.dists)))[-1]  
+  tnn=length(nn)   
+  
+  # sol <- NULL
+  m_t <- list()
+  m_st <- list()
+  contador <- 1
+  tt1 <- proc.time()
+  for(j in 1:tnn){
+    for(k in 1:(numtime-tnn)){
+      # j = 1;k = 1
+      bb=nrow(m_s[[k]])
+      m_t[[contador]] =data.frame(cbind( m_s[[k]][,1], m_s[[k+j]][,1], rep(nn[j],bb),rep(0,bb)) )
+      m_st[[contador]]=data.frame(cbind( m_s[[k]][,1], m_s[[k+j]][,2], rep(nn[j],bb), m_s[[k]][,4]) )
+      contador  <- contador +1
+     
+    }
+  }
+  tt1 <- proc.time()-tt1
+  print(tt1)
+
+  ######
+  SS = data.table::rbindlist(m_s)
+  TT = data.table::rbindlist(m_t)
+  ST = data.table::rbindlist(m_st)
+  ##final space-time indexes and distances
+  final=data.table::rbindlist(list(SS,TT,ST))
+  return(as.matrix(final))
+}
+
+#spacetime_index=function(coords,coordx_dyn,N,K,coordt,numtime,maxtime,maxdist,distance,radius)
+#  {
 ##############
-m_s=list();m_t=m_st=NULL;
+#m_s=list();m_t=m_st=NULL;
 ##############         
 ## building marginal spatial indexes
-if(is.null(coordx_dyn)) 
-   {
-        
-         inf=nn2Geo(coords,coords,K+1,distance,maxdist,radius)
-         aa=cbind(inf$rowidx,inf$colidx)   ## spatial index (fixed coordinates)
-         for(i in 1:numtime) {
-                  m_s[[i]]=cbind(aa+N*(i-1),0,inf$lags)
-                  }
-   }
-if(!is.null(coordx_dyn))
-  {        ns=lengths(coordx_dyn)/2 
-           for(i in 1:numtime){
-                  inf=nn2Geo(coordx_dyn[[i]],coordx_dyn[[i]],K+1,distance,maxdist,radius)
-                  aa=cbind(inf$rowidx,inf$colidx)
-                  m_s[[i]]=cbind( aa+ns[i]*(i-1),0,inf$lags)    ## spatial index (dynamic coordinates)
-                  }
-  }
+#if(is.null(coordx_dyn)) 
+#   {
+#        
+#         inf=nn2Geo(coords,coords,K+1,distance,maxdist,radius)
+#         aa=cbind(inf$rowidx,inf$colidx)   ## spatial index (fixed coordinates)
+#         for(i in 1:numtime) {
+#                  m_s[[i]]=cbind(aa+N*(i-1),0,inf$lags)
+#                  }
+#   }
+#if(!is.null(coordx_dyn))
+#  {        ns=lengths(coordx_dyn)/2 
+#           for(i in 1:numtime){
+#                  inf=nn2Geo(coordx_dyn[[i]],coordx_dyn[[i]],K+1,distance,maxdist,radius)
+#                  aa=cbind(inf$rowidx,inf$colidx)
+#                  m_s[[i]]=cbind( aa+ns[i]*(i-1),0,inf$lags)    ## spatial index (dynamic coordinates)
+#                  }
+ # }
          ## building  temporal  and spatiotemporal indexes
          
          ## temporal distances (not zero distance)
-         nn=sort(unique(c(RANN::nn2(coordt,coordt,k=maxtime+1,treetype = c("kd"))$nn.dists)))[-1]  
-         tnn=length(nn)   
-         for(j in 1:tnn){
-          for(k in 1:(numtime-tnn)){
-            bb=nrow(m_s[[k]])
-           m_t =rbind(m_t, cbind( m_s[[k]][,1], m_s[[k+j]][,1], rep(nn[j],bb)) )
-           m_st=rbind(m_st,cbind( m_s[[k]][,1], m_s[[k+j]][,2], rep(nn[j],bb), m_s[[k]][,4]) )
-         }}
-        ######
-        TT=cbind(m_t,rep(0,nrow(m_t)))  
-        SS=do.call(rbind,args=c(m_s));
-        ST=m_st
-        ##final space-time indexes and distances
-        final=rbind(SS,TT,ST)
-        return(final)
-  }
+  #       nn=sort(unique(c(RANN::nn2(coordt,coordt,k=maxtime+1,treetype = c("kd"))$nn.dists)))[-1]  
+  #       tnn=length(nn)   
+  #       for(j in 1:tnn){
+  #        for(k in 1:(numtime-tnn)){
+  #          bb=nrow(m_s[[k]])
+  #         m_t =rbind(m_t, cbind( m_s[[k]][,1], m_s[[k+j]][,1], rep(nn[j],bb)) )
+  #         m_st=rbind(m_st,cbind( m_s[[k]][,1], m_s[[k+j]][,2], rep(nn[j],bb), m_s[[k]][,4]) )
+  #       }}
+  ##      ######
+    #    TT=cbind(m_t,rep(0,nrow(m_t)))  
+    #    SS=do.call(rbind,args=c(m_s));
+     #   ST=m_st
+      #  ##final space-time indexes and distances
+       # final=rbind(SS,TT,ST)
+       # return(final)
+  #}
 
 bivariate_index=function(coords,coordx_dyn,N,K,maxdist,distance,radius)
   {

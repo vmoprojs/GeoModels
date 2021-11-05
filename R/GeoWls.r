@@ -185,10 +185,11 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
           "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh","TwoPieceBimodal")) & 
           (type %in% c('Standard','Pairwise','Tapering','Tapering1','Independence')))
         {
-
+ 
 ##########################################################        
         if(!initparam$bivariate){  ###spatial or temporal univariate case
-          if(is.na(fixed["mean"])){
+          if(is.na(fixed["mean"])&is.na(fixed["mean2"])){
+  
               if(is.na(start["mean"])) {initparam$param <- c(initparam$fixed["mean"], initparam$param)}
               else {initparam$param <- c(start["mean"], initparam$param)}
             initparam$namesparam <- sort(names(initparam$param))
@@ -215,7 +216,10 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
          }
          if(initparam$numfixed > 0) {initparam$fixed <- fixed}
           else {initparam$fixed <- NULL}
-          }}   
+          }
+
+      }   
+
 ################################################################################################################################################
      if(initparam$bivariate) {           ###bivariate case
    

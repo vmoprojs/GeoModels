@@ -9,6 +9,8 @@ GeoResiduals<-function(fit)
 if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
 ######
 
+fit$param=unlist(fit$param)
+fit$fixed=unlist(fit$fixed)
 model=fit$model        #type of model
 num_betas=fit$numbetas  #number of mean parameters
 
@@ -219,7 +221,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          corrmodel = fit$corrmodel,
                          data= fit$data,
                          distance = fit$distance,
-                         fixed = fit$fixed,
+                         fixed = as.list(fit$fixed),
                          grid = fit$grid,
                          iterations = fit$counts,
                          likelihood = fit$likelihood,
@@ -234,7 +236,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          optimizer=fit$optimizer,
                          lower=fit$lower,
                          upper=fit$upper,
-                         param = fit$param,
+                         param = as.list(fit$param),
                          nozero = fit$setup$nozero,
                          score = fit$score,
                          maxdist =fit$maxdist,

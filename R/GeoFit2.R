@@ -57,6 +57,16 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
 
+   
+
+
+   ## in the case on external fixed mean
+
+  MM=NULL
+  if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean;initparam$mean=0}
+  
+
+
     ## moving sill from starting to fixed parameters if necessary
         if(sum(initparam$namesparam=='sill')==1){
     if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
@@ -104,7 +114,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,names(upper),varest, initparam$ns, unname(initparam$X),sensitivity,copula)
+                                   initparam$upper,names(upper),varest, initparam$ns, unname(initparam$X),sensitivity,copula,MM)
 
 
 ######################################################
@@ -119,6 +129,10 @@ sel=match(names(aa),initparam$namesparam);sel=sel[!is.na(sel)]
 initparam$param=aa[sel]   
 ######################################################
 
+
+
+
+
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
@@ -128,7 +142,7 @@ initparam$param=aa[sel]
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
                                initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,parallel,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
-                               initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb)
+                               initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb,MM)
 
     # Composite likelihood:
     if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')&&type=="Pairwise"){
@@ -143,7 +157,7 @@ initparam$param=aa[sel]
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity)
+                                   unname(initparam$X),sensitivity,MM)
     if(memdist)
         fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
@@ -154,7 +168,7 @@ initparam$param=aa[sel]
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb)
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM)
       }
 
 
@@ -190,6 +204,11 @@ initparam$param=aa[sel]
 
 if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
 
+ff=as.list(initparam$fixed)
+if(!is.null(MM)) ff$mean=MM
+
+if(length(initparam$param)==1) optimizer="optimize"
+
     ### Set the output object:
     GeoFit <- list(bivariate=initparam$bivariate,
                          claic = fitted$claic,
@@ -203,7 +222,7 @@ if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
                          corrmodel = corrmodel,
                          data = initparam$data,
                          distance = distance,
-                         fixed = initparam$fixed,
+                         fixed = ff,
                          GPU=GPU,
                          grid = grid,
                          iterations = fitted$counts,
@@ -219,7 +238,7 @@ if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
                          numcoord=initparam$numcoord,
                          numtime=initparam$numtime,
                          optimizer=optimizer,
-                         param = fitted$par,
+                         param = as.list(fitted$par),
                          nozero = initparam$setup$nozero,
                          score = fitted$score,
                          maxdist =maxdist,
@@ -326,7 +345,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
       cat(clbic,':', format(x$clbic, digits = digits),'\n')  
 
     cat('\nEstimated parameters:\n')
-    print.default(x$param, digits = digits, print.gap = 2,
+    print.default(unlist(x$param), digits = digits, print.gap = 2,
                   quote = FALSE)
 
     if(!is.null(x$stderr))

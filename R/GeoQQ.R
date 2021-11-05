@@ -3,19 +3,34 @@
 ####################################################
 ### File name: GeoQQ.r
 ####################################################
-GeoQQ<-function(fit)
+GeoQQ<-function(fit,type="Q")
 {
 
+
 if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
+if(type!="Q"&type!="D") stop("Type can be Q or D \n")
+
 model=fit$model        #type of model
 copula=fit$copula
+
+fit$param=unlist(fit$param)
+fit$fixed=unlist(fit$fixed)
+pp=c(fit$param,fit$fixed)
+
+
+########################################  
+#### starting qq plot
+########################################  
+if(type=="Q") {
+
+
 xlab="Theoretical Quantiles"
 ylab="Sample Quantiles"
 
 
 opar=par(no.readonly = TRUE)
 
-pp=c(fit$param,fit$fixed)
+
 
 ##########################################################
 ##########################################################
@@ -320,4 +335,22 @@ if(model %in% c("SkewGaussian"))
 par(opar) 
 
   }
+}
+#### starting density plot##############################
+
+if(type=="D") {
+  if(!fit$bivariate){
+
+if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
+else dd=c(t(fit$data))
+
+
+}
+  print("ok")
+}
+
+##########################################################
+
+
+
 }

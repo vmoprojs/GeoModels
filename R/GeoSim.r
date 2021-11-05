@@ -119,9 +119,18 @@ forGaussparam<-function(model,param,bivariate)
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
        #   }
-
         return(sim)
     }
+
+
+
+
+
+
+
+
+
+    
 ####################################################################
 ############# END internal functions ###############################
 ####################################################################

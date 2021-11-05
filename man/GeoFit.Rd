@@ -320,7 +320,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   \item{corrmodel}{The correlation model;}
   \item{data}{The vector or matrix or array of data;}
   \item{distance}{The type of spatial distance;}
-  \item{fixed}{The vector of fixed parameters;}
+  \item{fixed}{A list of the  fixed parameters;}
   \item{iterations}{The number of iteration used by the numerical routine;}
   \item{likelihood}{The configuration of the composite likelihood;}
   \item{logCompLik}{The value of the log composite-likelihood at the maximum;}
@@ -337,7 +337,7 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   Otherwise is NULL.}
   \item{numcoord}{The number of spatial coordinates;}
   \item{numtime}{The number of the temporal realisations of the RF;}
-  \item{param}{The vector of  parameters' estimates;}
+  \item{param}{A list of the   parameters' estimates;}
   \item{radius}{The radius of the sphere in the case of great  circle distance;}
    \item{stderr}{The vector of standard errors;}
   \item{sensmat}{The sensitivity matrix;}

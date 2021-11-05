@@ -6,7 +6,7 @@
 ### Optim call for log-likelihood maximization 
 Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
                        mdecomp,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
-                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X,neighb)
+                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X,neighb,MM)
 {
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
@@ -383,7 +383,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 ##################################################################################################################
         # Call to the objective functions:
          loglik_loggauss <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
 
         llik <- 1.0e8
@@ -393,7 +393,11 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
+
         mm=as.numeric(nuisance[sel])
+                  Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+      
         # Computes the vector of the correlations:
         if(nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         sill=nuisance['sill']
@@ -406,13 +410,13 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         #KK=exp(sill)/2
         # Computes the log-likelihood
         loglik_u <- do.call(what="LogNormDenStand_LG",
-            args=list(stdata=(log(data)-(c(X%*%mm-sill*0.5))),const=const,cova=cova,dimat=dimat,ident=ident,
+            args=list(stdata=(log(data)-(c(Mean-sill*0.5))),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,det=sum(1/(data)),sill=sill,setup=setup))
         return(loglik_u)
       }
 ################################################################################################
    loglik_tukey2h <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
 
         llik <- 1.0e8
@@ -423,7 +427,10 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+         mm=as.numeric(nuisance[sel])
+                 Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+   
         #if(nuisance['tail']<0||nuisance['tail1']>0.5||nuisance['tail2']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
@@ -431,13 +438,13 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
          corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what="LogNormDenStand_Tukey2H",
-            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
+            args=list(stdata=((data-c(Mean))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
         return(loglik_u)
       }
 ################################################################################################
     loglik_tukeyh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
 
         llik <- 1.0e8
@@ -448,7 +455,10 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+          mm=as.numeric(nuisance[sel])
+               Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+      
      if(nuisance['tail']<0||nuisance['tail']>0.5||nuisance['nugget']<0||nuisance['nugget']>=1||nuisance['sill']<0) return(llik)
         # Computes the vector of the correlations:
         sill=nuisance['sill']
@@ -456,7 +466,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
          corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
          corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what="LogNormDenStand_TukeyH",
-            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
+            args=list(stdata=((data-c(Mean))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=(sill),setup=setup))
 
         return(loglik_u)
@@ -466,7 +476,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
 ################################################################################################
    # Call to the objective functions:
         loglik_miss_skewT<- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
         llik <- 1.0e8
         names(param) <- namesparam
@@ -475,7 +485,10 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+                  mm=as.numeric(nuisance[sel])
+          Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+   
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         nu=1/nuisance['df']; eta2=nuisance['skew']^2
@@ -488,14 +501,14 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
        if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
        #nuisance['nugget']=0
-      loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
+      loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(Mean)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
       }
 ################################################################################################
     # Call to the objective functions:
     loglik_miss_T <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
         llik <- 1.0e8
         names(param) <- namesparam
@@ -504,7 +517,10 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+           mm=as.numeric(nuisance[sel])
+                 Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+      
         # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         df=1/nuisance['df']
@@ -515,14 +531,14 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
     cova <- corr*(nuisance['sill'])*(1-nuisance['nugget'])
         #nuisance['nugget']=0
-      loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(X%*%mm)),const=const,cova=cova,dimat=dimat,ident=ident,
+      loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(Mean)),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
         return(loglik_u)
       }
 ################################################################################################
     # Call to the objective functions:
     loglik_miss_Pois <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
         llik <- 1.0e8
         names(param) <- namesparam
@@ -531,9 +547,12 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+           mm=as.numeric(nuisance[sel])
+           Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+      
         # Computes the vector of the correlations:
-        mu=X%*%mm
+        mu=Mean
         model=30
         corr=matr2(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius,model,mu)
         cova <-  ident
@@ -551,7 +570,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
       }
       ################################################################################################ 
 loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
 
         llik <- 1.0e8
@@ -562,7 +581,9 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
+          mm=as.numeric(nuisance[sel])
+           Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
          # Computes the vector of the correlations:
         sill=as.numeric(nuisance['sill'])
         nuisance['sill']=1
@@ -571,14 +592,14 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         if(is.nan(corr[1])) return(llik)
         corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what=fname,#"LogNormDenStand_SH",
-            args=list(stdata=((data-c(X%*%mm))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
+            args=list(stdata=((data-c(Mean))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,sill=sill,setup=setup))
         return(loglik_u)
       }
 ################################################################################################
     # Call to the objective functions:
     loglik <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
     {
 
         llik <- 1.0e8
@@ -588,13 +609,15 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
-        # Computes the vector of the correlations:
+          mm=as.numeric(nuisance[sel])
+              Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+              # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
         if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr*nuisance['sill']*(1-nuisance['nugget'])
         
-      loglik_u <- do.call(what=fname,args=list(stdata=data-c(X%*%mm),const=const,cova=cova,dimat=dimat,ident=ident,
+      loglik_u <- do.call(what=fname,args=list(stdata=data-c(Mean),const=const,cova=cova,dimat=dimat,ident=ident,
             mdecomp=mdecomp,nuisance=nuisance,setup=setup))
 
         return(loglik_u)
@@ -611,8 +634,11 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
-        nuggets=as.numeric(nuisance['nugget'])+1e-6
+          mm=as.numeric(nuisance[sel])
+             Mean=c(X%*%mm)
+        if(!is.null(MM)) Mean=MM
+   
+          nuggets=as.numeric(nuisance['nugget'])+1e-6
         data=c(data-X%*%mm)
         ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
     if(ppar[2]<0|| ppar[3]<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1){return(llik)}
@@ -624,7 +650,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
       
 ################################################################################################                     
      loglik_biv <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,data,dimat,fixed,fname,
-                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS)
+                       grid,ident,mdecomp,model,namescorr,namesnuis,namesparam,radius,setup,X,ns,NS,MM)
       {
 
         # Set the parameter vector:
@@ -662,6 +688,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
     spacetime_dyn=FALSE; NS=0;fname=NULL
     if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
     if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
+
     ####################################
     if(!spacetime_dyn) dimat <- numcoord*numtime# length of data
     if(spacetime_dyn)  dimat =sum(ns)
@@ -799,6 +826,8 @@ hessian=FALSE
 
 
 
+##################
+
 if(!onlyvar){   # performing optimization
     maxit=10000
     # Optimize the log-likelihood:
@@ -809,7 +838,7 @@ if(!onlyvar){   # performing optimization
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,maximum = FALSE,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-                          upper=upper,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                          upper=upper,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
         }
   if(length(param)>1)
         {
@@ -823,18 +852,18 @@ if(!onlyvar){   # performing optimization
                              control = list( iter.max=100000),dimat=dimat,
                          lower=lower,upper=upper, hessian=hessian,
                            data=t(data),fixed=fixed,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM)
        
               if(optimizer=="nmkb")
                   Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
                         lower=lower,upper=upper,  vecchia.approx=vecchia.approx,
                         dimat=dimat,data=t(data),fixed=fixed,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM)
                         
             if(optimizer=="Nelder-Mead")
                   Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
                              control=list(reltol=1e-14, maxit=maxit),dimat=dimat,hessian=hessian, data=t(data),fixed=fixed,
-                             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X)
+                             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM)
 
              #Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
               #            corrmodel=corrmodel,control=list(
@@ -851,7 +880,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS) 
+                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM) 
 
    if(optimizer=='L-BFGS-B'&&parallel){
 
@@ -865,7 +894,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,  parallel = list(forward = FALSE),
-                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                          namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
      parallel::setDefaultCluster(cl=NULL)
      parallel::stopCluster(cl)
   }
@@ -875,14 +904,14 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                         pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
   if(optimizer=='Nelder-Mead')
                    Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
                              reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
-                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+                          namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
 
 
 
@@ -890,7 +919,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS)
+                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS,MM=MM)
   if(optimizer=='nlminb')
                        Likelihood <-nlminb(objective=eval(as.name(lname)),start=param,
                              control = list( iter.max=100000),
@@ -898,13 +927,13 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-                          setup=setup,X=X,ns=ns,NS=NS)
+                          setup=setup,X=X,ns=ns,NS=NS,MM=MM)
    if(optimizer=='multinlminb'){
                        Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
                           const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-                          setup=setup,X=X,ns=ns,NS=NS,
+                          setup=setup,X=X,ns=ns,NS=NS,MM=MM,
                              lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
                               control = list( iter.max=100000),
                            typerunif = "sobol")#,nbclusters=2,
@@ -914,7 +943,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-                          setup=setup,X=X,ns=ns,NS=NS,
+                          setup=setup,X=X,ns=ns,NS=NS,MM=MM,
                              lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
                               control = list( iter.max=100000),
                            typerunif = "sobol")#,nbclusters=2,
@@ -922,20 +951,20 @@ if(optimizer=='L-BFGS-B'&&!parallel)
     if(optimizer=='ucminf')    
                         Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
                         control=list( maxeval=100000),
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     if(optimizer=='nmk')    
                         Likelihood <- dfoptim::nmk(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
    if(optimizer=='nmkb')    
                         Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
                         lower=lower,upper=upper,
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
                           radius=radius,setup=setup,X=X,ns=ns,NS=NS)
@@ -1033,12 +1062,12 @@ if(varest)
 Likelihood$hessian=numDeriv::hessian(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
             coordt=coordt,corr=corr,corrmat=corrmat,
             corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-            model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+            model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
 
 Likelihood$score=numDeriv::grad(func=eval(as.name(lname)),x=Likelihood$par,method="Richardson",  const=const,coordx=coordx,coordy=coordy,
             coordt=coordt,corr=corr,corrmat=corrmat,
             corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-            model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+            model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM)
 rownames(Likelihood$hessian)=namesparam
 colnames(Likelihood$hessian)=namesparam
 names(Likelihood$score)=namesparam

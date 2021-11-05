@@ -46,7 +46,8 @@ if(method=="cholesky")
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
-	 param=as.list(c(fit$param,fit$fixed)),
+	 #param=as.list(c(fit$param,fit$fixed)),
+      param=append(fit$param,fit$fixed),
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
    X=fit$X,n=fit$n,method=method,
 	 distance=fit$distance,radius=fit$radius)
@@ -54,13 +55,15 @@ if(method=="Vecchia"||method=="TB")
 data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
-   param=as.list(c(fit$param,fit$fixed)), method=method,M=30,L=500,
+   #param=as.list(c(fit$param,fit$fixed)), 
+    param=append(fit$param,fit$fixed),
+   method=method,M=30,L=500,
    GPU=GPU,  local=local,#grid=fit$grid, 
    X=fit$X,n=fit$n,
    distance=fit$distance,radius=fit$radius)
 
 
-res_est=GeoFit2( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$fixed),
+res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
@@ -73,7 +76,7 @@ res_est=GeoFit2( data=data_sim$data, start=as.list(fit$param),fixed=as.list(fit$
 if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 100000000000)&&(res_est$logCompLik> -1e+14)){
  #print(res_est$param)
 
- res=rbind(res,res_est$param)
+ res=rbind(res,unlist(res_est$param))
  k=k+1
 setTxtProgressBar(pb, k)
 }               

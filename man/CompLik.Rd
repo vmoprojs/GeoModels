@@ -12,7 +12,7 @@ CompLik(copula,bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data,di
                  model, n, namescorr, namesnuis, namesparam,
                numparam, numparamcorr, optimizer, onlyvar, parallel, param,
                spacetime, type,upper, varest, vartype,
-               weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity)
+               weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,MM)
 }
 \arguments{
   \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
@@ -104,6 +104,7 @@ CompLik(copula,bivariate, coordx, coordy ,coordt, coordx_dyn, corrmodel, data,di
    \item{ns}{Numeric; Number of (dynamical) temporal instants. }   
       \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
          \item{sensitivity}{Logical; if \code{TRUE} then  the sensitivy  matrix is computed}
+            \item{MM}{Numeric;a non constant fixed mean }
 }
 \details{ Subroutine called by GeoFit.
   The procedure estimates the model parameters by maximisation of the

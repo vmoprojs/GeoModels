@@ -108,6 +108,11 @@ GeoTests <- function(object1, object2, ..., statistic)
       # compute the statistic:
 StatiTest <- function(df, model1, model2, statistic)
       {
+
+          model1$param=unlist(model1$param)
+          model2$param=unlist(model2$param)
+          model1$fixed=unlist(model1$fixed)
+          model2$fixed=unlist(model2$fixed)
           namesparam <- names(model1$param)[!names(model1$param)%in%names(model2$param)]
   ### composite likelihood case 
   if(model1$likelihood %in% c("Marginal","Conditional","Difference"))
@@ -192,6 +197,9 @@ StatiTest <- function(df, model1, model2, statistic)
          stop('Insert the type of statistic use in the hypothesis test\n')
       if(is.null(Istest(statistic)))
           stop("The name of test does not match with one those available\n")
+
+
+
       # check if there are multipl fitted models:
       objects <- as.list(substitute(list(...)))[-1]
       objects <- sapply(objects,function(x) deparse(x))
@@ -214,7 +222,7 @@ StatiTest <- function(df, model1, model2, statistic)
           model <- get(models[i], envir=parent.frame())
           if(!inherits(model, "GeoFit"))
               stop("use HypoTest only with 'GeoFit' objects\n")
-          numparam <- c(numparam, length(model$param))
+          numparam <- c(numparam, length(unlist(model$param)))
           lmodels[[i]] <- model
           if(!is.matrix(lmodels[[i]]$varcov))
               stop("one of the fitted models does not have a valid variance-covariance matrix\n")
@@ -224,7 +232,7 @@ StatiTest <- function(df, model1, model2, statistic)
                (!identical(lmodels[[j]]$model,lmodels[[i]]$model))) 
               stop("models are not nested\n")
             # Define the degrees of freedom:
-            df[j] <- length(lmodels[[j]]$param)-length(lmodels[[i]]$param)
+            df[j] <- length(unlist(lmodels[[j]]$param))-length(unlist(lmodels[[i]]$param))
             if(df[j] <= 0) stop("model are not nested\n")
             stat <- StatiTest(df[j],lmodels[[j]],lmodels[[i]],statistic)
             nu[j] <- stat$nu

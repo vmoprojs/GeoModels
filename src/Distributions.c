@@ -4731,19 +4731,25 @@ switch(model) // Correlation functions are in alphabetical order
 
 /*******************************************/
 
-if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1) * g1 * g2);}
+if(type_cop==1)  { dens=log(biv_unif_CopulaGauss(a1,a2,rho1)) + log(g1) + log(g2);}
                 
 if(type_cop==2) 
 {
     double nu=2;
+
     if(model==50||model==42) nu=nuis[5];   // for beta2 regression
+
    // Rprintf("%f %f %f %f %f %f \n",nuis[0],nuis[1],nuis[2],nuis[3],nuis[4],nuis[5]);
     // ojo 
     dens= biv_unif_CopulaClayton(a1,a2,rho1,nu)+ log(g1)+log(g2);
 }
-//Rprintf("%d %d\n", type_cop,cond);
-//if(cond)  {dens=2*dens-(log(g1)+log(g2));}
-if(cond)  {dens=dens-log(g2);}
+
+
+
+if(cond)  {
+
+    dens=dens-log(g2);}
+   
 
 return(dens);
 }
