@@ -47,7 +47,7 @@ GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, d
    \item{neighb}{Numeric; an optional positive integer indicating the 
     order of the  neighborhood.}
   \item{maxdist}{Numeric; an optional positive value indicating the distance in the spatial neighborhood.}
-  \item{maxtime}{Numeric; an optional positive value indicating the distance in the temporal neighborhood.}
+  \item{maxtime}{Numeric; an optional positive integer value indicating the order of the temporal neighborhood.}
      \item{method}{String; the type of matrix decomposition used in the simulation. Default is \code{cholesky}. 
      The other possible choices is \code{svd}.}
     \item{n}{Numeric; the number of trials in a binomial random fields.
@@ -231,7 +231,7 @@ time=c(0.5,1.2,3.7)
 pr=GeoKrig(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
   model="Gaussian", param= param, mse=TRUE)
 pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
-  neigh=25,maxtime=0.5,model="Gaussian", param= param, mse=TRUE)
+  neigh=25,maxtime=1,model="Gaussian", param= param, mse=TRUE)
 
 ##  full and local prediction 
 pr$pred

@@ -688,8 +688,8 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                 lines(lags_m, covariance,...)
                 if(show.range) abline(v=Range)}
             else{
-                plot(lags_m, covariance, type='l', ylim=c(0,
-                     max(covariance)), main="Spatial covariance",
+                plot(lags_m, covariance, type='l', #ylim=c(0,max(covariance)), 
+                     main="Spatial covariance",
                      xlab="Distance", ylab="Covariance",...)
                 if(show.range) abline(v=Range)}}
          }
@@ -828,7 +828,9 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
 
                 bnds[1] <- min(bnds[1], min(vario$variograms))
                 bnds[2] <- max(bnds[2], max(vario$variograms))
-                plot(lags_m, variogram, type='l',  ylim=c(0,bnds[2]),
+                #ylim=c(0,bnds[2])
+                #if(!is.null(ylim))ylim=c(0,bnds[2])
+                plot(lags_m, variogram, type='l',  
                      main=vario.main,xlab="Distance",
                      ylab=vario.ylab,...)
                 points(vario$centers, vario$variograms,...)

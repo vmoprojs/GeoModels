@@ -63,9 +63,9 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
       \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood  in the composite likelihood
     computation. See the Section \bold{Details} for more information.}
-  \item{maxtime}{Numeric; an optional positive value indicating the maximum
-    temporal separation considered in the composite or tapered likelihood
-    computation (see \bold{Details}).}
+  \item{maxtime}{Numeric; an optional positive integer indicating the 
+    order of temporal neighborhood  in the composite likelihood
+    computation.}
         \item{memdist}{ Logical; if \code{TRUE} then  all  the distances  useful in the  composite likelihood 
       estimation are computed before  the optimization. \code{FALSE} is deprecated. }
    \item{method}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
@@ -78,7 +78,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
+    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.  Two option  for global searching optimization using mcGlobaloptim package are possible with \code{multinlminb} and  \code{multiNelder-Mead} options.}  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
@@ -130,7 +130,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
   \code{GeoFit} provides standard maximum likelihood fitting for Gaussian models. 
   For Gaussian and non Gaussian models, only weighted composite likelihood  based on pairs and independence composite likelihood estimation are considered. Specifically, marginal and conditional  pairwise 
   likelihood is considered for each type of random field (Gaussian and not Gaussian).
-  The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}. \code{L-BFGS-B} and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
+  The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}, \code{L-BFGS-B},
+  \code{SANN}  and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
 
   Depending on the dimension of \code{data} and on  the name of the correlation model, 
   the observations   are assumed as a realization of
@@ -262,9 +263,8 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   In the second case, binary weights are set to 1 and 0 otherwise
   depending if the pairs have distance lower than  (\code{maxdist}).
   This weighting scheme is less inefficient for large data.
-  The same arguments of \code{maxdist} are valid for \code{maxtime} but
-  here the weigthed composite-likelihood regards the case of
-  spatial-temporal field.
+  The same arguments of \code{neighb} applies  for\code{maxtime} that sets
+   the  order (1, 2, 3, ..) of temporal neighboords in spatial-temporal field.
 
   The \code{varest=TRUE} parameter specifies if the standard error estimation of the estimated parameters must be computed.
   For Gaussian RFs and standard  likelihood estimation, standard  errors  are computed as square root of the diagonal elements of the Fisher
@@ -326,12 +326,16 @@ RF using Gaussian and Clayton copula with the following marginal distribution:
   \item{logCompLik}{The value of the log composite-likelihood at the maximum;}
   \item{maxdist}{The maximum spatial distance used in the weigthed composite likelihood. 
                        If no spatial distance is specified then it is NULL;}
-  \item{maxtime}{The maximum temporal distance  used in the weigthed composite likelihood.
-                          If no spatial distance is specified then it is NULL;}
+  \item{maxtime}{The 
+    order of temporal neighborhood  in the composite likelihood
+    computation. }
   \item{message}{Extra message passed from the numerical routines;}
   \item{model}{The density associated to the likelihood objects;}
    \item{missp}{True if a misspecified  Gaussian model is ued in  the composite likelihhod;}
   \item{n}{The number of trials in a binominal RF;the number of successes in a  negative Binomial RFs;} 
+    \item{neighb}{The 
+    order of spatial neighborhood  in the composite likelihood
+    computation. }
   \item{ns}{The number of (different) location sites in the bivariate case;} 
    \item{nozero}{In the case of tapered likelihood  the percentage of non zero values in the covariance matrix.
   Otherwise is NULL.}

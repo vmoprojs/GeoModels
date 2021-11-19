@@ -331,8 +331,15 @@ upper=upper[sel]
                            control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000),data=data, fixed=fixed, fan=fname,
                               hessian=FALSE, method='BFGS',n=n,
-                                  namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
-
+                              namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
+   if(optimizer=='SANN'){ 
+   print(param)
+    CompLikelihood <- optim(par=param, fn= compindloglik2,     
+                           control=list(factr=1e-10,
+                             reltol=1e-14, maxit=100000),data=data, fixed=fixed, fan=fname,
+                              hessian=FALSE, method='SANN',n=n,
+                              namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
+  }
       if(optimizer=='Nelder-Mead')
         CompLikelihood <- optim(par=param, fn= compindloglik2,     
           control=list( reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
@@ -500,7 +507,7 @@ upper=upper[sel]
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
-      if(optimizer=='Nelder-Mead'||optimizer=='multiNelder-Mead'){
+      if(optimizer=='Nelder-Mead'||optimizer=='multiNelder-Mead'||optimizer=='SANN'){
         CompLikelihood$value = -CompLikelihood$value
         names(CompLikelihood$par)<- namesparam
         if(CompLikelihood$convergence == 0)

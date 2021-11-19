@@ -42,13 +42,12 @@ GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bi
   \item{loc}{A (\eqn{1 \times 2}{1 x 2})-matrix  giving the spatial coordinate
      of the location for which a neighborhood is computed .}
  \item{neighb}{Numeric; an optional positive integer indicating the 
-    order of neighborhood.}
+    order of spatial neighborhood.}
  \item{maxdist}{Numeric; a positive value indicating the maximum
     spatial distance considered in the spatial neighborhood
     selection.}
-  \item{maxtime}{Numeric; a positive value indicating the maximum
-    temporal distance considered in the temporal neighborhood
-    selection.}
+  \item{maxtime}{Numeric; an optional positive integer indicating the 
+    order of temporal  neighborhood.}
     \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great 
     circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
    \item{time}{Numeric; a value  giving the temporal instant for which a neighborhood is computed.}
@@ -127,7 +126,7 @@ plot(coords,xlim=c(0,1),ylim=c(0,1))
 points(loc_to_pred,pch=20)
 
 neigh=GeoNeighborhood(data_all, coordx=coords,  coordt=coordt,
-                  loc=loc_to_pred,time=time,maxdist=0.4,maxtime=0.25)
+                  loc=loc_to_pred,time=time,maxdist=0.4,maxtime=1)
 
 # first spatio-temporal neighborhoods 
 # with  associated data

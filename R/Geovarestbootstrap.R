@@ -42,7 +42,7 @@ set.seed(seed)
   N=nrow(coords)
 while(k<=K){
 Sys.sleep(0.1)
-if(method=="cholesky") 
+if(method=="cholesky") {
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
@@ -50,31 +50,26 @@ data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
       param=append(fit$param,fit$fixed),
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
    X=fit$X,n=fit$n,method=method,
-	 distance=fit$distance,radius=fit$radius)
-if(method=="Vecchia"||method=="TB") 
-data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,
-     coordx_dyn=fit$coordx_dyn, 
-     corrmodel=fit$corrmodel,model=fit$model,
-   #param=as.list(c(fit$param,fit$fixed)), 
-    param=append(fit$param,fit$fixed),
-   method=method,M=30,L=500,
-   GPU=GPU,  local=local,#grid=fit$grid, 
-   X=fit$X,n=fit$n,
-   distance=fit$distance,radius=fit$radius)
+	 distance=fit$distance,radius=fit$radius)}
+if(method=="Vecchia"||method=="TB") {
+                data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model,
+                #param=as.list(c(fit$param,fit$fixed)), 
+                param=append(fit$param,fit$fixed),method=method,M=30,L=500,GPU=GPU,  local=local,#grid=fit$grid, 
+                X=fit$X,n=fit$n,distance=fit$distance,radius=fit$radius)
+            }
 
 
 res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   copula=fit$copula,
+   copula=fit$copula,sensitivity=FALSE,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
    X=fit$X, distance=fit$distance, radius=fit$radius)
 
-
+#print(res_est)
 if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 100000000000)&&(res_est$logCompLik> -1e+14)){
- #print(res_est$param)
 
  res=rbind(res,unlist(res_est$param))
  k=k+1
@@ -94,7 +89,9 @@ if((fit$likelihood=="Marginal"&&(fit$type=="Pairwise"))||fit$likelihood=="Condit
 {
 
 H=fit$sensmat
+
 penalty <- sum(diag(H%*%invG))
+
 claic = -2*fit$logCompLik + 2*penalty
 clbic = -2*fit$logCompLik + log(dimat)*penalty
 fit$varimat=H%*%invG %*%H
@@ -107,6 +104,7 @@ fit$claic=claic
 fit$clbic=clbic
 fit$stderr=stderr
 fit$varcov=invG
+#set.seed(sample(1:10000,1))
 return(fit)
 
 }

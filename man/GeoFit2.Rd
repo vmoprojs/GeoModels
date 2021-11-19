@@ -56,7 +56,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
     likelihood. \code{Marginal} is the default, see the Section \bold{Details}.}
     \item{local}{Numeric; number of local work-items of the OpenCL setup}
    \item{lower}{An optional named list giving the values  for the lower bound of the space parameter
-    when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}. The 
+    when the optimizer is  \code{L-BFGS-B} or \code{nlminb}   or \code{optimize}. The 
     names of the list must be the same of the names in the   \code{start} list.}
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite or tapered likelihood
@@ -64,9 +64,9 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
       \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood  in the composite likelihood
     computation. See the Section \bold{Details} for more information.}
-  \item{maxtime}{Numeric; an optional positive value indicating the maximum
-    temporal separation considered in the composite or tapered likelihood
-    computation (see \bold{Details}).}
+  \item{maxtime}{Numeric; an optional positive integer indicating the 
+    order of temporal neighborhood  in the composite likelihood
+    computation.}
         \item{memdist}{ Logical; if \code{TRUE} then  all  the distances  useful in the  composite likelihood 
       estimation are computed before  the optimization. \code{FALSE} is deprecated. }
    \item{method}{String; the type of matrix decomposition used in the simulation. Default is cholesky.
@@ -79,7 +79,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
+    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}, \code{SANN},  \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.  Two option  for global searching optimization using mcGlobaloptim package are possible with \code{multinlminb} and  \code{multiNelder-Mead} options.}  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
@@ -164,6 +164,9 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
   \item{model}{The density associated to the likelihood objects;}
    \item{missp}{True if a misspecified  Gaussian model is ued in  the composite likelihhod;}
   \item{n}{The number of trials in a binominal RF;the number of successes in a  negative Binomial RFs;} 
+      \item{neighb}{The 
+    order of spatial neighborhood  in the composite likelihood
+    computation. }
   \item{ns}{The number of (different) location sites in the bivariate case;} 
    \item{nozero}{In the case of tapered likelihood  the percentage of non zero values in the covariance matrix.
   Otherwise is NULL.}

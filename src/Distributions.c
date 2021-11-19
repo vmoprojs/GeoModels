@@ -3424,11 +3424,11 @@ double zjstd=(zj-muj)/sqrt(sill);
     if(zistd>=0&&zjstd>=0)
 {res=          (p11/R_pow(etamos,2))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamos,nugget);}
     if(zistd>=0&&zjstd<0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamos,zjstd/etamas,nugget);}
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamos,-zjstd/etamas,nugget);}
       if(zistd<0&&zjstd>=0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamos,nugget);}
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*appellF4_mod(nu,rho,-zistd/etamas,zjstd/etamos,nugget);}
     if(zistd<0&&zjstd<0)
-{res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho,zistd/etamas,zjstd/etamas,nugget);}
+{res=    ((p11+eta)/R_pow(etamas,2))*appellF4_mod(nu,rho,-zistd/etamas,-zjstd/etamas,nugget);}
 
 }
     if(rho<DBL_EPSILON){// OJO!
@@ -3459,7 +3459,7 @@ double kk=0, dens=0,a=0,b=0,rho2=1-rho*rho;
   dens=(a+b)/kk;
   return(dens);
 }
-/***** bivariate two piece gaussian ****/ 
+/***** bivariate two piece gaussian *****/
 double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,
              double p11,double mui,double muj)
 {
@@ -3468,29 +3468,50 @@ double etamas=1+eta;
 double etamos=1-eta;
 double zistd=(zi-mui)/sqrt(sill);
 double zjstd=(zj-muj)/sqrt(sill);
-//if(rho){
 
-//if(zi>=mui&&zj>=muj)
-    if(zistd>=0&&zjstd>=0)
+//Rprintf("%f %f \n",zistd,zjstd);
+if( (zistd>=0)&&(zjstd>=0))
 {res=          (p11/R_pow(etamos,2))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamos);}
-//if(zi>=mui&&zj<muj)
-    if(zistd>=0&&zjstd<0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamos,zjstd/etamas);}
-//if(zi<mui&&zj>=muj)
-      if(zistd<0&&zjstd>=0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamos);}
-//if(zi<mui&&zj<muj)
-    if(zistd<0&&zjstd<0)
-{res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,zistd/etamas,zjstd/etamas);}
 
-/*}else{   if(zi>=mui)
-         {res=0.5*sqrt(2)*exp(-0.5*R_pow(zistd/etamos,2))/sqrt(M_PI);}
-         if(zj<muj)
-         {res=0.5*sqrt(2)*exp(-0.5*R_pow(zjstd/etamas,2))/sqrt(M_PI);}
-      }*/
-//Rprintf("%f %f %f\n",mui,muj,res);
+if((zistd>=0)&&(zjstd<0))
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,zistd/etamos,-zjstd/etamas);}
+
+if((zistd<0)&&(zjstd>=0))
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Gauss(rho,-zistd/etamas,zjstd/etamos);}
+
+    if((zistd<0)&&(zjstd<0))
+{ //Rprintf("%f %f \n",zistd,zjstd);
+    res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Gauss(rho,-zistd/etamas,-zjstd/etamas);}
+
 return(res/sill);
 }  
+
+/*
+double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double eta,
+             double p11,double mui,double muj)
+{
+double res;  
+double etamas=1+eta;
+double etamos=1-eta;
+double zistd=(zi-mui)/sqrt(sill);
+double zjstd=(zj-muj)/sqrt(sill);
+
+
+if(zistd>=0&&zjstd>=0)
+{res=          (p11/R_pow(etamos,2))*biv_Norm(rho,zistd/etamas,zjstd/etamas,0,0,1,1,0);}
+
+if(zistd>=0&&zjstd<0)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_Norm(rho,zistd/etamas,-zjstd/etamas,0,0,1,1,0);}
+
+if(zistd<0&&zjstd>=0)
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_Norm(rho,-zistd/etamas,zjstd/etamas,0,0,1,1,0);}
+
+    if(zistd<0&&zjstd<0)
+{res=    ((p11+eta)/R_pow(etamas,2))*biv_Norm(rho,-zistd/etamas,-zjstd/etamas,0,0,1,1,0);}
+
+return(4*res/sill);
+}  
+*/
 
 
 
@@ -3833,13 +3854,13 @@ double zjstd=(zj-muj)/sqrt(sill);
 {res=          (p11/R_pow(etamos,2))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamos,tail);}
 //if(zi>=mui&&zj<muj)
     if(zistd>=0&&zjstd<0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamos,zjstd/etamas,tail);}
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamos,-zjstd/etamas,tail);}
 //if(zi<mui&&zj>=muj)
       if(zistd<0&&zjstd>=0)
-{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamos,tail);}
+{res=((1-eta-2*p11)/(2*(1-eta*eta)))*biv_half_Tukeyh(rho,-zistd/etamas,zjstd/etamos,tail);}
 //if(zi<mui&&zj<muj)
     if(zistd<0&&zjstd<0)
-{res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Tukeyh(rho,zistd/etamas,zjstd/etamas,tail);}
+{res=    ((p11+eta)/R_pow(etamas,2))*biv_half_Tukeyh(rho,-zistd/etamas,-zjstd/etamas,tail);}
 /*}else{   if(zi>=mui)
          {res=dnorm(x_i,0,1,0)*x_i/((zistd/etamos)*(1+LambertW(tail*R_pow(zistd/etamos,2))));}
          if(zj<muj)
