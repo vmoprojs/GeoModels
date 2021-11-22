@@ -386,6 +386,9 @@ if(model=="Poisson") {
                            cova=vs*cc#variogram=vv*(1-cc)
                          }
                       }
+#################################################################
+
+
 
 if(covariance) vs=1 
 return(cova/vs)
