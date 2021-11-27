@@ -43,7 +43,7 @@ library(GeoModels)
 
 ################################################################
 ###
-### Example 1. Correlation of a (reparametrized) beta random field with underlying 
+### Example 1. Correlation of a (mean reparametrized) beta random field with underlying 
 ### Matern correlation model using Gaussian and Clayton copulas
 ###
 ###############################################################
@@ -64,6 +64,7 @@ corr2= GeoCorrFct_Cop(x=x, corrmodel="Matern", param=param,copula="Clayton",mode
 
 plot(x,corr1,ylim=c(0,1),type="l",xlab="distance",ylab="corr")
 lines(x,corr2,ylim=c(0,1),lty=2)
+
 
 
 

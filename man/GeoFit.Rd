@@ -524,13 +524,13 @@ smooth=0
 
 model="Weibull"
 corrmodel="GenWend"
-param=list(mean=mean,mean1=mean1,sill=1-nugget,scale=scale,
+param=list(mean=mean,mean1=mean1,sill=1,scale=scale,
                      shape=shape,nugget=nugget,power2=4,smooth=smooth)
 # Simulation of a  non stationary weibull RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 
-fixed<-list(nugget=nugget,power2=4,sill=1-nugget,smooth=smooth)
+fixed<-list(nugget=nugget,power2=4,sill=1,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
@@ -542,7 +542,7 @@ print(fit$param)
 
 model="Gamma"
 start<-list(mean=mean,mean1=mean1,scale=scale)
-fixed<-list(nugget=nugget,power2=4,sill=1-nugget,shape=6)
+fixed<-list(nugget=nugget,power2=4,sill=1,shape=6)
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit(data=data,coordx=coords,corrmodel="Wend0", model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",X=X,

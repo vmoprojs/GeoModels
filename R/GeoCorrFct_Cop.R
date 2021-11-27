@@ -27,8 +27,8 @@ biv_unif_CopulaGauss<- function(a,b,c)
 biv_unif_CopulaClayton<-Vectorize(biv_unif_CopulaClayton,vectorize.args=c("a","b"))
 biv_unif_CopulaGauss<-Vectorize(biv_unif_CopulaGauss,vectorize.args=c("a","b"))
 ###################
-arg_clayton<-function(x,y,rho,nu) return(q1(x)*q2(y)*biv_unif_CopulaClayton(x,y,rho,nu))
-arg_gaussian<-function(x,y,rho)   return(q1(x)*q2(y)*biv_unif_CopulaGauss(x,y,rho))
+arg_clayton<-function(x,y,rho,nu,q1,q2) return(q1(x)*q2(y)*biv_unif_CopulaClayton(x,y,rho,nu))
+arg_gaussian<-function(x,y,rho,q1,q2)   return(q1(x)*q2(y)*biv_unif_CopulaGauss(x,y,rho))
 
 ###########################################    
 corr_copula<-function(rho,copula,q1,q2,e1,e2,v1,v2,nu){
@@ -36,7 +36,7 @@ corr_copula<-function(rho,copula,q1,q2,e1,e2,v1,v2,nu){
     res<-vector()
     for (i in 1:length(rho)){
           if (rho[i]>0.9999 & rho[i]<=1) res[i]=1
-          else                           res[i]=(pracma::integral2(arg_clayton,0,1,0,1,rho=rho[i],nu=nu)$Q-e1*e2)/sqrt(v1*v2)
+          else                           res[i]=(pracma::integral2(arg_clayton,0,1,0,1,rho=rho[i],nu=nu,q1=q1,q2=q2)$Q-e1*e2)/sqrt(v1*v2)
       
     }
     return(res)
@@ -45,7 +45,7 @@ corr_copula<-function(rho,copula,q1,q2,e1,e2,v1,v2,nu){
     res<-vector()
     for (i in 1:length(rho)){
       if (rho[i]>0.9999 & rho[i]<=1) res[i]=1
-      else                           res[i]=(pracma::integral2(arg_gaussian,0,1,0,1,rho=rho[i])$Q-e1*e2)/sqrt(v1*v2)  
+      else                           res[i]=(pracma::integral2(arg_gaussian,0,1,0,1,rho=rho[i],q1=q1,q2=q2)$Q-e1*e2)/sqrt(v1*v2)  
     }
     return(res)
   }
@@ -116,17 +116,18 @@ cc=correlation*(1-as.numeric(nuisance['nugget'] )  )
 if(model=="Beta2")        { if(bivariate) {} 
                         else {
                         delta=as.numeric(nuisance["shape"])
-                       # min=as.numeric(param['min']);max=as.numeric(param['max'])
-                       # x=(x-min)/(max-min)
-                       # y=(y-min)/(max-min)
                         q1<-function(x) qbeta(x,mu1*delta,(1-mu1)*delta)
                         q2<-function(x) qbeta(x,mu2*delta,(1-mu2)*delta)
                         mu1=1/(1+exp(-mm));mu2=1/(1+exp(-mm))
                         a1=mu1*delta;a2=mu2*delta
                         b1=(1-mu1)*delta;b2=(1-mu2)*delta
-                        e1=a1/(a1+b1); e2=a2/(a2+b2)
+                        e1=a1/(a1+b1); e2=a2/(a2+b2)   
                         v1=a1*b1/((a1+b1)^2*(a1+b1+1));v2=a2*b2/((a2+b2)^2*(a2+b2+1))
-                        vs=sqrt(v1*v2)
+
+                        min=as.numeric(param['min']);max=as.numeric(param['max'])
+                        dd=max-min
+                        #print(dd);print(v1);print(v2)
+                        vs= dd^2
                      }
 }        
             

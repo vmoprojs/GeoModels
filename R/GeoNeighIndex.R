@@ -148,7 +148,7 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
   m_t <- list()
   m_st <- list()
   contador <- 1
-  tt1 <- proc.time()
+  #tt1 <- proc.time()
   for(j in 1:tnn){
     for(k in 1:(numtime-tnn)){
       # j = 1;k = 1
@@ -159,8 +159,8 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
      
     }
   }
-  tt1 <- proc.time()-tt1
-  print(tt1)
+ # tt1 <- proc.time()-tt1
+ # print(tt1)
 
   ######
   SS = data.table::rbindlist(m_s)

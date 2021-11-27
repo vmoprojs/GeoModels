@@ -593,7 +593,7 @@ else            lname="comploglik2MM"
 
    }
  }  
-            
+        
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
@@ -607,7 +607,7 @@ else            lname="comploglik2MM"
         CompLikelihood$convergence <- 'Iteration limit reached'
         else
         CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$value>=1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
         if(optimizer=='nmk'||optimizer=='nmkb'){
         CompLikelihood$value = -CompLikelihood$value
@@ -615,7 +615,7 @@ else            lname="comploglik2MM"
         if(CompLikelihood$convergence == 0)
         CompLikelihood$convergence <- 'Successful'
         else CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$value>=1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
       if(optimizer=='ucminf'){
         CompLikelihood$value = -CompLikelihood$value
@@ -627,7 +627,7 @@ else            lname="comploglik2MM"
         CompLikelihood$convergence <- 'Iteration limit reached'
         else
         CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$value>=1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
     if(optimizer=='L-BFGS-B'||optimizer=='BFGS'||optimizer=='lbfgsb3c'){
         CompLikelihood$value = -CompLikelihood$value
@@ -639,7 +639,7 @@ else            lname="comploglik2MM"
         CompLikelihood$convergence <- 'Iteration limit reached'
         else
         CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$value>=1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
 
      if(optimizer=='nlm'){
@@ -653,7 +653,7 @@ else            lname="comploglik2MM"
         CompLikelihood$convergence <- 'Iteration limit reached'
         else
         CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$value>= 1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
 
     if(optimizer=='nlminb'||optimizer=='multinlminb'){
@@ -662,7 +662,7 @@ else            lname="comploglik2MM"
         CompLikelihood$value <- -CompLikelihood$objective
         if(CompLikelihood$convergence == 0) { CompLikelihood$convergence <- 'Successful' }
         else {CompLikelihood$convergence <- "Optimization may have failed" }
-        if(CompLikelihood$objective==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        if(CompLikelihood$objective>= 1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
     if(optimizer=='optimize'){
     param<-CompLikelihood$minimum
@@ -713,8 +713,8 @@ if(!bivariate)  {
 
 if(is.null(CompLikelihood$hessian)) {CompLikelihood$hessian=matrix(c(1,2,3,2),2,2)}
 if( min(eigen( CompLikelihood$hessian )$values) <0)
-{print("f")
-CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=CompLikelihood$par,method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
+{
+  CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=CompLikelihood$par,method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
                               data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
                               weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM)}

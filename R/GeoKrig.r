@@ -43,19 +43,20 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     type=gsub("[[:blank:]]", "",type)
 #####################################
     if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
-    if(!is.matrix(loc))   stop("loc parameter must be a matrix")
+    if(!is.matrix(loc))   loc=as.matrix(loc)
     if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")
     if(!is.null(Xloc))
          {
            if(is.vector(Xloc)) Xloc=matrix(Xloc,nrow=1)
            else                Xloc=as.matrix(Xloc)
          }
-
+      if(!is.null(X)) X=as.matrix(X)
     if(is.matrix(X) &&is.null(Xloc))  stop("Covariates for locations to predict are missing ")
     if(is.null(X) &&is.matrix(Xloc))  stop("Covariates  are missing ")
     if(CheckST(CkCorrModel(corrmodel))) 
                       {if(is.null(time)) stop("At least one temporal instants is needed for space-time kriging ")  } 
     #if( sum(is.nan(c(data)))>0)  warning("There are  NaN values in data: prediction cannot be performed")                                   
+     
 ######################################
 ######################################
 
