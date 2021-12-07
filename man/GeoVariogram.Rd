@@ -44,8 +44,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
    see the Section \bold{Details}.}
        \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the variogram computation. If \code{TRUE} then the RANN package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
    \item{neighb}{Numeric; an optional positive integer indicating the 
-    order of neighborhood  in the composite likelihood
-    computation. See the Section \bold{Details} for more information.}
+    order of neighborhood. See the Section \bold{Details} for more information.}
    \item{maxtime}{A numeric value denoting the temporal maximum distance,
    see the Section \bold{Details}.}
   \item{numbins}{A numeric value denoting the numbers of bins, see the
@@ -84,6 +83,8 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
   The \code{maxdist} parameter indicates the maximum spatial distance below which
   the shorter distances will be considered in the calculation of
   the (weigthed) least squares.
+
+   The \code{maxdist} parameter can be coupled with the \code{neighb} parameter (setting \code{memdist=T}). This is useful when handling large dataset.
 
   The \code{maxtime} parameter indicates the maximum temporal distance below which
   the shorter distances will be considered in the calculation of

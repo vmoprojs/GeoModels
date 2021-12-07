@@ -49,8 +49,7 @@ void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coo
       if(lags<=*maxdist){
 	for(h=0;h<(*nbins-1);h++)
 	  if((bins[h]<=lags) && (lags<bins[h+1])){
-            x=data[n+i ];
-            y=data[n+j ];
+            x=data[n+i ]; y=data[n+j ];
             if(!(ISNAN(x)||ISNAN(y)))
               moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
             }}}
@@ -68,20 +67,20 @@ void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2,
   step=(mm[1]-mm[0])/(*nbins-1);
   bins[0]= mm[0];
   //define bins:
-  for(h=1;h<*nbins;h++)
-    bins[h]=bins[h-1]+step;
+  for(h=1;h<*nbins;h++) bins[h]=bins[h-1]+step;
+
+   // Rprintf("%f\n",*maxdist);
   //Computes the binned moments:
   for(k=0;k<*np;k++){
-  
-      if(vdist[k]<=*maxdist){
-  for(h=0;h<(*nbins-1);h++)
-    if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
-            x=data1[k];   y=data2[k];
-            if(!(ISNAN(x)||ISNAN(y)))
-              moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
+      if(vdist[k]<= *maxdist){
+                for(h=0;h<(*nbins-1);h++){
+                if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
+                 x=data1[k];   y=data2[k];
+                if(!(ISNAN(x)||ISNAN(y)))
+                     moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
             }}
-        k=k+1;
           }
+    }
   return;
 }
 /***********************************************************************************************************************************/

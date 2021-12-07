@@ -51,6 +51,7 @@ data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
    X=fit$X,n=fit$n,method=method,
 	 distance=fit$distance,radius=fit$radius)}
+#print(append(fit$param,fit$fixed))
 if(method=="Vecchia"||method=="TB") {
                 data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model,
                 #param=as.list(c(fit$param,fit$fixed)), 

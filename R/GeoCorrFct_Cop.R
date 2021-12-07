@@ -127,7 +127,7 @@ if(model=="Beta2")        { if(bivariate) {}
                         min=as.numeric(param['min']);max=as.numeric(param['max'])
                         dd=max-min
                         #print(dd);print(v1);print(v2)
-                        vs= dd^2
+                        vs= sqrt(v1*v2)*dd^2
                      }
 }        
             

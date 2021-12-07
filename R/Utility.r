@@ -765,7 +765,7 @@ CorrParam <- function(corrmodel)
 {
    return(CorrelationPar(CkCorrModel(corrmodel)))
 }
-#####  names of the correlation models ###############
+
 #####  names of the correlation models ###############
 CorrelationPar <- function(corrmodel)
   {
@@ -816,7 +816,7 @@ CorrelationPar <- function(corrmodel)
       return(param)}
     # Stein model:
     if(corrmodel==48){
-      namesparam <- c('power_t','scale_s','scale_t','smooth_s')
+      param <- c('power_t','scale_s','scale_t','smooth_s')
       return(param)}
 
      if(corrmodel==61){
@@ -851,12 +851,12 @@ CorrelationPar <- function(corrmodel)
       return(param)}
     # Matern_Matern
     if(corrmodel==86){
-      namesparam <- c('scale_s','scale_t','smooth_s','smooth_t')
+      param <- c('scale_s','scale_t','smooth_s','smooth_t')
       return(param)}  
 
        # sinpower_st
     if(corrmodel==56){
-      namesparam <- c('scale_s','scale_t','smooth_t')
+      param <- c('scale_s','scale_t','smooth_t')
       return(param)}     
     # stable_stable  
      if(corrmodel==94||corrmodel==58){
