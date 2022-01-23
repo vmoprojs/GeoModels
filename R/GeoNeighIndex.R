@@ -68,9 +68,7 @@ nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)
                {nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
             else     {
                      nn=nrow(x) 
-                     K=min(K-1,500) # case of  maxdist
-
-                     
+                     K=min(K-1,nrow(x)-1) # case of  maxdist 
                      nearest = RANN::nn2(x,y,searchtype = c("radius"),
                                treetype = c("kd"),radius = maxdist,k=K  )
                      }
@@ -113,7 +111,7 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
   m_s=list();m_t=m_st=NULL;
   ##############         
   ## building marginal spatial indexes
-  tt0 <- proc.time()
+ # tt0 <- proc.time()
   if(is.null(coordx_dyn)) 
   {
     
@@ -128,8 +126,7 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
       
     }
   }
-  tt0 <- proc.time()-tt0
-  print(tt0)
+  #tt0 <- proc.time()-tt0;print(tt0)
   if(!is.null(coordx_dyn))
   {        ns=lengths(coordx_dyn)/2 
   for(i in 1:numtime){
@@ -287,6 +284,7 @@ K=neighb
 if(spatial)   #  spatial case
 {
 ##########################################
+
   sol = nn2Geo(coords,coords,K+1 ,distance,maxdist,radius) ##### 
   gb=list(); gb$colidx=sol$colidx;
              gb$rowidx=sol$rowidx ;

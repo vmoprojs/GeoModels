@@ -1,7 +1,7 @@
 \name{GeoCorrFct_Cop}
 \alias{GeoCorrFct_Cop}
 \encoding{UTF-8}
-\title{Spatial and Spatio-temporal correlation or  covariance of (non) Gaussian random fields}
+\title{Spatial and Spatio-temporal correlation or  covariance of (non) Gaussian random fields (copula models)}
 \description{
   The function computes the  correlations 
   a spatial or spatio-temporal or a bivariate spatial Gaussian or non Gaussian randomm field

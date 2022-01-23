@@ -209,8 +209,11 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
        }
       else {
        fname="Binned_Variogram2new"
+  
          idx=GeoNeighIndex(cbind(coordx,coordy),distance = distance, neighb = neighb, maxdist = maxdist,radius=radius)
-         mm=c(min(idx$lags),max(idx$lags))
+         #mm=c(min(idx$lags),max(idx$lags))
+         mm=range(idx$lags)
+        
          EV=.C(fname, bins=bins,  as.integer(length(idx$lags)),as.double(data[idx$colidx]),
                 as.double(data[idx$rowidx]), as.double(idx$lags),
         lenbins=lenbins, moments=moments, as.integer(numbins),as.double(mm),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)

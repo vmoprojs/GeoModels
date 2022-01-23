@@ -2,19 +2,12 @@
 ### File name: GeoCorrFct.r
 ####################################################
 
-
-
-######################################################################################################
-######################################################################################################
-######################################################################################################
-######################################################################################################
-
 GeoCorrFct<- function(x,t=NULL,corrmodel, model="Gaussian",distance="Eucl",  
                                   param, radius=6371,n=1,covariance=FALSE)
 
 {
   
-
+  #############################################################################################
 CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param,N)
     {
        if(!bivariate) { 
@@ -60,7 +53,6 @@ mu=as.numeric(param$mean)
       if(!bivariate){
        
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
-    
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
         #print(nuisance)
         sel=substr(names(nuisance),1,4)=="mean"
@@ -86,13 +78,12 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                }
         else { 
         cova <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
-        #variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
+
         }
 }
 ##########################
 ###### non Gaussian cases
 ##########################
-
 
    if(model=="SkewGausssian") {    
             if(bivariate) {}
@@ -115,34 +106,39 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                }
                   }
 ##########################################
-  if(model=="Tukeyh")        { if(bivariate) {}
+
+ if(model=="Tukeyh")        { if(bivariate) {}
                         else {
                               correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
-                              vs=  (1-2*h)^(-1.5)     
-                              cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
-                              cova=sill*vs*cc;#variogram=sill*vs*(1-cc)  
-                             } 
-                  } 
+                              vs=  sill*(1-2*h)^(-1.5)    
+                              cc=(correlation*(1-2*h)^(1.5))/((1-h)^2-(h*correlation)^2)^(1.5)
+                              cova=vs*cc;#variogram=sill*vs*(1-cc)  
+                             }
+                  }
    if(model=="Tukeyh2")        { if(bivariate) {}
                         else {
                               correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
                               hr=as.numeric(nuisance['tail1']); hl=as.numeric(nuisance['tail2'])
                               sill=as.numeric(nuisance['sill'])
                               corr=correlation
-                              corr[corr>=0.99999999]=0.99999999
-                              x1=1-(1-corr^2)*hr; x2=(1-hr)^2-(corr*hr)^2
-                              y1=1-(1-corr^2)*hl; y2=(1-hl)^2-(corr*hl)^2
-                              g=1-hl-hr+(1-corr^2)*hl*hr
-                              h1=sqrt(1-corr^2/(x1^2))+(corr/x1)*asin(corr/x1);h2=sqrt(1-corr^2/(y1^2))+(corr/y1)*asin(corr/y1)
-                              h3=sqrt(1-corr^2/(x1*y1))+sqrt(corr^2/(x1*y1))*asin(sqrt(corr^2/(x1*y1)))
-                              p1=x1*h1/(2*pi*(x2)^(3/2))+corr/(4*(x2)^(3/2)); p2=y1*h2/(2*pi*(y2)^(3/2))+corr/(4*(y2)^(3/2))
-                              p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
-                              mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                              vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
-                              cc=(p1+p2+2*p3-mm^2)/vs
-                          cova=sill*vs*cc;#variogram=sill*vs*(1-cc)  
+                              corr[corr>=0.9999999999]=0.9999999999
+                             x1=1-(1-corr^2)*hr; y1=1-(1-corr^2)*hl
+                             x2=(1-hr)^2-(corr*hr)^2;y2=(1-hl)^2-(corr*hl)^2
+                             g=1-hl-hr+(1-corr^2)*hl*hr
+                             h1=sqrt(1-corr^2/(x1^2))+(corr/x1)*asin(corr/x1);
+                             h2=sqrt(1-corr^2/(y1^2))+(corr/y1)*asin(corr/y1)
+                             h3=sqrt(1-corr^2/(x1*y1))+sqrt(corr^2/(x1*y1))*asin(sqrt(corr^2/(x1*y1)))
+                             p1=x1*h1/(2*pi*(x2)^(3/2))+corr/(4*(x2)^(3/2))
+                             p2=y1*h2/(2*pi*(y2)^(3/2))+corr/(4*(y2)^(3/2))
+                             p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
+
+                             mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                             vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                             cc=(p1+p2+2*p3-mm^2)/vv1  # correlation
+                             vs=as.numeric(nuisance['sill'])*vv1
+                              cova=vs*cc;#variogram=sill*vs*(1-cc)  
                              } 
                   }   
 ##########################################
@@ -159,22 +155,22 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                rho2=rho*rho; eta2=eta*eta; tail2=tail*tail;
                                u=1-tail; a=1+rho;
                                mu=(exp(eta2/(2*u))-1)/(eta*sqrt(u));
-                               vs=(exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*sqrt(1-2*tail))-mu*mu;
+                               vs=sill*(exp(2*eta2/(1-2*tail))-2*exp(eta2/(2*(1-2*tail)))+1)/(eta2*sqrt(1-2*tail))-mu*mu;
                                A1=exp(a*eta2/(1-tail*a));
                                A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
                                A3=eta2*sqrt(u*u- rho2*tail*tail);
                                cc=((A1-A2+1)/A3-mu*mu)/vs;
-                               cova=sill*vs*cc;#variogram=sill*vs*(1-cc)
+                               cova=vs*cc;#variogram=sill*vs*(1-cc)
                             } 
                         if(tail<=1e-05&&abs(eta)>1e-05){
-                              vs=( -exp(eta^2)+exp(eta^2*2))*eta^(-2)
+                              vs=sill*( -exp(eta^2)+exp(eta^2*2))*eta^(-2)
                               cc= (( -exp(eta^2)+exp(eta^2*(1+rho)))*eta^(-2))/vs
-                              cova=sill*vs*cc;#variogram=sill*vs*(1-cc) 
+                              cova=vs*cc;#variogram=sill*vs*(1-cc) 
                             } 
                         if(tail>1e-05&&abs(eta)<=1e-05){
-                              vs=  (1-2*tail)^(-1.5)     
+                              vs=  sill*(1-2*tail)^(-1.5)     
                               cc=(-rho/((1+h*(tail-1))*(-1+tail+tail*rho)*(1+tail*(-2+tail-tail*rho^2))^0.5))/vs
-                              cova=sill*vs*cc;variogram=sill*vs*(1-cc) 
+                              cova=vs*cc;variogram=sill*vs*(1-cc) 
                             } 
                         if(tail<=1e-05&&abs(eta)<=1e-05){
                             cova=sill*rho;#variogram=sill*(1-rho)
@@ -218,7 +214,7 @@ vs=sill
                           sill=as.numeric(nuisance['sill'])
                   
     mm=sinh(e/d)*exp(0.25)*(besselK(.25,(d+1)/(2*d))+besselK(.25,(1-d)/(2*d)))/(sqrt(8*pi))
-    vs=cosh(2*e/d)*exp(0.25)*(besselK(.25,(d+2)/(2*d))+besselK(0.25,(2-d)/(2*d)))/(sqrt(32*pi))-0.5-mm^2
+    vs=sill*(cosh(2*e/d)*exp(0.25)*(besselK(.25,(d+2)/(2*d))+besselK(0.25,(2-d)/(2*d)))/(sqrt(32*pi))-0.5-mm^2)
 ####### starting extra functions
 c1<-function(e,d,n,r){
    U=c(0.5-0.5/d,-0.5/d);L=c(1-1/d,0.5-0.5/d-n/2+r)
@@ -388,9 +384,8 @@ if(model=="Poisson") {
                       }
 #################################################################
 
-
-
 if(covariance) vs=1 
+
 return(cova/vs)
 }
 

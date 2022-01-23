@@ -288,36 +288,41 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39,28,40,9))    ## 
                         else       corri=cc
                       }
 ############################################################
-        if(covmatrix$model==40) # tukeyh2
-                         {
-                           vv=as.numeric(covmatrix$param['sill']);tail1=as.numeric(covmatrix$param['tail1']);tail2=as.numeric(covmatrix$param['tail2'])
-                           hr=tail1;hl=tail2
-                           x1=1-(1-cc^2)*hr
-                           x2=(1-hr)^2-(cc*hr)^2
-                           y1=1-(1-cc^2)*hl
-                           y2=(1-hl)^2-(cc*hl)^2
-                           g=1-hl-hr+(1-cc^2)*hl*hr
-                           h1=sqrt(1-cc^2/(x1^2))+(cc/x1)*asin(cc/x1)
-                           h2=sqrt(1-cc^2/(y1^2))+(cc/y1)*asin(cc/y1)
-                           h3=sqrt(1-cc^2/(x1*y1))+sqrt(cc^2/(x1*y1))*asin(sqrt(cc^2/(x1*y1)))
-                           p1=x1*h1/(2*pi*(x2)^(3/2))+cc/(4*(x2)^(3/2))
-                           p2=y1*h2/(2*pi*(y2)^(3/2))+cc/(4*(y2)^(3/2))
-                           p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+cc/(4*(g)^(3/2))
-                           mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                           vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
-                           corri=(p1+p2+2*p3-mm^2)/vv1
-                         }
-############################################################
+
     if(covmatrix$model==34) # tukeyh
                          {
                           vv=as.numeric(covmatrix$param['sill']);
-                          tail=as.numeric(covmatrix$param['tail'])
-                          if(tail>0){
-                              aa=(1-2*tail)^(-1.5) # variance
-                              corri=(-cc/((1+tail*(cc-1))*(-1+tail+tail*cc)*(1+tail*(-2+tail-tail*cc^2))^0.5))/aa
+                          h=as.numeric(covmatrix$param['tail'])
+                         # print(tail);print(vv)
+                          if(h>0){
+                             corri=(cc*(1-2*h)^(1.5))/((1-h)^2-(h*cc)^2)^(1.5)
+                              #aa=(1-2*tail)^(-1.5) # variance
+                              #corri=(-cc/((1+tail*(cc-1))*(-1+tail+tail*cc)*(1+tail*(-2+tail-tail*cc^2))^0.5))/aa
                             }
-                         if(!tail) corri=cc
+                         else{ corri=cc}
                          }
+############################################################
+        if(covmatrix$model==40) # tukeyh2
+                         {
+                           vv=as.numeric(covmatrix$param['sill']);
+                           tail1=as.numeric(covmatrix$param['tail1']);tail2=as.numeric(covmatrix$param['tail2'])
+                           hr=tail1;hl=tail2
+
+                             x1=1-(1-cc^2)*hr; y1=1-(1-cc^2)*hl
+                             x2=(1-hr)^2-(cc*hr)^2;y2=(1-hl)^2-(cc*hl)^2
+                             g=1-hl-hr+(1-cc^2)*hl*hr
+                             h1=sqrt(1-cc^2/(x1^2))+(cc/x1)*asin(cc/x1);
+                             h2=sqrt(1-cc^2/(y1^2))+(cc/y1)*asin(cc/y1)
+                             h3=sqrt(1-cc^2/(x1*y1))+sqrt(cc^2/(x1*y1))*asin(sqrt(cc^2/(x1*y1)))
+                             p1=x1*h1/(2*pi*(x2)^(3/2))+cc/(4*(x2)^(3/2))
+                             p2=y1*h2/(2*pi*(y2)^(3/2))+cc/(4*(y2)^(3/2))
+                             p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+cc/(4*(g)^(3/2))
+
+                             mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
+                             vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                             corri=(p1+p2+2*p3-mm^2)/vv1  # correlation
+                         }
+#############################################
 if(covmatrix$model==9) # tukeygh
                          {
                          vv=as.numeric(covmatrix$param['sill']);
@@ -472,18 +477,18 @@ else    {
      if(covmatrix$model==12)  {vvar= vv*nu/(nu-2)    ## studentT
                                M=0
                                }
-     if(covmatrix$model==34)  {vvar= vv*(1-2*tail)^(-1.5)            ## tukey h
-                               M=0
-                               }
       if(covmatrix$model==9)  {                                      #tukeygh
                                tail2=tail*tail;skew2=skew*skew; u=1-tail;
                                mm=(exp(skew2/(2*u))-1)/(skew*sqrt(u));
                                vvar=vv* ((exp(2*skew2/(1-2*tail))-2*exp(skew2/(2*(1-2*tail)))+1)/(skew2*sqrt(1-2*tail))-mm^2)
                                M=sqrt(vv)*mm
                                }
-     if(covmatrix$model==40) {  ## tukeyh2
-                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                               vvar= vv* (0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)- mm^2 )
+     if(covmatrix$model==34)  {
+                               vvar= vv*(1-2*h)^(-1.5)            ## tukey h
+                               M=0
+                               }
+     if(covmatrix$model==40) {                         ## tukeyh2
+                               vvar= vv* vv1
                                M=sqrt(vv)*mm
                              }
      if(covmatrix$model==18)  { #skew student T
@@ -521,13 +526,14 @@ else    {
      if(covmatrix$model==26)  {vvar= gamma(1+2/sh)/gamma(1+1/sh)^2-1   }    ## weibull
      }
 ########################################################################################
+
 ##### multiplying the  correlations for the variance
 
          CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
 #### updating mean
         if(!bivariate){
           #### additive model on the real line
-         if(covmatrix$model %in% c(10,18,29,27,38,39,28,34,9))
+         if(covmatrix$model %in% c(10,18,29,27,38,39,28,34,9,40))
                                 {
                                  muloc=muloc + M
                                  mu=mu +       M
@@ -575,6 +581,7 @@ if(type_krig=='Simple'||type_krig=='simple')  {
                ############################ optimal linear predictors #######################
                if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,40,34,9))   ####gaussian, StudenT, two piece  skew gaussian bimodal
               {
+                     #print(head(muloc));#print(head(c(krig_weights)))
 
                      pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))
               }

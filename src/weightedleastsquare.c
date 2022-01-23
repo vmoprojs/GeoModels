@@ -76,10 +76,9 @@ void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2,
                 for(h=0;h<(*nbins-1);h++){
                 if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
                  x=data1[k];   y=data2[k];
-                if(!(ISNAN(x)||ISNAN(y)))
-                     moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
-            }}
-          }
+                if(!(ISNAN(x)||ISNAN(y))) moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
+                }}
+      }
     }
   return;
 }

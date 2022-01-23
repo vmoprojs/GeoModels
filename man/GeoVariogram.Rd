@@ -1,9 +1,9 @@
 \name{GeoVariogram}
 \alias{GeoVariogram}
 \encoding{UTF-8}
-\title{Empirical Variogram estimation}
+\title{Empirical semi-variogram estimation}
 \description{
-  The function returns an empirical estimate of the  variogram  for spatio (temporal)  and bivariate 
+  The function returns an empirical estimate of the  semi-variogram  for spatio (temporal)  and bivariate 
   random fields. 
 }
 \usage{
@@ -31,9 +31,9 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
    \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
        containing dynamical (in time) spatial coordinates. Optional argument, the default is \code{NULL}
     }   
-  \item{cloud}{Logical; if \code{TRUE} the variogram cloud is computed,
+  \item{cloud}{Logical; if \code{TRUE} the semivariogram cloud is computed,
   otherwise if \code{FALSE} (the default) the empirical (binned)
-  variogram is returned.}
+  semivariogram is returned.}
   \item{distance}{String; the name of the spatial distance. The default
     is \code{Eucl}, the euclidean distance. See the Section
     \bold{Details} of \code{\link{GeoFit}}.}
@@ -42,7 +42,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
     non-equispaced spatial sites.}
   \item{maxdist}{A numeric value denoting the spatial maximum distance,
    see the Section \bold{Details}.}
-       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the variogram computation. If \code{TRUE} then the RANN package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
+       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the semivariogram computation. If \code{TRUE} then the RANN package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
    \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood. See the Section \bold{Details} for more information.}
    \item{maxtime}{A numeric value denoting the temporal maximum distance,
@@ -51,7 +51,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
     Section \bold{Details}.}
   \item{radius}{Numeric; a value indicating  the radius of the sphere when 
   using the great circle distance. Default value is the radius of the earth in Km (i.e. 6371)} 
-  \item{type}{A String denoting the type of variogram. The option
+  \item{type}{A String denoting the type of semivariogram. The option
      available is : \code{variogram}.}
     \item{bivariate}{Logical; if \code{FALSE} (the default) the data
     are interpreted as univariate spatial or spatial-temporal realisations. 
@@ -62,13 +62,13 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
 
   We briefly report the definitions of semi-variogram used in this function.
   In the case of a spatial Gaussian random field
-  the sample \code{variogram} estimator is defined by
+  the sample semivariogram estimator is defined by
   \deqn{\hat{\gamma}(h) = 0.5 \sum_{x_i, x_j \in N(h)} (Z(x_i) - Z(x_j))^2 / |N(h)|}
   where \eqn{N(h)} is the set of all the sample pairs whose distances fall into a tolerance region with size \eqn{h}
   (equispaced intervalls are considered).
   
   In the case of a spatio-temporal Gaussian random field the sample
-  \code{variogram} estimator is defined by
+  semivariogram estimator is defined by
   \deqn{\hat{\gamma}(h, u) = 0.5 \sum_{(x_i, l), (x_j, k) \in N(h, u)} (Z(x_i, l) - Z(x_j, k))^2 / |N(h, u)|}
   where \eqn{N(h, u)}{N(h, u)} is the set of all the sample pairs whose
   spatial distances fall into a tolerance region with size \eqn{h}{h}

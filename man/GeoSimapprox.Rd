@@ -4,7 +4,7 @@
 \title{Fast simulation of Gaussian and non Gaussian Random Fields.}
 \description{
   Simulation of Gaussian and some non Gaussian spatial, spatio-temporal and spatial bivariate 
- random fields using approximate methods of simulation.
+ random fields using approximate methods of simulation. At the time it works only for the spatial case and the Matern model
 }
 \usage{
 GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1,

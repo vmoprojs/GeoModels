@@ -5,11 +5,12 @@
 \description{
    The procedure  plots  a quantile-quantile plot or a density plot for the residuals associated to a fitted model
 }
-\usage{GeoQQ(fit,type="Q")}
+\usage{GeoQQ(fit,type="Q",\dots)}
 \arguments{
   \item{fit}{A GeoFit object obtained from 
     \code{\link{GeoResiduals}}.}
 \item{type}{The type of plot. If Q then a qq-plot (default) is performed. If D then  a comparison between histrogram and the estimated marginal density is performed}
+  \item{\dots}{Optional parameters passed to the plot function.}
 }
 
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
