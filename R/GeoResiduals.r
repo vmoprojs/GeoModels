@@ -106,8 +106,8 @@ if(!is.null(copula)){
 #############################################
 if(copula=="Clayton"||copula=="Gaussian")
 {
-if(model %in% c("Beta2")) {fit$param['shape']=2;fit$param['mean']=0}
-if(model %in% c("Kumaraswamy2")) {fit$param['shape']=1;fit$param['mean']=0}
+if(model %in% c("Beta2")) {fit$param['shape']=2;fit$param['mean']=0; fit$param['max']=1; fit$param['min']=0}
+if(model %in% c("Kumaraswamy2")) {fit$param['shape']=1;fit$param['mean']=0; fit$param['max']=1; fit$param['min']=0}
 }
 }
 else

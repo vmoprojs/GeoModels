@@ -194,7 +194,8 @@ if(!bivariate)    {
    if(!h)     vv=as.numeric(nuisance['sill'])
    if(h){     aa=(1-2*h)^(-1.5) # variance
               #corr <- aa*corr/( (1-h)^2-h^2*corr^2 )^(1.5)
-              corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/aa
+              #corr <- (-corr/((1+h*(corr-1))*(-1+h+h*corr)*(1+h*(-2+h-h*corr^2))^0.5))/aa
+              corr =(corr*(1-2*h)^(1.5))/((1-h)^2-(h*corr)^2)^(1.5)
               vv=aa*as.numeric(nuisance['sill'])
               }
        }

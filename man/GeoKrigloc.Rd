@@ -154,8 +154,8 @@ model="Gaussian"
 
 # Define the spatial-coordinates of the points:
 set.seed(79)
-x = runif(800, 0, 1)
-y = runif(800, 0, 1)
+x = runif(500, 0, 1)
+y = runif(500, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
 corrmodel = "Exponential"
@@ -184,7 +184,7 @@ pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
       model=model,param= param, data=data,mse=TRUE)
 
 pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-      model=model,maxdist=0.1, param= param,mse=TRUE)
+      model=model,neighb=50, param= param,mse=TRUE)
 
 colour = rainbow(100)
 par(mfrow=c(2,2))
@@ -262,8 +262,6 @@ fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
         likelihood="Marginal",type="Pairwise",neighb=c(3,3,3),
         optimizer="BFGS", start=start,fixed=fixed)
 
-neigh=GeoNeighborhood(data, coordx=coords,bivariate=TRUE,
-                  loc=loc_to_pred,neighb=10)
 
 # locations to predict
 

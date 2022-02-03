@@ -67,19 +67,22 @@ neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxd
         res1=res2=NULL
          for(i in 1: Nloc)
           {
+           
             pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X,,Xloc= Xloc[i,],which=which,
                 model=model, param=param,mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
+              
           }
 }
 varpred=NULL
   if(spacetime||bivariate) {
             pred=matrix(t(res1),nrow=Tloc,ncol=Nloc);
-            varpred=matrix(c(res2),nrow=Tloc,ncol=Nloc);
+            if(mse) varpred=matrix(c(res2),nrow=Tloc,ncol=Nloc);
     } 
-  else{pred=c(res1);varpred=c(res2)}
+  else{pred=c(res1)
+       if(mse)varpred=c(res2)}
               
 
 if(Tloc==1)  {c(pred);c(varpred)}

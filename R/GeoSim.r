@@ -215,6 +215,7 @@ forGaussparam<-function(model,param,bivariate)
             vv1<-param$sill_1;param$sill_1=1-param$nugget_1;
             vv2<-param$sill_2;param$sill_2=1-param$nugget_2;;vv=c(vv1,vv2)
             sk1<-param$skew_1;sk2<-param$skew_2;sk=c(sk1,sk2)
+            tl1<-param$tail_1;tl2<-param$tail_2;tl=c(tl1,tl2)
         }}
 #################################
   if(model %in% c("Tukeygh","SinhAsinh"))  {
@@ -411,6 +412,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
     #######################################################################
     nuisance<-param[ccov$namesnuis]
     if(i==1&&(model=="SkewGaussian"||model=="SkewGauss")&&bivariate) ccov$param["pcol"]=0
+    if(i==1&&(model=="SinhAsinh")&&bivariate) ccov$param["pcol"]=0
     ####################################
 
     sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
@@ -803,8 +805,15 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
    }
 #########################################
   if (model %in% c("SinhAsinh"))
-  {sim=c(t(sim));sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk));byrow=TRUE
-    }
+  {
+    if(!bivariate){sim=c(t(sim));sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk));byrow=TRUE}
+    if(bivariate) {aa=cbind(
+                           mm[1]+sqrt(vv[1])*sinh( (1/tl[1])*(asinh(dd[,,1][,1])+sk[1])),
+                           mm[2]+sqrt(vv[2])*sinh( (1/tl[2])*(asinh(dd[,,1][,2])+sk[2]))) 
+
+                   sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
+               }
+}
  ### formatting data
   if(!grid)  {
                 if(!spacetime&&!bivariate) sim <- c(sim)

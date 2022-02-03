@@ -1563,6 +1563,7 @@ if(distC||fcall=="Simulation"||(fcall=="Fitting"&likelihood==2)||(fcall=="Fittin
 if(fcall=="Fitting"&mem==TRUE&(!space)&!tapering)   {vv=length(NS); numcoord=NS[vv]+ns[vv]} # number of space time point in the case of coordxdyn
 
 
+
 gb=dotCall64::.C64('SetGlobalVar',SIGNATURE = c(
          "integer","double","double","double","integer", "integer","integer",  #7
          "integer","integer","integer","integer", "integer","integer", #6

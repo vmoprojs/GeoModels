@@ -485,7 +485,9 @@ else            lname="comploglik2MM"
      #     #control=list( reltol=1e-14, maxit=100000), 
       #    data1=data1,data2=data2, fixed=fixed, fan=fname,
        #                     n=n,namescorr=namescorr,
-        #                          namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM)                       
+        #                          namesnuis=namesnuis,namesparam=namesparam,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM)  
+
+       # bb=data1*data2/length(data1)                     
     }}
 ######################################################################################
 ############################## bivariate  ############################################ 

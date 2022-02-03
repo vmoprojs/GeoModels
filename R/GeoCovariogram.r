@@ -373,7 +373,8 @@ else                                     nui['nugget']=nuisance['nugget']
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
                               vs=  (1-2*h)^(-1.5)     
-                              cc=(-correlation/((1+h*(correlation-1))*(-1+h+h*correlation)*(1+h*(-2+h-h*correlation^2))^0.5))/vs
+                              cc=correlation*(1-2*h)^(1.5)/ ((1-h)^2-(h*correlation)^2)^(1.5)
+                              #print(vs);print(sill); print(cc)
                               covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   } 
@@ -392,9 +393,9 @@ else                                     nui['nugget']=nuisance['nugget']
                               p1=x1*h1/(2*pi*(x2)^(3/2))+corr/(4*(x2)^(3/2)); p2=y1*h2/(2*pi*(y2)^(3/2))+corr/(4*(y2)^(3/2))
                               p3=-(x1*y1)^(1/2)*h3/(2*pi*(g)^(3/2))+corr/(4*(g)^(3/2))
                               mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
-                              vs=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
+                              vs=0.5*((1-2*hl)^(-3/2)+(1-2*hr)^(-3/2)) -(mm)^2
+
                               cc=(p1+p2+2*p3-mm^2)/vs
-                         
                           covariance=sill*vs*cc;variogram=sill*vs*(1-cc)  
                              } 
                   }   
