@@ -1,7 +1,7 @@
 ####################################################
 ### File name: GeoQQ.r
 ####################################################
-GeoQQ<-function(fit,type="Q",add=FALSE,ylim=c(0,1),...)
+GeoQQ<-function(fit,type="Q",add=FALSE,ylim=c(0,1),breaks=10,...)
 {
 
 
@@ -372,7 +372,7 @@ sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
 ll=seq(min(dd),max(dd),0.1)
 ds=dbeta((ll-pmin)/(pmax-pmin),shape1=mm*sh,shape2=(1-mm)*sh)/(pmax-pmin)
-if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Beta Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Beta Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)
 }
 
@@ -390,7 +390,7 @@ res=log(shapei)+log(sh)+(sh-1)*log(q)+(shapei-1)*log(k)-log(pmax-pmin);
 return(exp(res))
 }
 ds=dkuma(ll,MM,sh,pmin,pmax)
-if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Kumaraswamy Histogram",ylim=c(0,2))
+if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Kumaraswamy Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)
 }
 }
@@ -400,7 +400,7 @@ else{
 #######################################  OK
 if(model%in%c("Gaussian"))
 {
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gaussian Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gaussian Histogram",ylim=ylim,breaks=breaks)
 lines(seq(min(dd),max(dd),0.1),dnorm(seq(min(dd),max(dd),0.1),mean=MM,sd=sqrt(VV)),...)
 }
 
@@ -409,7 +409,7 @@ if(model%in%c("StudentT","Gaussian_misp_StudentT"))
 {
 df=as.numeric(round(1/pp["df"]))
 ll=seq(min(dd),max(dd),0.1)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Student T Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Student T Histogram",ylim=ylim,breaks=breaks)
 lines(ll,dt((ll-MM)/sqrt(VV),df=df),...)/sqrt(VV)
 }
 
@@ -420,7 +420,7 @@ if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT"))
   nu=as.numeric(round(1/pp["df"]))
   ll=seq(min(dd),max(dd),0.1)
   d_st=sn::dst((ll-MM)/sqrt(VV), xi=0, omega=1, alpha=alpha, nu=nu)/sqrt(VV)
-  if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew-T Histogram",ylim=ylim)
+  if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew-T Histogram",ylim=ylim,breaks=breaks)
   lines(ll,d_st,...)
 }
 
@@ -433,7 +433,7 @@ if(model %in% c("SkewGaussian"))
    alpha=skew/sill^0.5
    ll=seq(min(dd),max(dd),0.1)
    d_sn=sn::dsn((ll-MM)/sqrt(VV), xi=0, omega=omega,alpha=alpha)/sqrt(VV)
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew Gaussian Histogram",ylim=ylim)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew Gaussian Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_sn,...)
 }
 
@@ -444,7 +444,7 @@ if(model %in% c("Weibull"))
    shape=pp["shape"]
    ll=seq(min(dd),max(dd),0.1)
    d_w=dweibull(ll,shape=shape,scale=exp(MM)/(gamma(1+1/shape )))
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Weibull Histogram",ylim=ylim)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Weibull Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_w,...)
 }
 
@@ -454,7 +454,7 @@ if(model %in% c("Gamma"))
    shape=pp["shape"]
    ll=seq(min(dd),max(dd),0.1)
    d_g=dgamma(ll,shape=shape/2,rate=shape/(2*exp(MM)))
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gamma Histogram",ylim=ylim)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gamma Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_g,...) 
 
 }
@@ -468,7 +468,7 @@ if(model %in% c("LogGaussian"))
    return(exp(a))
    }
    d_l = dlnorm(ll,MM,VV)
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogGaussian Histogram",ylim=ylim)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogGaussian Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_l,...) 
 
 }
@@ -479,27 +479,25 @@ shape=pp["shape"]
 cc=gamma(1+1/shape)*gamma(1-1/shape)
 ll=seq(min(dd),max(dd),0.1)
 d_l = actuar::dllogis(ll,shape = shape,scale=exp(MM)/cc)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogLogistic Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogLogistic Histogram",ylim=ylim,breaks=breaks)
 lines(ll,d_l,...) 
 
 }
-
-
-#######################################  OK
+####################################### 
 if(model %in% c("SinhAsinh"))
 {
 tail = as.numeric(pp["tail"])
 skew = as.numeric(pp["skew"])
 ll=seq(min(dd),max(dd),0.1)
-qtpsas1=function(x,skew,tail,VV){
+qtpsas1=function(x,skew,tail){
 s=sinh(tail*asinh(x)-skew)
-a=sqrt(2*pi*(1+x^2))
+a=(2*pi*(1+x^2))^(-0.5)
 c=sqrt(1+s^2)
 d=exp(-0.5*s^2) 
-return((tail/a)*c*d/sqrt(VV))
+return(tail*c*d*a)
 }
-ds=qtpsas1((ll-MM)/sqrt(VV),skew,tail,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",ylim=ylim)
+ds=qtpsas1((ll-MM)/sqrt(VV),skew,tail)/sqrt(VV)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",ylim=ylim,breaks=breaks)
    lines(ll,ds,...) 
 }
 
@@ -521,7 +519,7 @@ c=dnorm(inverse_lamb(x,tail),0,1)
 return(b*c/(a*sqrt(VV)))
 }
 ds=qth((ll-MM)/sqrt(VV),tail,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-h Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-h Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...) 
 }
 
@@ -554,7 +552,7 @@ qtpTukeyh22= function(x,tail1,tail2,VV){
   return(c(ds2,ds1))
 }
 ds=qtpTukeyh22((ll-MM)/sqrt(VV),tail1,tail2,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-hh Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-hh Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...) 
 }
 
@@ -575,7 +573,7 @@ qtpGaussian1=function(x,eta,VV){
   return(c(ds2,ds1))
 }
 ds=qtpGaussian1((ll-MM)/sqrt(VV),skew,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Gaussian Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Gaussian Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...) 
 }
 
@@ -597,7 +595,7 @@ qtpt = function(x,skew,df,VV){
   return(c(ds2,ds1))
 }
 ds=qtpt((ll-MM)/sqrt(VV),skew,df,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Student Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Student Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)
 }
 
@@ -632,7 +630,7 @@ dTTukeyh= function(x,tail,skew,VV){
   return(c(ds2,ds1))
 }
 ds=dTTukeyh((ll-MM)/sqrt(VV),tail,skew,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Tukey-h Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Tukey-h Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)
 }
 
@@ -656,7 +654,7 @@ ptpbimodal1 = function(x,skew,delta,df,VV){
   return(c(ds2,ds1))
 }
 ds=ptpbimodal1((ll-MM)/sqrt(VV),skew,delta,df,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Bimodal Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Bimodal Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)
 }
 

@@ -24,7 +24,7 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
         res=double(1)
         #print(param);print(other_nuis);print(paramcorr)
-       # print(fan)
+    
         #result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
@@ -52,8 +52,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
                 Mean=c(X%*%mm)
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
         res=double(1)
-        #print(param);print(other_nuis);print(paramcorr)
-       # print(fan)
+
         #result <- .C(as.character(fan),as.integer(corrmodel),as.double(data1), as.double(data2), 
        #            as.integer(n),as.double(paramcorr), as.integer(weigthed), 
        #            res=res,as.double(MM[colidx]),as.double(MM[rowidx]),
@@ -65,7 +64,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, fan, 
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx], Mean[rowidx], other_nuis,local,GPU,
           INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
-         #print(other_nuis);print(result)
+   
          return(-result)
       }
 
@@ -115,7 +114,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
     if(is.null(dim(X))){X=as.matrix(rep(1,dimat))}
     
     fname <- NULL; hessian <- FALSE
-    if(all(model==1,likelihood==3,type==1)) fname <- 'Comp_Diff_Gauss'
+    if(all(model==1,likelihood==4,type==2)) fname <- 'Comp_Diff_Gauss'
+
 
 ####################### conditional ##############################################
     if(all(model==1,likelihood==1,type==2)) {fname <- 'Comp_Cond_Gauss'
@@ -342,8 +342,6 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, data1,data2,fixed, f
       .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
 
-
-    #print(fname)
 
      if((spacetime||bivariate)&&(!spacetime_dyn))    data=c(t(data))
      if((spacetime||bivariate)&&(spacetime_dyn))     data=unlist(data)          

@@ -100,7 +100,6 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
 
-
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn,
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n,
           param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X)
@@ -293,7 +292,7 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,20,34,39,28,40,9))    ## 
                          {
                           vv=as.numeric(covmatrix$param['sill']);
                           h=as.numeric(covmatrix$param['tail'])
-                         # print(tail);print(vv)
+                  
                           if(h>0){
                              corri=(cc*(1-2*h)^(1.5))/((1-h)^2-(h*cc)^2)^(1.5)
                               #aa=(1-2*tail)^(-1.5) # variance
@@ -579,9 +578,8 @@ if(type_krig=='Simple'||type_krig=='simple')  {
         }
   else {
                ############################ optimal linear predictors #######################
-               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,40,34,9))   ####gaussian, StudenT, two piece  skew gaussian bimodal
+               if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,40,34,9))   ####gaussian, StudenT, two piece  skew gaussian bimodal tukeyh tukey hh
               {
-                     #print(head(muloc));#print(head(c(krig_weights)))
 
                      pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))
               }
@@ -747,7 +745,7 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46))
 if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
 {
   corri=double(dimat*dimat2)
-# print(kk);print(n)
+
     ## Computing correlation between the locations to predict and the locations observed
     ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
     as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
@@ -791,7 +789,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
           ##########################################################
        if(covmatrix$model==30||covmatrix$model==36){  ### poisson
         p0=exp(mu0); pmu=exp(mu)
-        #print(p0[1]);print(pmu[1]);print(c(dataT[1]))
+
             if(!bivariate)
                    {  pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) }  ## simple kriging
             else{} #todo
@@ -801,7 +799,7 @@ if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
       if(covmatrix$model==46||covmatrix$model==47){  ### poisson gamma
         p0=exp(mu0); pmu=exp(mu)
         b0=covmatrix$param['shape']/p0
-        #print(p0[1]);print(pmu[1]);print(c(dataT[1]))
+
             if(!bivariate)
                    {  pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) }  ## simple kriging
             else{} #todo

@@ -5,12 +5,13 @@
 \description{
    The procedure  plots  a quantile-quantile plot or a density plot for the residuals associated to a fitted model
 }
-\usage{GeoQQ(fit,type="Q",add=FALSE,ylim=c(0,1),\dots)}
+\usage{GeoQQ(fit,type="Q",add=FALSE,ylim=c(0,1),breaks=10,\dots)}
 \arguments{
   \item{fit}{A GeoFit object possibly obtained from \code{\link{GeoResiduals}}.}
 \item{type}{The type of plot. If Q then a qq-plot (default) is performed. If D then  a comparison between histrogram and the estimated marginal density is performed}
 \item{add}{Logical; if TRUE the the estimated density ia added over an existing one} 
 \item{ylim}{Numeric; a vector of length 2 used for the ylab parameter of the histogram plot.} 
+\item{breaks}{Numeric; an integer number specifyng  the number of cells ofthe histogram plot if the option type=D is chosen.} 
 \item{\dots}{Optional parameters passed to the plot function.}
 }
 
@@ -58,8 +59,9 @@ fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,X=X,
                     fixed=fixed,neighb=4)
 
 res=GeoResiduals(fit)
+GeoQQ(res,type="Q")
+GeoQQ(res,type="D",col="red",lwd=2,ylim=c(0,0.6),breaks=30)
 
-GeoQQ(res,type="D",col="red",lwd=2,ylim=c(0,1))
 }
 
 \keyword{Composite}

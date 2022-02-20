@@ -112,7 +112,8 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                                initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb,MM)
 
     # Composite likelihood:
-    if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')&&type=="Pairwise"){
+    if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Difference' || 
+        likelihood=='Marginal_2')&&type=="Pairwise"){
 
 
     if(!memdist)

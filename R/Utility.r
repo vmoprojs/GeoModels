@@ -381,11 +381,13 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
                 error <- 'insert a type name of the likelihood objects compatible with the composite-likelihood\n'
                 return(list(error=error))}}
 
-        if(varest & (likelihood == "Conditional" || likelihood == "Marginal"|| likelihood == "Marginal_2") & (!is.null(vartype) & !is.character(vartype))){
+        if(varest & (likelihood == "Conditional" || likelihood == "Difference" ||
+            likelihood == "Marginal"|| likelihood == "Marginal_2") & (!is.null(vartype) & !is.character(vartype))){
             error <- 'insert the type of estimation method for the variances\n'
             return(list(error=error))}
 
-        if(varest & is.null(CkVarType(vartype)) & (likelihood == "Conditional" || likelihood == "Marginal"|| likelihood == "Marginal_2")){
+        if(varest & is.null(CkVarType(vartype)) & (likelihood == "Conditional" || likelihood == "Difference" ||
+            likelihood == "Marginal"|| likelihood == "Marginal_2")){
             error <- 'the name of the estimation type for the variances is not correct\n'
             return(list(error=error))}
 
@@ -675,7 +677,8 @@ CkLikelihood <- function(likelihood)
                               Conditional=1,
                               Full=2,
                               Marginal=3,
-                              Marginal_2=1)
+                              Marginal_2=1,
+                              Difference=4)
     return(CkLikelihood)
   }
 
@@ -1247,7 +1250,7 @@ if(method1=="euclidean")
           {
            if(!bivariate) {
                            mu <- mean(unlist(data))
-                           if(any(type==c(1, 3, 7,8))){    # Checks the type of likelihood
+                           if(any(type==c(1, 3, 7,8,4))){    # Checks the type of likelihood
                            if(is.list(fixed)) fixed$mean <- mu# Fixs the mean
                            else fixed <- list(mean=mu)}
                            nuisance <- c(mu, 0, var(c(unlist(data))))
@@ -1264,7 +1267,7 @@ if(method1=="euclidean")
      if(bivariate) {
                            if(is.null(coordx_dyn)) { mu1 <- mean(data[1,]); mu2 <- mean(data[2,])}
                            else                   { mu1 <- mean(data[[1]]); mu2 <- mean(data[[2]])}
-                           if(any(type==c(1, 3, 7, 8))) {   # Checks the type of likelihood
+                           if(any(type==c(1, 3, 7, 8,4))) {   # Checks the type of likelihood
                            if(is.list(fixed)) {fixed$mean_1 <- mu1;fixed$mean_2<- mu2}
                            else               {fixed <- list(mean_1=mu1,mean_2=mu2)  }
                                                          }
@@ -1298,7 +1301,7 @@ if(method1=="euclidean")
     
     if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)) {
     if(!bivariate) {
-         if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
+         if(any(type==c(1, 3, 7,8,4)))# Checks the type of likelihood
             if(is.list(fixed)) {
                                mu <- mean(unlist(data));fixed$mean <- mu# Fixs the mean
                                for(i in 1:(num_betas-1)) fixed[[paste("mean",i,sep="")]]=1  # fixed$meani=1
@@ -1315,7 +1318,7 @@ if(method1=="euclidean")
             if(model %in% c(42,50))  nuisance=c(nuisance,1,1,1) 
              }
     if(bivariate) {
-            if(any(type==c(1, 3, 7,8)))# Checks the type of likelihood
+            if(any(type==c(1, 3, 7,8,4)))# Checks the type of likelihood
             if(is.list(fixed)) {
                 if(!is.list(data))
                 {
