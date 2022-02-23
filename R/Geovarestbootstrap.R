@@ -1,3 +1,4 @@
+
 ####################################################
 ### File name: GeoVarestboostrap.r
 ####################################################
@@ -44,6 +45,8 @@ set.seed(seed)
 while(k<=K){
 Sys.sleep(0.1)
 if(method=="cholesky") {
+
+  if(is.null(fit$copula))
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, 
      corrmodel=fit$corrmodel,model=fit$model,
@@ -51,7 +54,20 @@ data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
       param=append(fit$param,fit$fixed),
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
    X=fit$X,n=fit$n,method=method,
-	 distance=fit$distance,radius=fit$radius)}
+	 distance=fit$distance,radius=fit$radius)
+else
+data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,
+     coordx_dyn=fit$coordx_dyn, 
+     corrmodel=fit$corrmodel,model=fit$model,
+   copula=fit$copula,
+      param=append(fit$param,fit$fixed),
+   GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
+   X=fit$X,n=fit$n,method=method,
+   distance=fit$distance,radius=fit$radius)
+}
+
+
+
 #print(append(fit$param,fit$fixed))
 if(method=="Vecchia"||method=="TB") {
                 data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model, 

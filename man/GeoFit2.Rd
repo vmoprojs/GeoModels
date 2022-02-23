@@ -124,7 +124,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
       overlapping in the temporal  sub-sampling procedure. The case \eqn{1} 
     correspond to no overlapping. See \bold{Details} for more information.}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
-     \item{nosym}{Logical; if TRUE two simmetric weights are not considered}
+  \item{nosym}{Logical; if TRUE simmetric weights are not considered. This allows a faster but less efficient CL estimation. }
 }
 
 \details{
