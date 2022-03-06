@@ -1,3 +1,4 @@
+
 ####################################################
 ### File name: GeoCovmatrix.r
 ####################################################
@@ -257,7 +258,9 @@ c3<-function(e,d,n,r){
    return(r1/r2)
    }
 I1<-function(e,d,n,r){
-   a1=cosh(2*e/d)+sinh(2*e/d);  a2=pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)+pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)*a1; a3=pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)+pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)*a1
+   a1=cosh(2*e/d)+sinh(2*e/d);  
+   a2=pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)+pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)*a1; 
+   a3=pracma::sec(0.5*pi/d+0.5*n*pi-pi*r)+pracma::sec(0.5*pi/d-0.5*n*pi+pi*r)*a1
    r1=(-1)^(3+n-2*r)*c1(e,d,n,r)-c2(e,d,n,r)+c1(e,d,n,r)*a1; r2=(-1)^(2+n-2*r)*c2(e,d,n,r)*a1+2^(-2-n+2*r)*c3(e,d,n,r)*a2; r3=-(-0.5)^(2+n-2*r)*c3(e,d,n,r)*a3
   return(r1+r2+r3)
      }
@@ -278,7 +281,7 @@ corrsas<-function(e,d,N,vv,rho){
     return(mat)}
 CorrSAS<-Vectorize(corrsas, c("rho"))
 ##########
-corr=CorrSAS(e,d,20,vv,corr)
+corr=CorrSAS(e,d,3,vv,corr)
 vv=as.numeric(nuisance['sill'])*vv;
 }
 if(bivariate){}

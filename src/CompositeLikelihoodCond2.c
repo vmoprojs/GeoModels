@@ -263,19 +263,17 @@ void Comp_Cond_SinhGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *nuis, int *GPU,int *local)
 {
 
-    int i=0;double corr,zi,zj,bb=0.0,weights=1.0,l2=0.0;
+        int i=0;double corr,zi,zj,bb=0.0,l2=0.0,weights=1.0;
            if(nuis[3]<0||nuis[1]<0||nuis[0]<0||nuis[0]>=1) {*res=LOW;  return;}
+
    for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-               zi=data1[i];zj=data2[i];
+                    zi=data1[i];zj=data2[i];
                     corr=CorFct(cormod,lags[i],0,par,0,0);
-                    //l1=one_log_sas(zi,mean1[i],nuis[2],nuis[3],nuis[1]);
-                    l2=one_log_sas(zj,mean2[i],nuis[2],nuis[3],nuis[1]);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
-                   // bb=2*log(biv_sinh((1-nuis[0])*corr,zi,zj,mean1[i],mean2[i],nuis[2],nuis[3],nuis[1]))-(l1+l2);
-                    bb=log(biv_sinh((1-nuis[0])*corr,zi,zj,mean1[i],mean2[i],nuis[2],nuis[3],nuis[1]))-l2;
-                 
-                    *res+= weights*bb;
+                    bb=log(biv_sinh((1-nuis[0])*corr,zi,zj,mean1[i],mean2[i],nuis[2],nuis[3],nuis[1]));
+                    l2=one_log_sas(zj,mean2[i],nuis[2],nuis[3],nuis[1]);
+                    *res+= (weights*bb-l2);
                  }}
     if(!R_FINITE(*res))  *res = LOW;
     return;

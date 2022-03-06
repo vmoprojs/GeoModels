@@ -485,7 +485,7 @@ corrsas<-function(e,d,N,vv,rho1){
     return(mat)}
 CorrSAS<-Vectorize(corrsas, c("rho1"))
 ##########
-corr=CorrSAS(e,d,20,vs,corr)
+corr=CorrSAS(e,d,4,vs,corr)
 
 covariance=sill*vs*corr;variogram=sill*vs*(1-corr)  
                         }

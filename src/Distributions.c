@@ -1459,11 +1459,11 @@ double xj=(zj-mj)/(sqrt(vari));
   b1=tail * asinh(xi)-skew;
   b2=tail * asinh(xj)-skew;
   k=1-R_pow(corr,2);
-  A=R_pow(2 * M_PI * R_pow(k,0.5) * (vari),-1) * cosh(b1) * cosh(b2) * R_pow(tail,2)/sqrt((R_pow(xi,2)+1) * (R_pow(xj,2)+1));
+  A=R_pow(2 * M_PI * R_pow(k,0.5),-1) * cosh(b1) * cosh(b2) * R_pow(tail,2)/sqrt((R_pow(xi,2)+1) * (R_pow(xj,2)+1));
   Z1=sinh(b1);Z2=sinh(b2);
   B=exp(- (Z1*Z1 + Z2*Z2 - 2*corr*Z1*Z2)/(2*k)  );
   res=A*B;                     
-  return(res);
+  return(res/vari);
  } 
 
 
@@ -4822,11 +4822,16 @@ double one_log_T(double z,double m, double sill, double df)
 
 double one_log_sas(double z,double m, double skew, double tail,  double vari)
 {
-  double  res,b1,Z1;
-  double q=(z-m)/(sqrt(vari));
-    b1=tail*asinh(q)-skew;
-    Z1=sinh(b1);
-    res=-0.5*log(R_pow(q,2)+1)-0.5*log(2*M_PI*vari)+log(cosh(b1))+log(tail)-Z1*Z1/2;
+  double  res,S,b;
+  double x=(z-m)/(sqrt(vari));
+
+    b=tail*asinh(x)-skew;
+    S=sinh(b);
+   // res=-0.5*log(R_pow(q,2)+1)-0.5*log(2*M_PI*vari)+log(cosh(b1))+log(tail)-Z1*Z1/2;
+    // res=-0.5*(log(1+R_pow(q,2))-log(2*M_PI))+log(cosh(b1))+log(tail)-0.5*Z1*Z1-0.5*log(vari);
+
+      //res=(tail*R_pow(1+S*S,0.5)*R_pow(1+x*x,-0.5)* dnorm(S,0,1,0))/sqrt(vari);
+       res= 0.5*(log(1+S*S)-log(1+x*x) - log(vari))+ dnorm(S,0,1,1)+log(tail);
   return(res);
 }
 

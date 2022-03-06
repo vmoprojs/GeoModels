@@ -731,7 +731,7 @@ colnames(CompLikelihood$hessian)=namesparam
 
 
 ####################################
-       if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15)  print("Optimization failed: try with other starting values ")
+       if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15)  print("Optimization may have failed: try with other starting values ")
           else{
     if(varest)
           {

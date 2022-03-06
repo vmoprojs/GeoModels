@@ -5,7 +5,7 @@
 
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",
-  lower=NULL, upper=NULL,method="cholesky",memdist=TRUE, seed=1)
+  lower=NULL, upper=NULL,method="cholesky",memdist=TRUE, M=30,L=500,seed=1)
 {
 
 
@@ -71,12 +71,12 @@ data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,
 #print(append(fit$param,fit$fixed))
 if(method=="Vecchia"||method=="TB") {
                 data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model, 
-                param=append(fit$param,fit$fixed),method=method,M=30,L=500,GPU=GPU,  local=local,#grid=fit$grid, 
+                param=append(fit$param,fit$fixed),method=method,M=M,L=L,GPU=GPU,  local=local,#grid=fit$grid, 
                 X=fit$X,n=fit$n,distance=fit$distance,radius=fit$radius)
             }
 
 
-res_est=GeoFit2( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),
+res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,sensitivity=FALSE,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
@@ -84,11 +84,11 @@ res_est=GeoFit2( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.l
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
    X=fit$X, distance=fit$distance, radius=fit$radius)
+print(res_est$param)
 
-pp=rbind(pp,unlist(res_est$param))
-#print(res_est)
-if((res_est$convergence=='Successful')&&(as.numeric(res_est$param['scale'])< 100000000000)&&(res_est$logCompLik> -1e+14)){
 
+if(res_est$convergence=='Successful'){
+ print(k)
  res=rbind(res,unlist(res_est$param))
  k=k+1
 setTxtProgressBar(pb, k)
@@ -122,7 +122,7 @@ fit$claic=claic
 fit$clbic=clbic
 fit$stderr=stderr
 fit$varcov=invG
-fit$estimates=pp
+fit$estimates=res
 #set.seed(sample(1:10000,1))
 return(fit)
 

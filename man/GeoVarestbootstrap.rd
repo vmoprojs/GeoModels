@@ -5,7 +5,7 @@
 \description{
   The procedure update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
 \usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1),optimizer="Nelder-Mead",
-                     lower=NULL, upper=NULL, method="cholesky",memdist=TRUE,seed=1)}
+                     lower=NULL, upper=NULL, method="cholesky",memdist=TRUE, M=30,L=500,seed=1)}
 \arguments{
   \item{fit}{A fitted object obtained from the
     \code{\link{GeoFit}}.}
@@ -24,6 +24,8 @@
            For large data set two options are \code{Vecchia} or {TB}}
         \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
       are computed before  the optimization. }
+         \item{M}{Numeric; the number of neighboords in the Vecchia method.} 
+      \item{L}{Numeric; the number of lines in the  turning band method.} 
         \item{seed}{Numeric; The seed used in the  n-fold  kriging cross-validation. Default is 1.}
      }
 \details{ The function update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
