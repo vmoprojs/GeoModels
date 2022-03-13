@@ -370,7 +370,7 @@ if(model %in% c("Beta2")){
 mm=1/(1+exp(-MM))
 sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
-ll=seq(min(dd),max(dd),  (max(dd)-min(d))/100 )
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 ds=dbeta((ll-pmin)/(pmax-pmin),shape1=mm*sh,shape2=(1-mm)*sh)/(pmax-pmin)
 if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Beta Histogram",ylim=ylim,breaks=breaks)
 lines(ll,ds,...)

@@ -12,7 +12,7 @@
 \usage{
 GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      radius=6371, sparse=FALSE, X=NULL)
+      anisopars=NULL,radius=6371, sparse=FALSE, X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -49,6 +49,7 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
   \item{n}{Numeric; the number of trials for binomial RFs. The number of successes in the negative Binomial RFs. Default is \eqn{1}.} 
   \item{param}{A list of parameter values required in the
     simulation procedure of RFs, see \bold{Examples}.}
+         \item{anisopars}{ A list of two elements "angle" and "ratio" i.e. the anisotropy angle and the anisotropy ratio, respectively.}
     \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great 
     circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
   \item{sparse}{Logical; if \code{TRUE} then  cholesky decomposition is performed
@@ -103,21 +104,21 @@ library(fields)
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- seq(0,1,0.045)
-y <- seq(0,1,0.045)
+x <- runif(1000);y <- runif(1000)
+coords=cbind(x,y)
 set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
-data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Matern", param=list(smooth=0.5,
+data1 <- GeoSim(coordx=coords, corrmodel="Matern", param=list(smooth=0.5,
              mean=0,sill=1,scale=0.4/3,nugget=0))$data
 
 # Simulation of a spatial Gaussian RF with Generalized Wendland correlation function
 # using sparse alghorithm matrices
 set.seed(261)
-data2 <- GeoSim(x,y,grid=TRUE, corrmodel="GenWend", param=list(smooth=0,
+data2 <- GeoSim(coordx=coords,  corrmodel="GenWend", param=list(smooth=0,
               power2=4,mean=0,sill=1,scale=0.4,nugget=0))$data
 par(mfrow=c(1,2))
-image.plot(x,y,data1,col=terrain.colors(100),main="Matern",xlab="",ylab="")
-image.plot(x,y,data2,col=terrain.colors(100),main="Wendland",xlab="",ylab="")   
+quilt.plot(coords,data1,main="Matern",xlab="",ylab="")
+quilt.plot(coords,data2,main="Wendland",xlab="",ylab="")   
 
              
 
@@ -130,17 +131,16 @@ image.plot(x,y,data2,col=terrain.colors(100),main="Wendland",xlab="",ylab="")
 ################################################################
 
 # Define the spatial-coordinates of the points:
-x <- seq(0, 1, 0.022)
-y <- seq(0, 1, 0.022)
+x <- runif(500);y <- runif(500)
 coords <- cbind(x,y)
 set.seed(251)
 n=5
 # Simulation of a spatial Binomial RF:
-sim <- GeoSim(x,y,grid=TRUE, corrmodel="Wend0",
+sim <- GeoSim(coordx=coords, corrmodel="Wend0",
              model="Binomial",n=n,sparse=TRUE,
              param=list(nugget=0,mean=0,scale=.2,sill=1,power2=4))
 
-image.plot(x,y,sim$data,nlevel=n+1,col=terrain.colors(n+1),zlim=c(0,n)) 
+quilt.plot(coords,sim$data,nlevel=n+1,col=terrain.colors(n+1),zlim=c(0,n)) 
 
 
 ################################################################
@@ -156,7 +156,7 @@ set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
 data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Exponential",model="Weibull", 
          param=list(shape=1.2,mean=0,sill=1,scale=0.3/3,nugget=0))$data
-image.plot(x,y,data1,col=terrain.colors(200),main="Weibull RF",xlab="",ylab="")
+image.plot(x,y,data1,main="Weibull RF",xlab="",ylab="")
 
 
 

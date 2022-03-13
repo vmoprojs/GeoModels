@@ -4,7 +4,7 @@
 
 
 GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
-                         fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
+                         fixed=NULL,anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=Inf,neighb=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
                           optimizer='Nelder-Mead', parallel=FALSE,
@@ -14,9 +14,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
 {
     call <- match.call()
 
-    #CMdl<-CkCorrModel(corrmodel)
-    #Stime <- CheckST(CMdl)  
-    #memdist=TRUE
+  
     if(!is.null(copula))
      { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
 
@@ -36,6 +34,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
             neighb=round(neighb)
             if(all(neighb<1))  stop("neighb must be an integer >=1")
           }
+    if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements")}
     
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
@@ -48,9 +47,9 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
     GeoFit <- NULL
     score <- sensmat <- varcov <- varimat <- parscale <- NULL
     ### Initialization parameters:
-    unname(coordt);
+    cooordt=unname(coordt);
     if(is.null(coordx_dyn)){
-    unname(coordx);unname(coordy)}
+    coordx=unname(coordx);coordy=unname(coordy)}
 
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist,neighb,maxtime,  model, n, NULL,#16
@@ -131,8 +130,40 @@ initparam$param=aa[sel]
 
 
 
+#updating with aniso parameters
+update.aniso=function(param,namesparam,fixed,namesfixed,lower,upper,anisopars,estimate_aniso)
+{
+ un_anisopars=unlist(anisopars); namesaniso=names(un_anisopars)  
+ kk=unlist(anisopars)*estimate_aniso
+ ll=c(0,1)
+ uu=c(pi,9999);
+ lwr=c(lower,ll[estimate_aniso])
+ upr=c(upper,uu[estimate_aniso])
+ anisostart=kk[kk>0]
+ anisofixed=kk[kk==0]
+ param=c(param,anisostart)
+ fixed=c(fixed,anisofixed)
+ namesparam=names(param);namesfixed=names(fixed)
+ if(sum(!is.na(fixed[namesaniso]))){ # updating fixed values
+  if(!estimate_aniso[2]& estimate_aniso[1]) fixed["ratio"]=un_anisopars['ratio']
+  if(!estimate_aniso[1]& estimate_aniso[2]) fixed["angle"]=un_anisopars['angle']
+  if(!estimate_aniso[1]&!estimate_aniso[2]) {fixed["angle"]=un_anisopars['angle'];fixed["ratio"]=un_anisopars['ratio']}
+    }
+a=list(param=param,fixed=fixed,namesparam=namesparam,namesfixed=namesfixed,lower=lwr,upper=upr)
+return(a)
+}
 
 
+
+aniso=FALSE
+if(!is.null(anisopars)) {
+                 aniso=TRUE;namesaniso=c("angle","ratio")
+                 qq=update.aniso(initparam$param,initparam$namesparam,initparam$fixed,initparam$namesfixed,initparam$lower,initparam$upper,
+                 anisopars,est.aniso)
+                  initparam$param=qq$param ; initparam$fixed=qq$fixed
+                  initparam$namesparam=qq$namesparam; initparam$namesfixed=qq$namesfixed
+                  initparam$lower=qq$lower; initparam$upper=qq$upper
+                       }
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
@@ -142,7 +173,7 @@ initparam$param=aa[sel]
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
                                initparam$numparamcorr,initparam$numtime,optimizer,onlyvar,parallel,
                                initparam$param,initparam$radius,initparam$setup,initparam$spacetime,sparse,varest,taper,initparam$type,
-                               initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb,MM)
+                               initparam$upper,initparam$ns,unname(initparam$X),initparam$neighb,MM,aniso)
 
     # Composite likelihood:
     if((likelihood=='Marginal' || likelihood=='Conditional' || likelihood=='Marginal_2')&&type=="Pairwise"){
@@ -157,7 +188,7 @@ initparam$param=aa[sel]
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,MM)
+                                   unname(initparam$X),sensitivity,MM,aniso)
     if(memdist)
         fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
@@ -168,7 +199,7 @@ initparam$param=aa[sel]
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM)
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM,aniso)
       }
 
 
@@ -209,8 +240,10 @@ if(!is.null(MM)) ff$mean=MM
 
 if(length(initparam$param)==1) optimizer="optimize"
 
+if(aniso) anisopars=as.list(c(fitted$par,ff)[namesaniso])
     ### Set the output object:
-    GeoFit <- list(bivariate=initparam$bivariate,
+    GeoFit <- list(      anisopars=anisopars,
+                         bivariate=initparam$bivariate,
                          claic = fitted$claic,
                          clbic = fitted$clbic,
                          coordx = initparam$coordx,
@@ -222,6 +255,7 @@ if(length(initparam$param)==1) optimizer="optimize"
                          corrmodel = corrmodel,
                          data = initparam$data,
                          distance = distance,
+                         est.aniso=est.aniso,
                          fixed = ff,
                          GPU=GPU,
                          grid = grid,

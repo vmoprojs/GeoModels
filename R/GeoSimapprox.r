@@ -5,7 +5,7 @@
 
 # Simulate approximate spatial and spatio-temporal random felds:
 GeoSimapprox <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1, param, radius=6371,X=NULL)
+     local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1, param, anisopars=NULL,radius=6371,X=NULL)
 {
 ####################################################################
 ############ internal function #####################################
@@ -163,7 +163,9 @@ return(simu)
     {   coords=coordx
         if(!is.null(coordy)) coords=cbind(coordx,coordy)
     }         
-         
+    coords_orig=coords
+    if(!(is.null(anisopars))) coords=GeoAniso(coords,c(anisopars$angle,anisopars$ratio))    
+
     spacetime_dyn=FALSE
     ##############################################################################
     ##############################################################################
@@ -775,8 +777,8 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
     # Delete the global variables:
     # Return the objects list:
     GeoSim <- list(bivariate = bivariate,
-    coordx = coords[,1],
-    coordy = coords[,2],
+    coordx = coords_orig[,1],
+    coordy = coords_orig[,2],
     coordt = coordt,
     coordx_dyn =coordx_dyn,
     corrmodel = corrmodel,

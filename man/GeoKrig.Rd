@@ -13,7 +13,7 @@ for the Gaussian and non Gaussian case.
 GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,distance="Eucl",
     grid=FALSE, loc, maxdist=NULL, maxtime=NULL, method="cholesky", 
     model="Gaussian", n=1,nloc=NULL,mse=FALSE, lin_opt=TRUE, 
-    param, radius=6371, sparse=FALSE,taper=NULL,tapsep=NULL, 
+    param, anisopars=NULL,radius=6371, sparse=FALSE,taper=NULL,tapsep=NULL, 
      time=NULL, type="Standard",type_mse=NULL,
      type_krig="Simple",weigthed=TRUE,which=1,copula=NULL, X=NULL,Xloc=NULL)
 }
@@ -63,6 +63,7 @@ GeoKrig(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,dista
     objects. \code{Gaussian} is the default, see the Section
     \bold{Details}.}      
    \item{param}{A list of parameter values required  for the correlation model.See the Section \bold{Details}.}
+      \item{anisopars}{ A list of two elements: "angle" and "ratio" i.e. the anisotropy angle and the anisotropy ratio, respectively.}
     \item{radius}{Numeric: the radius of the sphere if coordinates are passed in lon/lat format;}
      \item{sparse}{Logical; if \code{TRUE} kriging is computed with sparse matrices algorithms 
           using spam package. Default is FALSE. It should be used with compactly supported covariances.}        

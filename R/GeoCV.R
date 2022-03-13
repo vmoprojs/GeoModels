@@ -70,29 +70,33 @@ param=append(fit$param,fit$fixed)
 if(estimation) {
           fit_s= GeoFit2(data=fit$data[sel_data],coordx=coords[sel_data,],corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
-                            copula=fit$copula,
+                            copula=fit$copula,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                            # start=as.list(fit$param),fixed=as.list(fit$fixed))
           start=fit$param,fixed=fit$fixed)
-            #param=as.list(c(fit_s$param,fit_s$fixed))
-            param=append(fit_s$param,fit_s$fixed)
             
+
+            if(!is.null(fit$anisopars))   
+                   {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
+
+            param=append(fit_s$param,fit_s$fixed)
+           
               }
  
 if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
 	            model=fit$model, n=fit$n, mse=TRUE,#ok
-              param=param, 
+              param=param, anisopars=fit_s$anisopars,
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
 if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
               model=fit$model, n=fit$n, mse=TRUE,#ok
               neighb=neighb,maxdist=maxdist,
-              param=param, 
+              param=param, anisopars=fit_s$anisopars,
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
 
 pred[[i]]=as.numeric(pr$pred)
@@ -169,7 +173,12 @@ if(estimation) {
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
                            # start=as.list(fit$param),fixed=as.list(fit$fixed))
                                start=fit$param,fixed=fit$fixed)
-           # param=as.list(c(fit_s$param,fit_s$fixed))
+
+             if(!is.null(fit$anisopars))   
+                   {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL;
+                       fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL
+                        }
+
             param=append(fit_s$param,fit_s$fixed)
               }
 #####################################
@@ -223,8 +232,6 @@ if(is.null(X)) X=rep(1,NT)
 NS=cumsum(ns)
 NS=c(c(0,NS)[-(length(ns)+1)],NT)
 
-
-
 if(!space_dyn){
 data_tot=NULL
 for(k in 1:T) 
@@ -232,12 +239,8 @@ data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),fit$data[k,]))
 data_tot=cbind(coords,data_tot,fit$X)
 }
 
-#print(head(data_tot))
+
 set.seed(round(seed))
-
-
-
-
 
 pb <- txtProgressBar(min = 0, max = K, style = 3)
 while(i<=K){
@@ -273,7 +276,7 @@ if(estimation) {
           fit_s= GeoFit2(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
                             corrmodel=fit$corrmodel,X=Xnew,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
-                            copula=fit$copula,
+                            copula=fit$copula, anisopars=fit$anisopars,est.aniso=fit$est.aniso,
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
@@ -281,17 +284,15 @@ if(estimation) {
                             start=fit$param,fixed=fit$fixed)
                             #start=as.list(fit$param),fixed=as.list(fit$fixed))
        
-           #param=as.list(c(fit_s$param,fit_s$fixed))
+            if(!is.null(fit$anisopars))   
+                   {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
            param=append(fit_s$param,fit_s$fixed)
               }
              
 
+##### to finish---
 
-#pr=GeoKrig(data=datanew,    coordt=timenew, coordx_dyn=coordx_dynnew,  #ok
-#         corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
-#            model=fit$model, n=fit$n, #ok
-#           param=as.list(c(fit$param,fit$fixed)), 
-#        radius=fit$radius, sparse=sparse, time=time_to_pred, X=X,Xloc=Xloc) #ok
+
 
 err=c(data_to_pred)-c(pr$pred)  
 

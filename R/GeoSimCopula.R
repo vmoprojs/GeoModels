@@ -5,7 +5,7 @@
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSimCopula <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6371, sparse=FALSE,copula="Gaussian",X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param,anisopars=NULL, radius=6371, sparse=FALSE,copula="Gaussian",X=NULL)
 {
 
 if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
@@ -27,7 +27,7 @@ param1=c(list(mean=0,sill=1,nugget=param$nugget),paramcorr)
 
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Gaussian', n=1, param=param1, radius=radius, sparse=sparse)
+     local=local,method=method,model='Gaussian', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse)
 unif=pnorm(sim$data,mean=0,sd=1);
 }
 ####beta copula #############################################
@@ -37,7 +37,7 @@ pp=round(as.numeric(param['nu']))
 param1=c(list(shape1=pp,shape2=2,sill=1,mean=0,min=0,max=1,nugget=param$nugget),paramcorr)
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Beta', n=1, param=param1, radius=radius, sparse=sparse)
+     local=local,method=method,model='Beta', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse)
 unif=(sim$data)^(pp/2)
 }
 ####################################################################

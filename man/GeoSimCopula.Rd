@@ -12,7 +12,7 @@
 \usage{
 GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      radius=6371, sparse=FALSE, copula="Gaussian",X=NULL)
+      anisopars=NULL,radius=6371, sparse=FALSE, copula="Gaussian",X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -49,6 +49,7 @@ GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, dista
   \item{n}{Numeric; the number of trials for binomial RFs. The number of successes in the negative Binomial RFs. Default is \eqn{1}.} 
   \item{param}{A list of parameter values required in the
     simulation procedure of RFs, see \bold{Examples}.}
+      \item{anisopars}{ A list of two elements "angle" and "ratio" i.e. the anisotropy angle and the anisotropy ratio, respectively.}
     \item{radius}{Numeric; a value indicating  the radius of the sphere when using the great 
     circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
   \item{sparse}{Logical; if \code{TRUE} then  cholesky decomposition is performed

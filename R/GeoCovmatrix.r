@@ -50,7 +50,7 @@ MatLogDet<-function(mat.decomp,method)    {
 ######################################################################################################
 
 GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl", grid=FALSE,
-                       maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, radius=6371,
+                       maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, anisopars=NULL,radius=6371,
                        sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL)
 
 {
@@ -75,10 +75,7 @@ if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
      
 corr=double(numpairstot)
-  #      cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
-   #       as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),
-   #       as.integer(ns),as.integer(NS),
-   #       PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
 
 
 cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
@@ -724,7 +721,7 @@ return(varcov)
     if(is.null(param$mean_2)) param$mean_2<-0
     if(is.null(param$nugget_1)) param$nugget_1<-0
     if(is.null(param$nugget_2)) param$nugget_2<-0 }
-    unname(coordt)
+    #unname(coordt)
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
     #if the covariance is compact supported  and option sparse is used
@@ -759,7 +756,23 @@ if(sparse) {
   taper=corrmodel
 }
 
-    checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
+
+#######################################
+    if(grid) { 
+               coords=as.matrix(expand.grid(coordx,coordy))
+               grid=FALSE
+             }
+    else
+    {   coords=coordx
+        if(!is.null(coordy)) coords=cbind(coordx,coordy)
+    }         
+
+    coords_orig=coords
+  
+    if(!is.null(anisopars)) {  coords=GeoAniso(coords,c(anisopars$angle,anisopars$ratio))}
+#######################################
+    
+    checkinput <- CkInput(coords[,1], coords[,2], coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,copula,X)
     
@@ -767,7 +780,8 @@ if(sparse) {
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
     # Initialising the parameters:
-    initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
+
+    initparam <- StartParam(coords[,1], coords[,2], coordt,coordx_dyn, corrmodel, NULL, distance, "Simulation",
                            NULL, grid, NULL, maxdist, NULL,maxtime, model, n,
                            param, NULL, NULL, radius, NULL, taper, tapsep,  type, type,
                            NULL, NULL, FALSE, NULL, NULL,NULL,NULL,copula,X,FALSE)
@@ -837,8 +851,8 @@ if(sparse) {
     if(initparam$bivariate)   initparam$numtime=2
     # Return the objects list:
     CovMat <- list(bivariate =  initparam$bivariate,
-                   coordx = initparam$coordx,
-                   coordy = initparam$coordy,
+                   coordx = coords_orig[,1],
+                   coordy = coords_orig[,2],
                    coordt = initparam$coordt,
                    coordx_dyn = coordx_dyn,
                    covmatrix=covmatrix,

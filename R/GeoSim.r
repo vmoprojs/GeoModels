@@ -5,7 +5,7 @@
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSim <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, radius=6371, sparse=FALSE,X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, anisopars=NULL, radius=6371, sparse=FALSE,X=NULL)
 {
 ####################################################################
 ############ internal function #####################################
@@ -264,7 +264,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
                    distance=distance,grid=grid,model="Gaussian", n=n,
-                param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,copula=NULL,X=X)
+                param=forGaussparam(model,param,bivariate), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
 
 
 
@@ -823,7 +823,7 @@ if(model%in% c("SkewGaussian"))
 
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
                    distance=distance,grid=grid,model="Gaussian", n=n,
-                param=forGaussparam(model,param,bivariate), radius=radius, sparse=sparse,copula=NULL,X=X)
+                param=forGaussparam(model,param,bivariate), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
 
 
 if(spacetime_dyn) ccov$numtime=1

@@ -4,8 +4,8 @@
 
 
 GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
-               maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE, lin_opt=TRUE, param, radius=6371, sparse=FALSE,
-               taper=NULL, tapsep=NULL, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE,
+               maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE, lin_opt=TRUE, param, anisopars=NULL,
+               radius=6371, sparse=FALSE,taper=NULL, tapsep=NULL, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE,
                which=1, copula=NULL,X=NULL,Xloc=NULL)
 
 {
@@ -56,7 +56,8 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(CheckST(CkCorrModel(corrmodel))) 
                       {if(is.null(time)) stop("At least one temporal instants is needed for space-time kriging ")  } 
     #if( sum(is.nan(c(data)))>0)  warning("There are  NaN values in data: prediction cannot be performed")                                   
-     
+      loc_orig=loc
+      if(!is.null(anisopars)) {  loc=GeoAniso(loc,c(anisopars$angle,anisopars$ratio))}
 ######################################
 ######################################
 
@@ -99,10 +100,11 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
      param=param[!sel];param$mean=0;        ## mean must be =0 when calling covariance matrix
      Xtemp=X;X=NULL                         ## saving X and setting X=NULL
      }
-   
+
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn,
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n,
-          param=param,radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X)
+          param=param, anisopars=anisopars, radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X)
+
     ###########
     bivariate = covmatrix$bivariate;
     if(bivariate) tloc=1
@@ -161,7 +163,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     ################################################
     ################################################
     if(type %in% c("Tapering","tapering")) {
-      covmatrix_true =  GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param,
+      covmatrix_true =  GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param,anisopars,
       radius, sparse, NULL, NULL, "Standard",X)
 
        }
@@ -177,13 +179,17 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     varpred=varpred2=vv=vv2=NULL
     k = 0
     ccc=cbind(covmatrix$coordx,covmatrix$coordy)
-    if(grid) ccc=expand.grid(covmatrix$coordx,covmatrix$coordy)
+
+       if(!is.null(anisopars)) {  ccc=GeoAniso(ccc,c(anisopars$angle,anisopars$ratio))}
+       
+    if(grid) {ccc=expand.grid(covmatrix$coordx,covmatrix$coordy);grid=FALSE}
     else  {
      if((spacetime||bivariate)&&(!spacetime_dyn)) ccc=cbind(rep(covmatrix$coordx,covmatrix$numtime),
                                                             rep(covmatrix$coordy,covmatrix$numtime))
 
      if((spacetime||bivariate)&&( spacetime_dyn)) ccc=do.call(rbind,args=c(coordx_dyn))
       }
+   
     ###############################################################
     if((spacetime||bivariate)&&spacetime_dyn) dataT=t(unlist(data))
     else dataT=t(data)
@@ -601,9 +607,11 @@ else    {
 ##################################################################
 ##########computing kriging weights##################################
 ##################################################################
+
 CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
 MM=getInv(covmatrix,CC)  #compute (\Sigma^-1) %*% cc
 krig_weights = t(MM$a)
+
 ##################################################################
 ################# simple kriging #################################
 ##################################################################
@@ -963,7 +971,7 @@ if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
                    data=data,
                    distance = distance,
                    grid=covmatrix$grid,
-                   loc=loc,
+                   loc=loc_orig,
                    nozero=covmatrix$nozero,
                    ns=covmatrix$ns,
                    numcoord = covmatrix$numcoord,

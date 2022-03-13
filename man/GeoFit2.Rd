@@ -11,7 +11,8 @@
   The function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,GPU=NULL, grid=FALSE, likelihood='Marginal',
+GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,
+     anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE, 
@@ -47,6 +48,8 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
   \item{fixed}{An optional named list giving the values of the parameters that
     will be considered as known values. The listed parameters for a
     given correlation function will be not estimated.}
+  \item{anisopars}{ A list of two elements: "angle" and "ratio" i.e. the anisotropy angle and the anisotropy ratio, respectively.}
+  \item{est.aniso}{ A bivariate logical vector  providing which anisotropic parameters must be estimated.}
     \item{GPU}{Numeric; if \code{NULL} (the default) 
       no OpenCL computation is performed. The user can choose the device to be used. Use \code{DeviceInfo()} function to see available devices, only double precision devices are allowed} 
   \item{grid}{Logical; if \code{FALSE} (the default) the data

@@ -12,7 +12,7 @@ CompLik2(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, di
          fixed, GPU,grid,likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
          numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
          upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,
-         colidx,rowidx,neighb,MM)
+         colidx,rowidx,neighb,MM,aniso)
 }
 \arguments{
   \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
@@ -109,6 +109,7 @@ CompLik2(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, di
         \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood location.}
        \item{MM}{Numeric;a non constant fixed mean }
+    \item{aniso}{Logical; should anisotropy be considered?}
 }
 
 \seealso{\code{\link{GeoFit}}}

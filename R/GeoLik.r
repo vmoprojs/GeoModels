@@ -6,7 +6,7 @@
 ### Optim call for log-likelihood maximization 
 Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,grid,lower,
                        mdecomp,model,namescorr,namesnuis,namesparam,numcoord,numpairs,numparamcor,numtime,
-                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X,neighb,MM)
+                       optimizer,onlyvar,parallel,param,radius,setup,spacetime,sparse,varest,taper,type,upper,ns,X,neighb,MM,aniso)
 {
  ######### computing upper trinagular of covariance matrix   
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)

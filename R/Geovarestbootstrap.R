@@ -48,7 +48,7 @@ if(method=="cholesky") {
 
   if(is.null(fit$copula))
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
-     coordx_dyn=fit$coordx_dyn, 
+     coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
      corrmodel=fit$corrmodel,model=fit$model,
 	 #param=as.list(c(fit$param,fit$fixed)),
       param=append(fit$param,fit$fixed),
@@ -57,7 +57,7 @@ data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
 	 distance=fit$distance,radius=fit$radius)
 else
 data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,
-     coordx_dyn=fit$coordx_dyn, 
+     coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
      corrmodel=fit$corrmodel,model=fit$model,
    copula=fit$copula,
       param=append(fit$param,fit$fixed),
@@ -78,7 +78,7 @@ if(method=="Vecchia"||method=="TB") {
 
 res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   copula=fit$copula,sensitivity=FALSE,
+   copula=fit$copula,sensitivity=FALSE,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
    lower=lower,upper=upper,memdist=memdist,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
