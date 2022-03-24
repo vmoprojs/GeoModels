@@ -10,7 +10,7 @@ GeoAniso <-function (coords, anisopars=c(0,1), inverse = FALSE)
     if (stretch < 1) {
         stretch <- round(stretch, digits = 6)
         if (stretch < 1)
-            stop("anisotropy ratio must be greater or equal to than 1")
+            stop("anisotropy ratio must be greater or equal  than 1")
     }
     if( !(angle>=0&&angle<=pi))    stop("the anisotropy angle  must be between 0 and pi")
     rm <- matrix(c(cos(angle), -sin(angle), sin(angle), cos(angle)),

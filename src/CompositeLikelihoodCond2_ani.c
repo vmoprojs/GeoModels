@@ -148,7 +148,7 @@ void Comp_Cond_Gauss_misp_T2mem_aniso(int *cormod, double *coord1, double *coord
  double *nuis, int *local,int *GPU)
 {
     int i=0;double lag=0.0;
-    double zi,zj,weights=1.0,corr,df=0.0,bl,l2=0.0,var=0.0;
+    double weights=1.0,corr,df=0.0,bl,l2=0.0,var=0.0;
 
      double sill=nuis[2];
     double nugget=nuis[1];
@@ -162,13 +162,9 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
   lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]); 
            corr=(1-nugget)*CorFct(cormod,lag,0,par,0,0);
            corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
-           zi=data1[i];zj=data2[i];
-
-         //l1=dnorm(zi,mean1[i],sqrt(sill*df/(df-2)),1); 
-         l2=dnorm(zj,mean2[i],sqrt(sill*df/(df-2)),1);
+         l2=dnorm(data2[i],data2[i],sqrt(sill*df/(df-2)),1);
          if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-                   //  bl=2*log_biv_Norm(corr,data1[i],data2[i],mean1[i],mean2[i],sill*df/(df-2),0)-(l1+l2);
-                    bl=log_biv_Norm(corr,data1[i],data2[i],mean1[i],mean2[i],sill*df/(df-2),0)-l2;
+                    bl=log_biv_Norm(corr,data1[i],data2[i],mean1[i],mean2[i],var,0)-l2;
                        *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
@@ -907,14 +903,14 @@ void Comp_Cond_TWOPIECEBIMODAL2mem_aniso(int *cormod, double *coord1, double *co
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
-    int i=0;double lag=0.0;double bl,corr,zi,zj,alpha,weights=1.0,p11,eta,qq,sill,df,nugget,delta ,l2=0.0;
+    int i=0;double lag=0.0;double bl,corr,zi,zj,weights=1.0,p11,eta,qq,sill,df,nugget,delta ,l2=0.0;
 
     eta=nuis[4];  //skewness parameter
     delta=nuis[3];
     sill=nuis[2];
     nugget=nuis[1];
     df=nuis[0];
-    alpha=2*(delta+1)/df;
+    //alpha=2*(delta+1)/df;
  if( fabs(eta)>1||df<0||nugget<0||nugget>=1||delta<0||sill<0) {*res=LOW;  return;}
     qq=qnorm((1-eta)/2,0,1,1,0);
     for(i=0;i<*npairs;i++){

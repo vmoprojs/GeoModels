@@ -59,7 +59,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
         ## moving sill from starting to fixed parameters if necessary (in some model sill mus be 1 )
         if(sum(initparam$namesparam=='sill')==1)
         {
-          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
           {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
            a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
      
@@ -78,7 +78,7 @@ if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead',
        if(sum(unlist(lower)>unlist((upper)))>0) stop("some values of the lower bound is greater of the upper bound \n")
 
  if(sum(names(lower)=='sill')==1){
-          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
             {lower=lower[names(lower)!='sill'];upper=upper[names(upper)!='sill']; }}
     #setting alphabetic order
       lower=lower[order(names(lower))]

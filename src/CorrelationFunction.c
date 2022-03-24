@@ -2012,7 +2012,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
         int *nn,double *nuis, double *par,double *radius, int *ns, int *NS,int *model)
 {
     int i=0,j=0,h=0;// check the paramaters range:
-    double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,p=0,corr=0.0,p00=0,p11=0,bi,bj,ni,nj;
+    double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,p=0,corr=0.0,p00=0,p11=0,bi,bj;
 
 
         for(i=0;i<(ncoord[0]-1);i++){
@@ -2028,7 +2028,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
      psj=pbnorm22(ai,aj,(1-nuis[0])*corr);
      p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
       if(*model==2||*model==11)    
-      {ni=nn[i];nj=nn[j];
+      {
          rho[h]=fmin2(nn[i],nn[j])*(psj-p1*p2);} 
       if(*model==14)       rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
       if(*model==16)       rho[h]=cov_binom_neg(nn[0],psj,p1,p2);

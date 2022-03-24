@@ -29,7 +29,7 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fix
          if(aniso){
             anisopar<-param[namesaniso]
             coords1=GeoAniso (coords, anisopars=anisopar)
-          c1=c(t(coords1[colidx,]));c2=c(t(coords1[rowidx,]))
+            c1=c(t(coords1[colidx,]));c2=c(t(coords1[rowidx,]))
 
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "double","double","integer","double","integer","double","double","double","double","integer","integer"),  
@@ -40,11 +40,8 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fix
        else{
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
-
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx], Mean[rowidx], other_nuis,local,GPU,
-
           INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
-
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
        }
 #################################

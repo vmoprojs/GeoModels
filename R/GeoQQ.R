@@ -157,6 +157,13 @@ q_t1 = actuar::qllogis(probabilities1,shape = shape,scale=exp(MM)/cc)
 q_e=quantile(dd,probabilities)
 plot(q_t,q_e,xlab=xlab,ylab=ylab,main = "LogLogistic qq-plot",...)
 }
+if(model %in% c("Logistic"))
+{
+q_t = qlogis(probabilities, location = MM, scale = sqrt(VV))
+q_t1 = qlogis(probabilities1,location = MM, scale = sqrt(VV))
+q_e=quantile(dd,probabilities)
+plot(q_t,q_e,xlab=xlab,ylab=ylab,main = "Logistic qq-plot",...)
+}
 #######################################  OK
 if(model %in% c("SinhAsinh"))
 {
@@ -470,7 +477,14 @@ if(model %in% c("LogGaussian"))
    d_l = dlnorm(ll,MM,VV)
    if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogGaussian Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_l,...) 
-
+}
+#######################################  OK
+if(model %in% c("Logistic"))
+{
+ll=seq(min(dd),max(dd),0.1)
+d_l = dlogis(ll,location = MM, scale = sqrt(VV))
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Logistic Histogram",ylim=ylim)
+lines(ll,d_l,...) 
 }
 #######################################  OK
 if(model %in% c("LogLogistic"))

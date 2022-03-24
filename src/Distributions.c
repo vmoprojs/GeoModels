@@ -3613,15 +3613,16 @@ double pbnorm22(double lim1,double lim2,double corr)
 /**********************************************************************/
 double pblogi22(double lim1,double lim2,double corr)
 {
+
 double value=0.0,sum1=0.0,sum2=0.0,term=0.0,term2=0.0,kk=0,bb=0.0;
 double corr21=1-R_pow(corr,2);
 int m=0,n=0,p1,p2,p3;
 double e1=exp(lim1);double e2=exp(lim2);
-while(n<=600){
+while(n<=400){
 bb=exp(2*n*log(corr)+n*(lim1+lim2)- 2*log(n+1));
 sum1=0.0;m=0;
 p1=1+n;p3=p1+1;
-while(m<=600)
+while(m<=200)
 { 
       p2=2+n+m;
       term=exp(2*m*log(corr)+log(hypergeo(p1,p2,p3,-e1))+
@@ -3981,7 +3982,7 @@ double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= pow(corr,2);    
     double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
-    double sum = 0.0, res0=0.0,res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
+    double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
     int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
@@ -3989,7 +3990,7 @@ double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     while(k<iter1){
 //+++++++++++++++++++++++++++++++++++++++//
-      m=0; res0=0.0;
+      m=0; 
       while(m<iter2){
                       //Rprintf("%d %d\n",m,k);      
 term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
@@ -4683,7 +4684,7 @@ double biv_cop(double rho,int type_cop, int cond,
              double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN)
              {
 double dens;
-double g1,g2,d1,d2,a1,a2,b1,b2,s1,s2;
+double g1,g2,a1,a2,b1,b2,s1,s2;
 double rho1=(1-nuis[0])*rho;
 
 
@@ -4698,16 +4699,23 @@ switch(model) // Correlation functions are in alphabetical order
       g2=dnorm(b2,0,1,0)/sqrt(nuis[1]); //marginal 2
     break;
     case 25:  // logistic
+      b1=1;
+      b2=1;
+      a1=1;
+      a2=1;
       g1=1;
       g2=1;
-      d1=1; 
-      d2=1;
+
    break;
    case 24: // loglogistic
+
+      b1=1;
+      b2=1;
+      a1=1;
+      a2=1;
       g1=1;
       g2=1;
-      d1=1; 
-      d2=1;
+ 
    break;
    case 28: //Beta
       b1=(z1- nuis[4])/(nuis[5]-nuis[4]);
@@ -4827,13 +4835,11 @@ double one_log_sas(double z,double m, double skew, double tail,  double vari)
 
     b=tail*asinh(x)-skew;
     S=sinh(b);
-   // res=-0.5*log(R_pow(q,2)+1)-0.5*log(2*M_PI*vari)+log(cosh(b1))+log(tail)-Z1*Z1/2;
-    // res=-0.5*(log(1+R_pow(q,2))-log(2*M_PI))+log(cosh(b1))+log(tail)-0.5*Z1*Z1-0.5*log(vari);
-
-      //res=(tail*R_pow(1+S*S,0.5)*R_pow(1+x*x,-0.5)* dnorm(S,0,1,0))/sqrt(vari);
-       res= 0.5*(log(1+S*S)-log(1+x*x) - log(vari))+ dnorm(S,0,1,1)+log(tail);
-  return(res);
+       res= tail*sqrt(1+S*S)*dnorm(S,0,1,0)/(sqrt(1+x*x)*sqrt(vari));
+  return(log(res));
 }
+
+
 
 
 double one_log_beta(double z, double shape1,double shape2,double min,double  max)

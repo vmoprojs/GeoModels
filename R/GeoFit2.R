@@ -68,7 +68,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
 
     ## moving sill from starting to fixed parameters if necessary
         if(sum(initparam$namesparam=='sill')==1){
-    if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+    if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
     {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
     a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
 
@@ -88,7 +88,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
     #setting alphabetic order
 
       if(sum(names(lower)=='sill')==1){
-          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,25,30,46,43,11)) 
+          if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
             {lower=lower[names(lower)!='sill'];upper=upper[names(upper)!='sill']; }}
 
       lower=lower[order(names(lower))]
