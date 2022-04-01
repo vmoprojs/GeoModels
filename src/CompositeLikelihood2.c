@@ -1102,6 +1102,7 @@ void Comp_Pair_Gauss_st2mem(int *cormod, double *data1,double *data2,int *NN,
     double sill=nuis[1];double nugget=nuis[0];
 
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+    //Rprintf(" npairs[0]: %d\n", npairs[0]);
 
 
     for(i=0;i<npairs[0];i++){

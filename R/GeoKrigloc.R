@@ -18,11 +18,14 @@ if(!is.null(dim(data))) if(nrow(data)==2&&is.null(coordt)) bivariate=TRUE
 
 space=!spacetime&&!bivariate
 
+if(is.null(coordx_dyn)){
 coords=coordx
 if(!is.null(coordy)){
  if(!grid)  coords=cbind(coordx,coordy) 
  if(grid)   coords=as.matrix(expand.grid(coordx,coordy))
 }
+}
+else{coordx=NULL;coordy=NULL;coords=NULL}
 
 Nloc=nrow(loc)
 Tloc=length(time)
