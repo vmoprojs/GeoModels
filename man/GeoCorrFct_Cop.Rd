@@ -8,7 +8,7 @@
   witha  given  covariance model and a  set of spatial (temporal) distances.
 }
 \usage{
-GeoCorrFct_Cop(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="Eucl", param, radius=6371,n=1,covariance=FALSE)
+GeoCorrFct_Cop(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="Eucl", param, radius=6371,n=1,covariance=FALSE,variogram=FALSE)
 }
 
 \arguments{
@@ -28,6 +28,8 @@ GeoCorrFct_Cop(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="
   \item{n}{Numeric; the number of trials in a (negative) binomial random fields.
          Default is \eqn{1}.}
   \item{covariance}{Logic; if TRUE then the covariance is returned. Default is FALSE}
+     \item{variogram}{Logic; if FALSE then the covariance/coorelation is returned. Otherwise the associated
+   semivariogram is returned}
    }
 
 

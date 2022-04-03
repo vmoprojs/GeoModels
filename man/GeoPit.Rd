@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \title{Probability integral  or normal score tranformation}
 \description{
-   The procedure  for a given GeoFit object computes  the probability integral tranformation or the normal score transformation.
+   The procedure  for a given GeoFit object applies  the probability integral tranformation or the normal score transformation to the data
 }
 \usage{GeoPit(fit,type="Uniform")}
 \arguments{
@@ -64,11 +64,11 @@ fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,likeliho
                       optimizer=optimizer,lower=lower,upper=upper,copula=copula,
                     start=start,fixed=fixed)
 
-## PIT tranformationation
+## PIT transformation
 aa=GeoPit(fit1,type="Uniform")
 hist(aa$data,freq=FALSE)
 GeoScatterplot(aa$data,coords,neighb=c(1,2))
-## Normal score tranformation
+## Normal score transformation
 bb=GeoPit(fit1,type="Gaussian")
 hist(bb$data,freq=FALSE)
 GeoScatterplot(bb$data,coords,neighb=c(1,2))

@@ -3,7 +3,7 @@
 ####################################################
 
 GeoCorrFct_Cop<- function(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="Eucl",  
-                                  param, radius=6371,n=1,covariance=FALSE)
+                                  param, radius=6371,n=1,covariance=FALSE,variogram=FALSE)
 
 {
 ############################################################################
@@ -133,10 +133,15 @@ if(model=="Beta2")        { if(bivariate) {}
             
 ################################################################
 ################################################################                     
-if(copula=="Clayton")    cc=corr_copula(cc,"Clayton" ,q1,q2,e1,e2,v1,v2,as.numeric(param['nu']))
-if(copula=="Gaussian")   cc=corr_copula(cc,"Gaussian",q1,q2,e1,e2,v1,v2,0)
+if(copula=="Clayton")    cova=corr_copula(cc,"Clayton" ,q1,q2,e1,e2,v1,v2,as.numeric(param['nu']))
+if(copula=="Gaussian")   cova=corr_copula(cc,"Gaussian",q1,q2,e1,e2,v1,v2,0)
 
-if(covariance) cc=cc*vs
-return(cc)
+################################################################  
+if(!covariance) vs=1
+
+ res=cova*vs; 
+if(variogram) res=vs*(1-cova)
+
+return(res)
 }
 

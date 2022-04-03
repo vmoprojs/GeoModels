@@ -3,7 +3,7 @@
 ####################################################
 
 GeoCorrFct<- function(x,t=NULL,corrmodel, model="Gaussian",distance="Eucl",  
-                                  param, radius=6371,n=1,covariance=FALSE)
+                                  param, radius=6371,n=1,covariance=FALSE,variogram=FALSE)
 
 {
   
@@ -68,6 +68,7 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
 
 
+
 ####### Gaussian
    if(model=="Gaussian"){
         vs=as.numeric(nuisance["sill"])
@@ -77,10 +78,11 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                         cova22 <- correlation[(3*length(nx)+1):(4*length(nx))]
                                }
         else { 
-        cova <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
+        cova <- correlation*(1-as.numeric(nuisance["nugget"]))
 
         }
 }
+
 ##########################
 ###### non Gaussian cases
 ##########################
@@ -92,7 +94,7 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
               vv=as.numeric(nuisance['sill']);sk=as.numeric(nuisance['skew']);sk2=sk^2;corr2=correlation^2;  
               cc=(2*sk2)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + (correlation1*vv)/(vv+sk2*(1-2/pi))
               vs=(vv+sk2*(1-2/pi))
-              cova=vs*cc; # variogram=vs*(1-cc)
+              cova=cc; 
                }
                    }
   ##########################################
@@ -102,7 +104,7 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation1)/(2*gamma(nu/2)^2)
-                              cova=vs*cc;#variogram=vs*(1-cc) 
+                              cova=cc;
                                }
                   }
 ##########################################
@@ -114,7 +116,7 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                               sill=as.numeric(nuisance['sill'])
                               vs=  sill*(1-2*h)^(-1.5)    
                               cc=(correlation*(1-2*h)^(1.5))/((1-h)^2-(h*correlation)^2)^(1.5)
-                              cova=vs*cc;#variogram=sill*vs*(1-cc)  
+                              cova=cc;
                              }
                   }
    if(model=="Tukeyh2")        { if(bivariate) {}
@@ -138,7 +140,7 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                              vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                              cc=(p1+p2+2*p3-mm^2)/vv1  # correlation
                              vs=as.numeric(nuisance['sill'])*vv1
-                              cova=vs*cc;#variogram=sill*vs*(1-cc)  
+                              cova=cc; 
                              } 
                   }   
 ##########################################
@@ -160,20 +162,20 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
                                A3=eta2*sqrt(u*u- rho2*tail*tail);
                                cc=((A1-A2+1)/A3-mu*mu)/vs;
-                               cova=vs*cc;#variogram=sill*vs*(1-cc)
+                               cova=cc;
                             } 
                         if(tail<=1e-05&&abs(eta)>1e-05){
                               vs=sill*( -exp(eta^2)+exp(eta^2*2))*eta^(-2)
                               cc= (( -exp(eta^2)+exp(eta^2*(1+rho)))*eta^(-2))/vs
-                              cova=vs*cc;#variogram=sill*vs*(1-cc) 
+                              cova=cc;
                             } 
                         if(tail>1e-05&&abs(eta)<=1e-05){
                               vs=  sill*(1-2*tail)^(-1.5)     
                               cc=(-rho/((1+h*(tail-1))*(-1+tail+tail*rho)*(1+tail*(-2+tail-tail*rho^2))^0.5))/vs
-                              cova=vs*cc;variogram=sill*vs*(1-cc) 
+                              cova=cc;
                             } 
                         if(tail<=1e-05&&abs(eta)<=1e-05){
-                            cova=sill*rho;#variogram=sill*(1-rho)
+                            cova=rho;
                             vs=sill
                             }  
                 }}
@@ -199,7 +201,7 @@ bb=.C("corr_kuma_vec",as.double(correlation),as.double(eta),as.double(ga),
      res=as.double(res),
     as.integer(NN),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 rho=bb$res
-cova=sill*rho;#variogram=sill*(1-rho)
+cova=rho;
 vs=sill
  }
 }
@@ -255,7 +257,8 @@ corrsas<-function(e,d,N,vv,rho1){
 CorrSAS<-Vectorize(corrsas, c("rho1"))
 ##########
 corr=CorrSAS(e,d,20,vs,corr)
-cova=sill*vs*corr;#variogram=sill*vs*(1-corr)  
+vs=vs*sill
+cova=corr; 
                         }
           }
 ##########################################
@@ -275,7 +278,7 @@ cova=sill*vs*corr;#variogram=sill*vs*(1-corr)
                                   KK=( nu*(nu-2)*gamma((nu-1)/2)^2) / (nu*pi*gamma(nu/2)^2*(3*sk2+1)-4*sk2*nu*(nu-2)*gamma((nu-1)/2)^2 )
                                   cc= KK*(a1*a2*a3-4*sk2);
                               ##
-                              cova=vs*cc;#variogram=vs*(1-cc) 
+                              cova=cc;
                                }
                   } 
   ##########################################
@@ -296,7 +299,7 @@ cova=sill*vs*corr;#variogram=sill*vs*(1-corr)
                               M=(2*(1-corr2)^(3/2))/(pi*gg2)
                               cc=  (M*A*a3-mm)/( ff- mm)
                               vs=sill*(ff- mm) 
-                              cova=vs*cc;#variogram=vs*(1-cc) 
+                              cova=cc;
                                }
                   }  
 ##########################################
@@ -311,7 +314,7 @@ cova=sill*vs*corr;#variogram=sill*vs*(1-corr)
                         KK=3*sk2+2*sk+ 4*p11 - 1
                         cc=(2*((corr2 + correlation1*asin(correlation1))*KK)- 8*sk2)/(3*pi*sk2  -  8*sk2   +pi   )
                         vs= as.numeric(nuisance['sill'])*(1+3*sk2-8*sk2/pi)
-                        cova=vs*cc;#variogram=vs*(1-cc) 
+                        cova=cc;
                         }
                   } 
     ##########################################
@@ -320,7 +323,7 @@ cova=sill*vs*corr;#variogram=sill*vs*(1-corr)
                               correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
                               vs=2*exp(mm)^2/as.numeric(nuisance['shape'])
                               cc=correlation^2
-                              cova=vs*cc;#variogram=vs*(1-cc)  
+                              cova=cc;
                             }
                   }
 ##########################################
@@ -332,7 +335,7 @@ if(model=="Weibull")        { if(bivariate) {}
                         vs=exp(mm)^2*(gamma(1+2/sh)/gamma(1+1/sh)^2-1)
                         auxcorr= (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
                         cc=auxcorr*(Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,correlation^2)) -1)
-                        cova=vs*cc;#variogram=vs*(1-cc)
+                        cova=cc;
                      }
                     }
 ##########################################
@@ -344,7 +347,7 @@ if(model=="Loglogistic")    { if(bivariate) {}
                      cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
                                     (Re(hypergeo::hypergeo(-1/sh, -1/sh, 1,correlation^2))*
                                      Re(hypergeo::hypergeo( 1/sh,  1/sh, 1,correlation^2)) -1)
-                      cova=vs*cc;#variogram=vs*(1-cc)   
+                      cova=cc;
                     }
                     }
 if(model=="LogGaussian")    { if(bivariate) {}  
@@ -353,7 +356,7 @@ if(model=="LogGaussian")    { if(bivariate) {}
                     yy=vvar*correlation*(1-as.numeric(nuisance["nugget"]))
                     cc<-(exp(yy)-1)/(exp(vvar)-1)
                     vs<-(exp(vvar)-1)
-                    cova=vs*cc;#variogram=vs*(1-cc)   
+                    cova=cc; 
                      }
                   }
 
@@ -368,7 +371,7 @@ if(model=="Binomial"||model=="BinomialNeg"||model=="Geometric"||model=="Binomial
                                      pg=pnorm(as.numeric(nuisance['pmu']))
                                      vs=n*(1-pp)*(1-pg)*(1+n*pg*(1-pp)) /pp^2
                                                }
-                           cova=vs*correlation#variogram=vv*(1-correlation)
+                           cova=correlation
                            }
    }
 if(model=="Poisson") {
@@ -379,13 +382,18 @@ if(model=="Poisson") {
                            vs=exp(mu);
                            z=2*vs/(1-corr2)
                            cc=corr2*(1-(besselI(z,0,expon.scaled = TRUE)+besselI(z,1,expon.scaled = TRUE)))
-                           cova=vs*cc#variogram=vv*(1-cc)
+                           cova=cc
                          }
                       }
+                     
 #################################################################
 
-if(covariance) vs=1 
+if(!covariance) vs=1
 
-return(cova/vs)
+ res=cova*vs; 
+if(variogram) res=vs*(1-cova)
+
+return(res)
+
 }
 

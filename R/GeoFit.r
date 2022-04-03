@@ -100,6 +100,8 @@ if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead',
   MM=NULL
   if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean}
 
+    ###################################################################################
+    ###################################################################################
 #updating with aniso parameters
 update.aniso=function(param,namesparam,fixed,namesfixed,lower,upper,anisopars,estimate_aniso)
 {
@@ -133,8 +135,9 @@ if(!is.null(anisopars)) {
                   initparam$param=qq$param ; initparam$fixed=qq$fixed
                   initparam$namesparam=qq$namesparam; initparam$namesfixed=qq$namesfixed
                   initparam$lower=qq$lower; initparam$upper=qq$upper
-                       }
-
+    }
+    ###################################################################################
+    ###################################################################################
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
