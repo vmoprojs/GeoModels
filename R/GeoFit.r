@@ -98,7 +98,8 @@ if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead',
 
 ## in the case on external fixed mean
   MM=NULL
-  if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean}
+  if(!is.null(fixed))
+      if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean}
 
     ###################################################################################
     ###################################################################################
@@ -108,7 +109,7 @@ update.aniso=function(param,namesparam,fixed,namesfixed,lower,upper,anisopars,es
  un_anisopars=unlist(anisopars); namesaniso=names(un_anisopars)  
  kk=unlist(anisopars)*estimate_aniso
  ll=c(0,1)
- uu=c(pi,9999);
+ uu=c(pi,1e+25);
  lwr=c(lower,ll[estimate_aniso])
  upr=c(upper,uu[estimate_aniso])
  anisostart=kk[kk>0]

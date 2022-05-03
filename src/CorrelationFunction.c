@@ -892,6 +892,7 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
       smooth_s=par[2];
        smooth_t=par[3];
       rho=CorFunWitMat(h, scale_s,smooth_s)*CorFunWitMat(u, scale_t, smooth_t);
+      //Rprintf("%f- %f %f %f %f\n,rho,scale_s,smooth_s,smooth_t,scale_t");
       break;
   /*  case 88://  exp_cos:
         scale_s=par[0];
@@ -2476,7 +2477,8 @@ double dis=0.0, dit=0.0;
         for(j=0;j<(*nloc);j++){
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){
-            // Rprintf("here\n");
+            // Rprintf("%f %d \n",time[v],*nloc);
+
                       dit=fabs(coordt[t]-time[v]);
                 for(i=0;i<ns[t];i++){
                    dis=dist(type[0],coordx[(i+NS[t])],locx[j],

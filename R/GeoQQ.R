@@ -88,6 +88,12 @@ if(model %in% c("Binomial")) {
  q_t1=qbinom(probabilities1, size=fit$n, prob=pnorm(pp["mean"]))
  plot(q_t,q_e,main="Binomial qq-plot",...)
 }
+if(model %in% c("BinomialLogistic")) {
+ q_t=qbinom(probabilities, size=fit$n, prob=plogis(MM))
+ q_t1=qbinom(probabilities1, size=fit$n, prob=plogis(MM))
+ plot(q_t,q_e,main="Binomial-Logistic qq-plot",...)
+}
+
 if(model %in% c("BinomialNeg")) {
  q_t=qnbinom(probabilities, size=fit$n, prob=pnorm(pp["mean"]))
  q_t1=qnbinom(probabilities1, size=fit$n, prob=pnorm(pp["mean"]))
@@ -124,6 +130,8 @@ if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT"))
   q_t1=MM+sqrt(VV)*sn::qst(probabilities1, xi=0, omega=1, alpha=alpha, nu=nu)
   plot(q_t,q_e,main="skewt qq-plot",...)
 }
+
+
 #######################################  OK
 if(model %in% c("Weibull"))
 {
@@ -455,6 +463,7 @@ if(model %in% c("Weibull"))
    lines(ll,d_w,...)
 }
 
+
 #######################################  OK
 if(model %in% c("Gamma"))
 {
@@ -696,7 +705,14 @@ points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
 
-
+if(model %in% c("BinomialLogistic")) {
+ll=as.numeric(table(dd)/length(dd))
+y=sort(unique(as.numeric(dd)))
+ds=dbinom(y, size=fit$n, prob=plogis(MM))
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial-Logistic Histogram", xlab="",  ylab="",lwd = 2)
+points(y,ds,type = "p", col = "black", lwd = 3)
+lines(y,ds)
+}
 ###############################################  OK
 if(model %in% c("Poisson")) {
 ll=as.numeric(table(dd)/length(dd))

@@ -76,8 +76,9 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
     # out_t<- LatticeKrig::LKDist(coordt1,time1,delta=maxtime,distance.type="Euclidean") # temporal distance
     
     out_t <- RANN::nn2(coordt,time,k=maxtime,treetype = c("kd"))$nn.idx
+ 
     out_t <- list(ind=cbind(as.vector(out_t),seq(time)))
-    
+
     sel_ss=numpoints=data_sel=sel_tt=XX=list()
     k=1
     for(i in 1:Nloc){

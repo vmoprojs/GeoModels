@@ -1081,6 +1081,7 @@ void Comp_Cond_Gauss_st2mem(int *cormod, double *data1,double *data2,int *NN,
       if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
   for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                //Rprintf("%f %f %f %f \n",par[0],par[1],par[2],par[3]);
                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                       bl=log_biv_Norm((1-nugget)*corr,data1[i],data2[i],mean1[i],mean2[i],sill,0);
                       //l1= dnorm(data1[i], mean1[i],sqrt(sill),1);

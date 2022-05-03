@@ -31,7 +31,7 @@ if(fit$missp)  ### misspecification
 
 dimat=fit$numtime*fit$numcoord;
 
-
+tempX=fit$X
 if(sum(fit$X[1:dimat]==1)==dimat&&!dim(fit$X)[2]>1) fit$X=NULL 
 
 
@@ -84,11 +84,11 @@ res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.li
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
    X=fit$X, distance=fit$distance, radius=fit$radius)
-print(res_est$param)
+
 
 
 if(res_est$convergence=='Successful'){
- print(k)
+ 
  res=rbind(res,unlist(res_est$param))
  k=k+1
 setTxtProgressBar(pb, k)
@@ -123,6 +123,7 @@ fit$clbic=clbic
 fit$stderr=stderr
 fit$varcov=invG
 fit$estimates=res
+fit$X=tempX
 #set.seed(sample(1:10000,1))
 return(fit)
 

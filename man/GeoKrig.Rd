@@ -458,7 +458,7 @@ lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
 upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
 fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel, 
              likelihood='Marginal', type='Pairwise',start=start,fixed=fixed,
-             optimizer="nlminb", neighb=4,maxtime=1)
+              neighb=4,maxtime=1)
 
 ################################################################
 ###

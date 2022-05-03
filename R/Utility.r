@@ -308,7 +308,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
             error <- 'insert fixed values as a list of parameters\n'
             return(list(error=error))}
 
-        if(!is.null(fixed)){
+        if(!is.null(fixed)){ 
             namfixed <- names(fixed)
         if(!all(namfixed %in% c(NuisParam(model,CheckBiv(CkCorrModel(corrmodel)),num_betas,copula),CorrelationPar(CkCorrModel(corrmodel))))){
                 error <- 'some names of the fixed parameters is/are not correct\n'
@@ -316,6 +316,7 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
         if(!CheckParamRange(unlist(fixed))){
             error <- 'some fixed values are out of the range\n'
             return(list(error=error))}}
+           else {namfixed=NULL}   
 
         if(!is.null(likelihood) & !is.character(likelihood)){
             error <- 'insert the type of likelihood objects\n'
@@ -399,13 +400,14 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
        namstart <- names(start)
   if(!bivariate){
        if(num_betas>1){
+
        if(ncol(X)!=sum(substr(c(namstart,namfixed),1,4)=="mean"))
        {
         error <- 'number of covariates must be equal to to the regressian mean parameters\n'
                 return(list(error=error)) }}}
+
+
   if(bivariate){
-
-
        if(num_betas[1]>1&&num_betas[2]>1){
   
        if(is.list(X)) 

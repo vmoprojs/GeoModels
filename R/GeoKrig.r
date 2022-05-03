@@ -608,6 +608,7 @@ else    {
 ##########computing kriging weights##################################
 ##################################################################
 
+
 CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
 MM=getInv(covmatrix,CC)  #compute (\Sigma^-1) %*% cc
 krig_weights = t(MM$a)
