@@ -20,7 +20,7 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fix
         paramcorr <- param[namescorr]
         nuisance <- param[namesnuis]
 
-        
+           
         sel=substr(names(nuisance),1,4)=="mean"
         Mean=MM   ### for non constant fixed mean
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
@@ -30,6 +30,8 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fix
             anisopar<-param[namesaniso]
             coords1=GeoAniso (coords, anisopars=anisopar)
             c1=c(t(coords1[colidx,]));c2=c(t(coords1[rowidx,]))
+
+
 
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "double","double","integer","double","integer","double","double","double","double","integer","integer"),  
@@ -55,7 +57,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed
         param <- c(param, fixed)
         paramcorr <- param[namescorr]
         nuisance <- param[namesnuis]
-      
+        
 
         sel=substr(names(nuisance),1,4)=="mean"
                 mm=as.numeric(nuisance[sel])
@@ -405,6 +407,7 @@ coords=cbind(coordx,coordy)
                                maximum = FALSE,
                               upper=4,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso)}
    if(length(param)>1) {
+
     if(optimizer=='L-BFGS-B'&&!parallel)
       CompLikelihood <- optim(par=param,fn=eval(as.name(lname)), 
                               control=list(factr=1e-10,pgtol=1e-14, maxit=100000), 
@@ -412,6 +415,10 @@ coords=cbind(coordx,coordy)
                               fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                               upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=TRUE,MM=MM,aniso=aniso)
+      #CompLikelihood<- nloptr::lbfgs(x0=param, fn=eval(as.name(lname)), lower=lower, upper=upper, control = list(xtol_rel=1e-8),
+       #   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords,data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
+        #                      namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
+         #                    weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso)
       if(optimizer=='L-BFGS-B'&&parallel){
         #ncores=max(1, parallel::detectCores() - 1)
         ncores=length(param) * 2 + 1

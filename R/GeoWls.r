@@ -162,9 +162,10 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
 
     if( bivariate) {if(is.null(X))  {X=1;num_betas=c(1,1)} 
                     else 
-                   { if(is.list(X)) num_betas=c(ncol(X[[1]]),ncol(X[[2]])) 
-                     else num_betas=c(ncol(X),ncol(X))
-                    } } 
+                       { if(is.list(X)) num_betas=c(ncol(X[[1]]),ncol(X[[2]])) 
+                         else num_betas=c(ncol(X),ncol(X))
+                       } 
+                   } 
 
     
     ### Set the initial type of likelihood objects:
@@ -173,10 +174,8 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
     if(is.null(start)) start <- NA else start <- unlist(start)
     if(is.null(fixed)) fixed <- NA else fixed <- unlist(fixed)
     ### Checks if all the starting values have been passed by the user:
-
-
-
-    if(initparam$numstart==initparam$numparam) {
+ #print(initparam$numstart);print(initparam$numparam)
+if(initparam$numstart==initparam$numparam) {
    
         if((model %in% c('Gaussian','Gauss','Chisq','LogLogistic','Logistic','Gamma','Gamma2','Beta','Beta2','LogGaussian','LogGauss','Binomial_TwoPieceGaussian','Binomial_TwoPieceGauss',
           'Tukeygh','Tukeyh','Tukeyh2','Kumaraswamy','Kumaraswamy2','Weibull','SkewGaussian','SkewGauss','SinhAsinh','StudentT','SkewStudentT',
@@ -185,44 +184,48 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
           "TwoPieceStudentT",'Wrapped',"TwoPieceGaussian","TwoPieceGauss","TwoPieceTukeyh","TwoPieceBimodal")) & 
           (type %in% c('Standard','Pairwise','Tapering','Tapering1','Independence')))
         {
- 
-##########################################################        
-        if(!initparam$bivariate){  ###spatial or temporal univariate case
-          if(is.na(fixed["mean"])&is.na(fixed["mean2"])){
-  
+
+  ###################################
+  ###################################
+    if(!initparam$bivariate){  ###spatial or temporal univariate case
+       
+          if(is.na(fixed["mean"])&is.na(fixed["mean2"]))
+          {
               if(is.na(start["mean"])) {initparam$param <- c(initparam$fixed["mean"], initparam$param)}
               else {initparam$param <- c(start["mean"], initparam$param)}
-            initparam$namesparam <- sort(names(initparam$param))
-            initparam$param <- initparam$param[initparam$namesparam]
-            initparam$numparam <- initparam$numparam+1
-            initparam$flagnuis['mean'] <- 1
-            initparam$numfixed <- initparam$numfixed-1
-          if(initparam$numfixed > 0) {initparam$fixed <- fixed}
-          else {initparam$fixed <- NULL}
+              initparam$namesparam <- sort(names(initparam$param))
+              initparam$param <- initparam$param[initparam$namesparam]
+              initparam$numparam <- initparam$numparam+1
+              initparam$flagnuis['mean'] <- 1
+              initparam$numfixed <- initparam$numfixed-1
+              if(initparam$numfixed > 0) {initparam$fixed <- fixed}
+              else {initparam$fixed <- NULL}
           }
           else {initparam$fixed['mean'] <- fixed["mean"]} 
-          if(num_betas>1){
-          for(i in 1:(num_betas-1)) {
+         ###################################
+          if(num_betas>1)
+        {
+          for(i in 1:(num_betas-1))
+         {
             if(is.na(fixed[paste("mean",i,sep="")]))
-          {
+                {
               if(is.na(start[paste("mean",i,sep="")])) {initparam$param <- c(initparam$fixed[paste("mean",i,sep="")], initparam$param)}
               else {initparam$param <- c(start[paste("mean",i,sep="")], initparam$param)}
-            initparam$namesparam <- sort(names(initparam$param))
-            initparam$param <- initparam$param[initparam$namesparam]
-            initparam$numparam <- initparam$numparam+1
-            initparam$flagnuis[paste("mean",i,sep="")] <- 1
-            initparam$numfixed <- initparam$numfixed-1}
+              initparam$namesparam <- sort(names(initparam$param))
+              initparam$param <- initparam$param[initparam$namesparam]
+              initparam$numparam <- initparam$numparam+1
+              initparam$flagnuis[paste("mean",i,sep="")] <- 1
+              initparam$numfixed <- initparam$numfixed-1}
             else {initparam$fixed[paste("mean",i,sep="")] <- fixed[paste("mean",i,sep="")]} 
          }
          if(initparam$numfixed > 0) {initparam$fixed <- fixed}
           else {initparam$fixed <- NULL}
-          }
-
+        }
+    ###################################
       }   
-
-################################################################################################################################################
+  ###################################
+  ###################################
      if(initparam$bivariate) {           ###bivariate case
-   
               if(is.na(fixed["mean_1"])){
               if(is.na(start["mean_1"])) {initparam$param <- c(initparam$fixed["mean_1"], initparam$param)}
               else {initparam$param <- c(start["mean_1"], initparam$param)}
@@ -272,9 +275,9 @@ WlsStart <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distan
             initparam$flagnuis[paste("mean_2",i,sep="")] <- 1
             initparam$numfixed <- initparam$numfixed-1}
             else {initparam$fixed[paste("mean_2",i,sep="")] <- fixed[paste("mean_2",i,sep="")]} 
-         }}}
+         }}
+     }
 ###########################
-              
         }
         paramrange=TRUE
         if(paramrange) paramrange <- SetRangeParam(names(initparam$param), length(initparam$param))

@@ -222,6 +222,9 @@ if(length(initparam$param)==1) optimizer="optimize"
 
 if(aniso) anisopars=as.list(c(fitted$par,ff)[namesaniso])
 
+
+if(is.null(unlist(ff))) ff=NULL
+
 if(likelihood!="Full") {if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value}  #!!ojo
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,

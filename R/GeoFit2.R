@@ -237,6 +237,7 @@ if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
 
 ff=as.list(initparam$fixed)
 if(!is.null(MM)) ff$mean=MM
+if(is.null(unlist(ff))) ff=NULL
 
 if(length(initparam$param)==1) optimizer="optimize"
 

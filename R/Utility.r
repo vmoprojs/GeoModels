@@ -1299,7 +1299,6 @@ if(method1=="euclidean")
  #if(num_betas>1)
  if((!bivariate&&num_betas>1)||(bivariate&&num_betas[1]>1&&num_betas[2]>1) )
      {
-
     
     if(model %in% c(1,10,12,18,9,20,13,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,46,47,48,50)) {
     if(!bivariate) {
@@ -1308,7 +1307,7 @@ if(method1=="euclidean")
                                mu <- mean(unlist(data));fixed$mean <- mu# Fixs the mean
                                for(i in 1:(num_betas-1)) fixed[[paste("mean",i,sep="")]]=1  # fixed$meani=1
                            }
-            else  fixed <- list(mean=mu)
+            else  {mu <- mean(unlist(data));fixed <- list(mean=mu)}
             for(i in 1:num_betas) nuisance=c(nuisance,1);
             nuisance=c(nuisance,0,var(c(unlist(data))))
              if(model %in% c(10,29,31,32))        nuisance=c(nuisance,1)  
@@ -1363,6 +1362,7 @@ if(method1=="euclidean")
         # Update the parameter vector     
 
         names(nuisance) <- namesnuis
+       # print(namesnuis)
         namesparam <- sort(c(namescorr, namesnuis))
         param <- c(nuisance, paramcorr)
         param <- param[namesparam]
@@ -1382,6 +1382,10 @@ if(method1=="euclidean")
             namesparam <- names(param)
             numparam <- length(param)
         }
+        else {
+            # print("here")
+        }
+        #print(namesparam)
         flagcorr <- flag[namescorr]
         flagnuis <- flag[namesnuis]
         # Update the parameters with starting values:
@@ -1415,6 +1419,7 @@ if(method1=="euclidean")
                                                  start <- start[!namesstart == paste("mean_2",i,sep="")]}}  
                                   }
                 }
+
             namesstart <- names(start)
             numstart <- length(start)
             param[pmatch(namesstart,namesparam)] <- start
