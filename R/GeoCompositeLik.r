@@ -204,27 +204,21 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
 
     if(aniso) fname <- paste(fname,"_aniso",sep="")
 
-    path.parent <- getwd()
+   # path.parent <- getwd()
   
-    # if(!is.null(GPU)) 
-    # {
-    #   path <- system.file("CL", "Kernel.cl", package = "GeoModels")
-    #   path <- gsub("/Kernel.cl","/",path);setwd(path)
-    #   fname <- paste(fname,"_OCL",sep="")
-    #   .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-    # }
+    
     if(!is.null(GPU))
     {
-      fname <- paste(fname,"_OCL",sep="")
-      #cat("fname de GeoComposite.r: ",fname,"\n")
-      #print(fname)
-      
-      path <- system.file("CL", paste(fname,".cl",sep = ""), package = "GeoModels")
-      #print(path)
-      path <- gsub(paste("/",paste(fname,".cl",sep = ""),sep = ""),"/",path)
+      # fname <- paste(fname,"_OCL",sep="")
+      # #cat("fname de GeoComposite.r: ",fname,"\n")
+      # #print(fname)
+      # 
+      # path <- system.file("CL", paste(fname,".cl",sep = ""), package = "GeoModels")
+      # #print(path)
+      # path <- gsub(paste("/",paste(fname,".cl",sep = ""),sep = ""),"/",path)
+      # 
+      # setwd(path)
       # .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-      setwd(path)
-      .C("create_binary_kernel",  as.integer(GPU),as.character(fname),  PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
     }
     
     if((spacetime||bivariate)&&(!spacetime_dyn)){
@@ -316,26 +310,24 @@ coords=cbind(coordx,coordy)
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, 
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM)
 
-         if(optimizer=='multinlminb'){
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
-              coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
-                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, 
-                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
-                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol"#,nbclusters=2,
-                     )
-                               }
-     if(optimizer=='multiNelder-Mead'){
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
-         coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
-                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, MM=MM, 
-                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,lower=lower,upper=upper,
-          method = "Nelder-Mead", nbtrials = 500, 
-                              control=list( reltol=1e-14, maxit=100000),
-                           typerunif = "sobol"#,nbclusters=4,
-                     )
-  }
+   #      if(optimizer=='multinlminb'){
+    #   CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
+     #         coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+      #                         fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, 
+       #                        weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
+        #                            lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+         #                     control = list( iter.max=100000),
+          #                 typerunif = "sobol")
+           #                    }
+     #if(optimizer=='multiNelder-Mead'){
+      # CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik,
+       #  coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+        #                       fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, MM=MM, 
+         #                      weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,lower=lower,upper=upper,
+         # method = "Nelder-Mead", nbtrials = 500, 
+          #                    control=list( reltol=1e-14, maxit=100000),
+           #                typerunif = "sobol")
+ # }
 
     if(optimizer=='ucminf')   
       CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik, hessian=as.numeric(hessian),   
@@ -423,22 +415,22 @@ coords=cbind(coordx,coordy)
                                coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, MM=MM,
                                weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU)
-          if(optimizer=='multinlminb')
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
-         coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
-                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,  
-                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
-                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol")
-          if(optimizer=='multiNelder-Mead')
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
-         coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
-                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, 
-                               weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
-                                    lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol")
+     #     if(optimizer=='multinlminb')
+     #  CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
+     #    coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+     #                          fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,  
+     #                          weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
+     #                               lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+     #                         control = list( iter.max=100000),
+     #                      typerunif = "sobol")
+     #     if(optimizer=='multiNelder-Mead')
+     #  CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn=comploglik_biv,
+     #    coords=coords, coordt=coordt,corrmodel=corrmodel, data=data, fixed=fixed,
+     #                          fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, 
+     #                          weigthed=weigthed,X=X,ns=ns,NS=NS,local=local,GPU=GPU,MM=MM,
+     #                               lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
+     #                         control = list( iter.max=100000),
+     #                      typerunif = "sobol")
     
    }}                    
       ########################################################################################   
@@ -669,7 +661,7 @@ colnames(CompLikelihood$hessian)=namesparam
                   CompLikelihood$stderr <- sqrt(CompLikelihood$stderr)
               }
         }
-    setwd(path.parent)
+   # setwd(path.parent)
       }
       if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
     if(!is.null(GPU)) gc()

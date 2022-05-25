@@ -4,8 +4,10 @@
 \title{Update a \code{GeoFit} object   using parametric bootstrap for std error estimation}
 \description{
   The procedure update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
-\usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,GPU=NULL,local=c(1,1),optimizer="Nelder-Mead",
-                     lower=NULL, upper=NULL, method="cholesky",memdist=TRUE, M=30,L=500,seed=1)}
+\usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE,
+GPU=NULL,local=c(1,1),optimizer="Nelder-Mead",
+                     lower=NULL, upper=NULL, 
+                     method="cholesky",memdist=TRUE, M=30,L=500,seed=1)}
 \arguments{
   \item{fit}{A fitted object obtained from the
     \code{\link{GeoFit}}.}
@@ -30,14 +32,15 @@
      }
 \details{ The function update a \code{GeoFit} object  estimating stderr estimation using parametric bootstrap.}
 \value{  
-  Returns an object of class \code{GeoFit}.
+  Returns an (updated) object of class \code{GeoFit}.
 }
 
 
 \seealso{\code{\link{GeoFit}}.}
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

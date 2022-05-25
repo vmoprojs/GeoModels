@@ -345,30 +345,23 @@ upper=upper[sel]
           control=list( reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=FALSE, method='Nelder-Mead',n=n,
                                   namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
- if(optimizer=='multinlminb'){
-
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik2,
-           data=data, fixed=fixed,
-                               fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                                 X=X,MM=MM,  
-          lower=lower,upper=upper,method = "nlminb", nbtrials = 400, typerunif = "sobol",
-                              control = list( iter.max=100000),
-                           )#,nbclusters=4,
-                     
-      
-  }
-
- if(optimizer=='multiNelder-Mead'){
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik2,
-           data=data, fixed=fixed,
-                               fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                                 X=X,MM=MM,  lower=lower,upper=upper,
-          method = "Nelder-Mead", nbtrials = 500, 
-                              control=list( reltol=1e-14, maxit=100000),
-                           typerunif = "sobol"#,nbclusters=4,
-                     )
-    
-  }
+# if(optimizer=='multinlminb'){
+ #      CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik2,
+  #         data=data, fixed=fixed,
+   #                            fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
+    #                             X=X,MM=MM,  
+     #     lower=lower,upper=upper,method = "nlminb", nbtrials = 400, typerunif = "sobol",
+      #                        control = list( iter.max=100000),
+       #                    )}
+ #if(optimizer=='multiNelder-Mead'){
+  #     CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik2,
+   #        data=data, fixed=fixed,
+    #                           fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
+     #                            X=X,MM=MM,  lower=lower,upper=upper,#
+     #     method = "Nelder-Mead", nbtrials = 500, 
+    #                          control=list( reltol=1e-14, maxit=100000),
+     #                      typerunif = "sobol" )
+  #}
 
 
     if(optimizer=='nmk')
@@ -480,25 +473,25 @@ upper=upper[sel]
                                    data=data, fixed=fixed,
                                fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
                                  X=X ,MM=MM)
-     if(optimizer=='multinlminb'){
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik_biv2,
-           data=data, fixed=fixed,
-                               fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                                 X=X,MM=MM,
-                                    lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol")
-                               }
-     if(optimizer=='multiNelder-Mead'){
-       CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik_biv2,
-           data=data, fixed=fixed,
-                               fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                                 X=X,MM=MM,  lower=lower,upper=upper,
-          method = "Nelder-Mead", nbtrials = 500, 
-                              control=list( reltol=1e-14, maxit=100000),
-                           typerunif = "sobol"#,nbclusters=4,
-                     )
-  }
+     #if(optimizer=='multinlminb'){
+      # CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik_biv2,
+       #    data=data, fixed=fixed,
+        #                       fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
+         #                        X=X,MM=MM,
+          #                          lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+           #                   control = list( iter.max=100000),
+            #               typerunif = "sobol")
+             #                  }
+     #if(optimizer=='multiNelder-Mead'){
+      # CompLikelihood <- mcGlobaloptim::multiStartoptim(objectivefn= compindloglik_biv2,
+       #    data=data, fixed=fixed,
+        #                       fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
+         #                        X=X,MM=MM,  lower=lower,upper=upper,
+         # method = "Nelder-Mead", nbtrials = 500, 
+          #                    control=list( reltol=1e-14, maxit=100000),
+           #                typerunif = "sobol"#,nbclusters=4,
+            #         )
+  #}
 
    }
  }  

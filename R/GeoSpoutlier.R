@@ -67,7 +67,8 @@ if(!bivariate&&!spacetime)
        N=nrow(coords)
   ####     
   if(method=="Z-Median"){
-       aa=RANN::nn2(coords,k = neighb)
+       #aa=RANN::nn2(coords,k = neighb)
+       aa = nabor::knn(coords,coords,k = neighb) ### case neighboord
        a=list()
        for(i in 1:N) a[[i]]=data[aa$nn.idx[i,]][-1]
        res=matrix(unlist(a),ncol=neighb-1,byrow=T)

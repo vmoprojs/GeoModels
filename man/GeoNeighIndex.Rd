@@ -3,10 +3,12 @@
 \encoding{UTF-8}
 \title{Spatial or spatiotemporal  near neighbour indices.}
 \description{
-  The function return  the spatial or spatiotemporal  near neighbour indices for a given neighbour  and temporal distance. 
+  The function return the indices associated to  a given spatial neighbour or spatial distance 
 }
 \usage{
-GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",neighb=4,maxdist=NULL,maxtime=1,radius=6371,bivariate=FALSE)
+GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,
+coordt=NULL,distance="Eucl",neighb=4,maxdist=NULL,
+maxtime=1,radius=6371,bivariate=FALSE)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -51,8 +53,9 @@ GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,distance="Eucl",nei
 }
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

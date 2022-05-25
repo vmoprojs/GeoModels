@@ -65,12 +65,16 @@ nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)
   {
    # print(distance);print(maxdist)
             if(is.null(maxdist)) 
-               {nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
+               {
+               #nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
+               nearest = nabor::knn(x,y,k = K)} ### case neighboord
             else     {
                      nn=nrow(x) 
                      K=min(K-1,nrow(x)-1) # case of  maxdist 
-                     nearest = RANN::nn2(x,y,searchtype = c("radius"),
-                               treetype = c("kd"),radius = maxdist,k=K  )
+                    # nearest = RANN::nn2(x,y,searchtype = c("radius"),
+                     #          treetype = c("kd"),radius = maxdist,k=K  )
+                       nearest = nabor::knn(x,y,radius = maxdist,k=K  )
+
                      }
              # print(nearest)
             #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
@@ -138,7 +142,8 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
   ## building  temporal  and spatiotemporal indexes
   
   ## temporal distances (not zero distance)
-  nn=sort(unique(c(RANN::nn2(coordt,coordt,k=round(maxtime)+1,treetype = c("kd"))$nn.dists)))[-1]  
+  #nn=sort(unique(c(RANN::nn2(coordt,coordt,k=round(maxtime)+1,treetype = c("kd"))$nn.dists)))[-1]  
+  nn=sort(unique(c(nabor::knn(coordt,coordt,k=round(maxtime)+1))$nn.dists))[-1]  
   tnn=length(nn)   
   
   # sol <- NULL

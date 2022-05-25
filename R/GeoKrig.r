@@ -23,7 +23,7 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 
                if(spam::is.spam(covmatrix$covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
                else                    U = try(spam::chol.spam(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
-               if(class(U)=="try-error") {print(" Covariance matrix is not positive definite");stop()}
+               if(inherits(U,"try-error")) {print(" Covariance matrix is not positive definite");stop()}
                #Inv=spam::chol2inv.spam(U)
                Inv=0
                Invc= spam::backsolve(U, spam::forwardsolve(U, b)) ## R^-1 %*% c
@@ -1003,7 +1003,10 @@ return(Kg)
 ############################################################################
 
 Prscores=function(data,method="cholesky",matrix)   {
-if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
+#if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
+
+if(!inherits(matrix,"CovMat"))  stop("A GeoFit object is needed as input\n")
+
 varcov=matrix$covmatrix
 rownames(varcov)=c();colnames(varcov)=c()
 if(nrow(varcov)!=length(data)) stop("The dimension of the covariance  matrix and/or the vector data are not correct  \n")

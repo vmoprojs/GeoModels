@@ -325,8 +325,14 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
         param <- c(param, fixed)#set the parameters set:
         paramcorr <- param[namescorr]#set the correlation parameters:
         nuisance <- param[namesnuis]#set the nuisance parameters:
-        #computes the weighted least squares:
-        result <- .C(fun, as.double(bins), as.double(bint), as.integer(corrmodel),
+
+     if(fun=='GeoWLS_G')
+        result <- .C('GeoWLS_G', as.double(bins), as.double(bint), as.integer(corrmodel),
+                     as.double(lenbins), as.double(moments), as.integer(numbins),
+                     as.integer(numbint), as.double(nuisance), as.double(paramcorr),
+                     res=double(1), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
+     if(fun=='LeastSquare_G')
+        result <- .C('LeastSquare_G', as.double(bins), as.double(bint), as.integer(corrmodel),
                      as.double(lenbins), as.double(moments), as.integer(numbins),
                      as.integer(numbint), as.double(nuisance), as.double(paramcorr),
                      res=double(1), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
@@ -378,7 +384,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
          NS=c(0,NS)[-(length(ns)+1)]
       fname <- 'Binned_Variogram_st';fname <- paste(fname,"2",sep="") 
       # Compute the spatial-temporal moments:
-      EV=.C(fname, bins=bins, bint=bint, as.double(coordx),as.double(coordy),as.double(coordt),as.double(initparam$data),
+      EV=.C("Binned_Variogram_st2", bins=bins, bint=bint, as.double(coordx),as.double(coordy),as.double(coordt),as.double(initparam$data),
            lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments= moments, momentst=momentst, momentt=momentt, as.integer(numbins), as.integer(numbint),
            as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
       bins=EV$bins
@@ -435,7 +441,7 @@ GeoWLS <- function(data, coordx, coordy=NULL, coordt=NULL,  coordx_dyn=NULL, cor
       lenbint <- integer(1) # vector of temporal bin sizes
       lenbinst <- integer(1)  # vector of spatial-temporal bin sizes
       fname <- paste(fname,"2",sep="")
-      EV=.C(fname, bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double(initparam$data), lenbins=lenbins,
+      EV=.C("Binned_Variogram2", bins=bins, as.double(coordx),as.double(coordy),as.double(coordt),as.double(initparam$data), lenbins=lenbins,
          moments=moments, as.integer(numbins),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
       bins=EV$bins
       lenbins=EV$lenbins

@@ -10,9 +10,12 @@
   Simulation is based on Cholesky decomposition.
 }
 \usage{
-GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
-      GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      anisopars=NULL,radius=6371, sparse=FALSE, copula="Gaussian",X=NULL)
+GeoSimCopula(coordx, coordy=NULL, coordt=NULL, 
+coordx_dyn=NULL, corrmodel, distance="Eucl",
+      GPU=NULL, grid=FALSE, local=c(1,1),
+      method="cholesky", model='Gaussian', n=1, param,
+      anisopars=NULL,radius=6371, sparse=FALSE,
+      copula="Gaussian",X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -89,20 +92,21 @@ GeoSimCopula(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, dista
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
 library(GeoModels)
-library(mapproj)
-library(fields)
+
 ################################################################
 ###
-### Example 1. Simulation of a Beta and Kumaraswamy RF
-### with Gaussian and Beta Copula 
-### with  underlying Wend0 correlation.
+### Example q. Simulation of a reparametrized Beta RF
+### for beta regression
+### with Gaussian and Clayton Copula 
+### with  underlying Wendland correlation.
 ###
 ###############################################################
 set.seed(261)
@@ -118,42 +122,34 @@ smooth=0
 
 corrmodel="GenWend"
 min=0;max=1
-param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,sill=sill,scale=0.2,nugget=0,shape1=shape1,shape2=shape2)
 
-data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta",param=param,
-  copula="Gaussian",sparse=TRUE)$data
-param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,sill=sill,scale=0.2,nugget=0,shape1=shape1,shape2=shape2,nu=2)
 
-data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta",param=param,
-  copula="Clayton",sparse=TRUE)$data
-
-################################################################
-###
-### Example 2. Simulation of a reparametrized Beta RF
-### for beta regression
-### with Gaussian and Clayton Copula 
-### with  underlying Wendland correlation.
-###
-###############################################################
 X=cbind(rep(1,NN),runif(NN))
+
+NuisParam("Beta2",num_betas=2,copula="Gaussian")
+CorrParam("GenWend")
+
+
+#### Gaussian copula
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,mean1=0.2,sill=1,scale=0.3,nugget=0,shape=2)
+             mean=0.1,mean1=0.1,sill=1,scale=0.3,nugget=0,shape=5)
 
 data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
   copula="Gaussian",sparse=TRUE,X=X)$data
 
+quilt.plot(coords,data)
+
+
+#### Clayton copula
+NuisParam("Beta2",num_betas=2,copula="Clayton")
+CorrParam("GenWend")
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0,mean1=0.2,sill=1,scale=0.3,nugget=0,shape=2,nu=1)
+             mean=0.2,mean1=0.1,sill=1,scale=0.3,nugget=0,shape=6,nu=4)
 data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
   copula="Clayton",sparse=TRUE,X=X)$data
 
-par(mfrow=c(1,2))
-plot(density(data))
-plot(density(data1))
-GeoScatterplot(data,coords,maxdist=.05,numbins=6)
-GeoScatterplot(data1,coords,maxdist=.05,numbins=6)
+hist(data1,freq=FALSE)
+quilt.plot(coords,data1)
 
 }
 \keyword{Simulation}

@@ -285,7 +285,9 @@ CkInput <- function(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distanc
     if(radius<0){
         error <- 'the radius of the sphere must be positive\n'
         return(list(error=error))}
-    if(CkModel(model)==11&&(n<1||!is.numeric(n))){
+if(CkModel(model)==11&&(all(n<1)||!all(is.numeric(n))))
+
+    {
         error <- 'the parameter n for the Binomial RF is wrong \n'
         return(list(error=error))}
 
@@ -1759,7 +1761,7 @@ if(is.null(coordt)) coordt=1
                 winconst_t=winconst_t,winstp_t=winstp_t,X=X))
 }
 
-DeviceInfo <- function()
-{
-    .C("DeviceInfo",PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-}
+#DeviceInfo <- function()
+#{
+#    .C("DeviceInfo",PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+#}

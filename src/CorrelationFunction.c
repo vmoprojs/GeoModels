@@ -5,7 +5,7 @@
 double CheckCor(int *cormod, double *par)
 {
   double col=0.0, R_power=0.0, R_power1=0.0, R_power2=0.0, R_power_s=0.0, R_power_t=0.0, var11=0.0, var22=0.0;
-  double rho=0.0, sep=0, scale=0.0, smooth=0.0,smooth_s=0.0,smooth_t=0.0, scale_s=0.0, scale_t=0;
+  double rho=0.0, sep=0, scale=0.0, smooth=0.0, scale_s=0.0, scale_t=0;
   double scale11=0.0, scale22=0, scale12=0.0, smoo11=0.0, smoo12=0.0, smoo22=0,
     R_power11=0.0, R_power12=0.0, R_power22=0,nug11=0.0,nug22=0.0;
 
@@ -217,13 +217,13 @@ double CheckCor(int *cormod, double *par)
       scale_t=par[1];
       if(scale_s<=0 || scale_t<=0) rho=-2;
       break;*/
-    case 86:
+   /* case 86:
       scale_s=par[0];
       scale_t=par[1];
       smooth_s=par[2];
       smooth_t=par[3];
       if(scale_s<=0 || scale_t<=0|| smooth_t<=0|| smooth_t<=0) rho=-2;
-    break;
+    break;*/
     case 90:// Matern-Cauchy:
       R_power2=par[0];
       scale_s=par[1];
@@ -625,8 +625,8 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
       scale_t=par[2];
       smooth=par[3];
       arg=smooth+R_pow(u, 0.5*R_power_t)/scale_t;
-      if(h==0) rho=1/(R_pow(2, arg)*gammafn(arg+1));
-      else rho=R_pow(h/scale_s, arg)*bessel_k(h/scale_s, arg, 1)/(R_pow(2, arg)*gammafn(arg+1));
+      if(h==0) {rho=1/(R_pow(2, arg)*gammafn(arg+1));}
+      else {rho=R_pow(h/scale_s, arg)*bessel_k(h/scale_s, arg, 1)/(R_pow(2, arg)*gammafn(arg+1));}
       break;
     case 50:   //Gneiting correlation with prac ranges "giusto"
       R_power_s=par[0];
@@ -904,16 +904,16 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
       scale_s=par[1];
       scale_t=par[2];
       smooth=par[3];
-      if(h==0) arg=1;
-      else arg=R_pow(2,1-smooth)/gammafn(smooth)*R_pow(h/scale_s, smooth)*bessel_k(h/scale_s, smooth, 1);
+      if(h==0) {arg=1;}
+      else {arg=R_pow(2,1-smooth)/gammafn(smooth)*R_pow(h/scale_s, smooth)*bessel_k(h/scale_s, smooth, 1);}
       rho=arg*R_pow((1+R_pow(u/scale_t, 2)),-R_power2);
       break;
     case 92:// Matern-exp:
       scale_s=par[0];
       scale_t=par[1];
       smooth=par[2];
-      if(h==0) arg=1;
-      else arg=R_pow(2,1-smooth)/gammafn(smooth)*R_pow(h/scale_s, smooth)*bessel_k(h/scale_s, smooth, 1);
+      if(h==0) {arg=1;}
+      else {arg=R_pow(2,1-smooth)/gammafn(smooth)*R_pow(h/scale_s, smooth)*bessel_k(h/scale_s, smooth, 1);}
       rho=arg*exp(-u/scale_t);
       break;
     case 94:// Stable-stab:
@@ -933,15 +933,15 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
      col=par[4];
      scale=par[5];
      smooth=par[6];
-     if((c11==0)&&(c22==0))                   {if(h==0)  rho=var11+nug11;
-                                              else       rho=var11*CorFunWitMat(h, scale, smooth);
+     if((c11==0)&&(c22==0))                   {if(h==0)  {rho=var11+nug11;}
+                                              else       {rho=var11*CorFunWitMat(h, scale, smooth);}
                                               break;}
      if((c11==0&&c22==1)||(c11==1&&c22==0))   {
-                                          if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                          else     rho=col*sqrt(var11)*sqrt(var22)*CorFunWitMat(h, scale, smooth);
+                                          if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                          else     {rho=col*sqrt(var11)*sqrt(var22)*CorFunWitMat(h, scale, smooth);}
                                           break;}
-     if((c11==1)&&(c22==1))                   {if(h==0)  rho=var22+nug22;
-                                              else       rho=var22*CorFunWitMat(h, scale, smooth);
+     if((c11==1)&&(c22==1))                   {if(h==0)  {rho=var22+nug22;}
+                                              else       {rho=var22*CorFunWitMat(h, scale, smooth);}
                                               break;}
         break;
 
@@ -953,15 +953,15 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
      col=par[4];
      scale=par[5];
      smooth=par[6];
-     if((c11==0)&&(c22==0))                   {if(h==0)  rho=var11+nug11;
-                                              else       rho=var11*CorFunSmoke(h, scale, smooth);
+     if((c11==0)&&(c22==0))                   {if(h==0)  {rho=var11+nug11;}
+                                              else      { rho=var11*CorFunSmoke(h, scale, smooth);}
                                               break;}
      if((c11==0&&c22==1)||(c11==1&&c22==0))   {
-                                          if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                          else     rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale, smooth);
+                                          if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                          else     {rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale, smooth);}
                                           break;}
-     if((c11==1)&&(c22==1))                   {if(h==0)  rho=var22+nug22;
-                                              else       rho=var22*CorFunSmoke(h, scale, smooth);
+     if((c11==1)&&(c22==1))                   {if(h==0)  {rho=var22+nug22;}
+                                              else       {rho=var22*CorFunSmoke(h, scale, smooth);}
                                               break;}
         break;
 
@@ -976,11 +976,11 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale22=par[6];
         smoo11=  CorFunStable(h, 1, scale11); //CorFunStable(h, 2, scale11);    //; for environmetrics
         smoo22=CorFunStable(h, 1, scale22); //CorFunWave(h,scale22);        //;      for environmetrics
-        if((c11==0)&&(c22==0))                  { if(h==0) rho=rho+nug11;break;
+        if((c11==0)&&(c22==0))                  { if(h==0) {rho=rho+nug11;break;}
                                                   rho=R_pow(var11,2)*smoo11+R_pow(col,2)*smoo22;
                                                  }
         if((c11==0&&c22==1)||(c11==1&&c22==0))  {rho=var11*col*smoo11+var22*col*smoo22;break;}
-        if((c11==1)&&(c22==1))                  {if(h==0) rho=rho+nug22;break;
+        if((c11==1)&&(c22==1))                  {if(h==0) {rho=rho+nug22;break;}
                                                  rho=R_pow(col,2)*smoo11+R_pow(var22,2)*smoo22;
                                                  }
         break;
@@ -997,10 +997,10 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo11=CorFunStable(h, 1, scale11);
         smoo22=CorFunStable(h, 1, scale22);
         if((c11==0)&&(c22==0))                  {rho=R_pow(var11,2)*smoo11+R_pow(col,2)*smoo22;
-                                                if(h==0) rho=rho+nug11;break;}
+                                                if(h==0) {rho=rho+nug11;break;}}
         if((c11==0&&c22==1)||(c11==1&&c22==0))  {rho=var11*smooth*smoo11+var22*col*smoo22;break;}
         if((c11==1)&&(c22==1))                  {rho=R_pow(smooth,2)*smoo11+R_pow(var22,2)*smoo22;
-                                                if(h==0) rho=rho+nug22;break;}
+                                                if(h==0) {rho=rho+nug22;break;}}
         break;
         case 111:       // multi wend(k=1) separable
         var11=par[0];
@@ -1010,14 +1010,14 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         col=par[4];
         R_power=par[5];
         scale=par[6];
-        if((c11==0)&&(c22==0))            {if(h==0)  rho=var11+nug11;
-                                           else       rho=var11*CorFunW0(h,scale,R_power);
-                                           break;}
+        if((c11==0)&&(c22==0))            {if(h==0)  {rho=var11+nug11;}
+        else      { rho=var11*CorFunW0(h,scale,R_power);}break;
+                                           }
         if((c11==0&&c22==1)||(c11==1&&c22==0))  {
-                                         if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                        else rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale,R_power);break;}
-        if((c11==1)&&(c22==1))            {if(h==0)  rho=var22+nug22;
-                                           else      rho=var22*CorFunW0(h,scale,R_power);
+                                         if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale,R_power);}break;}
+        if((c11==1)&&(c22==1))            {if(h==0)  {rho=var22+nug22;}
+        else     { rho=var22*CorFunW0(h,scale,R_power);}
                                            break;}
         break;
         case 113:       // multi wend(k=1) separable
@@ -1028,14 +1028,14 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
             col=par[4];
             R_power=par[5];
             scale=par[6];
-            if((c11==0)&&(c22==0))            {if(h==0)  rho=var11+nug11;
-            else       rho=var11*CorFunW1(h,scale,R_power);
+            if((c11==0)&&(c22==0))            {if(h==0)  {rho=var11+nug11;}
+            else       {rho=var11*CorFunW1(h,scale,R_power);}
                 break;}
             if((c11==0&&c22==1)||(c11==1&&c22==0))  {
-                                                     if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW1(h,scale,R_power);break;}
-            if((c11==1)&&(c22==1))            {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW1(h,scale,R_power);
+                                                     if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW1(h,scale,R_power);}break;}
+            if((c11==1)&&(c22==1))            {if(h==0)  {rho=var22+nug22;}
+            else      {rho=var22*CorFunW1(h,scale,R_power);}
                 break;}
             break;
 
@@ -1047,15 +1047,15 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
             col=par[4];
             R_power=par[5];
             scale=par[6];
-            if((c11==0)&&(c22==0))            {if(h==0)  rho=var11+nug11;
-            else       rho=var11*CorFunW2(h,scale,R_power);
+            if((c11==0)&&(c22==0))            {if(h==0)  {rho=var11+nug11;}
+            else       {rho=var11*CorFunW2(h,scale,R_power);}
                 break;}
             if((c11==0&&c22==1)||(c11==1&&c22==0))  {
-              if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunW2(h,scale,R_power);break;}
-            if((c11==1)&&(c22==1))            {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW2(h,scale,R_power);
+              if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11)*
+                                                         sqrt(var22)*CorFunW2(h,scale,R_power);}break;}
+            if((c11==1)&&(c22==1))            {if(h==0)  {rho=var22+nug22;}
+            else      {rho=var22*CorFunW2(h,scale,R_power);}
                 break;}
             break;
 
@@ -1072,13 +1072,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale11=par[8];
         scale22=par[9];
         scale12=par[10];
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW0(h,scale11,R_power11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+                                  else       {rho=var11*CorFunW0(h,scale11,R_power11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale12,R_power12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW0(h,scale22,R_power22);;
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale12,R_power12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunW0(h,scale22,R_power22);}
                                   break;}
 
         break;
@@ -1094,13 +1094,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale11=par[8];
         scale22=par[9];
         scale12=par[10];
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW1(h,scale11,R_power11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+                                  else       {rho=var11*CorFunW1(h,scale11,R_power11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW1(h,scale12,R_power12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW1(h,scale22,R_power22);;
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW1(h,scale12,R_power12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else     { rho=var22*CorFunW1(h,scale22,R_power22);}
                                   break;}
 
         break;
@@ -1116,13 +1116,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale11=par[8];
         scale22=par[9];
         scale12=par[10];
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW2(h,scale11,R_power11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+                                  else       {rho=var11*CorFunW2(h,scale11,R_power11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW2(h,scale12,R_power12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW2(h,scale22,R_power22);;
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW2(h,scale12,R_power12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+                                  else      {rho=var22*CorFunW2(h,scale22,R_power22);}
                                   break;}
         break;
          case 129:       // multi wend(k=0) contr
@@ -1137,13 +1137,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale11=par[7];
         scale22=par[8];
         scale12=0.5*(scale11+scale22);
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW0(h,scale11,R_power11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+                                  else       {rho=var11*CorFunW0(h,scale11,R_power11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale12,R_power12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW0(h,scale22,R_power22);;
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW0(h,scale12,R_power12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunW0(h,scale22,R_power22);}
                                   break;}
         break;
         case 131:       // // multi wend(k=1) contr
@@ -1161,11 +1161,11 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
             if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
             else       rho=var11*CorFunW1(h,scale11,R_power11);
                 break;}
-            if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunW1(h,scale12,R_power12);;break;}
-            if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW1(h,scale22,R_power22);
+            if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11)*
+                                                         sqrt(var22)*CorFunW1(h,scale12,R_power12);}break;}
+            if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+            else      {rho=var22*CorFunW1(h,scale22,R_power22);}
                 break;}
         break;
         case 120:          // // multi wend(k=2) contr
@@ -1181,14 +1181,14 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale22=par[8];
         scale12=0.5*(scale11+scale22);
 
-            if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-            else       rho=var11*CorFunW2(h,scale11,R_power11);;
+            if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+            else      { rho=var11*CorFunW2(h,scale11,R_power11);}
                 break;}
-            if((c11==0&&c22==1)||(c11==1&&c22==0)) { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunW2(h,scale12,R_power12);;break;}
-            if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-            else      rho=var22*CorFunW2(h,scale22,R_power22);;
+            if((c11==0&&c22==1)||(c11==1&&c22==0)) { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else{ rho=col*sqrt(var11)*
+                                                         sqrt(var22)*CorFunW2(h,scale12,R_power12);}break;}
+            if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+            else      {rho=var22*CorFunW2(h,scale22,R_power22);}
                 break;}
         break;
         case 118:       // full bivariate matern with contraists
@@ -1204,13 +1204,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         scale12=0.5*(scale11+scale22);
         smoo12=0.5*(smoo11+smoo22);
 
-        if((c11==0)&&(c22==0))    {if(h==0)  rho=var11+nug11;
-                                   else      rho=var11*CorFunWitMat(h, scale11,  smoo11);
+        if((c11==0)&&(c22==0))    {if(h==0)  {rho=var11+nug11;}
+                                   else      {rho=var11*CorFunWitMat(h, scale11,  smoo11);}
                                    break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                else rho=col*sqrt(var11)*sqrt(var22)*CorFunWitMat(h, scale12,  smoo12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunWitMat(h, scale22,  smoo22);
+        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunWitMat(h, scale12,  smoo12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunWitMat(h, scale22,  smoo22);}
                                   break;}
         break;
         case 121:       // full bivariate smoke with contraists
@@ -1225,13 +1225,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo22=par[8];
         scale12=0.5*(scale11+scale22);
         smoo12=0.5*(smoo11+smoo22);
-        if((c11==0)&&(c22==0))    {if(h==0)  rho=var11+nug11;
-                                   else      rho=var11*CorFunSmoke(h, scale11,  smoo11);
+        if((c11==0)&&(c22==0))    {if(h==0)  {rho=var11+nug11;}
+        else      {rho=var11*CorFunSmoke(h, scale11,  smoo11);}
                                    break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                else rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale12,  smoo12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunSmoke(h, scale22,  smoo22);
+        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunSmoke(h, scale12,  smoo12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunSmoke(h, scale22,  smoo22);}
                                   break;}
         break;
         case 128:       // full bivariate matern
@@ -1246,15 +1246,15 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo11=par[8];
         smoo12=par[9];
         smoo22=par[10];
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunWitMat(h, scale11,  smoo11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+                                else      {rho=var11*CorFunWitMat(h, scale11,  smoo11);}
                                 break;}
         if((c11==0&&c22==1)||(c11==1&&c22==0))    {
-                                               if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11*
-                                                         var22)*CorFunWitMat(h, scale12,  smoo12);break;}
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunWitMat(h, scale22,  smoo22);
+                                               if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11*
+                                                         var22)*CorFunWitMat(h, scale12,  smoo12);}break;}
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else      {rho=var22*CorFunWitMat(h, scale22,  smoo22);}
                                  break;}
         break;
              case 117:       // full bivariate matern
@@ -1269,15 +1269,15 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo11=par[8];
         smoo12=par[9];
         smoo22=par[10];
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunSmoke(h, scale11,  smoo11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+                                else      {rho=var11*CorFunSmoke(h, scale11,  smoo11);}
                                 break;}
         if((c11==0&&c22==1)||(c11==1&&c22==0))    {
-                                               if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11*
-                                                         var22)*CorFunSmoke(h, scale12,  smoo12);break;}
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunSmoke(h, scale22,  smoo22);
+                                               if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11*
+                                                         var22)*CorFunSmoke(h, scale12,  smoo12);}break;}
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else     { rho=var22*CorFunSmoke(h, scale22,  smoo22);}
                                  break;}
         break;
         /************************************************/
@@ -1290,13 +1290,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power=par[5];
         scale=par[6];
         smooth=par[7];
-        if((c11==0)&&(c22==0))            {if(h==0)  rho=var11+nug11;
-                                           else       rho=var11*CorFunW_gen(h, R_power, smooth, scale);
+        if((c11==0)&&(c22==0))            {if(h==0)  {rho=var11+nug11;}
+        else       {rho=var11*CorFunW_gen(h, R_power, smooth, scale);}
                                            break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW_gen(h, R_power, smooth, scale);break;}
-        if((c11==1)&&(c22==1))            {if(h==0)  rho=var22+nug22;
-                                           else      rho=var22*CorFunW_gen(h, R_power, smooth, scale);
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0){ rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW_gen(h, R_power, smooth, scale);}break;}
+        if((c11==1)&&(c22==1))            {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunW_gen(h, R_power, smooth, scale);}
                                            break;}
         break;
 
@@ -1316,13 +1316,13 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
             smoo11=par[11];
             smoo12=par[12];
             smoo22=par[13];
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW_gen(h, R_power11, smoo11, scale11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+        else       {rho=var11*CorFunW_gen(h, R_power11, smoo11, scale11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunW_gen(h, R_power12, smoo12, scale12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW_gen(h, R_power22, smoo22, scale22);
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+            else {rho=col*sqrt(var11)*sqrt(var22)*CorFunW_gen(h, R_power12, smoo12, scale12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+        else      {rho=var22*CorFunW_gen(h, R_power22, smoo22, scale22);}
                                   break;}
         break;
 
@@ -1343,14 +1343,14 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         smoo11=par[9];
         smoo22=par[10];
         smoo12=0.5*(smoo11+smoo22);
-        if((c11==0)&&(c22==0))   {if(h==0)  rho=var11+nug11;
-                                  else       rho=var11*CorFunW_gen(h, R_power11, smoo11, scale11);
+        if((c11==0)&&(c22==0))   {if(h==0)  {rho=var11+nug11;}
+                                  else       {rho=var11*CorFunW_gen(h, R_power11, smoo11, scale11);}
                                   break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*CorFunW_gen(h, R_power12, smoo12, scale12);break;}
-        if((c11==1)&&(c22==1))   {if(h==0)  rho=var22+nug22;
-                                  else      rho=var22*CorFunW_gen(h, R_power22, smoo22, scale22);
+        if((c11==0&&c22==1)||(c11==1&&c22==0))  { if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11)*
+                                                         sqrt(var22)*CorFunW_gen(h, R_power12, smoo12, scale12);}break;}
+        if((c11==1)&&(c22==1))   {if(h==0)  {rho=var22+nug22;}
+                                  else      {rho=var22*CorFunW_gen(h, R_power22, smoo22, scale22);}
                                   break;}
         break;
 
@@ -1370,16 +1370,16 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power22=par[11];
 
 
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunWitMat1(h*h, scale11,  smoo11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+                                else      {rho=var11*CorFunWitMat1(h*h, scale11,  smoo11);}
                                 break;}
-        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                else rho=col*sqrt(var11)*
-                                                         sqrt(var22)*Shkarofski(h*h,scale12,scale12,smoo12);
+        if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                else {rho=col*sqrt(var11)*
+                                                         sqrt(var22)*Shkarofski(h*h,scale12,scale12,smoo12);}
                                                        //CorFunWitMatCau(h,scale12,smoo12);
                                                        break;}
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunGenCauchy2(h*h,smoo22,R_power22,scale22);
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else      {rho=var22*CorFunGenCauchy2(h*h,smoo22,R_power22,scale22);}
                                  break;}
         break;
            case 137:       // gen matern cauchy
@@ -1398,16 +1398,16 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power12=par[12];
         R_power22=par[13];
 
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunGenWitMatCau(h, scale11,  smoo11,R_power11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+        else      {rho=var11*CorFunGenWitMatCau(h, scale11,  smoo11,R_power11);}
 
                                 break;}
-if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunGenWitMatCau(h, scale12,  smoo12,R_power12);
+if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11)*sqrt(var22)*CorFunGenWitMatCau(h, scale12,  smoo12,R_power12);}
                                 break;}
 
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunGenWitMatCau(h, scale22,  smoo22,R_power22);
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else      {rho=var22*CorFunGenWitMatCau(h, scale22,  smoo22,R_power22);}
 
                                  break;}
         break;
@@ -1427,14 +1427,14 @@ if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt
         smoo12=par[12];
         smoo22=par[13];
 
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunGenCauchy(h, R_power11, smoo11, scale11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+                                else      {rho=var11*CorFunGenCauchy(h, R_power11, smoo11, scale11);}
                                 break;}
         if((c11==0&&c22==1)||(c11==1&&c22==0))    {
-          if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-           else rho=col*sqrt(var11)*sqrt(var22)*CorFunGenCauchy(h, R_power12, smoo12, scale12);break;}
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunGenCauchy(h, R_power22, smoo22, scale22);
+          if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+           else {rho=col*sqrt(var11)*sqrt(var22)*CorFunGenCauchy(h, R_power12, smoo12, scale12);}break;}
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else      {rho=var22*CorFunGenCauchy(h, R_power22, smoo22, scale22);}
                                  break;}
 
         break;
@@ -1450,14 +1450,14 @@ if((c11==0&&c22==1)||(c11==1&&c22==0)){ if(h==0) rho=col*(sqrt(var11+nug11)*sqrt
         R_power11=par[8];
         R_power12=par[9];
         R_power22=par[10];
-        if((c11==0)&&(c22==0))  {if(h==0)  rho=var11+nug11;
-                                else      rho=var11*CorFunStable(h, R_power11, scale11);
+        if((c11==0)&&(c22==0))  {if(h==0)  {rho=var11+nug11;}
+                                else      {rho=var11*CorFunStable(h, R_power11, scale11);}
                                 break;}
         if((c11==0&&c22==1)||(c11==1&&c22==0))    {
-          if(h==0) rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));
-                                                     else rho=col*sqrt(var11)*sqrt(var22)*CorFunStable(h, R_power12, scale12);break;}
-        if((c11==1)&&(c22==1))  {if(h==0)  rho=var22+nug22;
-                                 else      rho=var22*CorFunStable(h, R_power22, scale22);
+          if(h==0) {rho=col*(sqrt(var11+nug11)*sqrt(var22+nug22));}
+                                                     else {rho=col*sqrt(var11)*sqrt(var22)*CorFunStable(h, R_power12, scale12);}break;}
+        if((c11==1)&&(c22==1))  {if(h==0)  {rho=var22+nug22;}
+                                 else      {rho=var22*CorFunStable(h, R_power22, scale22);}
                                  break;}
 
         break;
@@ -3281,7 +3281,7 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
 {
   int i=0;
   double R_power=0.0, R_power1=0.0, R_power2=0.0, R_power_s=0, R_power_t=0;
-  double scale=0.0, scale_s=0, scale_t=0, smooth=0.0, smooth_s=0.0,smooth_t=0.0;
+  double scale=0.0, scale_s=0, scale_t=0, smooth=0.0;
   double var11=0.0, var22=0.0, nug11=0.0, nug22=0.0,scale11=0.0,scale12=0.0,scale22=0.0,col=0.0,smoo11=0.0,smoo12=0.0,smoo22=0.0;
 
   switch(*cormod)// Correlation functions are in alphabetical order
@@ -3351,13 +3351,13 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
       //temporal-scale parameter
       if(flag[1]==1) grad[i]=DStabSc(u,1,scale_t,rho);
       break;
-    case 86://Exponential-Gaussian
+    /*case 86://Exponential-Gaussian
       scale_s=par[0];
       scale_t=par[1];
       smooth_s=par[2];
       smooth_t=par[3];
       // to do..../
-      break;
+      break;*/
     case 94://Stable-Stable
       R_power_s=par[0];
       R_power_t=par[1];
@@ -3707,10 +3707,10 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   double ai=0.0,aj=0.0,p1=0.0,p2=0.0,dd=0.0,psj=0.0,p11=0.0,p00=0.0,p=0.0,ccc=0.0;
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
-      if(*model==1||*model==10||*model==12||*model==21||*model==30||*model==36||*model==18
-        ||*model==43||*model==44||*model==20||*model==33||*model==42||
-      *model==22||*model==24|*model==26||*model==27||*model==29||*model==34||*model==38
-      ||*model==39||*model==40||*model==41||*model==35||*model==37||*model==9||*model==41||*model==50)
+      if((*model==1)||(*model==10)||(*model==12)||(*model==21)||(*model==30)||(*model==36)||(*model==18)
+        ||(*model==43)||(*model==44)||(*model==20)||(*model==33)||(*model==42)||
+      (*model==22)||(*model==24)|(*model==26)||(*model==27)||(*model==29)||(*model==34)||(*model==38)
+      ||(*model==39)||(*model==40)||(*model==41)||(*model==35)||(*model==37)||(*model==9)||(*model==41)||(*model==50))
 
 
     rho[t]=CorFct(cormod, h[i], u[j], par,0,0);

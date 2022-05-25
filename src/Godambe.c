@@ -47,9 +47,9 @@ void Sensitivity(double *betas,int *biv,double *coordx,double *coordy,double *co
 		 double *mean,int *model, double *NN,int *nbetas, int *npar, int *nparc,int *nparcT, double *parcor, double *nuis, int *np,double *score,
 		 double *sensmat, int *spt,  int *type_lik,int *weigthed,double *Z,int *ns, int *NS)
 {
-  double *grad,*gradcor;
-  grad=(double *) R_alloc(*npar,sizeof(double));// gradient of the ijth composite log-likelihood
-  gradcor=(double *) R_alloc(*nparc, sizeof(double));// gradient of the correlation
+ // double *grad;
+  //grad=(double *) R_alloc(*npar,sizeof(double));// gradient of the ijth composite log-likelihood
+  //gradcor=(double *) R_alloc(*nparc, sizeof(double));// gradient of the correlation
 
         if( (!*spt) && (!*biv)) 
           Sens_Pair(betas,coordx,coordy,coordt,cormod,data,eps,flagcor,flagnuis,NN,nuis,np,nbetas,
@@ -498,7 +498,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                       int *ns, int *NS)
 
 {
-    double meanl,meanm,beta,rho=0,lags=0.0,lagt=0.0,weigths=1.0, *rangex, *rangey,*gradient;
+    double meanl=0.0,meanm=0.0,beta,rho=0,lags=0.0,lagt=0.0,weigths=1.0, *rangex, *rangey,*gradient;
     double *sdata,*s2data,*xgrid,*ygrid,*scoordx,*scoordy,*sublagt,*subvari, *s2cx,*s2cy;
     double *sumgrad,*gradcor;
     double delta=0.0, deltax=0.0, deltay=0.0, dimwinx=0.0, dimwiny=0.0;
@@ -646,7 +646,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     //n_win=(numintx+1)*(numinty+1);   //number of spatial windows
     nsub=0;
     
-    int *ns_sub,*NS_sub;
+    int *ns_sub=0,*NS_sub=0;
     int nsub1 =0;
     
     double *res_sub;

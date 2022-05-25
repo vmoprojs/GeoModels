@@ -6,7 +6,7 @@
 GeoResiduals<-function(fit)
 
 {
-if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
+if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 ######
 
 fit$param=unlist(fit$param)

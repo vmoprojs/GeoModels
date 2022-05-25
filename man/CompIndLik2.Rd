@@ -8,10 +8,14 @@
   composite log-likelihood.
 }
 \usage{
-CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
-              lower, model, n, namescorr, namesnuis, namesparam,
-              numparam, optimizer, onlyvar, parallel, param, spacetime, type,
-              upper, namesupper, varest, ns, X,sensitivity,copula,MM)
+CompIndLik2(bivariate, coordx, coordy ,coordt,
+coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
+              lower, model, n, namescorr, namesnuis, 
+              namesparam,
+              numparam, optimizer, onlyvar, parallel, 
+              param, spacetime, type,
+              upper, namesupper, varest, ns, X,
+              sensitivity,copula,MM)
 }
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
@@ -77,11 +81,14 @@ CompIndLik2(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnu
           \item{MM}{Numeric;a non constant fixed mean }
 }
 
+\value{Return a list from an \code{optim} call.}
+
 \seealso{\code{\link{GeoFit}}}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \keyword{Composite}

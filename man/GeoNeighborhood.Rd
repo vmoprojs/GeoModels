@@ -3,14 +3,17 @@
 \encoding{UTF-8}
 \title{Spatio (temporal) neighborhood selection for local kriging.}
 \description{
-Given a set of spatio (temporal) locations and data, the procedure select a spatio (temporal) neighborhood associated to some  given spatio (temporal) locations.
+Given a set of spatio (temporal) locations and data, the procedure selects a spatio (temporal) neighborhood associated to some  given spatio (temporal) locations.
 The neighborhood is computed  using a fixed  spatio (temporal) threshold
-or including  a fixed number of spatio (temporal) neighbors.
+or considering a fixed number of spatio (temporal) neighbors.
 }
 
 \usage{
-GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
-               distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+GeoNeighborhood(data=NULL, coordx, coordy=NULL,
+coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
+               distance="Eucl", grid=FALSE, 
+               loc, neighb=NULL,maxdist=NULL,
+               maxtime=NULL, radius=6371, time=NULL, X=NULL)
 }
 \arguments{
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -70,8 +73,9 @@ GeoNeighborhood(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, bi
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

@@ -1,10 +1,16 @@
 //#include <stdio.h>
+#include <stdlib.h>
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Applic.h>
 #include <assert.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+
+
+
 //#include "polevl.h"
 #define LOW -1.0e15
 #define MAXERR 1e-6
@@ -27,7 +33,7 @@
 #define LOGPI  1.14472988584940017414
 
 
-#include <stdbool.h>
+
 
 
 //************************************** ST igam.c*****************************************
@@ -230,8 +236,8 @@ static const double lanczos_g = 6.024680040776729583740234375;
 #endif
 
 
-static double big = 4.503599627370496e15;
-static double biginv = 2.22044604925031308085e-16;
+static const double big = 4.503599627370496e15;
+static const double biginv = 2.22044604925031308085e-16;
 
 double igamc_continued_fraction(double, double);
 double igam_series(double, double);
@@ -239,7 +245,7 @@ double igamc_series(double, double);
 double asymptotic_series(double, double, int);
 void igam_call(double *a,double *x,double *res);
 
-void corr_kuma_vec(double *rho,double *eta,double *gam,double *res, int *n);
+
 double igam(double a, double x);
 double igamc(double a, double x);
 
@@ -247,12 +253,12 @@ void  reghyperg_call(int *a,int *b,double *x,double *res);
 
 
 
-
+void Maxima_Minima_time(double *res,double *coordt,int *nsize);
 double lanczos_sum_expg_scaled(double x);
 
 
 double log1p(double x);
-double log1pmx(double x);
+//double log1pmx(double x);
 double log1pmx(double x);
 double expm1(double x);
 double cosm1(double x);
@@ -285,7 +291,7 @@ static const double LQ[] = {
 
 
 
-static double coscof[7] = {
+static const double coscof[7] = {
     4.7377507964246204691685E-14,
     -1.1470284843425359765671E-11,
     2.0876754287081521758361E-9,
@@ -303,13 +309,15 @@ static double coscof[7] = {
  * -0.5 <= x <= 0.5
  */
 
-static double EP[3] = {
+
+
+static const double EP[3] = {
     1.2617719307481059087798E-4,
     3.0299440770744196129956E-2,
     9.9999999999999999991025E-1,
 };
 
-static double EQ[4] = {
+static const double EQ[4] = {
     3.0019850513866445504159E-6,
     2.5244834034968410419224E-3,
     2.2726554820815502876593E-1,
@@ -318,20 +326,21 @@ static double EQ[4] = {
 
 
 
-static double AA[] = {
+static const double AA[] = {
     12.0,
     -720.0,
     30240.0,
     -1209600.0,
     47900160.0,
-    -1.8924375803183791606e9,    /*1.307674368e12/691 */
+    -1.8924375803183791606e9,
     7.47242496e10,
-    -2.950130727918164224e12,    /*1.067062284288e16/3617 */
-    1.1646782814350067249e14,    /*5.109094217170944e18/43867 */
-    -4.5979787224074726105e15,    /*8.028576626982912e20/174611 */
-    1.8152105401943546773e17,    /*1.5511210043330985984e23/854513 */
-    -7.1661652561756670113e18    /*1.6938241367317436694528e27/236364091 */
+    -2.950130727918164224e12,
+    1.1646782814350067249e14,
+    -4.5979787224074726105e15,
+    1.8152105401943546773e17,
+    -7.1661652561756670113e18
 };
+
 
 
 //************************************* END igam.c*****************************************
@@ -346,54 +355,54 @@ static double AA[] = {
 
 //---------START GLOBAL VARIABLES-----------
 
-double **dista;// 2x2 matrix of distance weight (for c)and commpact suppots (tap)
-int *first;//vector of index in the bivariate case
-int *second;//vector of index in the bivariate case
-int *isbiv;//is bivariate?
-int *ismem;//is with memoty allocation
-int *isst;//is a spatio-temporal random field?
-int *istap;//is tapering?
-double *lags;// vector of spatial distances for tapering
-double *lagt;// vector of temporal distance for tapering
+extern double **dista;// 2x2 matrix of distance weight (for c)and commpact suppots (tap)
+extern int *first;//vector of index in the bivariate case
+extern int *second;//vector of index in the bivariate case
+extern int *isbiv;//is bivariate?
+extern int *ismem;//is with memoty allocation
+extern int *isst;//is a spatio-temporal random field?
+extern int *istap;//is tapering?
+extern double *lags;// vector of spatial distances for tapering
+extern double *lagt;// vector of temporal distance for tapering
 //double **mlags;// vector of spatial distances
 //double **mlagt;// vector of temporal distances
-double *maxdist;// the threshould of the spatial distances
-double *maxtime;// the threshould of the temporal distances below which the pairs are considered
+extern double *maxdist;// the threshould of the spatial distances
+extern double *maxtime;// the threshould of the temporal distances below which the pairs are considered
 //double *maximdista;// the maximum spatial distance
 //double *maximtime;// the maximum temporal distance
 //double *minimdista; // the minimum spatial distance
 //double *minimtime;// the minimum temporal distance
-int *ncoord;// number of total spatial coordinates
-int *ncoordx;// number of the first spatial coordinates
-int *ncoordy;// number of the second spatial coordinates
-int *npairs;// effective number of pairs
+extern int *ncoord;// number of total spatial coordinates
+extern int *ncoordx;// number of the first spatial coordinates
+extern int *ncoordy;// number of the second spatial coordinates
+extern int *npairs;// effective number of pairs
 //int *nrep;// number of iid replicates of the random field
-int *ntime;// number of times
-double *REARTH; // radius of the sphere
-double *tapsep; // parameter separability for space time quasi taper
-double *tlags; //double *mtlags;double *mtlagt;
-double *tlagt;
-int *tfirst;
-int *tsecond;
-int *type;  //  type of distance
-int *cdyn; // dynamic coords indicator
+extern int *ntime;// number of times
+extern double *REARTH; // radius of the sphere
+extern double *tapsep; // parameter separability for space time quasi taper
+extern double *tlags; //double *mtlags;double *mtlagt;
+extern double *tlagt;
+extern int *tfirst;
+extern int *tsecond;
+extern int *type;  //  type of distance
+extern int *cdyn; // dynamic coords indicator
 //char *fkernel; // path to kernel binary
 //int *totpairs;// total number of pairs
 //---------END GLOBAL VARIABLES-------------
 //void indx(double *ind, int *n);
 
 // fortran declaration for bivariate normal cdf:
-double F77_NAME(chfm)(double *xr,double *xi,double *ar, double *ai,
+extern double F77_NAME(chfm)(double *xr,double *xi,double *ar, double *ai,
   double *br, double *bi,double *r, double *ri,int *len, int *lnchf,int *ip);
 
-double F77_NAME(bvnmvn)(double *lower, double *upper, int *infin, double *correl);
+extern double F77_NAME(bvnmvn)(double *lower, double *upper, int *infin, double *correl);
 
-void mult_pmnorm( int *nvar , double *lower , double *upper , int *infin , double *corr , int *maxpts , double *abseps ,
+extern void mult_pmnorm( int *nvar , double *lower , double *upper , int *infin , double *corr , int *maxpts , double *abseps ,
      double *releps , double *esterror , double *result , int *fail );
 
-void F77_NAME(sadmvn)( int* , double* , double*, int* , double* , int* , double* , double* , double* , double * , int*) ;
+extern void F77_NAME(sadmvn)( int* , double* , double*, int* , double* , int* , double* , double* , double* , double * , int*) ;
 
-double F77_NAME(mvndst)(int *N,double *lower, double *upper, int *infin, double *correl);
+extern double F77_NAME(mvndst)(int *N,double *lower, double *upper, int *infin, double *correl);
 // Internal function declaration:
 // 1)
 /*----------------------------------------------------------------
@@ -631,9 +640,13 @@ double DMat_biv_scale1_contr(double h,double eps,double var11,double var22,doubl
 double DMat_biv_scale2_contr(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
                              double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
 double Dmatsep_biv_var11(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
+double Dmatsep_biv_var2(double h,double var11,double var22,double nug11,double nug22, double scale,double smoo, double col,int c11,int c22);
 double Dmatsep_biv_var22(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
+double Dmatsep_biv_nug1(double h,double var11,double var22,double nug11,double nug22, double scale,double smoo, double col,int c11,int c22);
 double Dmatsep_biv_nug11(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
 double Dmatsep_biv_nug22(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
+double Dmatsep_biv_nug2(double h,double var11,double var22,double nug11,double nug22, double scale ,double smoo,double col,int c11,int c22);
+
 double Dmatsep_biv_scale(double h,double eps,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col,int c11,int c22);
 double Dmatsep_biv_smo(double h,double eps,double var11,double var22,double nug11,double nug22, double scale, double smooth,double col,int c11,int c22);
 double Dmatsep_biv_col(double h,double var11,double var22,double nug11,double nug22, double scale,double smooth, double col ,int c11,int c22);
@@ -722,10 +735,8 @@ void GradCorrFct(double rho, int *cormod, double eps, int *flag,
 void GradVarioFct(double vario, int *cormod, double *eps, int *flag,
           double *grad, double lag, double *par, double tsep);
 void TapVectCorrelation(double *rho,int *cormod,double *tdists,int *ntdists,double *nuis,double *par);
-void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u,int *N);
-void VectCorrelation_biv(double *rho, double *vario,int *cormod, double *h, int *nlags, int *nlagt,double *mean,int *model, 
-                     double *nuis,double *par, double *u,int *N);
+
+
 
 
 double Variogram(int *cormod, double h, double u, double nugget, double var, double *par);
@@ -752,61 +763,6 @@ double Trace(double **A,int n);
 void lubksb(double **a, int n, int *indx, double *b);
 void ludcmp(double **a, int n, int *indx, double *dd);
 
-
-/*----------------------------------------------------------------
- File name: CompositeLikelihood_OCL.c
- Description: functions for composite log-likelihood evaluation in OpenCL
- Start
- ---------------------------------------------------------------*/
-
-void Comp_Cond_Gauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_Gauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt, double *data,int *NN, double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS, int *local,int *GPU);
-void Comp_Diff_Gauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data, int *NN,
-                          double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis, int *ns, int *NS,int *local,int *GPU);
-void Comp_Pair_WrapGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                              double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local,int *GPU);
-void Comp_Pair_SinhGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                              double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_LogGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                             double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_Gauss_st2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                             double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_SkewGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                              double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_Gamma2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                          double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_PoisbinnegGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                                    double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_BinomGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                               double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_BinomnegGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                                  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_Binom2Gauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                                double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_Logistic2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                             int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-void Comp_Pair_LogLogistic2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,
-                                int *NN,  double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local, int *GPU);
-
-void Comp_Pair_T2_OCL(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN,
-                      double *par,  int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,
-                      int *local_wi, int *dev);
-
-
-void Comp_Pair_T_st2_OCL(int *cormod, double *coordx, double *coordy, double *coordt,double *data,int *NN,
-                         double *par, int *weigthed, double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,int *local_wi, int *dev);
-
-void wendintegral_call(double *x, double *param, double *res);
-
-
-void Comp_Pair_TWOPIECEGauss2_OCL(int *cormod, double *coordx, double *coordy, double *coordt, double *data, int *NN,
-double *par,  int *weigthed,double *res,double *mean,double *mean2,double *nuis,int *ns, int *NS,
-                                  int *local_wi, int *dev);
-/*----------------------------------------------------------------
- File name: CompositeLikelihood_OCL.c
- Description: functions for composite log-likelihood evaluation in OpenCL
- End
- ---------------------------------------------------------------*/
 
 
 
@@ -856,8 +812,7 @@ double pbhalf_gauss (double zi,double zj,double rho,double nugget);
 double pnorm_two_piece(double x, double eta);
 double pbnorm_two_piece( int *cormod, double h, double u, 
     double xi, double xj, double nugget, double var,double eta,double *par);
-void vpbnorm(int *cormod, double *h, double *u, int *nlags, int *nlagt,
-         double *nuis, double *par, double *rho, double *thr);
+
 
 
 /*----------------------------------------------------------------
@@ -874,11 +829,7 @@ Start
  ---------------------------------------------------------------*/
 
 
-void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *coordt, int *cormod, double *data, int *dst,
-          double *eps,int *flagcor, int *flagnuis, int *grid, int *like, double *mean,int *model,double *NN, int *nbetas,
-          int *npar, int *nparc,int *nparcT, double *parcor, double *nuis, double *score,
-          double *sensmat, int *spt,  int *type_lik, double *varimat,
-          int *vartype, double *winc, double *winstp,double *winct,double *winstp_t,int *weigthed, double *X,int *ns,int *NS);
+
 
 
 void Sens_Cond_Gauss(double *coordx, double *coordy, double *coordt, int *cormod, double *data, double *eps, int *flagcor, int *flagnuis, double *nuis, int *np,
@@ -1185,30 +1136,14 @@ Start
 
 
 
-void pairs(int *ncoords,double *data,double *coordx,double *coordy,double *numbins,double *bins,double *v0,double *v1,double *v2,double *maxdist);
-
-void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins);
-
-void Binned_Variogram_22(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
-
-void Binned_Variogram_st2(double *bins, double *bint,double *coordx, double *coordy, double *coordt, double *data, int *lbins,
-                         int *lbinst, int *lbint, double *moms, double *momst,
-                         double *momt, int *nbins, int *nbint, int *ns,int *NS);
-
-
-void Binned_Variogram_biv2(double *bins,double *coordx, double *coordy, double *coordt, double *data, 
-  int *cross_lbins, double *cross_moms, int *nbins,int *marg_lbins, double *marg_moms,int *ns, int *NS);
-
-
-void Cloud_Variogram2(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
-
-void LeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, double *moms,
-              int *nbins, int *nbint, double *nuis, double *par, double *res);
 
 
 
-void WLeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, double *moms,
-              int *nbins, int *nbint, double *nuis, double *par, double *res);
+
+
+
+
+
 
 
 
@@ -1226,7 +1161,7 @@ Description: procedures for the computation of useful quantities.
 Start
  ---------------------------------------------------------------*/
 
-void DeleteGlobalVar();
+//void DeleteGlobalVar();
 
 void RangeDist(double *max, double *min);
 
@@ -1262,9 +1197,9 @@ double Maxima_i(int *x, int size);
 
 double Minima(double *x, int *size);
 
-void Maxima_Minima_dist(double *res,double *coordx,double *coordy,int *nsize,int *type_dist,double *radius);
 
-void Maxima_Minima_time(double *res,double *coordt,int *nsize);
+
+
 
 void Range(double *x, double *ran, int *size);
 
@@ -1293,16 +1228,9 @@ void SetSampling_t(double *data,double *sdata, int nbetas,int npts,
 
 
 
-void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
-          int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
-          int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
-          int *tap,int *tapmodel,int *tp,int *weighted, int *colidx,int *rowidx, 
-      int *ns, int *NS, int *dyn);
 
-void SetGlobalVar2 (int *nsite, int *times, 
-                    double *h,int *nn,  double *maxh,
-                    double *u,int *tt,  double *maxu,  
-                    int *st,int *biv,int *one, int *two);
+
+
 
 void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
         int *ismal,int *ja,int *colidx,int *rowidx ,double thres);
@@ -1326,6 +1254,7 @@ End
 
 
 
+
 double hyp2f1_neg_c_equal_bc(double a, double b, double x);
 double hyp2f1ra(double a, double b, double c, double x,double *loss);
 double lgam(double x);
@@ -1336,7 +1265,7 @@ double hyt2f1( double a, double b, double c, double x, double *loss );
 double hys2f1( double a,double b,double c,double x,double *loss );
 double hyp2f1( double a,double b,double c,double x);
 double hypergeo(double a,double b,double c,double x);
-void hypergeo_call(double *a,double *b,double *c,double *x, double *res);
+
 double polevl(double x, const double coef[], int N);
 double p1evl(double x, const double coef[], int N);
 
@@ -1346,14 +1275,165 @@ double hy1f1p(double a, double b, double x, double *acanc);
 double hy1f1a(double a, double b, double x, double *acanc);
 double hyp2f0(double a, double b, double x, int type, double *err);
 double hyperg(double a, double b, double x);
-void hyperg_call(double *a,double *b,double *x,double *res);
-void biv_pois_call(double *corr,int *r, int *t, double *mean_i, double *mean_j,double *res);
-void appellF4_call(double *a,double *b,double *c,double *d,double *x,double *y, double *res);
-void biv_unif_CopulaClayton_call(double *x,double *y,double *rho, double *nu, double *res);
-void biv_unif_CopulaGauss_call(double *x,double *y,double *rho, double *res);
+
+
+
 // END hyperg.c
 
 
 
 
 
+
+
+
+
+double DMat_biv_smo1(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                     double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+double DMat_biv_smo12(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                      double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+double DMat_biv_smo2(double h,double eps,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                     double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+
+double DWen1_biv_scale1_contr(double h,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                              double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+double DWen1_biv_scale2_contr(double h,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                              double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+
+double DWen1_biv_smo1(double h,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                      double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+
+double DWen1_biv_smo12(double h,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                       double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+double DWen1_biv_smo2(double h,double var11,double var22,double nug11,double nug22, double scale11,double scale22, double scale12,
+                      double smoo11, double smoo22,double smoo12, double col,int c11,int c22);
+
+
+
+
+// ******** END: CorrelationFunction ******
+
+
+
+
+// ******** ST: Distributions ******
+
+int is_nonpos_int(double x);
+double poch(double a, double m);
+double log_hyp1F1_reg(int n,int m,double z);
+double log_regularized1F1(int n, int m,double z) ;
+double aprox_reg_1F1(int n, int m,double z) ;
+
+double try(int m, double b,double z);
+double Phi(double x);
+double Phi2diag( double x, double a, double px, double pxs );
+
+double Phi2help( double x, double y, double rho );
+
+double Phi2( double x, double y, double rho );
+
+double igam2(int n,double x);
+
+double igam_fac(double a, double x);
+
+
+double biv_chisqu2(double corr,double zi,double zj, double shape);
+
+
+double asy_log_besselI(double z,double nu);
+
+double corrPGs(double corr,double mean,double a);
+
+double CorrPGns(double corr,double mean_i, double mean_j, double a);
+
+
+
+
+double biv_Norm(double corr,double zi,double zj,double mi,double mj,double vari1,double vari2, double nugget);
+
+
+double p3norm(int *cormod, double h0,double h1,double h2, double u0, double u1,double u2,
+              double *nuis, double *par);
+
+
+
+
+double aprox(int k,double a, double b) ;
+double aprox1(double a) ;
+
+double appellF42211(double x,double y);
+
+double appellF4_mod(double nu,double rho,double x,double y,double nugget);
+
+double biv_Unif(double rho,double ui,double uj);
+
+double biv_half_Tukeyh(double rho,double ti,double tj,double tail);
+double  binomialCoeff(int n, int k) ;
+
+
+double Prt(double corr,int r, int t, double mean_i, double mean_j);
+
+double Prr(double corr,int r, int t, double mean_i, double mean_j);
+
+double Pr0(double corr,int r, int t, double mean_i, double mean_j);
+
+double P00(double corr,int r, int t, double mean_i, double mean_j);
+
+double PG00(double corr,int r, int t, double mean_i, double mean_j, double a);
+
+double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a);
+
+double PGr0(double corr,int r, int t, double mean_i, double mean_j, double a);
+
+double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a);
+
+double int_kuma(double x,double eta, double gam,double k,double m);
+
+
+
+double kumaintegral(double *param);
+
+double mean_kuma(double eta,double gam);
+
+double var_kuma(double eta, double gam);
+double corr_kuma(double rho,double eta,double gam);
+double cdf_kuma(double y,double a, double b);
+
+double pdf_kuma(double y,double a, double b);
+
+
+// ******** END: Distributions ******
+
+
+// ******** ST: TB ******
+
+
+
+
+
+
+
+// ******** END: TB ******
+
+
+// ******** ST: Utility ******
+
+
+double qnorm55(double p, double mu, double sigma, int lower_tail, int log_p);
+
+// ******** END: Utility ******
+
+
+
+
+
+
+
+
+void Maxima_Minima_dist(double *res,double *coordx,double *coordy,int *nsize,int *type_dist,double *radius);

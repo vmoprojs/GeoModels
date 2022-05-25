@@ -11,13 +11,18 @@
   The function allows to fix any of the parameters and setting upper/lower bound in the optimization.
 }
 \usage{
-GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel,distance="Eucl",fixed=NULL,
-     anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal',
+GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
+  copula=NULL,corrmodel,distance="Eucl",fixed=NULL,
+     anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, 
+     grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
-      maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
+      maxtime=Inf, memdist=TRUE,method="cholesky", 
+      model='Gaussian',n=1, onlyvar=FALSE ,
       optimizer='Nelder-Mead', parallel=FALSE, 
-      radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
-      type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
+      radius=6371,  sensitivity=FALSE,sparse=FALSE,
+       start=NULL, taper=NULL, tapsep=NULL, 
+      type='Pairwise', upper=NULL, varest=FALSE, 
+      vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
       winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
 }
 
@@ -84,7 +89,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
     default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}, \code{SANN},  \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
-    of one-dimensional optimization, the function \code{optimize} is used.  Two option  for global searching optimization using mcGlobaloptim package are possible with \code{multinlminb} and  \code{multiNelder-Mead} options.}  
+    of one-dimensional optimization, the function \code{optimize} is used.  }  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
    The default is 6371, the radius of the earth.}
@@ -193,83 +198,17 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corr
 }
 
 
-\references{
-
-  Maximum Restricted Likelihood Estimator:
-
-  Harville, D. A. (1977)
-  Maximum Likelihood Approaches to Variance Component Estimation and to Related Problems.
-  \emph{Journal of the American Statistical Association}, \bold{72},
-  320--338.
-
-  Tapered likelihood:
-
-    Kaufman, C. G., Schervish, M. J. and Nychka, D. W. (2008)
-  Covariance Tapering for Likelihood-Based Estimation in Large Spatial Dataset.
-  \emph{Journal of the American Statistical Association}, \bold{103},
-  1545--1555.
-
-  Composite-likelihood:
-
-  Varin, C., Reid, N. and Firth, D. (2011). An Overview of Composite
-  Likelihood Methods. \emph{Statistica Sinica}, \bold{21}, 5--42.
-
-  Varin, C. and Vidoni, P. (2005)
-  A Note on Composite Likelihood Inference and Model Selection.
-  \emph{Biometrika}, \bold{92}, 519--528.
-
-
-  Weighted Composite-likelihood for non Gaussian RF: 
-
-  Alegrıa A., Caro S., Bevilacqua M., Porcu E., Clarke J. (2017) \emph{Estimating covariance functions of multivariate skew-Gaussian random fields on the sphere}. Spatial Statistics \bold{22} 388-402
-
-  Alegria A., Bevilacqua, M., Porcu, E. (2016) 
-  Likelihood-based inference for multivariate space-time wrapped-Gaussian fields. 
-    \emph{Journal of Statistical Computation and Simulation}. \bold{86(13)}, 2583--2597.
-
-  Bevilacqua M., Caamano C.,  Gaetan C. (2020) On modeling positive continuous data with spatio-temporal dependence.  \emph{Environmetrics}   \bold{31(7)}
-
-  Bevilacqua M., Caamaño C., Arellano Valle R.B., Morales-Oñate V.  (2020) Non-Gaussian Geostatistical Modeling using (skew) t Processes. \emph{Scandinavian Journal of Statistics}.
-
-  Weighted Composite-likelihood for Gaussian RFs:
-
-    Bevilacqua, M. Gaetan, C., Mateu, J. and Porcu, E. (2012)
-  Estimating space and space-time covariance functions for large data
-  sets: a weighted composite likelihood approach.
-  \emph{Journal of the American Statistical Association, Theory &
-    Methods}, \bold{107}, 268--280.
-
-  Bevilacqua, M., Gaetan, C. (2015) Comparing composite likelihood methods based on pairs for spatial Gaussian random fields.  \emph{Statistics and Computing}, \bold{25(5)},  877-892.
-
-
-  Sub-sampling estimation:
-
-  Carlstein, E. (1986) The Use of Subseries Values for Estimating the
-  Variance.
-  \emph{The Annals of Statistics},
-  \bold{14}, 1171--1179.
-
-  Heagerty, P. J. and Lumley T. (2000) Window Subsampling of Estimating
-  Functions with Application to Regression Models.
-  \emph{Journal of the American Statistical Association, Theory &
-    Methods}, \bold{95}, 197--211.
-
-  Lee, Y. D. and Lahiri S. N. (2002) Variogram Fitting by Spatial
-  Subsampling.
-  \emph{Journal of the Royal Statistical Society. Series B},
-  \bold{64}, 837--854.
-
-}
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
   
 \examples{
 library(GeoModels)
-library(fields)
+
 
 ###############################################################
 ############ Examples of spatial Gaussian RFs ################
@@ -277,9 +216,8 @@ library(fields)
 
 ################################################################
 ###
-### Example 1 :  Estimation of a spatial Gaussian RF with 
-### Matern correlation using  conditional pairwise likelihood and 
-### maximum likelihood with  Nelder-Mead and nlminb optimization
+### Example 1 : Maximum pairwise conditional likelihood fitting 
+###  of a Gaussian RF with Matern correlation
 ###
 ###############################################################
 
@@ -317,24 +255,11 @@ start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
 ### 
 ###############################################################
 fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, 
-                    optimizer="Nelder-Mead",neighb=3,likelihood="Conditional",
+                    optimizer="BFGS",neighb=3,likelihood="Conditional",
                     type="Pairwise", start=start,fixed=fixed,X=X)
 print(fit1)
 
-################################################################
-###
-### Standard Maximum likelihood fitting of
-### Gaussian RFs with exponential correlation.
-###
-###############################################################
-I=Inf
-lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
-upper<-list(mean=I,mean1=I,scale=I,sill=I)
-fit2 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel,
-                    optimizer="nlminb",upper=upper,lower=lower,
-                    likelihood="Full",type="Standard", 
-                    start=start,fixed=fixed,X=X)
-print(fit2)
+
 
 
 ###############################################################
@@ -344,9 +269,9 @@ print(fit2)
 
 ################################################################
 ###
-### Example 3. Maximum pairwise likelihood fitting of spatial
-### Weibull  RF with Generalized Wendland correlation
-### using Nelder-Mead  
+### Example 2. Maximum pairwise likelihood fitting of 
+### a LogGaussian  RF with Generalized Wendland correlation
+### 
 ###############################################################
 set.seed(524)
 # Define the spatial-coordinates of the points:
@@ -357,32 +282,36 @@ coords <- cbind(x,y)
 X=cbind(rep(1,N),runif(N))
 mean=1; mean1=2 # regression parameters
 nugget=0
-shape=2
+sill=0.5
 scale=0.2
 smooth=0
 
-model="Weibull"
+model="LogGaussian"
 corrmodel="GenWend"
-param=list(mean=mean,mean1=mean1,sill=1,scale=scale,
-                     shape=shape,nugget=nugget,power2=4,smooth=smooth)
+param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,
+                    nugget=nugget,power2=4,smooth=smooth)
 # Simulation of a  non stationary weibull RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 
-fixed<-list(nugget=nugget,power2=4,sill=1,smooth=smooth)
-start<-list(mean=mean,mean1=mean1,scale=scale,shape=shape)
+fixed<-list(nugget=nugget,power2=4,smooth=smooth)
+start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+I=Inf
+lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
+upper<-list(mean= I,mean1= I,scale=I,sill=I)
 
 # Maximum pairwise composite-likelihood fitting of the RF:
 fit <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
-                    neighb=3,likelihood="Marginal",type="Pairwise",X=X,
+                    neighb=3,likelihood="Conditional",type="Pairwise",X=X,
+                    optimizer="nlminb",lower=lower,upper=upper,
                     start=start,fixed=fixed)
 print(fit$param)
 
 
 ################################################################
 ###
-### Example 4. Maximum pairwise likelihood fitting of
-### SinhAsinh-Gaussian spatial  RFs with Wendland correlation
+### Example 3. Maximum pairwise likelihood fitting of
+### SinhAsinh   RFs with Wendland0 correlation
 ###
 ###############################################################
 set.seed(261)
@@ -412,6 +341,7 @@ start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",
                     start=start,fixed=fixed)
+print(fit1$param)
 
 
 

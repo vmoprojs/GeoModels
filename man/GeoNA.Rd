@@ -3,7 +3,8 @@
 \encoding{UTF-8}
 \title{Deleting  NA values (missing values) from a spatial or spatio-temporal dataset.}
 \description{The function deletes  NA  values from a spatial or spatio-temporal dataset  }
-\usage{GeoNA(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, grid=FALSE, X=NULL, setting="spatial")}
+\usage{GeoNA(data, coordx, coordy=NULL, coordt=NULL,
+coordx_dyn=NULL, grid=FALSE, X=NULL, setting="spatial")}
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
@@ -44,8 +45,9 @@
 }
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{

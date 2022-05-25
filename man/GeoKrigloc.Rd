@@ -5,15 +5,20 @@
           for Gaussian and non Gaussian RFs.}
 \description{
 For a  given set of  spatial location sites and temporal instants,
-the function computes optimal linear prediction and associated mean square error 
+the function computes optmal local  linear prediction and the associated mean squared error 
 for the Gaussian and non Gaussian case using a spatial (temporal) neighborhood
 computed using the  function \code{\link{GeoNeighborhood}}
 }
 \usage{
-GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
-           loc, neighb=NULL, maxdist=NULL, maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
-           param, anisopars=NULL,radius=6371, sparse=FALSE, time=NULL, type="Standard",type_mse=NULL,
-            type_krig="Simple",weigthed=TRUE, which=1, copula=NULL,X=NULL,Xloc=NULL)
+GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL,
+coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
+           loc, neighb=NULL, maxdist=NULL, 
+           maxtime=NULL, method="cholesky",
+           model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
+           param, anisopars=NULL,radius=6371,
+           sparse=FALSE, time=NULL, type="Standard",type_mse=NULL,
+            type_krig="Simple",weigthed=TRUE, 
+            which=1, copula=NULL,X=NULL,Xloc=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -139,8 +144,9 @@ The neighborhood is specified with the option \code{maxdist}  and \code{maxtime}
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{
@@ -149,22 +155,22 @@ Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.
 ############### Examples of Spatial local kriging  #############
 ################################################################
 require(GeoModels)
-require(fields)
 ####
 model="Gaussian"
 
 # Define the spatial-coordinates of the points:
-set.seed(79)
-x = runif(500, 0, 1)
-y = runif(500, 0, 1)
+set.seed(759)
+x = runif(1000, 0, 1)
+y = runif(1000, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
-corrmodel = "Exponential"
+corrmodel = "Wend0"
 mean=0
 sill=1
 nugget=0
-scale=0.3/3
-param=list(mean=mean,sill=sill,nugget=nugget,scale=scale)
+scale=0.2
+param=list(mean=mean,sill=sill,nugget=nugget,
+scale=scale,power2=4)
 
 
 # Simulation of the spatial Gaussian random field:
@@ -172,9 +178,7 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel,
               param=param)$data
 
 # locations to predict
-xx=seq(0,1,0.025)
-loc_to_pred=as.matrix(expand.grid(xx,xx))
-
+loc_to_pred=matrix(runif(8),4,2)
 ################################################################
 ###
 ### Example 1. Comparing spatial kriging with local kriging for
@@ -184,28 +188,12 @@ loc_to_pred=as.matrix(expand.grid(xx,xx))
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
       model=model,param= param, data=data,mse=TRUE)
 
-pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-      model=model,neighb=50, param= param,mse=TRUE)
+pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,coordx=coords,
+corrmodel=corrmodel,
+      model=model,neighb=100, param= param,mse=TRUE)
 
-colour = rainbow(100)
-par(mfrow=c(2,2))
-zlim=c(-2.6,2.6)
-# simple kriging map prediction
-image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
-           zlim=zlim,xlab="",ylab="",
-           main="Kriging with  exponential model ")
-
-# simple kriging MSE map prediction variance
-image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
-
-# simple  kriging map prediction
-image.plot(xx, xx, matrix(pr_loc$pred,ncol=length(xx)),col=colour,
-           zlim=zlim,xlab="",ylab="",main="Local Kriging with exponential model")
-
-# simple kriging MSE map prediction variance
-image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
+pr$pred;
+pr_loc$pred
 
 
 ############################################################
@@ -221,7 +209,8 @@ coordt=seq(0,5,0.25)
 corrmodel="Exp_Exp"
 param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
 
-data = GeoSim(coordx=coords, coordt=coordt,corrmodel="Exp_Exp", 
+data = GeoSim(coordx=coords, coordt=coordt,
+corrmodel="Exp_Exp", 
                          param=param)$data
 ##  four location to predict
 loc_to_pred=matrix(runif(8),4,2)
@@ -229,9 +218,11 @@ loc_to_pred=matrix(runif(8),4,2)
 time=c(0.5,1.2,3.7)
 
 
-pr=GeoKrig(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
+pr=GeoKrig(data=data,loc=loc_to_pred,time=time,
+coordx=coords,coordt=coordt,corrmodel=corrmodel,
   model="Gaussian", param= param, mse=TRUE)
-pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
+pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,
+time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
   neigh=25,maxtime=1,model="Gaussian", param= param, mse=TRUE)
 
 ##  full and local prediction 
@@ -253,32 +244,41 @@ coords=cbind(x,y)
 param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
           nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
           
-data = GeoSim(coordx=coords, corrmodel="Bi_matern_sep", param=param)$data
+data = GeoSim(coordx=coords, 
+corrmodel="Bi_matern_sep", param=param)$data
 
 fixed=list(nugget_1=0,nugget_2=0,smooth=0.5,mean_1=0,mean_2=0)
 start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
       pcol=cor(data[1,],data[2,]))
 # Maximum Composite likelihood fitting of the random field:
 fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
-        likelihood="Marginal",type="Pairwise",neighb=c(3,3,3),
+        likelihood="Marginal",type="Pairwise",
+        neighb=c(3,3,3),
         optimizer="BFGS", start=start,fixed=fixed)
 
 
 # locations to predict
 
-xx=seq(0,1,0.025)
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
-pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= append(fitcl$param,fitcl$fixed), data=data,which=1,mse=TRUE)
+pr=GeoKrig(loc=loc_to_pred,coordx=coords,
+corrmodel="Bi_matern_sep",
+       param= append(fitcl$param,fitcl$fixed), 
+       data=data,which=1,mse=TRUE)
 
-pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",maxdist=0.15,param= append(fitcl$param,fitcl$fixed), 
+pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,
+corrmodel="Bi_matern_sep",neighb=30,
+param= append(fitcl$param,fitcl$fixed), 
   data=data,which=1,mse=TRUE)
 
-par(mfrow=c(2,2))
+
 
 colour = rainbow(100)
 zlim=c(-2.6,2.6)
+
+opar=par(no.readonly = TRUE)
+par(mfrow=c(2,2))
 # simple kriging map prediction
 image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
            zlim=zlim,xlab="",ylab="",
@@ -288,14 +288,17 @@ image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
 image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
            xlab="",ylab="",main="Std error")
 
-# simple  kriging map prediction
-image.plot(xx, xx, matrix(pr_loc$pred,ncol=length(xx)),col=colour,
-           zlim=zlim,xlab="",ylab="",main="Local CoKriging with Bivariate Matern model")
+# simple  local kriging map prediction
+image.plot(xx, xx, matrix(pr_loc$pred,ncol=length(xx)),
+col=colour,
+           zlim=zlim,xlab="",ylab="",
+           main="Local CoKriging with Bivariate Matern model")
 
-# simple kriging MSE map prediction variance
-image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),col=colour,
+# simple local kriging MSE map prediction variance
+image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),
+col=colour,
            xlab="",ylab="",main="Std error")
-
+par(opar)
 
 }
 \keyword{Composite}

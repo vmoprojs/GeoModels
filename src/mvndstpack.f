@@ -242,6 +242,8 @@
       DOUBLE PRECISION SUMSQ, AJ, BJ, SUM, SQTWPI, EPS, D, E
       DOUBLE PRECISION CVDIAG, AMIN, BMIN, DMIN, EMIN, YL, YU
       PARAMETER ( SQTWPI = 2.506628274631001D0, EPS = 1D-10 )
+      AMIN=0
+      BMIN=0
       IJ = 0
       II = 0
       INFIS = 0
@@ -491,6 +493,7 @@
 *          accuracy. In this case a value FINEST is returned with 
 *          estimated absolute accuracy ABSERR.
 ************************************************************************
+      
       EXTERNAL FUNCTN
       INTEGER NDIM, MINVLS, MAXVLS, INFORM, NP, PLIM, NLIM, KLIM, KLIMI,
      &        SAMPLS, I, INTVLS, MINSMP

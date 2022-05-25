@@ -312,8 +312,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
         decompvarcov <- MatDecomp(ccov_with_nug,method)
         if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
         sqrtvarcov <- MatSqrt(decompvarcov,method)
-       if(!is.null(GPU)) simD=(gpuR::crossprod(sqrtvarcov,ss))# []
-       else simD=crossprod(sqrtvarcov,ss)
+       #if(!is.null(GPU)) simD=(gpuR::crossprod(sqrtvarcov,ss))# []
+       #else 
+       simD=crossprod(sqrtvarcov,ss)
     }
 
       ccov1=ccov
@@ -348,8 +349,9 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
         decompvarcov <- MatDecomp(ccov$covmatrix,method)
         if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
         sqrtvarcov <- MatSqrt(decompvarcov,method)
-       if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))# []
-       else simd=crossprod(sqrtvarcov,ss)
+       #if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))# []
+       #else 
+       simd=crossprod(sqrtvarcov,ss)
     }
     #######################################################################
     nuisance<-param[ccov$namesnuis]

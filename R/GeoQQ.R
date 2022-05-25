@@ -5,7 +5,7 @@ GeoQQ<-function(fit,type="Q",add=FALSE,ylim=c(0,1),breaks=10,...)
 {
 
 
-if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
+if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 if(type!="Q"&type!="D") stop("Type can be Q or D \n")
 
 model=fit$model        #type of model
@@ -19,6 +19,7 @@ MM=as.numeric(pp["mean"])
 VV=as.numeric(pp["sill"])
 
 opar=par(no.readonly = TRUE)
+on.exit(par(opar))   
 ########################################  
 #### starting qq plot
 ########################################  
@@ -396,7 +397,7 @@ lines(ll,ds,...)
 if(model %in% c("Kumaraswamy2")){
 sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 dkuma = function(x,MM,sh,pmin,pmax){ 
 q=(x-pmin)/(pmax-pmin);k=1-q^(sh);
 m1=1/(1+exp(-MM));
@@ -423,7 +424,7 @@ lines(seq(min(dd),max(dd),0.1),dnorm(seq(min(dd),max(dd),0.1),mean=MM,sd=sqrt(VV
 if(model%in%c("StudentT","Gaussian_misp_StudentT")) 
 {
 df=as.numeric(round(1/pp["df"]))
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Student T Histogram",ylim=ylim,breaks=breaks)
 lines(ll,dt((ll-MM)/sqrt(VV),df=df),...)/sqrt(VV)
 }
@@ -433,7 +434,7 @@ if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT"))
 {
   alpha=as.numeric(pp["skew"])
   nu=as.numeric(round(1/pp["df"]))
-  ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
   d_st=sn::dst((ll-MM)/sqrt(VV), xi=0, omega=1, alpha=alpha, nu=nu)/sqrt(VV)
   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew-T Histogram",ylim=ylim,breaks=breaks)
   lines(ll,d_st,...)
@@ -446,7 +447,7 @@ if(model %in% c("SkewGaussian"))
    sill= as.numeric(pp["sill"])
    omega=sqrt((skew^2 + sill)/sill)
    alpha=skew/sill^0.5
-   ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_sn=sn::dsn((ll-MM)/sqrt(VV), xi=0, omega=omega,alpha=alpha)/sqrt(VV)
    if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew Gaussian Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_sn,...)
@@ -457,7 +458,7 @@ if(model %in% c("SkewGaussian"))
 if(model %in% c("Weibull"))
 {
    shape=pp["shape"]
-   ll=seq(min(dd),max(dd),0.1)
+  ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_w=dweibull(ll,shape=shape,scale=exp(MM)/(gamma(1+1/shape )))
    if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Weibull Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_w,...)
@@ -468,7 +469,7 @@ if(model %in% c("Weibull"))
 if(model %in% c("Gamma"))
 {
    shape=pp["shape"]
-   ll=seq(min(dd),max(dd),0.1)
+  ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_g=dgamma(ll,shape=shape/2,rate=shape/(2*exp(MM)))
    if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gamma Histogram",ylim=ylim,breaks=breaks)
    lines(ll,d_g,...) 
@@ -477,7 +478,7 @@ if(model %in% c("Gamma"))
 #######################################  OK 
 if(model %in% c("LogGaussian"))
 {
-   ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    qtpsas=function(x,MM,VV){
    q=x*exp(VV/2);
    a=-0.5*(log(q)-MM)^2/VV-log(q)-log(sqrt(VV))-0.5*log(2*pi)+VV/2;
@@ -490,7 +491,7 @@ if(model %in% c("LogGaussian"))
 #######################################  OK
 if(model %in% c("Logistic"))
 {
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 d_l = dlogis(ll,location = MM, scale = sqrt(VV))
 if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Logistic Histogram",ylim=ylim)
 lines(ll,d_l,...) 
@@ -500,7 +501,7 @@ if(model %in% c("LogLogistic"))
 {
 shape=pp["shape"]
 cc=gamma(1+1/shape)*gamma(1-1/shape)
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 d_l = actuar::dllogis(ll,shape = shape,scale=exp(MM)/cc)
 if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogLogistic Histogram",ylim=ylim,breaks=breaks)
 lines(ll,d_l,...) 
@@ -511,7 +512,7 @@ if(model %in% c("SinhAsinh"))
 {
 tail = as.numeric(pp["tail"])
 skew = as.numeric(pp["skew"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 qtpsas1=function(x,skew,tail){
 s=sinh(tail*asinh(x)-skew)
 a=(2*pi*(1+x^2))^(-0.5)
@@ -528,7 +529,7 @@ if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",yli
 if(model %in% c("Tukeyh"))
 {
 tail = as.numeric(pp["tail"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 inverse_lamb=function(x,tail)
 {
   value = sqrt(VGAM::lambertW(tail*x*x)/tail);
@@ -551,7 +552,7 @@ lines(ll,ds,...)
 if(model %in% c("Tukeyh2"))
 {
 tail1 = as.numeric(pp["tail1"]);tail2 = as.numeric(pp["tail2"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 inverse_lamb=function(x,tail)
 {
   value = sqrt(VGAM::lambertW(tail*x*x)/tail);
@@ -584,7 +585,7 @@ lines(ll,ds,...)
 if(model %in% c("TwoPieceGaussian"))
 {
 skew = as.numeric(pp["skew"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 qtpGaussian1=function(x,eta,VV){
   aa=1:length(x)
   sel1=I(x>=0)*aa
@@ -606,7 +607,7 @@ if(model %in% c("TwoPieceStudentT"))
 {
 skew = as.numeric(pp["skew"])
 df   = 1/as.numeric(pp["df"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 qtpt = function(x,skew,df,VV){
   aa=1:length(x)
   sel1=I(x>=0)*aa
@@ -628,7 +629,7 @@ if(model %in% c("TwoPieceTukeyh"))
 {
 skew= as.numeric(pp["skew"])
 tail= as.numeric(pp["tail"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 
 inverse_lamb=function(x,tail){
   value = sqrt(VGAM::lambertW(tail*x*x)/tail);
@@ -663,7 +664,7 @@ if(model %in% c("TwoPieceBimodal"))
 skew = as.numeric(pp["skew"])
 df   = as.numeric(pp["df"])
 delta= as.numeric(pp["shape"])
-ll=seq(min(dd),max(dd),0.1)
+ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 ptpbimodal1 = function(x,skew,delta,df,VV){  
   alpha=2*(delta+1)/df
   nn=2^(1-alpha/2)
@@ -725,18 +726,10 @@ lines(y,ds)
 
 }
 
-
-
-
-
-
-
 }
  
 }
 
 ##########################################################
-par(opar) 
-
 
 }

@@ -79,7 +79,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     
 
 opar=par(no.readonly = TRUE)
-
+on.exit(par(opar))
 
 if(!ispatim && !bivariate){ if( (show.cov && show.vario) || (show.cov)) par(mfrow=c(1,2))}
 if(show.vario && ispatim) par(mfrow=c(1,2))
@@ -93,10 +93,11 @@ fitted$param=unlist(fitted$param)
 fitted$fixed=unlist(fitted$fixed)
     
     # START ---- check input --- #
-    if(!class(fitted)=='GeoFit' & !class(fitted)=='GeoWLS')
-        stop("Enter an object obtained GeoFit or WLeastSquare")
 
-    if(isvario & !class(vario)=='GeoVariogram')
+    if( !inherits(fitted,"GeoFit")  & !inherits(fitted,"GeoWLS") )
+        stop("Enter an object obtained GeoFit or WLeastSquare")
+  
+    if(isvario & !inherits(vario,"GeoVariogram") )
         stop("Enter an object obtained from the function GeoVariogram")
 
     if(!is.numeric(pract.range) & answer.range)
@@ -195,11 +196,9 @@ fitted$fixed=unlist(fitted$fixed)
         type_dist <- CheckDistance(distance)
         p=.C("Maxima_Minima_dist",mmm=as.double(mmm),as.double(fitted$coordx),as.double(fitted$coordy)
         ,as.integer(fitted$numcoord),as.integer(type_dist),as.double(fitted$radius),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-       # if(type_dist==0) mmx=max(c(dist(cbind(fitted$coordx,fitted$coordy))))
         lags_m <- seq(slow,p$mmm[2],length=150)
         if (ispatim) {
             tt <- double(2)
-            #p=.C("Maxima_Minima_time",tt=as.double(tt),as.double(fitted$coordt),as.integer(fitted$numtime),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
             lagt_m <- seq(slow,max(c(dist(fitted$coordt))) ,length=150)
         }
         else lagt_m<-0
@@ -858,7 +857,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
        #print("here")
        #par(mfrow=c(1,1))
        #par(resetPar())
-  par(opar) 
+  #par(opar) 
     if(!is.null(result))
     return(result)
   }

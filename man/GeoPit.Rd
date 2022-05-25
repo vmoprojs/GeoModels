@@ -12,16 +12,17 @@
 If "Gaussian" then  the normal score transformation is performed. }
 }
 
+\value{Returns an (updated) object of class \code{GeoFit}}
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
 
 library(GeoModels)
-
 
 model="Beta2"
 copula="Clayton"
@@ -38,7 +39,6 @@ smooth=0
 nugget=0
 nu=8
 
-
 corrmodel="GenWend"
 
 min=-2;max=1
@@ -51,7 +51,8 @@ param=list(smooth=smooth,power2=power2, min=min,max=max,
 
 optimizer="nlminb"
 
-data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model=model,param=param,copula=copula)$data
+data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, 
+model=model,param=param,copula=copula)$data
 
 I=50
 fixed<-list(nugget=nugget,sill=1,scale=scale,smooth=smooth,power2=power2,min=min,max=max,nu=nu)
@@ -60,8 +61,10 @@ lower<-list(shape=0,mean=-I)
 upper<-list(shape=10,mean=I)
 
 #### maximum independence likelihood
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,likelihood="Marginal",type="Independence",
-                      optimizer=optimizer,lower=lower,upper=upper,copula=copula,
+fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
+model=model,likelihood="Marginal",type="Independence",
+                      optimizer=optimizer,lower=lower,
+                      upper=upper,copula=copula,
                     start=start,fixed=fixed)
 
 ## PIT transformation

@@ -8,10 +8,14 @@
   log-likelihood.
 }
 \usage{
-Lik(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
-           grid,lower,mdecomp,model,namescorr,namesnuis,namesparam,numcoord,
-           numpairs,numparamcor,numtime,optimizer,onlyvar,parallel,param,radius,setup,
-           spacetime,sparse,varest,taper,type,upper,ns,X,neighb,MM,aniso)
+Lik(copula,bivariate,coordx,coordy,coordt,
+coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
+           grid,lower,mdecomp,model,namescorr,
+           namesnuis,namesparam,numcoord,
+           numpairs,numparamcor,numtime,optimizer,
+           onlyvar,parallel,param,radius,setup,
+           spacetime,sparse,varest,taper,type,
+           upper,ns,X,neighb,MM,aniso)
 }
 \arguments{
   \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
@@ -93,12 +97,15 @@ Lik(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,fixed,flagco
            \item{aniso}{Logical; should anisotropy be considered?}
 }
 
+\value{Return a list from an \code{optim} call.}
+
 \seealso{\code{\link{GeoFit}}}
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \keyword{Composite}

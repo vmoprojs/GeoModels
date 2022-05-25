@@ -1,6 +1,9 @@
 GeoPit=function(fit,type="Uniform")
 {
-if(class(fit)!="GeoFit") stop("A GeoFit object is needed as input\n")
+
+
+
+if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 if(!(type=="Uniform"||type=="Gaussian")) stop("The type parameter can be Uniform or Gaussian")
 
 

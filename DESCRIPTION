@@ -1,22 +1,18 @@
 Package: GeoModels
-Version: 1.0.3-4
-Date: 2018-01-15
-Title: A Package for Geostatistical Gaussian and non Gaussian Data Analysis
+Type: Package
+Title: Procedures for Gaussian and Non Gaussian Geostatistical (Large) Data Analysis 
+Version: 1.0.0
+Date: 2022-05-01
 Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
-                     email = "moreno.bevilacqua@uv.cl"),
-              person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl"))
-Author: Moreno Bevilacqua [aut, cre],
-  Víctor Morales-Onate [aut]
-Maintainer: Moreno Bevilacqua <moreno.bevilacqua@uv.cl>
-Description: This package provides a set of procedures for a) simulation and estimation  of  some spatial and spatio-temporal random fields using standard likelihood and a likelihood approximation  method called  composite likelihood and b) prediction using best linear unbiased prediction.
- Spatio (temporal) bivariate  data estimation involves estimation of both regression and covariance parameters.
- Gaussian and some non Gaussian Random fields can be analyzed using the  GeoModels package. Among them,   Weibull, logGaussian, skewGaussian, T, binomial, negative
- binomial  and poisson  random fields can be analyzed.
-Imports: methods, spam, scatterplot3d, dfoptim, dotCall64, optimParallel, parallel, plotrix, pracma,mcGlobaloptim, pbivnorm, zipfR, sn, numDeriv, hypergeo, ucminf, RANN,lamW, GpGp,VGAM
-Suggests: actuar, GoFKernel, sphereplot
-Depends: R (>= 2.12.0), GPvecchia,fields, mapproj, plot3D, shape
-License: GPL (>= 2)
-URL: https://vmoprojs.github.io/GeoModels-page/ 
-Repository: GitHub
+               email = "moreno.bevilacqua89@gmail.com",comment = c(ORCID = "0000-0001-8384-840X")),
+              person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl",comment = c(ORCID = "0000-0003-1922-6571")),person("Christian", "Caamaño-Carrillo", role = "aut",email = "chcaaman@ubiobio.cl",comment = c(ORCID = "0000-0001-7241-3099")))
+Maintainer: Moreno Bevilacqua <moreno.bevilacqua89@gmail.com>
+Description: Functions for Gaussian and Non Gaussian (bivariate) spatial and spatio-temporal data analysis are provided for a) simulation and inference  for random fields using standard likelihood and a likelihood approximation  method called  weighted composite likelihood based on pairs and b) prediction using (local) best linear unbiased prediction. Weighted composite likelihood can be very efficient for estimating massive datasets. Both regression and spatial (temporal) dependence analysis can be jointly performed. Covariance functions for spatial and spatial-temporal data on Euclidean domains and spheres are provided. There are also many useful functions for plotting and performing diagnostic analysis. Different non Gaussian random fields can be considered in the analysis. Among them, random fields with marginal distributions such as Skew-Gaussian, Student-t, Tukey-h, Sin-Arcsin, Two-piece, Weibull, Gamma, Log-Gaussian, Binomial, Negative Binomial  and Poisson. See the URL for the papers associated with this package, as for instance, Bevilacqua and Gaetan (2015) <doi:10.1007/s11222-014-9460-6>, Bevilacqua et al. (2016) <doi:10.1007/s13253-016-0256-3>, Vallejos et al. (2020) <doi:10.1007/978-3-030-56681-4>, Bevilacqua et al. (2022) <doi:10.1016/j.jmva.2022.104949>, Bevilacqua et al. (2022) <doi:10.1007/s11749-021-00797-5>, Blasi et al. (2022) <doi:10.1016/j.spasta.2022.100596>, Morales-Navarrete et al. (2022) <arXiv:2105.03734>, and a large class of examples and tutorials.
+Depends: R (>= 4.1.0), GPvecchia,fields, mapproj, plot3D, shape
+License: GPL (>= 3)
 Encoding: UTF-8
+Imports: methods, spam, scatterplot3d, dfoptim, dotCall64, optimParallel, parallel, plotrix, pracma, pbivnorm, zipfR, sn, nabor, numDeriv, hypergeo, ucminf, lamW, GpGp,VGAM, data.table
+Suggests: actuar, GoFKernel, sphereplot
+Repository: GitHub
+URL: https://vmoprojs.github.io/GeoModels-page/
 BugReports: https://github.com/vmoprojs/GeoModels/issues

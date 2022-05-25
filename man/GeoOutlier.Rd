@@ -64,17 +64,19 @@ GeoOutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
 
 \references{
  Chen D, Lu C, Kou Y, Chen F (2008) On detecting spatial outliers. Geoinformatica 12:455–475
+ 
+ Bevilacqua M., Caamaño C., Arellano-Valle R. B., Camilo Gomez C. (2022) A class of random fields with two-piece marginal distributions for modeling point-referenced data with spatial outliers. \emph{Test}  10.1007/s11749-021-00797-5
 }
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
-rm(list=ls())
+
 library(GeoModels)
-library(fields)
 set.seed(1428)
 NN = 1000
 coords = cbind(runif(NN),runif(NN))
@@ -91,5 +93,5 @@ K=15         #parameter for outliers detection alghoritm
 alpha=0.005  #parameter for outliers detection alghoritm
 outlier=GeoOutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
 quilt.plot(coords,data)
-for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.03,lwd=2) 
+for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.02,lwd=2) 
 }

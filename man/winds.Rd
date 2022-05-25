@@ -1,10 +1,10 @@
 \name{winds}
 \alias{winds}
 \title{Irish Daily Wind Speeds}
-\usage{data(irishwinds)}
+\usage{data(winds)}
 \description{
   A matrix containing daily wind speeds, in
-  kilometers per hour, from 1961 to 1978 at 12 sites in Ireland.
+  kilometers per hour, from 1961 to 1978 at 12 sites in Ireland
 }
 \format{A (\eqn{6574 \times 11}{6574 x 11})-matrix containing wind speed observations.}
 \source{

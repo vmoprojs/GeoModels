@@ -130,8 +130,9 @@ Likelihood Methods. \emph{Statistica Sinica}, \bold{21}, 5--42.
 
 }
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \seealso{
@@ -147,10 +148,10 @@ library(GeoModels)
 ### using SinhAsinh random fields using standard likelihood
 ###
 ###############################################################
-set.seed(314)
+set.seed(34)
 model="SinhAsinh" 
 # Define the spatial-coordinates of the points:
-NN=500
+NN=350
 x = runif(NN, 0, 1)
 y = runif(NN, 0, 1)
 coords = cbind(x,y)
@@ -201,55 +202,6 @@ GeoTests(fitH1, fitH0 ,statistic='Wald')
 # likelihood ratio statistic test
 GeoTests(fitH1, fitH0 , statistic='Wilks')
 
-################################################################
-###
-### Example 2. Composite likelihood-based hypothesis testing
-### for a Gaussian  RF
-### Testing significance of a regression parameter 
-###
-###############################################################
-#set.seed(31)
-#N=500
-#x = runif(N, 0, 1)
-#y = runif(N, 0, 1)
-#X=cbind(rep(1,N),runif(N))
-#coords=cbind(x,y)
-
-# Set the model's parameters:
-#corrmodel = "Exp"
-#mean = 1;  mean1=0.3 ## H0: mean1=0
-#sill = 1
-#nugget = 0
-#scale = 0.15/3
-
-#model="Gaussian"
-
-# Simulation of the spatial Gaussian random field:
-#data = GeoSim(coordx=coords, corrmodel=corrmodel, model=model,
-#      param=list(mean=mean,mean1=mean1,sill=sill,
-#                   nugget=nugget,scale=scale),X=X)$data
-
-# Pairwise-likelihood fitting of the random field, full model:
-#start=list(mean=mean,mean1=mean1,scale=scale,sill=sill)
-#fixed=list(nugget=nugget)
-#fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
-#                    sensitivity=TRUE,likelihood="Marginal",type="Pairwise",
-#                    fixed=fixed,start=start,X=X)
-## updating object computing std err estimation using parametric bootstrap
-#fitH1=GeoVarestbootstrap(fitH1,K=100) 
-
-# Pairwise-likelihood fitting of the random field, with a nested model:
-#start=list(mean=mean,scale=scale,sill=sill)
-#fixed=list(nugget=nugget,mean1=0) # setting H0 restriction
-#fitH0 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, maxdist=0.05,model=model,
-#                    sensitivity=TRUE,likelihood="Marginal",type="Pairwise",
-#                    fixed=fixed,start=start,X=X)
-## updating object computing std err estimation using parametric bootstrap
-#fitH0=GeoVarestbootstrap(fitH0,K=100) 
-
-# Hypothesis testing results:
-# composite  Wald statistic test:
-#GeoTests(fitH1, fitH0 ,statistic='Wald')
 
 
 }

@@ -3,7 +3,8 @@
 
 
 void spectral_density(int *L,int *model,int *p, double *matrix ,double *matrix_out, 
-                                double *C, double *a, double *nu1,double *Cg, double *ag, double *nu1g){
+                                double *C, double *a, double *nu1,double *Cg, double *ag, double *nu1g)
+{
   int n_rows = (*L);
   int i,j,id=0,ig=n_rows,ih=0;
   double pi = acos(-1.0);

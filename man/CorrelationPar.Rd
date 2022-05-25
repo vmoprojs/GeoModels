@@ -14,14 +14,18 @@ CorrelationPar(corrmodel)
   \item{corrmodel}{Integer; an integer associated to a given correlation model.}
 }
 
+\value{Return a vector string of correlation parameters.}
+
+
 \details{The function return a list with the Parameters of a Correlation Model}
 
 \seealso{\code{\link{GeoFit}}}
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

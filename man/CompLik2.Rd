@@ -8,10 +8,14 @@
   composite log-likelihood.
 }
 \usage{
-CompLik2(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, 
-         fixed, GPU,grid,likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
-         numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
-         upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,
+CompLik2(copula,bivariate, coordx, coordy ,coordt,
+coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, 
+         fixed, GPU,grid,likelihood, local,lower, 
+         model, n, namescorr, namesnuis, namesparam,
+         numparam, numparamcorr, optimizer, onlyvar,
+         parallel, param, spacetime, type,
+         upper, varest, vartype, weigthed, winconst, 
+         winstp,winconst_t, winstp_t, ns, X,sensitivity,
          colidx,rowidx,neighb,MM,aniso)
 }
 \arguments{
@@ -112,11 +116,14 @@ CompLik2(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, di
     \item{aniso}{Logical; should anisotropy be considered?}
 }
 
+\value{Return a list from an \code{optim} call.}
+
 \seealso{\code{\link{GeoFit}}}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \keyword{Composite}

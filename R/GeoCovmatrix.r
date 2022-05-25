@@ -76,8 +76,6 @@ if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
      
 corr=double(numpairstot)
 
-
-
 cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
     corr=corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,radius,ns,NS,
  INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
@@ -99,6 +97,8 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
      corr=corr, coordx,coordy,coordt,corrmodel,nuisance, paramcorr,radius,ns,NS,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+
      ## deleting correlation equual  to 1 because there are problems  with hipergeometric function
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0
       }
@@ -624,16 +624,27 @@ if(model==2||model==11)
 {if(length(n)==1) n=rep(n,dime)}
 if(!bivariate){
 
-            fname <-"CorrelationMat_dis2"
-            if(spacetime) fname <- "CorrelationMat_st_dyn_dis2"
+            
             sel=substr(names(nuisance),1,4)=="mean"
             mm=as.numeric(nuisance[sel])
             mu = X%*%mm
             other_nuis=as.numeric(nuisance[!sel])
-if(type=="Standard")  {
 
+
+if(type=="Standard")  {
   corr=double(numpairstot)
-              cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
+
+    fname <-"CorrelationMat_dis2"
+    if(spacetime) fname <- "CorrelationMat_st_dyn_dis2"
+
+   if(spacetime)
+              cr=.C("CorrelationMat_st_dyn_dis2", corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
+              as.integer(corrmodel), as.double(c(mu)),as.integer(n), as.double(other_nuis), as.double(paramcorr),as.double(radius),
+              as.integer(ns), as.integer(NS),as.integer(model),
+              PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+    if(!spacetime)
+       cr=.C("CorrelationMat_dis2", corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
               as.integer(corrmodel), as.double(c(mu)),as.integer(n), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
@@ -662,10 +673,15 @@ if(type=="Standard")  {
         if(spacetime) fname <- "CorrelationMat_st_dis_tap"
          corr=double(numpairs)
 
-        cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
+ if(spacetime)
+        cr=.C("CorrelationMat_st_dis_tap",  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
         as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
            as.integer(NS),as.integer(n[idx[,1]]),as.integer(n[idx[,2]]),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-
+ else
+              cr=.C("CorrelationMat_dis_tap",  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
+        as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
+           as.integer(NS),as.integer(n[idx[,1]]),as.integer(n[idx[,2]]),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+ 
 #      cr=dotCall64::.C64(fname,SIGNATURE =
 #         c("double","double","double","double","integer","double","double","double","integer","integer","integer","double","double","integer"),
 #        corr=corr, coordx,coordy,coordt,corrmodel,other_nuis,paramcorr,radius,ns,NS,min(n),mu[idx[,1]],mu[idx[,2]],model,
@@ -694,7 +710,7 @@ if(type=="Standard")  {
                             vv=n*(1-MM)*(1-p)*(1+n*p*(1-MM)) /MM^2
                             diag(varcov)=vv }
 }
-if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}
+#if(bivariate) {  fname <- "CorrelationMat_biv_dyn_dis2"}
 }
 ###############################################################
 ################################ end discrete #models #########
@@ -798,9 +814,7 @@ if(sparse) {
     setup<-initparam$setup
     if(initparam$type=="Tapering")
     {
-      if(initparam$spacetime) fname= "CorrelationMat_st_tap"
-      if(!initparam$spacetime) fname= "CorrelationMat_tap"
-      if(initparam$bivariate) fname= "CorrelationMat_biv_tap"
+    
       corr <- double(initparam$numpairs)
       #tapmod <- setup$tapmodel
       ### unit taperssss ####
@@ -810,11 +824,27 @@ if(sparse) {
            if(space) tapmod=36
            }
       else(tapmod=CkCorrModel(taper))
-    #######################ç
+    #######################
 
-    tp=.C(fname,tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
-      as.double(1),as.double(tapsep),as.double(1),
+      if(initparam$spacetime) fname= "CorrelationMat_st_tap"
+      if(!initparam$spacetime) fname= "CorrelationMat_tap"
+      if(initparam$bivariate) fname= "CorrelationMat_biv_tap"
+
+if(initparam$spacetime) 
+    {tp=.C("CorrelationMat_st_tap",tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
+      as.double(1),as.double(tapsep),as.double(1),0,0,
+      PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE) }
+    else {
+ if(!initparam$bivariate) 
+     tp=.C("CorrelationMat_tap",tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
+      as.double(1),as.double(tapsep),as.double(1),0,0,
       PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+else 
+      tp=.C("CorrelationMat_biv_tap",tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
+      as.double(1),as.double(tapsep),as.double(1),0,0,
+      PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+  }
+
         setup$taps<-tp$tapcorr
     }
     if(is.null(X))  initparam$X=as.matrix(rep(1,dime))

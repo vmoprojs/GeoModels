@@ -1772,7 +1772,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Cond_TWOPIECET_st2memm(int *cormod, double *data1,double *data2,int *NN,
+void Comp_Cond_TWOPIECET_st2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {

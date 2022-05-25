@@ -2,8 +2,7 @@
 \alias{GeoCV}
 \encoding{UTF-8}
 \title{n-fold  kriging Cross-validation}
-\description{The procedure use the \code{\link{GeoKrig}} function to compute n-fold  kriging cross-validation 
-  using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
+\description{The procedure use the \code{\link{GeoKrig}} or \code{\link{GeoKrigloc}} function to compute n-fold  kriging cross-validation using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
 \usage{GeoCV(fit, K=100, estimation=FALSE, n.fold=0.05,local=FALSE,neighb=NULL, 
                     maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)}
 \arguments{
@@ -41,8 +40,9 @@
 
 \seealso{\code{\link{GeoKrig}}.}
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

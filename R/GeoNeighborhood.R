@@ -53,8 +53,14 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   if(is.null(neighb)) neighb=min(100, NN)
   
   ## computing neigh indexes
-  if(distance=="Geod"||distance=="Chor")  out<- RANN::nn2(coords_p,loc_p, k=neighb,searchtype=searchtype,radius=maxdist)
-  if(distance=="Eucl")                    out<- RANN::nn2(coords,loc,     k=neighb,searchtype=searchtype,radius=maxdist)
+  if(distance=="Geod"||distance=="Chor")  {
+                                           #out<- RANN::nn2(coords_p,loc_p, k=neighb,searchtype=searchtype,radius=maxdist)
+                                           out<- nabor::knn(coords_p,loc_p, k=neighb,radius=maxdist)
+                                           }
+  if(distance=="Eucl")                    {
+                                          # out<- RANN::nn2(coords,loc,     k=neighb,searchtype=searchtype,radius=maxdist)
+                                           out<- nabor::knn(coords,loc, k=neighb,radius=maxdist)
+                                          }
   #################################
   if(space){
     sel_ss=data_sel=numpoints=XX=list()
@@ -70,12 +76,8 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   #####################################################################################
   if(spacetime)
   {
-    Tloc=length(time); TT=length(coordt)
-    # coordt1=cbind(coordt,rep(0,TT))
-    # time1=cbind(time,rep(0,Tloc))
-    # out_t<- LatticeKrig::LKDist(coordt1,time1,delta=maxtime,distance.type="Euclidean") # temporal distance
-    
-    out_t <- RANN::nn2(coordt,time,k=maxtime,treetype = c("kd"))$nn.idx
+    Tloc=length(time); TT=length(coordt)   
+    out_t <- nabor::knn(coordt,time,k=maxtime)$nn.idx
  
     out_t <- list(ind=cbind(as.vector(out_t),seq(time)))
 

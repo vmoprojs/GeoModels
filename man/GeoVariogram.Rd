@@ -7,8 +7,11 @@
   random fields. 
 }
 \usage{
-GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
-              grid=FALSE, maxdist=NULL,neighb=NULL, maxtime=NULL, memdist=FALSE,numbins=NULL, radius=6371, type='variogram',bivariate=FALSE)
+GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, 
+coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
+              grid=FALSE, maxdist=NULL,neighb=NULL,
+              maxtime=NULL, memdist=FALSE,numbins=NULL, 
+              radius=6371, type='variogram',bivariate=FALSE)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{n \times d}{n x d})-matrix
@@ -42,7 +45,7 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
     non-equispaced spatial sites.}
   \item{maxdist}{A numeric value denoting the spatial maximum distance,
    see the Section \bold{Details}.}
-       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the semivariogram computation. If \code{TRUE} then the RANN package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
+       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the semivariogram computation. If \code{TRUE} then the nabor package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
    \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood. See the Section \bold{Details} for more information.}
    \item{maxtime}{A numeric value denoting the temporal maximum distance,
@@ -60,21 +63,13 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
 
 \details{
 
-  We briefly report the definitions of semi-variogram used in this function.
+  We briefly report the definitions of semi-variogram used for the spatial case. It can be easily extended 
+  to the space-time or spatial bivariate case.
   In the case of a spatial Gaussian random field
   the sample semivariogram estimator is defined by
   \deqn{\hat{\gamma}(h) = 0.5 \sum_{x_i, x_j \in N(h)} (Z(x_i) - Z(x_j))^2 / |N(h)|}
   where \eqn{N(h)} is the set of all the sample pairs whose distances fall into a tolerance region with size \eqn{h}
   (equispaced intervalls are considered).
-  
-  In the case of a spatio-temporal Gaussian random field the sample
-  semivariogram estimator is defined by
-  \deqn{\hat{\gamma}(h, u) = 0.5 \sum_{(x_i, l), (x_j, k) \in N(h, u)} (Z(x_i, l) - Z(x_j, k))^2 / |N(h, u)|}
-  where \eqn{N(h, u)}{N(h, u)} is the set of all the sample pairs whose
-  spatial distances fall into a tolerance region with size \eqn{h}{h}
-  and \eqn{|k - l| = u}{\|k-l\|=u}. Note, that \eqn{Z(x_i, l)}{Z(x_i,l)}
-  is the observation at site \eqn{x_i}{x_i} and time
-  \eqn{l}{l}. 
 
   The  \code{numbins} parameter indicates the number of adjacent
   intervals to consider in order to grouped distances with which to
@@ -82,13 +77,13 @@ GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,cloud=FALSE
 
   The \code{maxdist} parameter indicates the maximum spatial distance below which
   the shorter distances will be considered in the calculation of
-  the (weigthed) least squares.
+  the semivariogram.
 
    The \code{maxdist} parameter can be coupled with the \code{neighb} parameter (setting \code{memdist=T}). This is useful when handling large dataset.
 
   The \code{maxtime} parameter indicates the maximum temporal distance below which
   the shorter distances will be considered in the calculation of
-  the (weigthed) least squares.
+  the spatio-temoral semivariogram.
 }
 
 \value{
@@ -131,8 +126,9 @@ Cressie, N. A. C. (1993) \emph{Statistics for Spatial Data}. New York: Wiley.
 \seealso{\code{\link{GeoFit}}}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
  \examples{
@@ -150,7 +146,7 @@ x = runif(200, 0, 1)
 y = runif(200, 0, 1)
 coords = cbind(x,y)
 # Set the model's parameters:
-corrmodel = "exponential"
+corrmodel = "Exponential"
 mean = 0
 sill = 1
 nugget = 0

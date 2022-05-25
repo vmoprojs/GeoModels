@@ -1,7 +1,7 @@
 \name{winds.coords}
 \alias{winds.coords}
 \title{Weather Stations of the Irish Daily Wind Speeds}
-\usage{data(irishwinds)}
+\usage{data(winds.coords)}
 \description{
   A data frame containing information about the weather stations
   where the data are recorded in Ireland.

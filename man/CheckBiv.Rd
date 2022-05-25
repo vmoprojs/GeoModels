@@ -12,15 +12,17 @@ CheckBiv(numbermodel)
   \item{numbermodel}{numeric; the number associated to a given correlation model.}
 }
 
-\details{ The function check if  the correlation model is bivariate.}
+\details{ 
+The function check if  the correlation model is bivariate.
+}
 
-\value{Returns TRUE or FALSE depending if the correlation model is bivariate or not.} 
+\value{
+Return TRUE or FALSE depending if the correlation model is bivariate or not.
+} 
 
-
-
-
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

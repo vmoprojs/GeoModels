@@ -87,15 +87,16 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
 library(GeoModels)
 library(mapproj)
-library(fields)
+
 
 ################################################################
 ###
@@ -104,7 +105,7 @@ library(fields)
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- runif(1000);y <- runif(1000)
+x <- runif(500);y <- runif(500)
 coords=cbind(x,y)
 set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
@@ -116,10 +117,11 @@ data1 <- GeoSim(coordx=coords, corrmodel="Matern", param=list(smooth=0.5,
 set.seed(261)
 data2 <- GeoSim(coordx=coords,  corrmodel="GenWend", param=list(smooth=0,
               power2=4,mean=0,sill=1,scale=0.4,nugget=0))$data
+opar=par(no.readonly = TRUE)
 par(mfrow=c(1,2))
 quilt.plot(coords,data1,main="Matern",xlab="",ylab="")
 quilt.plot(coords,data2,main="Wendland",xlab="",ylab="")   
-
+par(opar)
              
 
 ################################################################
@@ -186,8 +188,8 @@ image.plot(x,y,data1,col=terrain.colors(100),main="Student-t RF",xlab="",ylab=""
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-x <- runif(800, 0, 2)
-y <- runif(800, 0, 2)
+x <- runif(500, 0, 2)
+y <- runif(500, 0, 2)
 coords <- cbind(x,y)
 set.seed(261)
 corrmodel="Wend0"
@@ -211,7 +213,6 @@ data2 <- GeoSim(coordx=coords, corrmodel=corrmodel,
 lines(density(data2),lty=3)
 
 
-
 ################################################################
 ###
 ### Example 6. Simulation of a bivariate Gaussian RF
@@ -232,13 +233,11 @@ param=list(mean_1=4,mean_2=2,scale=0.12,smooth=0.5,
            sill_1=1,sill_2=1,nugget_1=0,nugget_2=0,pcol=0.5)
 data <- GeoSim(coordx=coords,corrmodel="Bi_matern_sep",
               param=param)$data
+opar=par(no.readonly = TRUE)
 par(mfrow=c(1,2))
-
 quilt.plot(coords,data[1,],col=terrain.colors(100),main="1",xlab="",ylab="")
 quilt.plot(coords,data[2,],col=terrain.colors(100),main="2",xlab="",ylab="")
-
-
-
+par(opar)
 
 
 ################################################################
@@ -252,7 +251,7 @@ quilt.plot(coords,data[2,],col=terrain.colors(100),main="2",xlab="",ylab="")
 
 coordt=1:5
 coordx_dyn=list()
-maxN=40
+maxN=30
 set.seed(8)
 for(k in 1:length(coordt))
 {
@@ -278,11 +277,11 @@ data[[3]]
 ###
 ### Example 8. Simulation of a Gaussian RF 
 ###  with a Wend0 correlation in the north emisphere of the planet earth
-###
+### using geodesic distance
 ###############################################################
 distance="Geod";radius=6371
 
-NN=8000 ## total point on the sphere on lon/lat format
+NN=3000 ## total point on the sphere on lon/lat format
 set.seed(80)
 coords=cbind(runif(NN,-180,180),runif(NN,0,90))
 ## Set the wendland parameters
@@ -296,57 +295,7 @@ data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
 #globe::globeearth(eye=place("newyorkcity"))
 #globe::globepoints(loc=coords,pch=20,col =  cm.colors(length(data),alpha=0.1)[rank(data)])
 
-################################################################
-###
-### Example 9. Simulation of a Gaussian RF 
-###  with Wend0 model  on USA
-###
-###############################################################
 
-distance="Geod";radius=6371
-NN=5000
-x=runif(NN,-125,-67)
-y=runif(NN,27,49)
-coords=cbind(x,y)
-## Set the wendland parameters
-corrmodel <- "Wend0"
-param<-list(mean=0,sill=1,nugget=0,scale=600,power2=3)
-# Simulation of a spatial Gaussian RF on the sphere
-#set.seed(2)
-data <- GeoSim(coordx=coords,corrmodel=corrmodel,sparse=TRUE,
-        distance=distance,radius=radius,param=param)$data
-quilt.plot(coords,data,col=terrain.colors(100),xlab="",ylab="")
-map("usa", add = TRUE)
-
-
-
-
-################################################################
-###
-### Example 10. Simulation of a Wrapped  RF 
-### with   underlying exponential correlation
-### on a regular grid
-###
-###############################################################
-
-# Define the spatial-coordinates of the points:
-x <- runif(200,0, 1)
-y <- runif(200,0, 1)
-coords <- cbind(x,y)
-set.seed(251)
-
-# Simulation of a spatial wrapped RF:
-sim <- GeoSim(coordx=coords, corrmodel="Exp",
-             model="Wrapped", 
-             param=list(nugget=0,mean=0,scale=.1,sill=1))$data
-
-long <- 0.08;          
-x1 <- coords[,1] + long*cos(sim)
-y1 <- coords[,2] + long*sin(sim)
-eps <- 0.1
-plot(0,xlim=c(0-eps,1+eps),ylim=c(0-eps,1+eps));   
-require(shape)
-Arrows(coords[,1], coords[,2], x1, y1, arr.length = 0.2, code = 2,  arr.type = "triangle",col=1)
 
 
 }

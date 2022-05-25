@@ -17,13 +17,16 @@ NuisParam(model, bivariate=FALSE,num_betas=c(1,1),copula=NULL)
   \item{copula}{The type of copula.} 
 }
 
+\value{Return a vector string of nuisance parameters.}
+
 \details{The function returns a list with the nuisance parameters of a given
   random field model.}
 \seealso{\code{\link{GeoFit}}}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 

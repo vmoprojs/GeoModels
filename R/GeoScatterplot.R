@@ -9,6 +9,7 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
 {
     call <- match.call()
     opar=par(no.readonly = TRUE)
+    on.exit(par(opar))  
     model="Gaussian"
     corrmodel <- 'exponential'
     spatial=TRUE
@@ -218,6 +219,6 @@ for(i in 1:ln){
  if(spacetime){}
 
 }
- par(opar)
+ #par(opar)
 ###### end scatterplot based on neighb
 }

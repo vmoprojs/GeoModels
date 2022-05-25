@@ -51,7 +51,7 @@ void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coo
 	  if((bins[h]<=lags) && (lags<bins[h+1])){
             x=data[n+i ]; y=data[n+j ];
             if(!(ISNAN(x)||ISNAN(y)))
-              moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
+              {moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;}
             }}}
   return;
 }
@@ -76,7 +76,7 @@ void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2,
                 for(h=0;h<(*nbins-1);h++){
                 if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
                  x=data1[k];   y=data2[k];
-                if(!(ISNAN(x)||ISNAN(y))) moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;
+                if(!(ISNAN(x)||ISNAN(y))) {moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;}
                 }}
       }
     }
@@ -265,77 +265,6 @@ int h=0, i=0, j=0;
 
 
 
-/*
-
-// binned spatial-temporal variogram:
-void Binned_Variogram_st2(double *bins, double *bint, double *coordx, double *coordy, double *coordt,double *data, int *lbins, int *lbinst,
-       int *lbint, double *moms,double *momst, double *momt, int *nbins, int *nbint, int *ns,int *NS)
-{
-int h=0, i=0, j=0;
-  int q=0, t=0, u=0, v=0;
-  double x,y,lags=0.0,lagt=0.0,step=0.0,*mm,*tt;
-  //defines the spatial bins:
-  mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH); // computing max and min distances
-  if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
-  //Set the binnes step:
-  step=(mm[1])/(*nbins-1);
-  bins[0]= mm[0];
-  for(h=1;h<*nbins;h++)
-    bins[h]=bins[h-1]+step;
-  //defines the temporal bins:
-   tt=(double *) R_alloc(2, sizeof(double));
- Maxima_Minima_time(tt,coordt,ntime);
-  bint[0]=0;
-  for(u=1;u<*nbint;u++)
-    bint[u]=bint[u-1]+tt[0];
-
-    for(t=0;t<ntime[0];t++){
-    for(i=0;i<ns[t];i++){       //-1
-      for(v=t;v<ntime[0];v++){
-      if(t==v){
-         for(j=i+1;j<ns[t];j++){
-           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                        if(lags<=maxdist[0]){
-                            for(h=0;h<(*nbins-1);h++){
-                             if((bins[h]<=lags) && (lags<bins[h+1])){
-                             x=data[(i+NS[t])];y=data[(j+NS[v])];
-                             if(!(ISNAN(x)||ISNAN(y))){
-                             moms[h]+=0.5*pow(x-y, 2);
-                             lbins[h]+=1;}
-                           }}}}
-          } 
-     else {
-            
-         lagt=fabs(coordt[t]-coordt[v]);
-        for(j=0;j<ns[v];j++){
-           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-                //if(i==j){// computes the marginal temp variogram:
-                 if(lags==0||lags<=bins[1]){
-                    if(lagt<=*maxtime)
-                    {
-                    for(u=0;u<*nbint;u++){
-                        if(is_equal (bint[u],lagt)){
-                    x=data[(i+NS[t])];y=data[(j+NS[v])];
-                    if(!(ISNAN(x)||ISNAN(y))){
-                    momt[u]+=0.5*pow(x-y, 2);
-                    lbint[u]+=1;}
-                  }}}}
-          else{// computes the spatial-temporal variogram:
-                 // lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
-                   if(lags<=*maxdist && lagt<=*maxtime){
-                    q=0;
-                     for(h=0;h<(*nbins);h++){
-                      for(u=0;u<*nbint;u++){
-        if((bins[h]<=lags) && (lags<bins[h+1]) && (is_equal(bint[u],lagt))){
-                 x=data[(i+NS[t])];y=data[(j+NS[v])];
-               if(!(ISNAN(x)||ISNAN(y)))   {
-                                            momst[q]+=0.5*pow(x-y, 2);
-                                            lbinst[q]+=1;
-                                          }}
-        q++;}}}}}}}}}
- }    
-*/
 
 void Binned_Variogram_biv2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *cross_lbins, double *cross_moms, int *nbins,
                           int *marg_lbins, double *marg_moms,int *ns, int *NS)

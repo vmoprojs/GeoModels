@@ -815,6 +815,10 @@ void SetSampling_biv(double *coordx, double *coordy, double *data, int n, int *n
 
 // Set the global variables for the spatial and spatial-temporal fitting:
 
+
+
+
+
 void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *grid,int *ia,
 		  int *idx,int *ismal,int *ja,int *mem, int *nsite,int *nsitex,int *nsitey,
 		  int *npair,double *radius,double *srange, double *sep,int *st, int *times,double *trange,
@@ -877,12 +881,18 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
   if(type==NULL) {*ismal=0; return;}
 
   REARTH=(double *) Calloc(1,double);//radius of hearth
-    if(REARTH==NULL) {*ismal=0; return;}
+   if(REARTH==NULL) {*ismal=0; return;}
+    REARTH[0]=radius[0];
+    //const double *REARTH=*radius;
+    
+    //double *REARTH=*radius;//definition
+    //REARTH[0]=radius[0]; // Initialization
+    
 
   tapsep=(double *) Calloc(5,double);
            if(tapsep==NULL){*ismal=0; return;}
 
-  *REARTH=*radius;
+  
   *type=*tp;
   
 

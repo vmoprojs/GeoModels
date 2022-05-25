@@ -8,7 +8,10 @@
   witha  given  covariance model and a  set of spatial (temporal) distances.
 }
 \usage{
-GeoCorrFct_Cop(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="Eucl", param, radius=6371,n=1,covariance=FALSE,variogram=FALSE)
+GeoCorrFct_Cop(x,t=NULL,corrmodel, 
+model="Gaussian",copula="Gaussian",
+distance="Eucl", param, radius=6371,
+n=1,covariance=FALSE,variogram=FALSE)
 }
 
 \arguments{
@@ -33,11 +36,12 @@ GeoCorrFct_Cop(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian",distance="
    }
 
 
-\value{Returns  correlations or covariances values associated to a given parametric spatial and temporal correlation models.}
+\value{Returns a vector of  correlations or covariances values associated to a given parametric spatial and temporal correlation models.}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{
@@ -67,7 +71,8 @@ corr2= GeoCorrFct_Cop(x=x, corrmodel="Matern", param=param,copula="Clayton",mode
 plot(x,corr1,ylim=c(0,1),type="l",xlab="distance",ylab="corr")
 lines(x,corr2,ylim=c(0,1),lty=2)
 
-
+legend("topright", legend=c("Gaussian Copula", "Clayton Copula"),
+       , lty=1:2, cex=1.2)
 
 
 }

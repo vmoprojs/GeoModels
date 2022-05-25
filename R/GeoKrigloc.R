@@ -37,17 +37,17 @@ if(space){
          ### computing spatial neighborhood
          neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,neighb=neighb,maxdist=maxdist,X=X)
          res1=res2=NULL
-           pb <- txtProgressBar(min = 0, max = Nloc, style = 3)
+         #  pb <- txtProgressBar(min = 0, max = Nloc, style = 3)
          for(i in 1: Nloc)
           {
-            Sys.sleep(0.1)
+        #    Sys.sleep(0.1)
             pr=GeoKrig(loc=loc[i,],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X[[i]],Xloc= Xloc[i,],
                 model=model, param=param,anisopars=anisopars, mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
-            setTxtProgressBar(pb, i)
-            close(pb)
+         #   setTxtProgressBar(pb, i)
+         #   close(pb)
           }
 }
 ######################################################################
@@ -58,7 +58,7 @@ if(spacetime)
                   loc=loc,time=time,maxdist=maxdist,maxtime=maxtime,X=X)
          res1=res2=NULL
          k=1
-         pb <- txtProgressBar(min = 0, max = Nloc*Tloc, style = 3)
+        # pb <- txtProgressBar(min = 0, max = Nloc*Tloc, style = 3)
          for(i in 1: Nloc){
           for(j in 1: Tloc){
             pr=GeoKrig(loc=loc[i,],time=time[j],coordx=neigh$coordx[[i]],coordt=neigh$coordt[[j]],n=n,
@@ -67,15 +67,15 @@ if(spacetime)
             res1=c(res1,pr$pred)
             res2=c(res2,pr$mse)
             k=k+1
-             setTxtProgressBar(pb, k)
-                   close(pb)
+         #    setTxtProgressBar(pb, k)
+          #         close(pb)
           }}
 }
 if(bivariate)
 { 
 neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,neighb=neighb,bivariate=TRUE,X=X)
         res1=res2=NULL
-                   pb <- txtProgressBar(min = 0, max = Nloc, style = 3)
+                 #  pb <- txtProgressBar(min = 0, max = Nloc, style = 3)
          for(i in 1: Nloc)
           {
            
@@ -84,8 +84,8 @@ neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxd
                 model=model, param=param,anisopars=anisopars, mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)
                 res2=c(res2,pr$mse)
-                setTxtProgressBar(pb, i)
-                close(pb)
+               # setTxtProgressBar(pb, i)
+               # close(pb)
               
           }
 }

@@ -40,7 +40,7 @@ C     ****************************************************************
       FUNCTION CONHYP (A,B,Z,LNCHF,IP)                          
                                                              
       INTEGER LNCHF,I,BITS,IP 
-      COMPLEX*16 CHGF,A,B,Z,CONHYP 
+      DOUBLE COMPLEX CHGF,A,B,Z,CONHYP 
       DOUBLE PRECISION NTERM,FX,TERM1,MAX,TERM2,ANG 
                                                                         
       IF (CDABS(Z) .NE. 0.0D0) THEN 
@@ -165,7 +165,7 @@ C     ****************************************************************
                                                                         
       PARAMETER (LENGTH=777)
       INTEGER L,I,BITS,BIT,LNCHF
-      COMPLEX*16 A,B,Z,FINAL,CHGF                                       
+      DOUBLE COMPLEX A,B,Z,FINAL,CHGF                                       
       DOUBLE PRECISION AR,AI,CR,CI,XR,XI,SUMR,SUMI,CNT,SIGFIG,MX1,MX2
       DOUBLE PRECISION NUMR,NUMI,DENOMR,DENOMI,RMAX
       DOUBLE PRECISION QR1,QR2,QI1,QI2,AR2,AI2,CR2,CI2,XR2,XI2
@@ -672,7 +672,7 @@ C     ****************************************************************
       SUBROUTINE ARYDIV(AR,AI,BR,BI,C,L,LNCHF,RMAX,BIT)                 
                                                                         
       INTEGER L,BIT,REXP,IR10,II10,LNCHF
-      COMPLEX*16 C                                                      
+      DOUBLE COMPLEX C                                                      
       DOUBLE PRECISION AR,AI,BR,BI,PHI,N1,N2,N3,E1,E2,E3,RR10,RI10,X 
       DOUBLE PRECISION AE,BE,X1,X2,DUM1,DUM2,CE,RMAX                   
       DIMENSION AR(-1:*),AI(-1:*),BR(-1:*),BI(-1:*)             
@@ -860,7 +860,7 @@ C     ****************************************************************
                                                                         
       SUBROUTINE CONV12(CN,CAE)                                         
                                                                         
-      COMPLEX*16 CN                                                     
+      DOUBLE COMPLEX CN                                                     
       DOUBLE PRECISION CAE           
       DIMENSION CAE(2,2)                                                
                                                                         
@@ -905,7 +905,7 @@ C     ****************************************************************
       SUBROUTINE CONV21(CAE,CN)                                         
                                                                         
       DOUBLE PRECISION CAE                                             
-      COMPLEX*16 CN                                                     
+      DOUBLE COMPLEX CN                                                     
       DIMENSION CAE(2,2)                                                
       IF (CAE(1,2) .GT. 75 .OR. CAE(2,2) .GT. 75) THEN  
         CN=DCMPLX(1.0D75,1.0D75)  
@@ -982,9 +982,9 @@ C *****************************************************************************
      
       SUBROUTINE CHFM(ZRE,ZIM,ARE,AIM,BRE,BIM,CRE,CIM,N,LNCHF,IP)
       
-      REAL*8 ZRE(N), ZIM(N), CRE(N), CIM(N)
-      REAL*8 ARE, AIM, BRE, BIM
-      COMPLEX*16 Z, A, B, CHF, CONHYP
+      DOUBLE PRECISION ZRE(N), ZIM(N), CRE(N), CIM(N)
+      DOUBLE PRECISION ARE, AIM, BRE, BIM
+      DOUBLE COMPLEX Z, A, B, CHF, CONHYP
       
       A = CMPLX(ARE, AIM)
       B = CMPLX(BRE, BIM)
@@ -1003,7 +1003,7 @@ C *****************************************************************************
 
 
 C      SUBROUTINE DRIVER_CHF()
-C      REAL*8 ZRE(2), ZIM(2), ARE, AIM, BRE, BIM, CRE(2), CIM(2)C
+C      DOUBLE PRECISION ZRE(2), ZIM(2), ARE, AIM, BRE, BIM, CRE(2), CIM(2)C
 
 C      ZRE(1) =  1.1D0
 C      ZIM(1) =  0.6D0

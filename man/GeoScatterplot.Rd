@@ -51,6 +51,8 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
     Otherwise they are intrepreted as a a realization from a bivariate field.}
 }
 
+\value{Produces a plot. No values are returned.}
+
 \details{
   h-scatterplot is the plot of the pair values  that are neighborhood of a certain order or  with distances belonging to a certain interval.
   In the first case a (vector of)  neighborhood must  be specified. In the second case a maximum distance (maxdist) and a number of lag-bins
@@ -60,20 +62,18 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
 }
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
+
 library(GeoModels)
-
-################################################################
-###############################################################
 set.seed(514)
-require(GeoModels)
 
-NN = 500
+NN = 600
 coords = cbind(runif(NN),runif(NN))
 
 param = list(mean=0,sill=1,nugget=0,power2=4,scale=0.4,smooth=0)
@@ -84,7 +84,7 @@ data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = model,param = param)$data
 
 # h-scatterplots for given a vector of neighborhoods
-GeoScatterplot(data,coords,neighb=c(5,10))
+GeoScatterplot(data,coords,neighb=c(2,4))
 
 }
 \keyword{Scatterplot}

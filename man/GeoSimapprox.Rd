@@ -7,7 +7,11 @@
  random fields using approximate methods of simulation. At the time it works only for the spatial case and the Matern model
 }
 \usage{
-GeoSimapprox(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1,param,anisopars=NULL, radius=6371,X=NULL)
+GeoSimapprox(coordx, coordy=NULL, coordt=NULL, 
+coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, 
+grid=FALSE,local=c(1,1),
+method="TB",M=30, L=500,model='Gaussian',
+n=1,param,anisopars=NULL, radius=6371,X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -88,31 +92,29 @@ D. Arroyo, X. Emery (2020) An R Implementation of a Continuous Spectral Algorith
 
 }
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 
 \examples{
 library(GeoModels)
-library(fields)
-
 
 ################################################################
 ###
 ### Example 1. Simulation of a large spatial Gaussian RF 
 ###            with Turning band method
 ###############################################################
-set.seed(6)
+set.seed(68)
 x <- runif(50000)
 y <- runif(50000)
 coords=cbind(x,y)
 # Simulation of a spatial Gaussian RF with Matern correlation function
 data1 <- GeoSimapprox(coords, corrmodel="Matern", 
-            method="TB",L=500,
+            method="TB",L=1000,
             param=list(smooth=0.5,mean=0,sill=1,scale=0.4/3,nugget=0))$data
 quilt.plot(coords,data1)
-             
 
 }
 \keyword{Simulation}

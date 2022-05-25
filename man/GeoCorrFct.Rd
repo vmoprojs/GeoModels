@@ -3,12 +3,14 @@
 \encoding{UTF-8}
 \title{Spatial and Spatio-temporal correlation or  covariance of (non) Gaussian random fields}
 \description{
-  The function computes the  correlations 
-  a spatial or spatio-temporal or a bivariate spatial Gaussian or non Gaussian randomm field
-  witha  given  covariance model and a  set of spatial (temporal) distances.
+  The function computes the  correlations of 
+  a spatial (or spatio-temporal or  bivariate spatial) Gaussian or non Gaussian randomm field
+  for a  given  correlation  model and a  set of spatial (temporal) distances.
 }
 \usage{
-GeoCorrFct(x,t=NULL,corrmodel, model="Gaussian",distance="Eucl", param, radius=6371,n=1,covariance=FALSE,variogram=FALSE)
+GeoCorrFct(x,t=NULL,corrmodel, model="Gaussian",
+distance="Eucl", param, radius=6371,n=1,
+covariance=FALSE,variogram=FALSE)
 }
 
 \arguments{
@@ -35,8 +37,9 @@ GeoCorrFct(x,t=NULL,corrmodel, model="Gaussian",distance="Eucl", param, radius=6
 \value{Returns  correlations or covariances values associated to a given parametric spatial and temporal correlation models.}
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/view/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{
@@ -77,15 +80,15 @@ plot(x,corr,ylim=c(0,1),type="l")
 ################################################################
 ###
 ### Example 3. Correlation of a t random field with underlying 
-### Generalized Wendland-Matern correlation model
+### Generalized Wendland correlation model
 ###
 ###############################################################
-CorrParam("GenWend_Matern")
+CorrParam("GenWend")
 NuisParam("StudentT")
 
 x = seq(0,1,0.005)
-param=list(smooth=1,sill=1,scale=0.1,nugget=0,power2=1/4,df=1/6,mean=0)
-corr= GeoCorrFct(x=x, corrmodel="GenWend_Matern", param=param,model="StudentT")
+param=list(smooth=1,sill=1,scale=0.5,nugget=0,power2=5,df=1/6,mean=0)
+corr= GeoCorrFct(x=x, corrmodel="GenWend", param=param,model="StudentT")
 plot(x,corr,ylim=c(0,1),type="l")
 
 
@@ -95,12 +98,12 @@ plot(x,corr,ylim=c(0,1),type="l")
 ### Generalized Cauchy correlation model
 ###
 ###############################################################
-CorrParam("Matern")
+CorrParam("GenCauchy")
 NuisParam("Weibull")
 
 x = seq(0,1,0.005)
-param=list(sill=1,scale=0.1,nugget=0,smooth=1.5,shape=4,mean=0)
-corr= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Weibull")
+param=list(sill=1,scale=0.2,nugget=0,power1=0.8, power2=0.8,shape=4,mean=0)
+corr= GeoCorrFct(x=x, corrmodel="GenCauchy", param=param,model="Weibull")
 plot(x,corr,ylim=c(0,1),type="l")
 ################################################################
 ###

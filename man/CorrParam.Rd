@@ -9,9 +9,12 @@
 \usage{
 CorrParam(corrmodel)
 }
+
 \arguments{
-  \item{corrmodel}{String; the name of a correlation model.}
+  \item{corrmodel}{String: the name associated  to a given correlation model.}
 }
+
+\value{Return a vector string of correlation parameters.}
 
 \details{The function return a list with the Parameters of a Correlation Model}
 
@@ -19,8 +22,9 @@ CorrParam(corrmodel)
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{
@@ -45,7 +49,7 @@ CorrParam("GenWend")
 
 ################################################################
 ###
-### Example 3. Parameters of the  Generalized Wendland  model
+### Example 3. Parameters of the  Generalized Cauchy  model
 ###
 ###############################################################
 
@@ -63,8 +67,9 @@ CorrParam("Gneiting")
 
 ################################################################
 ###
-### Example 5. Parameters of the bi-Matern separable  model
-###
+### Example 5. Parameters of the bi-Matern separable  model.
+###            Note that in the bivariate case variance paramters are
+###            included
 ###############################################################
 
 CorrParam("Bi_Matern_sep")

@@ -17,9 +17,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
     if(type=='variogram'){
         model <- 'Gaussian'
         fname <- 'Binned_Variogram'}
-    ##if(type=="lorelogram"){
-    ##    model <- "BinaryGauss"
-    ##    fname <- "Binned_Lorelogram"}
+
     
     # Checks if its a spatial or spatial-temporal random field:
     if(bivariate) coordt=c(0,1)
@@ -143,9 +141,8 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
       binst <- double(numbinst)      # spatial-temporal bins
       momentst <- double(numbinst)   # vector of spatial-temporal moments
       lenbinst <- integer(numbinst)  # vector of spatial-temporal bin sizes
-      if(cloud) fname <- 'Cloud_Variogram_st' else fname <- 'Binned_Variogram_st'
-      #if(type=="lorelogram") fname <- "Binned_Lorelogram_st"
-      if(initparam$bivariate)  fname <- 'Binned_Variogram_biv'
+      #if(cloud) fname <- 'Cloud_Variogram_st' else 
+      fname <- 'Binned_Variogram_st'
       if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
       else{
       if(!spacetime_dyn){
@@ -159,10 +156,13 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
 
       if(spacetime_dyn) fname <- paste(fname,"2_dyn",sep="") 
       if(!spacetime_dyn) fname <- paste(fname,"2",sep="") 
-      ##print(fname)
       # Compute the spatial-temporal moments:
-
-      EV=.C(fname, bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
+if(spacetime_dyn)
+      EV=.C("Binned_Variogram_st2_dyn", bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
+           lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments=moments,momentst=momentst,momentt=momentt,
+           as.integer(numbins), as.integer(numbint),as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
+if(!spacetime_dyn)
+      EV=.C("Binned_Variogram_st2", bins=bins, bint=bint,  as.double(coordx),as.double(coordy),as.double(coordt),as.double((data)),
            lenbins=lenbins,lenbinst=lenbinst,lenbint=lenbint,moments=moments,momentst=momentst,momentt=momentt,
            as.integer(numbins), as.integer(numbint),as.integer(ns),as.integer(NS), PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
@@ -204,7 +204,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
      if(!memdist)  { 
      fname <- paste(fname,"2",sep="") 
      # Computes the spatial moments
-      EV=.C(fname, bins=bins,  as.double(coordx),as.double(coordy),as.double(coordt),as.double(data), 
+      EV=.C("Binned_Variogram2", bins=bins,  as.double(coordx),as.double(coordy),as.double(coordt),as.double(data), 
         lenbins=lenbins, moments=moments, as.integer(numbins),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
        }
       else {
@@ -214,7 +214,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
          #mm=c(min(idx$lags),max(idx$lags))
          mm=range(idx$lags)
         
-         EV=.C(fname, bins=bins,  as.integer(length(idx$lags)),as.double(data[idx$colidx]),
+         EV=.C("Binned_Variogram2new", bins=bins,  as.integer(length(idx$lags)),as.double(data[idx$colidx]),
                 as.double(data[idx$rowidx]), as.double(idx$lags),
         lenbins=lenbins, moments=moments, as.integer(numbins),as.double(mm),PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
        }
@@ -235,7 +235,7 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
     # Start --- compute the extremal coefficient
     if(!memdist).C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     else .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-    #dotCall64::.C64('DeleteGlobalVar', SIGNATURE =c(),NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
+ 
     GeoVariogram <- list(bins=bins,
                        bint=bint,
                        bivariate=bivariate,
@@ -262,11 +262,12 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
 
 plot.GeoVariogram <- function(x,...)
   {
-if(!class(x)=='GeoVariogram')
-        stop("Enter an object obtained from the function GeoVariogram")
 
+if(!inherits(x,"GeoVariogram"))       stop("Enter an object obtained from the function GeoVariogram\n")
 
 opar=par(no.readonly = TRUE)
+on.exit(par(opar))
+
 ispatim=bivariate=FALSE 
 if(!is.null(x$bint))  ispatim=TRUE
 if(x$bivariate)       bivariate=TRUE
@@ -343,7 +344,7 @@ plot.default(x$bint, x$variogramt, xlab='t', ylab=expression(gamma(t)),
             }
 ############################spatial case#########################################
         if(!ispatim && !bivariate)    plot.default(x$centers, x$variograms,...)
- par(opar)
+
   return(invisible())
   }
 

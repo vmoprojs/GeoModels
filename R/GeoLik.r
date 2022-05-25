@@ -12,24 +12,30 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
     matr <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
     {
 
-        cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
-        as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+        #cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
+        #as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)$cr
 
-        #cc=dotCall64::.C64(corrmat,
-         # SIGNATURE = c("double","double","double","double", "integer","double","double","double","integer","integer"),  
-         #            cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
-          #INTENT =    c("rw","r","r","r","r","r","r", "r", "r","r"),
-          #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
-    
-        return(cc$cr)
+           cc=dotCall64::.C64(as.character(corrmat),
+         SIGNATURE = c("double","double","double","double", "integer","double","double","double","integer","integer"),  
+                          cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
+         INTENT =    c("rw","r","r","r","r","r","r","r","r", "r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$cr
+        return(cc)
     }
-   ######### computing upper trinagular of covariance matrix   
+   ######### computing upper trinagular of covariance matrix   it is for poisson
     matr2 <- function(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius,model,mu)
     {
-        cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
-         as.double(c(mu)), as.integer(1), as.double(nuisance['nugget']),
-        as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),as.integer(model),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-        return(cc$cr)
+       # cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),
+       #  as.double(c(mu)), as.integer(1), as.double(nuisance['nugget']),
+       # as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),as.integer(model),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)$cr
+        
+        hh=1;nn=nuisance['nugget'];mm=c(mu)
+  cc=dotCall64::.C64(as.character(corrmat),
+         SIGNATURE = c("double","double","double","double", "integer","double", "integer","double","double","double","integer","integer","integer"),  
+                          cr=corr, coordx, coordy, coordt, corrmodel, mm,hh,nn,paramcorr,radius, ns,NS,model,
+         INTENT =    c("rw","r","r","r","r","r","r","r","r","r","r","r","r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$cr
+        return(cc)
     }
     ### START Defining the objective functions
 ######### Restricted log-likelihood for multivariate normal density:
@@ -131,7 +137,7 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         varcovtap <- try(new("spam",entries=cova*setup$taps,colindices=setup$ja,
         rowpointers=setup$ia,dimension=as.integer(rep(dimat,2))),silent=TRUE)
         cholvctap <- try(spam::chol.spam(varcovtap),silent=TRUE)
-        if(class(cholvctap)=="try-error") return(lliktap)
+        if(inherits(cholvctap,"try-error")) {return(lliktap)}
         logdet <- c(spam::determinant(cholvctap)$modulus)
         inv <- spam::solve.spam(cholvctap)
         slot(varcovtap,"entries") <- inv[setup$idx]*setup$taps
@@ -369,8 +375,9 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         ident <- t(ident)
         ident[lower.tri(ident,diag=T)] <- cova
         # decomposition of the covariance matrix:
-        mcov=try(spam::as.spam(ident),silent=TRUE);if(class(mcov)=="try-error")   return(llik)
-        cholS <- try(chol(mcov) ,silent=T);if(class(cholS)=="try-error")   return(llik)          
+        mcov=try(spam::as.spam(ident),silent=TRUE)
+        if(inherits(mcov,"try-error")){return(llik)}
+        cholS <- try(chol(mcov) ,silent=T);if(inherits(cholS,"try-error")){ return(llik)}
         llik=0.5*( const+2*c(spam::determinant.spam.chol.NgPeyton(cholS)$modulus) 
                                     + sum(stdata* spam::solve.spam(cholS,stdata)))
          return(llik)
@@ -753,10 +760,6 @@ if(model==1||model==20){  ## gaussian case
         corr <- double(numpairs)
         tapcorr <- double(numpairs)
 
-    
-        #tp<-.C(corrmat, tcor=tapcorr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(setup$tapmodel),as.double(c(0,0,1)),
-        #   as.double(1),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-    
            tcor=matr(corrmat,tapcorr,coordx,coordy,coordt,setup$tapmodel,c(0,0,1),1,ns,NS,radius)
 
            tape <- new("spam",entries=tcor,colindices=setup$ja,rowpointers=setup$ia,dimension=as.integer(rep(dimat,2)))
@@ -769,7 +772,6 @@ if(model==1||model==20){  ## gaussian case
           else          fname<-"CVV"
        }
      if(sparse) fname <- paste(fname,"_spam",sep="")
-     #if(corrmodel==130) corrmat <- paste(corrmat,"asy",sep="")
  }
  ############################################################################
 ############################################################################
@@ -928,26 +930,26 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
                           setup=setup,X=X,ns=ns,NS=NS,MM=MM)
-   if(optimizer=='multinlminb'){
-                       Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
-                          const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-                          setup=setup,X=X,ns=ns,NS=NS,MM=MM,
-                             lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol")#,nbclusters=2,
-                   }
-     if(optimizer=='multiNelder-Mead'){
-                       Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
-                          const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-                          setup=setup,X=X,ns=ns,NS=NS,MM=MM,
-                             lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
-                              control = list( iter.max=100000),
-                           typerunif = "sobol")#,nbclusters=2,
-                   }                 
+  # if(optimizer=='multinlminb'){
+   #                    Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
+    #                      const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+     #                     corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+      #                    model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+       #                   setup=setup,X=X,ns=ns,NS=NS,MM=MM,
+        #                     lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
+         #                     control = list( iter.max=100000),#
+          #                 typerunif = "sobol")#,nbclusters=2,
+           #        }
+    # if(optimizer=='multiNelder-Mead'){
+     #                  Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
+      #                    const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+       #                   corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+        #                  model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
+         #                 setup=setup,X=X,ns=ns,NS=NS,MM=MM,
+          #                   lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
+           #                   control = list( iter.max=100000),
+            #               typerunif = "sobol")#,nbclusters=2,
+             #      }                 
     if(optimizer=='ucminf')    
                         Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
                         control=list( maxeval=100000),
@@ -1159,8 +1161,9 @@ names(Likelihood$score)=namesparam
             dcorr <- double(numpairstot*numparamcorr)
              dname <- paste(dname,"2",sep="")  
             # correlation gradient vector
-            dc=.C(dname,as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt),dr=dcorr,as.double(eps),
-               as.integer(flagcor),as.integer(numparamcorr),as.double(paramcorr),cr=corr,PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+            #dc=.C(dname,as.integer(corrmodel),as.double(coordx),as.double(coordy),as#.double(coordt),dr=dcorr,as.double(eps),
+               #as.integer(flagcor),as.integer(numparamcorr),as#.double(paramcorr),cr=corr,PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+               dc <- list()
                dcorr<-dc$dr; corr<-dc$cr
             dim(dcorr) <- c(numpairstot,numparamcorr)
             if(!bivariate){
@@ -1258,8 +1261,9 @@ names(Likelihood$score)=namesparam
             if(bivariate) dname<-"DCorrelationMat_biv_tap"
             dcorr <- double(numpairs*numparamcorr)
             # correlation gradient vector
-            gr <- .C(dname,as.integer(corrmodel),as.double(coordx),as.double(coordy),as.double(coordt),dr=dcorr,as.double(eps),
-               as.integer(flagcor),as.integer(numparamcorr),as.double(paramcorr),cr=corr,PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+            #gr <- #.C(dname,as.integer(corrmodel),as.double(coordx),as.double(coordy),as#.double(coordt),dr=dcorr,as.double(eps),
+               #as.integer(flagcor),as.integer(numparamcorr),as.double(paramcorr),cr=corr,PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+               gr <- list()
             dcorr <- gr$dr
             corr <- gr$cr
             dim(dcorr) <- c(numpairs,numparamcorr)

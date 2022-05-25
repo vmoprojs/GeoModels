@@ -4,8 +4,8 @@
 \title{Spatial and Spatio-temporal Covariance Matrix of (non) Gaussian random fields}
 \description{
   The function computes the  covariance matrix associated to 
-  a spatial or spatio-temporal or a bivariate spatial Gaussian or non Gaussian randomm field
-  with given  covariance model and a  set of spatial location sites and temporal instants.
+  a spatial or spatio(-temporal) or a bivariate spatial Gaussian or non Gaussian randomm field
+  with given  underlying covariance model and a  set of spatial location sites (and temporal instants).
 }
 \usage{
 GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
@@ -335,12 +335,12 @@ The associated parameters in the argument \code{param} are
 
    Let \eqn{R(h)} be a  spatial correlation model given in standard notation.
    Then the covariance model
-   applied with arbitrary variance, nugget  and scale equals to:
-  \deqn{C(h)=\sigma^2(1-\tau^2 ) R( h/a,,...), \quad     h \ge 0}
+   applied with arbitrary variance, nugget  and scale equals to \eqn{\sigma^2} if \eqn{h=0} and
+  \deqn{C(h)=\sigma^2(1-\tau^2 ) R( h/a,,...), \quad     h > 0}
   with nugget parameter  \eqn{\tau^2} between 0 and 1.
   Similarly if \eqn{R(h,u)} is a spatio-temporal correlation model given in standard notation,
-   then the covariance model is:
-  \deqn{C(h,u)=(\sigma^2+\tau^2 1(h=0,u=0)) R(h/a_s ,u/a_t,...) \quad h\ge 0, u\ge 0 }
+   then the covariance model is \eqn{\sigma^2} if \eqn{h=0} and \eqn{u=0} and 
+  \deqn{C(h,u)=(\sigma^2+\tau^2 1(h=0,u=0)) R(h/a_s ,u/a_t,...) \quad h>0, u>0 }
 
   Here \sQuote{...} stands for additional parameters.
 
@@ -432,6 +432,10 @@ The bivariate spatial tapers  implemented are the following :
    \emph{Journal of the American Statistical Association}. 
    DOI: 10.1080/01621459.2015.1072541
 
+   Alegria, A.,Cuevas-Pacheco, F.,Diggle, P, Porcu E. (2021)
+   The F-family of covariance functions: A Matérn analogue for modeling random fields on spheres.
+   \emph{patial Statistics} 43, 100512
+
 }
 
 \seealso{
@@ -441,13 +445,14 @@ The bivariate spatial tapers  implemented are the following :
 
 
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \examples{
 library(GeoModels)
-library(spam)
+
 
 ################################################################
 ###
@@ -560,7 +565,6 @@ matrix7 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param,
 # covariance matrix
 matrix7$nozero
 
-
 ################################################################
 ###
 ### Example 7. Covariance matrix associated to
@@ -575,8 +579,6 @@ matrix8 = GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5,
 
 # covariance matrix
 matrix8$covmatrix[1:10,1:10]
-
-
 
 ################################################################
 ###
@@ -599,10 +601,6 @@ param=list(scale=0.3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
 matrix9 = GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
 
 head(matrix9)
-
-
-
-
 
 }
 \keyword{Simulation}

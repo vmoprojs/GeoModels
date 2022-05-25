@@ -80,13 +80,17 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
   \item{X}{Numeric; Matrix of space-time covariates in the linear mean specification.}
 }
 
+
+\value{A list with the type of error associated with the input parameters.}
+
 \details{Subroutine called by the fitting procedures.
   The procedure controls the the validity of the input inserted by the users.}
   
 \seealso{\code{\link{GeoFit}}}
 
-\author{Moreno Bevilacqua, \email{moreno.bevilacqua@uv.cl},\url{https://sites.google.com/a/uv.cl/moreno-bevilacqua/home},
-Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/}
+\author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
+Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
+Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
 }
 
 \keyword{Composite}

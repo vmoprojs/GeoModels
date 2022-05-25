@@ -1,6 +1,6 @@
 /*###################################################
 ### Authors: Moreno Bevilacqua.
-### Email: moreno.bevilacqua@unibg.it
+### Email: moreno.bevilacqua89@gmail.com
 ### File name: Gradient.c
 ### Description:
 ### This file contains a set of procedures
