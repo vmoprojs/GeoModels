@@ -71,8 +71,8 @@ GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
 
 
 \value{
-  Returns an object of class \code{CovMat}.
-  An object of class \code{CovMat} is a list containing
+  Returns an object of class \code{GeoCovmatrix}.
+  An object of class \code{GeoCovmatrix} is a list containing
   at most the following components:
   \item{bivariate}{Logical:\code{TRUE} if the Gaussian random field is bivariaete
        otherwise  \code{FALSE};}
@@ -145,12 +145,17 @@ The associated parameters in the argument \code{param} are
     \deqn{R(h)  =e^{-h}}
     This model is a special case of the \code{Matern} and the \code{Stable} model.
 
-    \item \eqn{GenCauchy} (generalised \eqn{Cauchy}) defined as:
+    \item \eqn{GenCauchy} (generalised \eqn{Cauchy} in Gneiting and Schlater (2004)) defined as:
     \deqn{R(h) = ( 1+h^{\alpha} )^{-\beta / \alpha}} 
       If \eqn{h} is the geodesic distance then \eqn{\alpha \in (0,1]}.
 
   \item \eqn{Matern} defined as:
     \deqn{R(h) = 2^{1-\kappa} \Gamma(\kappa)^{-1} h^\kappa K_\kappa(h)}{2^{1-\kappa} \Gamma(\kappa)^{-1} h^\kappa K_\kappa(h)}
+     If \eqn{h} is the geodesic distance then \eqn{\kappa \in (0,0.5]}
+
+   \item \eqn{Kummer} (Kummer hypergeometric in  Ma and Bhadra (2022)) defined as:
+    \deqn{R(h) = \Gamma(\kappa+\alpha) U(\alpha,1-\kappa,\kappa h^2 ) / \Gamma(\kappa+\alpha)}
+     \eqn{U(.,.,.)} is the Kummer hypergeometric function.
      If \eqn{h} is the geodesic distance then \eqn{\kappa \in (0,0.5]}
 
     \item \eqn{Stable} defined as:
@@ -173,16 +178,26 @@ The associated parameters in the argument \code{param} are
       \deqn{R(h) = (1-h )^{\mu+2} (1+(\mu+2) h+ (1/3)((\mu+1)^2-1) h^2 ) 1(h \in [0,1])  }
       where \eqn{\mu \ge 0.5(d+1)+2}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 6}.
 
-    \item \eqn{GenWend} (Generalized Wendland) defined as:
-     \deqn{R(h) = \int_h^{1}[(1-x)^{\mu-1} (x^{2}-h^{2})^{\kappa-1}1(h \in [0,1]) ]dx / B(2\kappa+1,\mu) }
-      where   \eqn{\mu \ge 0.5(d+1)+\kappa}.
+    \item \eqn{GenWend} (Generalized Wendland in  Bevilacqua et al.(2019)) defined as:
+      \deqn{R(h) =  A (1-h^2)^{\beta+\kappa} F(\beta/2,(\beta+1)/2,2\beta+\kappa+1,1-h^2) 1(h \in [0,1]) }
+      where   \eqn{\mu \ge 0.5(d+1)+\kappa}
+       and \eqn{A=(\Gamma(\kappa)\Gamma(2\kappa+\beta+1))/(\Gamma(2\kappa)\Gamma(\beta+1-\kappa)2^{\beta+1})} and $F(.,.,.)$ 
+      is the Gaussian hypergeometric function.
      The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2} respectively. 
 
-    \item \eqn{GenWendMatern} (Generalized Wendland Matern) defined as:
-     \deqn{R(h) = \int_h^{1}[(1-x/a)^{\mu-1} ((x/a)^{2}-h^{2})^{\kappa-1}1(h \in [0,a]) ]dx / B(2\kappa+1,\mu) }
-      where   \eqn{\mu \ge 0.5(d+1)+\kappa} and \eqn{a=(\Gamma(\mu+1+2\kappa)/\Gamma(\mu))^(1/(1+2\kappa))}
-      The inverse parametrization  is used for the \eqn{\mu} parameter.
+    \item \eqn{GenWend_{\_}Matern} (Generalized Wendland Matern in  Bevilacqua et al. (2022)). It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be divided by 
+    \eqn{(\Gamma(\beta+2\kappa+1)/\Gamma(\beta))^{1/(1+2\kappa)}}
+
      
+
+     \item \eqn{Hypergeometric2} (Hypegeometric model in Alegria and Emery (2022)) defined as:
+      \deqn{R(h) =  A (1-h^2)^{\beta+\alpha-\kappa-2} F(\beta-\kappa,\alpha-\kappa,\beta+\alpha-\kappa-1,1-h^2) 1(h \in [0,1]) }
+      where   \eqn{\mu \ge 0.5(d+1)+\kappa}
+       and \eqn{A=(\Gamma(\beta-1)\Gamma(\alpha-1))/(\Gamma(\beta+\alpha-\kappa-1)\Gamma(\kappa-1))} and $F(.,.,.)$ 
+      is the Gaussian hypergeometric function.
+
+
+     \item \eqn{Hypergeometric} (Parsimonious Hypegeometric model in Alegria and Emery (2022)) defined as the model \eqn{Hypergeometric2} with the restriction \eqn{\beta=\alpha}. 
 
       \item \eqn{Multiquadric} defined as:
     \deqn{R(h) = (1-\alpha0.5)^{2\beta}/(1+(\alpha0.5)^{2}-\alpha cos(h))^{\beta}, \quad h \in [0,\pi]}
@@ -191,8 +206,8 @@ The associated parameters in the argument \code{param} are
     \deqn{R(h) = 1-(sin(h/2))^{\alpha},\quad h \in [0,\pi]}
       This model is valid on the unit sphere and \eqn{h} is the geodesic distance.
   
-    \item \eqn{Smoke} defined as:
-    \deqn{R(h) =   K*1F2(1/{\alpha},1/{\alpha}+0.5,
+    \item \eqn{Smoke} (F family in   Alegria et al. (2021)) defined as:
+    \deqn{R(h) =   K*F(1/{\alpha},1/{\alpha}+0.5,
                 2/{\alpha}+0.5+{\kappa}),\quad h \in [0,\pi]}
       where      \eqn{K =(\Gamma(a)\Gamma(i))/\Gamma(i)\Gamma(o)) }.      
       This model is valid on the unit sphere and \eqn{h} is the geodesic distance.
@@ -404,37 +419,47 @@ The bivariate spatial tapers  implemented are the following :
 
   Compact supports \eqn{d_{11},d_{12},d_{22}}  can be set by the user with  \code{maxdist}.
 
-
-
 }
 \references{
+
+  Alegria, A.,Cuevas-Pacheco, F.,Diggle, P, Porcu E. (2021)
+   The F-family of covariance functions: A Matérn analogue for modeling random fields on spheres.
+   \emph{Spatial Statistics} 43, 100512
+
+  Bevilacqua, M., Faouzi, T., Furrer, R., and Porcu, E. (2019). Estimation and prediction 
+  using generalized Wendland functions under fixed domain asymptotics. 
+  \emph{Annals of Statistics}, 47(2), 828--856.
+
+  Bevilacqua, M., Caamano-Carrillo, C., and Porcu, E. (2022). Unifying compactly supported 
+  and Matérn covariance functions in spatial statistics. 
+  \emph{Journal of Multivariate Analysis}, 189, 104949.
 
   Daley J. D., Porcu E., Bevilacqua M. (2015) 
   Classes of compactly supported covariance functions for multivariate random fields. 
   \emph{Stochastic Environmental Research and Risk Assessment}. 29 (4), 1249--1263. 
 
-  Gaetan, C. and Guyon, X. (2010) \emph{Spatial Statistics and Modelling}.
-  Spring Verlang, New York.
-  
-  Gneiting, T. (2013), Strictly and Non-Strictly Positive Definite Functions on Spheres 
-  \emph{Bernoulli}, 19, 1327-1349.
+  Emery, X. and Alegria, A. (2022). The gauss hypergeometric covariance kernel for modeling second-order stationary random fields in euclidean spaces: its compact support, properties and spectral representation. \emph{Stochastic Environmental Research and Risk Assessment}. 36 2819--2834.
 
   Gneiting, T. (2002). Nonseparable, stationary covariance functions for space-time data.
-  \emph{Journal of the American Statistical Association}, 97,
-  590--600.
+  \emph{Journal of the American Statistical Association}, 97, 590--600.
 
   Gneiting T, Kleiber W., Schlather M. 2010. Matern cross-covariance 
   functions for multivariate random fields.  
   \emph{Journal of the American Statistical Association}, 105, 1167--1177.
+
+  Ma, P., Bhadra, A. (2022). 
+  Beyond Matérn: on a class of interpretable confluent hypergeometric covariance functions.
+  \emph{Journal of the American Statistical Association},1--14.
 
   Porcu, E.,Bevilacqua, M. and Genton M.  (2015) 
   Spatio-Temporal Covariance and Cross-Covariance Functions of the Great Circle Distance on a Sphere. 
    \emph{Journal of the American Statistical Association}. 
    DOI: 10.1080/01621459.2015.1072541
 
-   Alegria, A.,Cuevas-Pacheco, F.,Diggle, P, Porcu E. (2021)
-   The F-family of covariance functions: A Matérn analogue for modeling random fields on spheres.
-   \emph{patial Statistics} 43, 100512
+
+   Gneiting, T. and Schlater M. (2004) 
+   Stochastic models that separate fractal dimension and the Hurst effect. 
+    \emph{SSIAM Rev} 46, 269--282.
 
 }
 
@@ -457,7 +482,7 @@ library(GeoModels)
 ################################################################
 ###
 ### Example 1. Spatial covariance matrix associated to
-### a Matern correlation model
+### the Matern correlation model
 ###
 ###############################################################
 
@@ -465,7 +490,6 @@ library(GeoModels)
 x = runif(500, 0, 1)
 y = runif(500, 0, 1)
 coords = cbind(x,y)
-
 
 # Correlation Parameters for Matern model 
 CorrParam("Matern")
@@ -476,18 +500,17 @@ param=list(smooth=0.5,sill=1,scale=0.2,nugget=0)
 matrix1 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param)
 dim(matrix1$covmatrix)
 
-
-
 ################################################################
 ###
 ### Example 2. Spatial covariance matrix associated to
-### a Generalized Wendland correlation model
+### the Generalized Wendland correlation model
 ###
 ###############################################################
 
+# Correlation Parameters for Gen Wendland model 
+CorrParam("GenWend")
 # Gen Wendland Parameters 
 param=list(sill=1,scale=0.2,nugget=0,smooth=0,power2=4)
-
 
 matrix3 = GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,sparse=TRUE)
 
@@ -498,17 +521,15 @@ matrix3$nozero
 ################################################################
 ###
 ### Example 3. Spatial covariance matrix associated to
-### a Generalized Cauchy correlation model
+### the Kummer correlation model
 ###
 ###############################################################
 
-# Gen Cauchy Parameters 
-param=list(sill=1,scale=0.2,nugget=0,power1=1,power2=1)
+# Correlation Parameters for kummer model 
+CorrParam("Kummer")
+param=list(sill=1,scale=0.2,nugget=0,smooth=0.5,power2=1)
 
-# Correlation Parameters for Gen Cauchy model
-CorrParam("GenCauchy")
-
-matrix4 = GeoCovmatrix(coordx=coords, corrmodel="GenCauchy", param=param)
+matrix4 = GeoCovmatrix(coordx=coords, corrmodel="Kummer", param=param)
 
 matrix4$covmatrix[1:4,1:4]
 
@@ -516,7 +537,7 @@ matrix4$covmatrix[1:4,1:4]
 ################################################################
 ###
 ### Example 4. Covariance matrix associated to
-### a space-time double exponential correlation model
+### the space-time double exponential correlation model
 ###
 ###############################################################
 
@@ -557,7 +578,7 @@ matrix6$covmatrix[1:10,1:10]
 ###
 ###############################################################
 
-param=list(sill=1,scale=0.3,nugget=0,shape=4,mean=0,smooth=1,power2=5)
+param=list(scale=0.3,nugget=0,shape=4,mean=0,smooth=1,power2=5)
 # Simulation of a spatial Gaussian random field:
 matrix7 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
                      sparse=TRUE,model="Weibull")
@@ -572,7 +593,7 @@ matrix7$nozero
 ###
 ###############################################################
 
-param=list(sill=1,scale=0.2,nugget=0,power2=4)
+param=list(scale=0.2,nugget=0,power2=4)
 # Simulation of a spatial Gaussian random field:
 matrix8 = GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
                      model="Binomial")

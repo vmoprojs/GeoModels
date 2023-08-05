@@ -65,7 +65,7 @@ coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
     The other possible choices is \code{svd} (Singular values decomposition).}     
          \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
+    default. Other possible choices are \code{nlm}, \code{BFGS}  \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.}  
    \item{onlyvar}{Logical; if \code{TRUE}  (and varest is  \code{TRUE}) only the variance covariance matrix is computed

@@ -340,9 +340,6 @@ void Cloud_Variogram2(double *bins, double *coordx, double *coordy, double *coor
 /***********************************************************************************************************************************/
 /***********************************************************************************************************************************/
 
-
-
-
 // Least square method for Gaussian spatial-temporal random field:
 void LeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, double *moms,
 		      int *nbins, int *nbint, double *nuis, double *par, double *res)
@@ -379,5 +376,3 @@ void WLeastSquare_G(double *bins, double *bint, int *cormod, double *lbins, doub
       i++;}
   return;
 }
-
-

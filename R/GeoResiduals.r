@@ -18,7 +18,7 @@ if(!fit$bivariate)
 {
 ## extracting mean parameters
 namescorr <- CorrParam(fit$corrmodel) 
-namesnuis <- NuisParam(fit$model,fit$bivariate,num_betas)
+namesnuis <- NuisParam2(fit$model,fit$bivariate,num_betas)
 param <- c(fit$param, fit$fixed)
 namesparam<- names(param)
 paramcorr <- param[namescorr]
@@ -41,11 +41,9 @@ mu=fit$X%*%beta2
 if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
 
-
 ############################################################
-if(!is.null(copula)){    #### copula models
-if(copula=="Clayton"||copula=="Gaussian")
-         {
+#if(!is.null(copula)){    #### copula models
+#if(copula=="Clayton"||copula=="Gaussian"){
 if(model=="Beta2")
              {
               mm=c(1/(1+exp(-mu)))
@@ -57,12 +55,16 @@ if(model=="Kumaraswamy2") {
              sh=as.numeric(param['shape']);
              ga= (log(1-mm^sh)/log(0.5))^{-1}
              res1=(1-dd^ga)^(sh) }
-          }
-}
-else {           #### non-copula models
+          #}
+#}
+#else {           #### non-copula models
 ###  positive multiplicative models
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
+{
+ #print(head(dd))
+ #print(exp(c(mu)))   
 res1=dd/exp(c(mu))
+}
 ### additive  models  on the real line
 if(model %in% c("Gaussian","SkewGaussian","Logistic", 
                "Tukeyh","Tukeyh2","SinhAsinh","Tukeygh","Gaussian_misp_Tukeygh",
@@ -88,9 +90,7 @@ if(model=="Gaussian_misp_Poisson")
     res1=(dd-aa)/sqrt(aa)
 }
 #########
-}
-
-
+#}
 
 fit$X=as.matrix(rep(1,length(dd)))
 
@@ -102,24 +102,21 @@ fit$param=c(nuis_update,paramcorr)
 fit$numbetas=1
 fit$X=as.matrix(rep(1,length(c(fit$data))))
 
-if(!is.null(copula)){
+#if(!is.null(copula)){
 #############################################
-if(copula=="Clayton"||copula=="Gaussian")
-{
+#if(copula=="Clayton"||copula=="Gaussian"){
 if(model %in% c("Beta2")) {fit$param['shape']=2;fit$param['mean']=0; fit$param['max']=1; fit$param['min']=0}
 if(model %in% c("Kumaraswamy2")) {fit$param['shape']=1;fit$param['mean']=0; fit$param['max']=1; fit$param['min']=0}
-}
-}
-else
-{
+#}
+#}else{
 #####################################################
 if(model %in% c("Gaussian","Logistic","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh", "Gaussian_misp_StudentT","Gaussian_misp_Tukeygh",
          "StudentT","TwoPieceGauss","TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh","TwoPieceBimodal"))
 {fit$param['sill']=1;fit$param['mean']=0}
 
-
 if(model %in% c("SkewGaussian")) 
-{param['mean']=0;
+{
+param['mean']=0;
  fit$param['skew']=as.numeric(param['skew'])/sqrt(as.numeric(param['sill']))
  fit$param['sill']=1
 }
@@ -131,7 +128,7 @@ if(model %in% c("Gaussian_misp_SkewStudentT","SkewStudentT"))
  fit$param['sill']=1
 }
 ##
-}
+#}
 
 fit$param=fit$param[nm]
 fit$fixed=fit$fixed[nf]
@@ -166,7 +163,7 @@ if(fit$bivariate)
  ns=fit$ns
 
 namescorr <- CorrParam(fit$corrmodel) 
-namesnuis <- NuisParam(fit$model,fit$bivariate,num_betas)
+namesnuis <- NuisParam2(fit$model,fit$bivariate,num_betas)
 param <- c(fit$param, fit$fixed)
 namesparam<- names(param)
 paramcov <- param[namescorr]

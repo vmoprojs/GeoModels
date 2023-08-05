@@ -4,7 +4,7 @@
 
 GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
                            distance="Eucl", grid=FALSE, maxdist=NULL, neighb=NULL,
-                           times=NULL, numbins=4, radius=6371, bivariate=FALSE)
+                           times=NULL, numbins=4, radius=6371, bivariate=FALSE,...)
 
 {
     call <- match.call()
@@ -114,7 +114,7 @@ if(!bivariate&&!spacetime)
        else{
           main = c(paste("(",signif(bins[i],3)," , ",signif(bins[i+1],3),"]"))
          #main = c(paste("cor =",signif(cor(v111,v222),3)),paste("(",signif(bins[i],3)," , ",signif(bins[i+1],3),"]"))
-         plot(v111,v222,col = "#481567FF",xlab="",ylab="",main=main) 
+         plot(v111,v222,col = "#481567FF",xlab="",ylab="",main=main,...) 
          abline(0,1)
           }
     }
@@ -166,13 +166,13 @@ if(bivariate)
        v111_1 = vvv1[vvv1$v01 == bins1[i],2]
        v222_1 = vvv1[vvv1$v01 == bins1[i],3]
        main = c(paste("cor =",signif(cor(v111_1,v222_1),3)),paste("(",signif(bins1[i],3)," , ",signif(bins1[i+1],3),"]"))
-       plot(v111_1,v222_1,col = "#481567FF",xlab="",ylab="",main=main) 
+       plot(v111_1,v222_1,col = "#481567FF",xlab="",ylab="",main=main,...) 
        abline(0,1)}
     for(i in 1:numbins){
        v111_2 = vvv2[vvv2$v02 == bins2[i],2]
        v222_2 = vvv2[vvv2$v02 == bins2[i],3]
        main = c(paste("cor =",signif(cor(v111_2,v222_2),3)),paste("(",signif(bins2[i],3)," , ",signif(bins2[i+1],3),"]"))
-       plot(v111_2,v222_2,col = "#481567FF",xlab="",ylab="",main=main) 
+       plot(v111_2,v222_2,col = "#481567FF",xlab="",ylab="",main=main,...) 
        abline(0,1)
     }
  }
@@ -203,7 +203,7 @@ if(!bivariate&&!spacetime)
 for(i in 1:ln){
   sel=GeoNeighIndex(coordx=coords,neighb=neighb[i])  
   data1=data[sel$colidx]; data2=data[sel$rowidx]
-   plot(data1,data2,col = "#481567FF",xlab="",ylab="",main =paste("Neighb =",neighb[i])) 
+   plot(data1,data2,col = "#481567FF",xlab="",ylab="",main =paste("Neighb =",neighb[i]),...) 
   }
 
  }   

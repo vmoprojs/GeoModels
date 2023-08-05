@@ -48,8 +48,8 @@ q_e=quantile(dd,probabilities)
 q_e1=quantile(dd,probabilities1)
 #######################################
 #######################################
-if(!is.null(copula)){
-if(copula %in% c("Gaussian","Clayton")){
+#if(!is.null(copula)){
+#if(copula %in% c("Gaussian","Clayton")){
 
 #######################################  OK
 if(model %in% c("Beta2")){
@@ -72,10 +72,8 @@ q_t1=pmin+(pmax-pmin)*(1-(1-(probabilities1)^(sh))^(shape1))
 plot(q_t,q_e, main ="Kumaraswamy qq-plot",...)
  }
 ####################################### 
-
-}
-}
-else{    ### non copula models
+#}
+#}else{    ### non copula models
 if(model %in% c("Gaussian",                                           
               "Gaussian_misp_Binomial",
               "Gaussian_misp_Poisson","Gaussian_misp_BinomialNeg")) {
@@ -306,7 +304,7 @@ q_t1 =MM+sqrt(VV)*qtptukey(probabilities1,skew,tail)
 plot(q_t,q_e,main="Two-Piece Tukey-h qq-plot",...)
 }
 #######
-}
+#}
 ########################################
 #aa=lm(q_e~1+q_t)
 #abline(as.numeric(aa$coefficients[1]),as.numeric(aa$coefficients[2]))
@@ -378,9 +376,9 @@ if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
 
 
-if(!is.null(copula)){
+#if(!is.null(copula)){
 #################################
-if(copula %in% c("Gaussian","Clayton")){
+#if(copula %in% c("Gaussian","Clayton")){
 
 if(model %in% c("Beta2")){
 mm=1/(1+exp(-MM))
@@ -388,12 +386,10 @@ sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 ds=dbeta((ll-pmin)/(pmax-pmin),shape1=mm*sh,shape2=(1-mm)*sh)/(pmax-pmin)
-if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Beta Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Beta Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-
-###########################################################  OK
-
+###########################################################  
 if(model %in% c("Kumaraswamy2")){
 sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
@@ -406,17 +402,16 @@ res=log(shapei)+log(sh)+(sh-1)*log(q)+(shapei-1)*log(k)-log(pmax-pmin);
 return(exp(res))
 }
 ds=dkuma(ll,MM,sh,pmin,pmax)
-if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Kumaraswamy Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(pmin,pmax),xlab="",main="Kumaraswamy Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-}
-}
-else{
+#}
+#}else{
 
 #######################################  OK
 if(model%in%c("Gaussian"))
 {
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gaussian Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gaussian Histogram",ylim=ylim,breaks=breaks,...)
 lines(seq(min(dd),max(dd),0.1),dnorm(seq(min(dd),max(dd),0.1),mean=MM,sd=sqrt(VV)),...)
 }
 
@@ -425,7 +420,7 @@ if(model%in%c("StudentT","Gaussian_misp_StudentT"))
 {
 df=as.numeric(round(1/pp["df"]))
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Student T Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Student T Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,dt((ll-MM)/sqrt(VV),df=df),...)/sqrt(VV)
 }
 
@@ -436,7 +431,7 @@ if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT"))
   nu=as.numeric(round(1/pp["df"]))
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
   d_st=sn::dst((ll-MM)/sqrt(VV), xi=0, omega=1, alpha=alpha, nu=nu)/sqrt(VV)
-  if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew-T Histogram",ylim=ylim,breaks=breaks)
+  if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew-T Histogram",ylim=ylim,breaks=breaks,...)
   lines(ll,d_st,...)
 }
 
@@ -449,7 +444,7 @@ if(model %in% c("SkewGaussian"))
    alpha=skew/sill^0.5
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_sn=sn::dsn((ll-MM)/sqrt(VV), xi=0, omega=omega,alpha=alpha)/sqrt(VV)
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew Gaussian Histogram",ylim=ylim,breaks=breaks)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Skew Gaussian Histogram",ylim=ylim,breaks=breaks,...)
    lines(ll,d_sn,...)
 }
 
@@ -460,7 +455,7 @@ if(model %in% c("Weibull"))
    shape=pp["shape"]
   ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_w=dweibull(ll,shape=shape,scale=exp(MM)/(gamma(1+1/shape )))
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Weibull Histogram",ylim=ylim,breaks=breaks)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Weibull Histogram",ylim=ylim,breaks=breaks,...)
    lines(ll,d_w,...)
 }
 
@@ -471,7 +466,7 @@ if(model %in% c("Gamma"))
    shape=pp["shape"]
   ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    d_g=dgamma(ll,shape=shape/2,rate=shape/(2*exp(MM)))
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gamma Histogram",ylim=ylim,breaks=breaks)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Gamma Histogram",ylim=ylim,breaks=breaks,...)
    lines(ll,d_g,...) 
 
 }
@@ -485,7 +480,7 @@ ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
    return(exp(a))
    }
    d_l = dlnorm(ll,MM,VV)
-   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogGaussian Histogram",ylim=ylim,breaks=breaks)
+   if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogGaussian Histogram",ylim=ylim,breaks=breaks,...)
    lines(ll,d_l,...) 
 }
 #######################################  OK
@@ -493,7 +488,7 @@ if(model %in% c("Logistic"))
 {
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 d_l = dlogis(ll,location = MM, scale = sqrt(VV))
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Logistic Histogram",ylim=ylim)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Logistic Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,d_l,...) 
 }
 #######################################  OK
@@ -503,7 +498,7 @@ shape=pp["shape"]
 cc=gamma(1+1/shape)*gamma(1-1/shape)
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
 d_l = actuar::dllogis(ll,shape = shape,scale=exp(MM)/cc)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogLogistic Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="LogLogistic Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,d_l,...) 
 
 }
@@ -521,7 +516,7 @@ d=exp(-0.5*s^2)
 return(tail*c*d*a)
 }
 ds=qtpsas1((ll-MM)/sqrt(VV),skew,tail)/sqrt(VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",ylim=ylim,breaks=breaks,...)
    lines(ll,ds,...) 
 }
 
@@ -543,11 +538,9 @@ c=dnorm(inverse_lamb(x,tail),0,1)
 return(b*c/(a*sqrt(VV)))
 }
 ds=qth((ll-MM)/sqrt(VV),tail,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-h Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-h Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...) 
 }
-
-
 ####################################### OK
 if(model %in% c("Tukeyh2"))
 {
@@ -558,7 +551,6 @@ inverse_lamb=function(x,tail)
   value = sqrt(VGAM::lambertW(tail*x*x)/tail);
    return(sign(x)*value);
 }
-
 qtpTukeyh22= function(x,tail1,tail2,VV){
   aa=1:length(x)
   sel1=I(x>=0)*aa
@@ -576,11 +568,9 @@ qtpTukeyh22= function(x,tail1,tail2,VV){
   return(c(ds2,ds1))
 }
 ds=qtpTukeyh22((ll-MM)/sqrt(VV),tail1,tail2,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-hh Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-hh Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...) 
 }
-
-
 #######################################   OK
 if(model %in% c("TwoPieceGaussian"))
 {
@@ -597,11 +587,9 @@ qtpGaussian1=function(x,eta,VV){
   return(c(ds2,ds1))
 }
 ds=qtpGaussian1((ll-MM)/sqrt(VV),skew,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Gaussian Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Gaussian Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...) 
 }
-
-
 ####################################### OK
 if(model %in% c("TwoPieceStudentT"))
 {
@@ -619,11 +607,9 @@ qtpt = function(x,skew,df,VV){
   return(c(ds2,ds1))
 }
 ds=qtpt((ll-MM)/sqrt(VV),skew,df,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Student Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Student Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-
-
 ####################################### OK
 if(model %in% c("TwoPieceTukeyh"))
 {
@@ -654,10 +640,9 @@ dTTukeyh= function(x,tail,skew,VV){
   return(c(ds2,ds1))
 }
 ds=dTTukeyh((ll-MM)/sqrt(VV),tail,skew,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Tukey-h Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Tukey-h Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-
 #######################################  OK
 if(model %in% c("TwoPieceBimodal"))
 {
@@ -678,30 +663,25 @@ ptpbimodal1 = function(x,skew,delta,df,VV){
   return(c(ds2,ds1))
 }
 ds=ptpbimodal1((ll-MM)/sqrt(VV),skew,delta,df,VV)
-if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Bimodal Histogram",ylim=ylim,breaks=breaks)
+if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Two-Piece Bimodal Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-
-
-
 
 ###############################################  OK
 if(model %in% c("BinomialNeg")) {
 ll=as.numeric(table(dd)/length(dd))
 y=sort(unique(as.numeric(dd)))#min(dd):max(dd)
 ds=dnbinom(y, size=fit$n, prob=pnorm(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Negative Histogram", xlab="",  ylab="",lwd = 2)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Negative Histogram", xlab="",  ylab="",lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
-
-
 ###############################################  OK
 if(model %in% c("Binomial")) {
 ll=as.numeric(table(dd)/length(dd))
 y=sort(unique(as.numeric(dd)))
 ds=dbinom(y, size=fit$n, prob=pnorm(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Histogram", xlab="",  ylab="",lwd = 2)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Histogram", xlab="",  ylab="",lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
@@ -710,7 +690,7 @@ if(model %in% c("BinomialLogistic")) {
 ll=as.numeric(table(dd)/length(dd))
 y=sort(unique(as.numeric(dd)))
 ds=dbinom(y, size=fit$n, prob=plogis(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial-Logistic Histogram", xlab="",  ylab="",lwd = 2)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial-Logistic Histogram", xlab="",  ylab="",lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
@@ -719,12 +699,12 @@ if(model %in% c("Poisson")) {
 ll=as.numeric(table(dd)/length(dd))
 y=sort(unique(as.numeric(dd)))
 ds=dpois(y, lambda=exp(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Poisson Histogram", xlab="",  ylab="",lwd = 2)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Poisson Histogram", xlab="",  ylab="",lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
 
-}
+#}
 
 }
  

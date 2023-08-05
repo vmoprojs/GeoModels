@@ -55,7 +55,7 @@ indices <- function(X,Y)
                 sol_d = cbind(Y[,1],Y[,i])
                 res_d = rbind(res_d,sol_d)
              }
-            xx=as.numeric(res[,1]); yy=as.numeric(res[,2])
+         
             return(list(xy = res,d = res_d[,2]))
  }
 
@@ -63,23 +63,24 @@ indices <- function(X,Y)
 ##########################################
 nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)  
   {
-   # print(distance);print(maxdist)
+ 
+     
             if(is.null(maxdist)) 
                {
                #nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
                nearest = nabor::knn(x,y,k = K)} ### case neighboord
             else     {
-                     nn=nrow(x) 
-                     K=min(K-1,nrow(x)-1) # case of  maxdist 
+                    
+                     K=min(K-1,nrow(x)) # case of  maxdist 
                     # nearest = RANN::nn2(x,y,searchtype = c("radius"),
                      #          treetype = c("kd"),radius = maxdist,k=K  )
                        nearest = nabor::knn(x,y,radius = maxdist,k=K  )
 
                      }
-             # print(nearest)
             #########  cases geod (2) or chordal (1) distances :  to improve this  code!!
             if(distance==2||distance==1){
-                  nn=nrow(x); nnd=ncol(nearest$nn.dists)
+                  nn=nrow(x); 
+                  nnd=ncol(nearest$nn.dists)
                   mm=matrix(0,nrow=nn,ncol=nnd)
                   for(i in 1:nn){   ## can we improve that?
                   si=nearest$nn.idx[i,];sel1=si[si>0]
@@ -130,7 +131,7 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
       
     }
   }
-  #tt0 <- proc.time()-tt0;print(tt0)
+
   if(!is.null(coordx_dyn))
   {        ns=lengths(coordx_dyn)/2 
   for(i in 1:numtime){
@@ -150,7 +151,7 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
   m_t <- list()
   m_st <- list()
   contador <- 1
-  #tt1 <- proc.time()
+  
   for(j in 1:tnn){
     for(k in 1:(numtime-tnn)){
       # j = 1;k = 1
@@ -161,8 +162,6 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
      
     }
   }
- # tt1 <- proc.time()-tt1
- # print(tt1)
 
   ######
   SS = data.table::rbindlist(m_s)

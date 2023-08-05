@@ -5,7 +5,7 @@
 
 # Simulate approximate spatial and spatio-temporal random felds:
 GeoSimapprox <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="TB",M=30, L=500,model='Gaussian', n=1, param, anisopars=NULL,radius=6371,X=NULL)
+     local=c(1,1),method="TB",M=30, L=1000,model='Gaussian', n=1, param, anisopars=NULL,radius=6371,X=NULL)
 {
 ####################################################################
 ############ internal function #####################################
@@ -22,7 +22,7 @@ GeoSimapprox <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrm
                                num_betas=sum(sel);mm=NULL
                                if(num_betas==1) mm=nuisance$mean
                                if(num_betas>1)  mm=c(mm,as.numeric((nuisance[sel])))
-                               
+                        
                                sim <- X%*%mm+simd
                               }
                 if(bivariate)  {
@@ -63,17 +63,18 @@ return(dims*dimt)
 
 
 #########################################################
-tbm2d<- function(coord, a0, nu0,mu,sill, L,model){
+tbm2d<- function(coord, a0, nu0, mu, sill, L, model, nugget){
   # Preparing parameters to use
   # =============================================
 
 
   #if(model == "Matern"){
+
     a_frecuency = a0
     nu_frecuency = nu0
      mu_frecuency = mu
   parametersg <- list("C" = 1, "a" = a_frecuency, "nu1" = nu_frecuency, "mu" =    mu_frecuency )
-  parameters <- list("C" = sill, "a" = a0 , "nu1" = nu0, "mu" =     mu_frecuency )
+  parameters <- list("C" = sill*(1-nugget), "a" = a0 , "nu1" = nu0, "mu" =  mu_frecuency )
   #}
   #if(model == "GenWend"){
   #   a_frecuency = a0
@@ -86,6 +87,7 @@ tbm2d<- function(coord, a0, nu0,mu,sill, L,model){
   d <- 1
   n <- dim(coord)[1]
   sequen <- c(seq(0,n-0.5, by = ceiling(1e6/2)),n)
+  if(n>500000) sequen=c(sequen[1],sequen[length(sequen)])
   coord_n <- coord[(sequen[1]+1):sequen[2], ]
   m <- dim(coord_n)[1]
   # Generate random frequencies and random phases
@@ -114,6 +116,7 @@ tbm2d<- function(coord, a0, nu0,mu,sill, L,model){
              matrix_out = as.double(rep(0, d*dim(coord)[1])),
              PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
   simu <- matrix(simu$matrix_out, m, 1)/sqrt(L)
+  simu = simu + rnorm(m, 0, sqrt(sill*nugget))
   return(simu)
 }
 
@@ -127,7 +130,7 @@ if(method=="TB")
    if(corrmodel=="GenWend") {model=1; mu=as.numeric(param['power2'])}
    
    simu=tbm2d(coords, as.numeric(param['scale']), as.numeric(param['smooth']), mu, as.numeric(param['sill']), 
-                                                       L=L,  model = model)
+                                                       L=L,  model = model, nugget = as.numeric(param['nugget']))
    simu=c(simu[,1])  
 }     
 ## Vecchia
@@ -190,6 +193,16 @@ return(simu)
        num_betas2=sum(sel2)
      num_betas=c(num_betas1,num_betas2)
     }
+if(!bivariate) {
+    if(is.null(param$sill))
+
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
+        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) param$sill=1
+else param$sill=1
+}
 
     k=1
 #################################

@@ -9,7 +9,7 @@
 GeoCovDisplay(covmatrix,limits=FALSE,pch=2)
 }
 \arguments{
-  \item{covmatrix}{An object of class matrix. See the Section \bold{Details}.}
+  \item{covmatrix}{An object of class  GeoCovmatrix. See the Section \bold{Details}.}
   \item{limits}{Logical; If TRUE  and the covariance matrix is spatiotemporal or spatial bivariate
   then vertical and horizontal lines are added  to the image plot.}      
     \item{pch}{Type of symbols to use in the image plot.}

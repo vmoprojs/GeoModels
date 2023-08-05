@@ -10,7 +10,7 @@
 GeoSimapprox(coordx, coordy=NULL, coordt=NULL, 
 coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, 
 grid=FALSE,local=c(1,1),
-method="TB",M=30, L=500,model='Gaussian',
+method="TB",M=30, L=1000,model='Gaussian',
 n=1,param,anisopars=NULL, radius=6371,X=NULL)
 }
 \arguments{

@@ -266,23 +266,19 @@ x=(dd-MM)/sqrt(VV)
 data=pdfbimodal(x,skew,delta,df)
 }
 
-#######################################  OK
+#######################################  discrete
 if(model %in% c("Binomial")) {
- MM=pp["mean"]
- data=pbinom(dd, size=fit$n, prob=pnorm(MM))
+   MM=pp["mean"]
+   data=pbinom(dd, size=fit$n, prob=pnorm(MM))
 }
 if(model %in% c("BinomialNeg")) {
- MM=pp["mean"]
- data=pnbinom(dd, size=fit$n, prob=pnorm(MM))
+   MM=pp["mean"]
+   data=pnbinom(dd, size=fit$n, prob=pnorm(MM))
 }
 if(model %in% c("Poisson")) {
- MM=pp["mean"]
- data=ppois(dd, lambda=exp(MM))
+   MM=pp["mean"]
+   data=ppois(dd, lambda=exp(MM))
 }
-
-
-
-
 
 
 }

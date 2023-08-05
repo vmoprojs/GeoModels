@@ -16,7 +16,7 @@ Prscores(data,  method="cholesky", matrix)
    or a a(\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation).
     or a a(\eqn{2 \times d}{2 x d})-matrix (a single bivariate realisation).}
   \item{method}{String; the type of matrix decomposition used in the computation of the predictive scores. Default is \code{cholesky}. The other possible choices is \code{svd}.} 
-   \item{matrix}{An object of class matrix. See the Section \bold{Details}.}
+   \item{matrix}{An object of class GeoCovmatrix. See the Section \bold{Details}.}
 }
 
 \details{

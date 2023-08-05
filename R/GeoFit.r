@@ -3,7 +3,7 @@
 ####################################################
 
 
-GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
+GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel=NULL, distance="Eucl",
                          fixed=NULL,anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=Inf,neighb=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
@@ -12,8 +12,16 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
                          winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
 {
+###########  first preliminary check  ###############
     call <- match.call()
 
+    if(is.null(corrmodel)&& likelihood=="Marginal"&&type=="Independence") 
+    {
+        if(is.null(coordt)){corrmodel="Exponential";tlist=list(nugget=0,scale=1)}
+        else               {corrmodel="Exp_Exp";tlist=list(nugget=0,scale_s=1,scale_t=1)}
+        fixed=append(fixed,tlist)
+    }
+    if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
     if(!is.null(copula))
      { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
 
@@ -35,6 +43,21 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
             if(all(neighb<1))  stop("neighb must be an integer >=1")
           }
     if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements")}
+
+
+bivariate<-CheckBiv(CkCorrModel(corrmodel))    
+if(!bivariate){
+
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
+        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')){
+if(is.null(fixed$sill)) fixed$sill=1
+else                    fixed$sill=1
+}
+}
+#############################################################################
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
@@ -54,8 +77,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
                          likelihood, maxdist,neighb,maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
                          type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
-
-
+    
         ## moving sill from starting to fixed parameters if necessary (in some model sill mus be 1 )
         if(sum(initparam$namesparam=='sill')==1)
         {
@@ -66,7 +88,7 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
-if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","ucminf","optimize","SANN")))
+if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","optimize","SANN")))
              stop("optimizer is not correct\n")
 
 ######################## handling lower and upper bound parameters####################################        
@@ -155,7 +177,7 @@ if(!is.null(anisopars)) {
         likelihood=='Marginal_2')&&type=="Pairwise"){
 
 
-    if(!memdist)
+    if(!memdist)     ## old style
           fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
@@ -166,7 +188,8 @@ if(!is.null(anisopars)) {
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
                                    unname(initparam$X),sensitivity,MM,aniso)
     if(memdist)
-        fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+        {
+      fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
@@ -175,9 +198,8 @@ if(!is.null(anisopars)) {
                                    initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
                                    initparam$winconst_t,initparam$winstp_t,initparam$ns,
-                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM,aniso)
+                                   unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM,aniso)}
       }
-
  if(likelihood=='Marginal'&&type=="Independence")
    {
 
@@ -209,6 +231,7 @@ if(!is.null(anisopars)) {
     # Delete the global variables:
 
      
+     
     if( !(likelihood=='Marginal'&&type=="Independence"))
     {             
      if(memdist) .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE) # my distances
@@ -225,7 +248,19 @@ if(aniso) anisopars=as.list(c(fitted$par,ff)[namesaniso])
 
 if(is.null(unlist(ff))) ff=NULL
 
-if(likelihood!="Full") {if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value}  #!!ojo
+#!!ojo this is the case maxdist and neighb =NULL
+# distances are computed in C i=1 j>i
+# for comparson we consider this code
+if(likelihood!="Full") {if(is.null(neighb)&&is.numeric(maxdist)&&likelihood=="Marginal")
+                                                    { 
+                                                     fitted$value=2*fitted$value;
+                                                     initparam$numpairs=2*initparam$numpairs
+                                                    } 
+                       }
+if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
+                                          initparam$coordy=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
+                                        }   
+
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,
                          bivariate=initparam$bivariate,

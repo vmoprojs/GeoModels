@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \title{Spatial or spatiotemporal  near neighbour indices.}
 \description{
-  The function return the indices associated to  a given spatial neighbour or spatial distance 
+  The function returns the indices associated with  a given spatial (temporal) neighbour and/or distance 
 }
 \usage{
 GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,
@@ -39,7 +39,7 @@ maxtime=1,radius=6371,bivariate=FALSE)
 }
 
 \details{
- The function return the  spatial or spatiotemporal indices of the pairs tha are neighboord of a certain order or with a certain fixed distance
+ The function returns the  spatial or spatiotemporal indices of the pairs tha are neighboords of a certain order and/or with a certain fixed distance
 }
 
 

@@ -29,8 +29,9 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
   #################### end internal function ##################################################
   #############################################################################################
     # Check the user input
-    if(is.null(CkCorrModel(corrmodel)))   stop("The correlation model is not valid\n")
-    if(is.null(CkModel(model)))   stop("The  model is not valid\n")
+ 
+     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if(is.null(CkModel(model)))   stop("The name of the  model  is not correct\n")
     if(!is.numeric(x)) stop("Distances must be numeric\n")
     if(sum(x<0)>=1) stop("Distances must be positive\n")
     spacetime<-CheckST(CkCorrModel(corrmodel))

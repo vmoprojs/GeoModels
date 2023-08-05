@@ -69,7 +69,7 @@ fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,X=X,
 
 res=GeoResiduals(fit)
 GeoQQ(res,type="Q")
-GeoQQ(res,type="D",col="red",lwd=2,ylim=c(0,0.5),breaks=20)
+GeoQQ(res,type="D",lwd=2,ylim=c(0,0.5),breaks=20)
 
 
 ##################
@@ -111,7 +111,7 @@ fit = GeoFit(data,coordx=coords, corrmodel=corrmodel,model=model,
                     optimizer="nlminb",lower=lower,upper=upper,
                     fixed=fixed,neighb=3)
 GeoQQ(fit,type="Q")
-GeoQQ(fit,type="D",col="red",lwd=2,ylim=c(0,1),breaks=20)
+GeoQQ(fit,type="D",lwd=2,ylim=c(0,1),breaks=20)
 }
 
 \keyword{Composite}

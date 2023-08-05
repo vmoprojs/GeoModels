@@ -151,7 +151,7 @@ library(GeoModels)
 set.seed(34)
 model="SinhAsinh" 
 # Define the spatial-coordinates of the points:
-NN=350
+NN=150
 x = runif(NN, 0, 1)
 y = runif(NN, 0, 1)
 coords = cbind(x,y)

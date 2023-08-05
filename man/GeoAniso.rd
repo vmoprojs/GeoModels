@@ -20,7 +20,7 @@ Geometric anisotropy is defined by a linear  tranformation from the anisotropic 
  where  X is a matrix with original coordinates (anisotropic space), and Y is a matrix with  transformed coordinates (isotropic space). 
  Here R  is  a  rotation matrix  with associated anisotropy angle parameter (in [0,pi]) and a S is a shrinking matrix with associated anisotropy ratio 
  parameter (greeater or equal than one).
-The two parameters are specified in the anisopars argument as a bivariate numeric vector. The case (0,1) corresponds to the isotropic case.
+The two parameters are specified in the anisopars argument as a bivariate numeric vector. The case (.,1) corresponds to the isotropic case.
 }
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},

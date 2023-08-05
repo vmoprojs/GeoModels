@@ -55,7 +55,7 @@ library(GeoModels)
 ###############################################################
 
 # Define the spatial distances
-x = seq(0,0.4,0.005)
+x = seq(0,0.4,0.01)
 
 # Correlation Parameters for Matern model 
 CorrParam("Matern")

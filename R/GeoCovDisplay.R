@@ -4,7 +4,7 @@
 
 GeoCovDisplay=function(covmatrix,limits=FALSE,pch=2)   {
 #if(class(covmatrix)!="CovMat") stop("A CovMat object is needed as input\n")
-if(!inherits(covmatrix,"CovMat")) stop("A CovMat object is needed as input\n")
+if(!inherits(covmatrix,"GeoCovmatrix")) stop("A GeoCovmatrix object is needed as input\n")
 covmat=as.matrix(covmatrix$covmatrix)
 #if(!is.matrix(covmat)) stop("The function needs a covariance matrix as input\n")
 opar=par(no.readonly = TRUE)

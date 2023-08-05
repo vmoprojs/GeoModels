@@ -6,7 +6,6 @@
 
   A (\eqn{7252 x 3})-matrix containing lon/lat 
 and yearly total precipitation anomalies registered at 7.352 location sites in USA.
-For more details see   \url{http://www.image.ucar.edu/Data/precip_tapering/}.
 }
 \format{A numerical matrix of dimension \eqn{7252 x 3}.}
 \source{

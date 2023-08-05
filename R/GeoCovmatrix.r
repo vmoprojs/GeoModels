@@ -727,7 +727,8 @@ return(varcov)
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
     space=!(spacetime||bivariate)
-    if(is.null(CkCorrModel (corrmodel))) stop("The name of the coorelation model  is not correct\n")
+    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
     ## setting zero mean and nugget if no mean or nugget is fixed
     if(!bivariate){
     if(is.null(param$mean)) param$mean<-0
@@ -737,6 +738,8 @@ return(varcov)
     if(is.null(param$mean_2)) param$mean_2<-0
     if(is.null(param$nugget_1)) param$nugget_1<-0
     if(is.null(param$nugget_2)) param$nugget_2<-0 }
+
+
 
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
@@ -772,6 +775,21 @@ if(sparse) {
   }
   taper=corrmodel
 }
+##### sill parameter fixed for some models
+
+if(!bivariate){
+
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
+        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')){
+if(is.null(param$sill)) param$sill=1
+else                    param$sill=1
+}
+}
+
+
 
 
 #######################################
@@ -876,10 +894,11 @@ else
                       .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
     else                     
                       .C('DeleteGlobalVar2', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
-
-
-
+ ##### setting names nuis parameters
     if(initparam$bivariate)   initparam$numtime=2
+    if(!initparam$bivariate){namesnuis = NuisParam(model, bivariate,ncol(initparam$X),copula)}
+    else                    {namesnuis =initparam$namesnuis}
+#######################################
     # Return the objects list:
     CovMat <- list(bivariate =  initparam$bivariate,
                    coordx = coords_orig[,1],
@@ -899,7 +918,7 @@ else
                    NS=initparam$NS,
                    model=initparam$model,
                    namescorr = initparam$namescorr,
-                   namesnuis = initparam$namesnuis,
+                   namesnuis=namesnuis,
                    namessim = initparam$namessim,
                    numblock = initparam$numblock,
                    numcoord = initparam$numcoord,
@@ -914,5 +933,68 @@ else
                    tapmod=taper,
                    tapsep=tapsep,
                    X=initparam$X)
-    structure(c(CovMat, call = call), class = c("CovMat"))
+    structure(c(CovMat, call = call), class = c("GeoCovmatrix"))
 }
+
+print.GeoCovmatrix <- function(x, digits = max(3, getOption("digits") - 3), ...)
+  {
+  if(x$biv) {biv="Bivariate";x$numtime=1} else {biv="Univariate"}
+  if(x$numtime==1) {type="Spatial"
+                   if(x$biv) type="Spatial Biviariate"
+             } else {type="Spatio-temporal"}
+ 
+  if(!x$biv) {dime=x$numcoord*x$numtime}
+  else       {dime=2*x$numcoord}
+  if(x$model==1) model <- 'Gaussian'
+  if(x$model==21) model <- 'Gamma'
+  if(x$model==39) model <- 'TwoPieceBimodal'
+  if(x$model==24) model <- 'LogLogistic'
+  if(x$model==30) model <- 'Poisson'
+  if(x$model==46) model <- 'PoissonGamma'
+  if(x$model==43) model <- 'PoissonZIP'
+  if(x$model==50) model <- 'Beta2'
+  if(x$model==12) model <- 'StudentT'
+  if(x$model==9) model <- 'Tukeygh '
+  if(x$model==18) model <- 'SkewStudentT'
+  if(x$model==25) model <- 'Logistic'
+  if(x$model==34) model <- 'Tukeyh'
+  if(x$model==40) model <- 'Tukeyh2'
+  if(x$model==23) model <- 'Gamma2'
+  if(x$model==22) model <- 'LogGaussian'
+  if(x$model==10) model <- 'SkewGaussian'
+  if(x$model==27) model <- 'TwoPieceStudentT'
+  if(x$model==38) model <- 'TwoPieceTukeyh'
+  if(x$model==29) model <- 'TwoPieceGaussian'
+  if(x$model==20) model <- 'SinhAsinh'    
+  if(x$model==13) model <- 'Wrapped'
+  if(x$model==26) model <- 'Weibull'
+  if(x$model==11) model <- 'Binomial'
+  if(x$model==49) model <- 'BinomialLogistic'
+  if(x$model==33) model <- 'Kumaraswamy'
+  if(x$model==42) model <- 'Kumaraswamy2'
+  if(x$model==28) model <- 'Beta'
+  if(x$model==31) model <- 'Binomial_TwoPieceGauss'
+  if(x$model==32) model <- 'BinomialNeg_TwoPieceGauss'
+  if(x$model==19) model <- 'Binomial2'     
+  if(x$model==16) model <- 'BinomialNeg'
+  if(x$model==45) model <- 'BinomialNegZINB'
+  if(x$model==14) model <- 'Geometric'
+  if(x$model==15) model <- 'PoisBin'
+  if(x$model==17) model <- 'PoisBinNeg'  
+                      
+    cat('\n##################################################################')
+    cat('\n Covariance matrix type:', type,'\n')
+    cat('\n Dimension:',dime,'X',dime,'\n')
+    cat('\n Model:', model, '\n')
+    cat('\n Correlation model:', x$corrmodel, '\n')
+    cat('\n Number of spatial coordinates:', x$numcoord, '\n')
+    cat('\n Number of dependent temporal realisations:', x$numtime, '\n')
+    cat('\n Type of the random field:', biv, '\n')
+    cat('\n Number of  parameters:', length(x$param), '\n')
+    cat('\nParameters:\n')
+    print.default(x$param, digits = digits, print.gap = 2,
+                  quote = FALSE)
+    cat('\n##################################################################\n')
+    invisible(x)
+  }
+

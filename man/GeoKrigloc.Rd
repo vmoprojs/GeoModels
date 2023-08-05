@@ -215,7 +215,7 @@ corrmodel="Exp_Exp",
 ##  four location to predict
 loc_to_pred=matrix(runif(8),4,2)
 ## three temporal instants to predict
-time=c(0.5,1.2,3.7)
+time=c(0.5,1.5,3.5)
 
 
 pr=GeoKrig(data=data,loc=loc_to_pred,time=time,
@@ -228,77 +228,6 @@ time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
 ##  full and local prediction 
 pr$pred
 pr_loc$pred
-
-
-############################################################
-### Example 7. Bivariate local cokriging  ##################
-############################################################
-require(GeoModels)
-require(fields)
-# Define the spatial-coordinates of the points:
-set.seed(128)
-x = runif(200, 0, 1)
-y = runif(200, 0, 1)
-coords=cbind(x,y)
-
-param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
-          nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
-          
-data = GeoSim(coordx=coords, 
-corrmodel="Bi_matern_sep", param=param)$data
-
-fixed=list(nugget_1=0,nugget_2=0,smooth=0.5,mean_1=0,mean_2=0)
-start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
-      pcol=cor(data[1,],data[2,]))
-# Maximum Composite likelihood fitting of the random field:
-fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
-        likelihood="Marginal",type="Pairwise",
-        neighb=c(3,3,3),
-        optimizer="BFGS", start=start,fixed=fixed)
-
-
-# locations to predict
-
-xx=seq(0,1,0.03)
-loc_to_pred=as.matrix(expand.grid(xx,xx))
-
-pr=GeoKrig(loc=loc_to_pred,coordx=coords,
-corrmodel="Bi_matern_sep",
-       param= append(fitcl$param,fitcl$fixed), 
-       data=data,which=1,mse=TRUE)
-
-pr_loc=GeoKrigloc(loc=loc_to_pred,coordx=coords,
-corrmodel="Bi_matern_sep",neighb=30,
-param= append(fitcl$param,fitcl$fixed), 
-  data=data,which=1,mse=TRUE)
-
-
-
-colour = rainbow(100)
-zlim=c(-2.6,2.6)
-
-opar=par(no.readonly = TRUE)
-par(mfrow=c(2,2))
-# simple kriging map prediction
-image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
-           zlim=zlim,xlab="",ylab="",
-           main="CoKriging with Bivariate Matern model")
-
-# simple kriging MSE map prediction variance
-image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
-
-# simple  local kriging map prediction
-image.plot(xx, xx, matrix(pr_loc$pred,ncol=length(xx)),
-col=colour,
-           zlim=zlim,xlab="",ylab="",
-           main="Local CoKriging with Bivariate Matern model")
-
-# simple local kriging MSE map prediction variance
-image.plot(xx, xx, matrix(pr_loc$mse,ncol=length(xx)),
-col=colour,
-           xlab="",ylab="",main="Std error")
-par(opar)
 
 }
 \keyword{Composite}

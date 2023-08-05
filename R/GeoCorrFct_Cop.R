@@ -72,8 +72,8 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
 #################### end internal function ##################################################
 #############################################################################################
     # Check the user input
-    if(is.null(CkCorrModel(corrmodel)))   stop("The correlation model is not valid\n")
-    if(is.null(CkModel(model)))   stop("The  model is not valid\n")
+    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if(is.null(CkModel(model)))   stop("The name of the  model  is not correct\n")
     if(!is.numeric(x)) stop("Distances must be numeric\n")
     if(sum(x<0)>=1) stop("Distances must be positive\n")
     spacetime<-CheckST(CkCorrModel(corrmodel))
@@ -112,9 +112,9 @@ cc=correlation*(1-as.numeric(nuisance['nugget'] )  )
 ######################################
 ######################################
 ######################################
-######################################
 if(model=="Beta2")        { if(bivariate) {} 
                         else {
+                     
                         delta=as.numeric(nuisance["shape"])
                         q1<-function(x) qbeta(x,mu1*delta,(1-mu1)*delta)
                         q2<-function(x) qbeta(x,mu2*delta,(1-mu2)*delta)
@@ -130,7 +130,20 @@ if(model=="Beta2")        { if(bivariate) {}
                         vs= sqrt(v1*v2)*dd^2
                      }
 }        
-            
+
+if(model=="Gaussian")        { if(bivariate) {} 
+                        else {
+                        sill=as.numeric(nuisance["sill"])
+                        v1=v2=sill
+                        e1=e2=mm
+                        q1<-function(x) qnorm(x,e1,sqrt(sill))
+                        q2<-function(x) qnorm(x,e2,sqrt(sill))
+                        vs= sill
+                     }
+
+}       
+
+
 ################################################################
 ################################################################                     
 if(copula=="Clayton")    cova=corr_copula(cc,"Clayton" ,q1,q2,e1,e2,v1,v2,as.numeric(param['nu']))

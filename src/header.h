@@ -357,12 +357,15 @@ static const double AA[] = {
 
 extern double **dista;// 2x2 matrix of distance weight (for c)and commpact suppots (tap)
 extern int *first;//vector of index in the bivariate case
+extern int *first_1;//vector of index in the bivariate case
 extern int *second;//vector of index in the bivariate case
+extern int *second_1;//vector of index in the bivariate case
 extern int *isbiv;//is bivariate?
 extern int *ismem;//is with memoty allocation
 extern int *isst;//is a spatio-temporal random field?
 extern int *istap;//is tapering?
 extern double *lags;// vector of spatial distances for tapering
+extern double *lags_1;// vector of spatial distances for tapering
 extern double *lagt;// vector of temporal distance for tapering
 //double **mlags;// vector of spatial distances
 //double **mlagt;// vector of temporal distances
@@ -391,6 +394,8 @@ extern int *cdyn; // dynamic coords indicator
 //---------END GLOBAL VARIABLES-------------
 //void indx(double *ind, int *n);
 
+
+
 // fortran declaration for bivariate normal cdf:
 extern double F77_NAME(chfm)(double *xr,double *xi,double *ar, double *ai,
   double *br, double *bi,double *r, double *ri,int *len, int *lnchf,int *ip);
@@ -403,6 +408,12 @@ extern void mult_pmnorm( int *nvar , double *lower , double *upper , int *infin 
 extern void F77_NAME(sadmvn)( int* , double* , double*, int* , double* , int* , double* , double* , double* , double * , int*) ;
 
 extern double F77_NAME(mvndst)(int *N,double *lower, double *upper, int *infin, double *correl);
+
+
+extern void F77_NAME(chgu)(double *,double *,double *,double *, int *, int *);
+
+double hypU_wrap(double a, double b, double x);
+
 // Internal function declaration:
 // 1)
 /*----------------------------------------------------------------
@@ -511,7 +522,7 @@ double cond_exp_bin(int *cormod,double data_i,double data_j,double lags_i,double
 
 
 double biv_cop(double rho,int type_cop,int cond,
-             double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN);
+             double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN1,int NN2);
 
 double marg_binom(int n,double x,double p);
 
@@ -551,6 +562,9 @@ double CorFunW0(double h,double scale,double power);
 double CorFunW1(double h,double scale,double power);
 double CorFunW2(double h,double scale,double power);
 double CorFunW_gen(double h, double power1, double smooth, double scale);
+double CorFunHyperg2(double lag,double R_power,double R_power1,double smooth,double scale);
+double CorFunHyperg(double lag,double R_power,double smooth,double scale);
+double CorKummer(double lag,double R_power,double smooth,double scale);
 double CorFunWend1(double lag,double scale);
 double CorFunWend2(double lag,double scale);
 double CorFunWend3(double lag,double scale);
@@ -785,6 +799,7 @@ double d2lognorm(double x, double y, double sill,double nugget, double mux,doubl
 double dNnorm(int N,double **M, double *dat);
 
 double int_pt(double x, double df);
+double kummer(double a, double b,double c);
 
 double int_gen(double x,double mu, double alpha,double lag,double supp);
 double int_hyp(double x,double a, double b,double c,double z);

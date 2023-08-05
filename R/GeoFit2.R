@@ -12,9 +12,13 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
                          winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
 {
+
+###########  first preliminary check  ###############
+
+
     call <- match.call()
 
-  
+    if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
     if(!is.null(copula))
      { if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")}
 
@@ -35,7 +39,21 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
             if(all(neighb<1))  stop("neighb must be an integer >=1")
           }
     if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements")}
-    
+ 
+bivariate<-CheckBiv(CkCorrModel(corrmodel))    
+if(!bivariate){
+
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
+        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')){
+if(is.null(fixed$sill)) fixed$sill=1
+else                    fixed$sill=1
+}
+}
+#############################################################################
+
     checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
@@ -76,7 +94,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
-      if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","ucminf","optimize","SANN")))
+      if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","optimize","SANN")))
              stop("optimizer is not correct\n")
      ####        
     if(optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb','multiNelder-Mead') || length(initparam$param)==1){
@@ -233,15 +251,28 @@ if(!is.null(anisopars)) {
     }
     #if(is.null(neighb)&is.numeric(maxdist)) .C('DeleteGlobalVar', PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)
 
-if(is.null(neighb)&is.numeric(maxdist))  fitted$value=2*fitted$value ##!!
-
+#!!ojo this is the case maxdist and neighb =NULL and likelihood="Marginal"
+# distances are computed in C  with i=1 j>i
+# for comparson we the defauts case we consider this code
+if(likelihood!="Full") {if(is.null(neighb)&&is.numeric(maxdist)&&likelihood=="Marginal")  
+                                                    { 
+                                                     fitted$value=2*fitted$value;
+                                                     initparam$numpairs=2*initparam$numpairs
+                                                    } 
+                       }
 ff=as.list(initparam$fixed)
-if(!is.null(MM)) ff$mean=MM
+if(!is.null(MM)) ff$mean=MM 
 if(is.null(unlist(ff))) ff=NULL
 
 if(length(initparam$param)==1) optimizer="optimize"
 
 if(aniso) anisopars=as.list(c(fitted$par,ff)[namesaniso])
+
+if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
+                                          initparam$coordy=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
+                                        }   
+
+
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,
                          bivariate=initparam$bivariate,

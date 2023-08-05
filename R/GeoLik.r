@@ -188,7 +188,8 @@ LogNormDenTap1 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         if(is.logical(decompvarcov)) return(llik)  
         logdetvarcov <- MatLogDet(decompvarcov,mdecomp) 
         llik <- 0.5*(const+logdetvarcov+  sum((backsolve(decompvarcov, stdata, transpose = TRUE))^2))
-
+        #llik <- 0.5*(const+logdetvarcov +  
+         #    sum(stdata * backsolve(decompvarcov, forwardsolve(decompvarcov, stdata, transpose = TRUE, upper.tri = TRUE))))
         return(llik)
     }
     LogNormDenStand22 <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
@@ -402,7 +403,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         sel=substr(names(nuisance),1,4)=="mean"
 
         mm=as.numeric(nuisance[sel])
-                  Mean=c(X%*%mm)
+        Mean=c(X%*%mm)
         if(!is.null(MM)) Mean=MM
       
         # Computes the vector of the correlations:
@@ -505,7 +506,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
         D1=(nu-1)/2; D2=nu/2
         CorSkew<-(2*eta2/(pi*w^2+eta2*(pi-2)))*(sqrt(1-corr^2)+corr*asin(corr)-1)+w^2*corr/(w^2+eta2*(1-2/pi))   
         corr3<-(pi*(nu-2)*gamma(D1)^2/(2*(pi*gamma(D2)^2-eta2*(nu-2)*gamma(D1)^2)))*(Re(hypergeo::hypergeo(0.5,0.5,D2,corr^2))*((1-KK)*CorSkew+KK)-KK)
-       if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
+    #   if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
         cova <- corr3*nuisance['sill'] *(1-nuisance['nugget'])
        #nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(Mean)),const=const,cova=cova,dimat=dimat,ident=ident,
@@ -535,7 +536,7 @@ CVV_biv <- function(const,cova,ident,dimat,mdecomp,nuisance,setup,stdata)
          #if(df<170) corr=(df-2)*gamma((df-1)/2)^2/(2*gamma(df/2)^2)* corr *Re(hypergeo::hypergeo(0.5,0.5,df/2,corr^2)) 
          #else      
     corr=exp(log(df-2)+2*lgamma(0.5*(df-1))-(log(2)+2*lgamma(df/2))+log(Re(hypergeo::hypergeo(0.5,0.5, df/2,corr^2)))+log(corr))
-        if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
+        #if(is.nan(corr[1])||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1) return(llik)
     cova <- corr*(nuisance['sill'])*(1-nuisance['nugget'])
         #nuisance['nugget']=0
       loglik_u <- do.call(what="LogNormDenStand",args=list(stdata=(data-c(Mean)),const=const,cova=cova,dimat=dimat,ident=ident,
@@ -596,7 +597,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         nuisance['sill']=1
         if(as.numeric(nuisance['tail'])<=0||as.numeric(nuisance['sill'])<=0||as.numeric(nuisance['nugget'])<0||as.numeric(nuisance['nugget'])>=1) return(llik)
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
-        if(is.nan(corr[1])) return(llik)
+        #if(is.nan(corr[1])) return(llik)
         corr= corr*(1-nuisance['nugget'])
         loglik_u <- do.call(what=fname,#"LogNormDenStand_SH",
             args=list(stdata=((data-c(Mean))/(sqrt(sill))),const=const,cova=corr,dimat=dimat,ident=ident,
@@ -616,8 +617,8 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-          mm=as.numeric(nuisance[sel])
-              Mean=c(X%*%mm)
+        mm=as.numeric(nuisance[sel])
+        Mean=c(X%*%mm)
         if(!is.null(MM)) Mean=MM
               # Computes the vector of the correlations:
         corr=matr(corrmat,corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,ns,NS,radius)
@@ -632,7 +633,7 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
   #####################################################    
 
  loglikvecchia <- function(param,vecchia.approx,data,fixed,dimat,
-                    model,namescorr,namesnuis,namesparam,X)
+                    model,namescorr,namesnuis,namesparam,X,MM)
     {
         llik <- 1.0e8
         names(param) <- namesparam
@@ -641,11 +642,11 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
         paramcorr <- pram[namescorr]
         nuisance <- pram[namesnuis]
         sel=substr(names(nuisance),1,4)=="mean"
-          mm=as.numeric(nuisance[sel])
-             Mean=c(X%*%mm)
+        mm=as.numeric(nuisance[sel])
+        Mean=c(X%*%mm)
         if(!is.null(MM)) Mean=MM
    
-          nuggets=as.numeric(nuisance['nugget'])+1e-6
+          nuggets=as.numeric(nuisance['nugget'])+ 0.00001
         data=c(data-X%*%mm)
         ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
     if(ppar[2]<0|| ppar[3]<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1){return(llik)}
@@ -847,14 +848,20 @@ if(!onlyvar){   # performing optimization
   #### vecchia  approxxx
     if(!is.null(neighb)) { 
             locs=cbind(coordx,coordy)
-            vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb)
-         # print(optimizer)
-          if(optimizer=="nlminb")
-            Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
+
+            #tt2 <- proc.time()
+            vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb,ordering="maxmin")#,conditioning="NN",cond.yz="SGV")
+          #tt2<- proc.time()-tt2;print(tt2[3])
+
+          if(optimizer=="nlminb"){
+             tt3 <- proc.time()
+             Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
                              control = list( iter.max=100000),dimat=dimat,
                          lower=lower,upper=upper, hessian=hessian,
                            data=t(data),fixed=fixed,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM)
+             #tt3<- proc.time()-tt3;print(tt3[3]/as.numeric(Likelihood$iterations)) 
+         }
        
               if(optimizer=="nmkb")
                   Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
@@ -923,6 +930,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS,MM=MM)
   if(optimizer=='nlminb')
+  { #print(lname);print(fname);print(mdecomp)
                        Likelihood <-nlminb(objective=eval(as.name(lname)),start=param,
                              control = list( iter.max=100000),
                          lower=lower,upper=upper, hessian=hessian,
@@ -930,6 +938,7 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
                           setup=setup,X=X,ns=ns,NS=NS,MM=MM)
+                   }
   # if(optimizer=='multinlminb'){
    #                    Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
     #                      const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
@@ -950,13 +959,13 @@ if(optimizer=='L-BFGS-B'&&!parallel)
            #                   control = list( iter.max=100000),
             #               typerunif = "sobol")#,nbclusters=2,
              #      }                 
-    if(optimizer=='ucminf')    
-                        Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
-                        control=list( maxeval=100000),
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-                          radius=radius,setup=setup,X=X,ns=ns,NS=NS)
+    #if(optimizer=='ucminf')    
+     #                   Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
+      #                  control=list( maxeval=100000),
+       #                 const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
+        #                  corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
+         #                 model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
+          #                radius=radius,setup=setup,X=X,ns=ns,NS=NS)
     if(optimizer=='nmk')    
                         Likelihood <- dfoptim::nmk(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
                         const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
@@ -979,19 +988,23 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                    {names(Likelihood$par)=namesparam
                     param <- Likelihood$par
                    maxfun <- -Likelihood$value
-                   Likelihood$value <- maxfun}
-
-    if(optimizer=='ucminf'){
-                   names(Likelihood$par)=namesparam
-                   param <- Likelihood$par
-                   maxfun <- -Likelihood$value
                    Likelihood$value <- maxfun
-      }
+    if(optimizer %in% c('Nelder-Mead','L-BFGS-B','BFGS'))  Likelihood$counts=as.numeric(Likelihood$counts[1])
+     if(optimizer %in% c('nmk','nmkb'))                    Likelihood$counts=as.numeric(Likelihood$feval)
+               }
+
+    #if(optimizer=='ucminf'){
+    #               names(Likelihood$par)=namesparam
+    #               param <- Likelihood$par
+    #               maxfun <- -Likelihood$value
+     #              Likelihood$value <- maxfun
+     # }
        if(optimizer %in% c('nlminb','multinlminb')){
                    names(Likelihood$par)=namesparam
                    param <- Likelihood$par
                    maxfun <- -Likelihood$objective
                    Likelihood$value <- maxfun
+                   Likelihood$counts=as.numeric(Likelihood$iterations)
       }
     if(optimizer=='nlm')
            { names(Likelihood$estimate)=namesparam
@@ -999,7 +1012,9 @@ if(optimizer=='L-BFGS-B'&&!parallel)
              #names(param)<-namesparam
              maxfun <- -as.numeric(Likelihood$minimum)
              Likelihood$value <- maxfun
-             Likelihood$param <- param}
+             Likelihood$param <- param
+             Likelihood$counts=as.numeric(Likelihood$iterations)
+          }
      if(optimizer=='optimize')  
           {param<-Likelihood$minimum
            names(param)<-namesparam
@@ -1037,11 +1052,11 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                Likelihood$convergence <- 'Successful'
                else
                Likelihood$convergence <- 'Optimization may have failed'}
-       if(optimizer=='ucminf'){
-               if(Likelihood$convergence== 1||Likelihood$convergence== 2||Likelihood$convergence == 4)
-               Likelihood$convergence <- 'Successful'
-               else
-               Likelihood$convergence <- 'Optimization may have failed'}
+      # if(optimizer=='ucminf'){
+       #        if(Likelihood$convergence== 1||Likelihood$convergence== 2||Likelihood$convergence == 4)
+        #       Likelihood$convergence <- 'Successful'
+         #      else
+          #     Likelihood$convergence <- 'Optimization may have failed'}
     if(maxfun==-1.0e8) Likelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
      }
      else {Likelihood=as.list(0)   # in the case of computing just the asym variance

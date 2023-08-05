@@ -170,36 +170,6 @@ fit <- GeoWLS(data=data,coordx=coords, corrmodel=corrmodel,
 # Results:
 print(fit)
 
-
-
-
-################################################################
-###
-### Example 3. Least square fitting of a spatio-temporal
-### Gaussian random field with double exponential correlation.
-###
-###############################################################
-
-# Define the temporal sequence:
-time <- seq(1, 10, 1)
-mean <- 0
-sill <- 1
-scale_s <- 0.15/3
-scale_t <- 2/3
-param <- list(mean=0,scale_s=scale,scale_t=scale_t,sill=sill,nugget=nugget)
-# Simulation of the Gaussian random field:
-set.seed(35)
-data <- GeoSim(coordx=coords,coordt=time, corrmodel="exp_exp", 
-             param=param)$data
-
-fixed<-list(nugget=nugget,mean=0)
-start<-list(scale_s=scale_s,scale_t=scale_t,sill=1)
-# Weighted least square estimation:
-fit <- GeoWLS(data=data, coordx=coords,coordt=time, corrmodel="exp_exp",
-                 ,maxdist=0.5,maxtime=3,fixed=fixed,start=start)
-
-# Results
-print(fit)
 }
 
 \keyword{LeastSquare}

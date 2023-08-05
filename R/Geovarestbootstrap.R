@@ -5,11 +5,10 @@
 
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer="Nelder-Mead",
-  lower=NULL, upper=NULL,method="cholesky",memdist=TRUE, M=30,L=500,seed=1)
+  lower=NULL, upper=NULL,method="cholesky", alpha=0.95, memdist=TRUE, M=30,L=500,seed=1)
 {
 
-
-if(fit$coordt==0)  fit$coordt=NULL
+if(length(fit$coordt)==1) fit$coordt=NULL
 
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
 if(is.null(fit$sensmat)) stop("Sensitivity matrix is missing: use sensitivity=TRUE in GeoFit")
@@ -45,7 +44,7 @@ set.seed(seed)
 while(k<=K){
 Sys.sleep(0.1)
 if(method=="cholesky") {
-
+#print(coords)#print(fit$coordt)
   if(is.null(fit$copula))
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
@@ -124,7 +123,13 @@ fit$stderr=stderr
 fit$varcov=invG
 fit$estimates=res
 fit$X=tempX
+
+
+stderr=sqrt(diag(invG))
+aa=qnorm(1-(1-alpha)/2)*stderr
+pp=as.numeric(fit$param)
+low=pp-aa; upp=pp+aa
+fit$conf.int=rbind(low,upp)
 #set.seed(sample(1:10000,1))
 return(fit)
-
 }

@@ -122,7 +122,6 @@ void simu_on_coords(int *Ndim,int *Mcoords,int *Mu,double *coords,double *amatri
       double mul2 = val2*matrix_u[it];
       
       matrix_out[row0] = matrix_out[row0]+(val_a0*cos(2*pi*(mul1 + mul2)+val_phi));
-      //matrix_out[row1] = matrix_out[row1]+(val_a1*cos(2*pi*(mul1 + mul2)+val_phi)); //
       
       if((j+1)==(*Mu)){
         ip=0;

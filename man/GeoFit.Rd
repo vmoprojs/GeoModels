@@ -10,7 +10,7 @@
 }
 \usage{
 GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
-      corrmodel,distance="Eucl",fixed=NULL,anisopars=NULL,
+      corrmodel=NULL,distance="Eucl",fixed=NULL,anisopars=NULL,
       est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
       maxtime=Inf, memdist=TRUE,method="cholesky", 
@@ -84,7 +84,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B} and \code{nlminb}. 
+    default. Other possible choices are \code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.}  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
@@ -435,7 +435,7 @@ library(GeoModels)
 
 # Define the spatial-coordinates of the points:
 set.seed(3)
-N=400  # number of location sites
+N=300  # number of location sites
 x <- runif(N, 0, 1)
 set.seed(6)
 y <- runif(N, 0, 1)
@@ -460,22 +460,21 @@ param<-list(mean=mean,mean1=mean1,sill=sill,nugget=nugget,scale=scale,smooth=smo
 data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,X=X)$data
 
 
-# setting fixed and parameters to be estimated
-fixed<-list(nugget=nugget,smooth=smooth)
-start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+
 
 
 ################################################################
 ###
 ### Example 0. Maximum independence composite likelihood fitting of
-### a Gaussian RF
+### a Gaussian RF (no dependence parameters)
 ### 
 ###############################################################
-fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
-                    neighb=3,likelihood="Marginal",
-                    type="Independence", start=start,fixed=fixed,X=X)
-print(fit1)
+# setting starting parameters to be estimated
+start<-list(mean=mean,mean1=mean1,sill=sill)
 
+fit1 <- GeoFit(data=data,coordx=coords,likelihood="Marginal",
+                    type="Independence", start=start,X=X)
+print(fit1)
 
 
 ################################################################
@@ -484,6 +483,10 @@ print(fit1)
 ### a Gaussian RF using BFGS
 ### 
 ###############################################################
+# setting fixed and starting parameters to be estimated
+fixed<-list(nugget=nugget,smooth=smooth)
+start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
+
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
                     neighb=3,likelihood="Conditional",optimizer="BFGS",
                     type="Pairwise", start=start,fixed=fixed,X=X)
@@ -495,13 +498,29 @@ print(fit1)
 ### a Gaussian RF using nlminb
 ###
 ###############################################################
+# Define the spatial-coordinates of the points:
+set.seed(3)
+N=100  # number of location sites
+x <- runif(N, 0, 1)
+set.seed(6)
+y <- runif(N, 0, 1)
+coords <- cbind(x,y)
+
+param<-list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=smooth)
+
+data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param)$data
+
+# setting fixed and parameters to be estimated
+fixed<-list(nugget=nugget,smooth=smooth)
+start<-list(mean=mean,scale=scale,sill=sill)
+
 I=Inf
-lower<-list(mean=-I,mean1=-I,scale=0,sill=0)
-upper<-list(mean=I,mean1=I,scale=I,sill=I)
+lower<-list(mean=-I,scale=0,sill=0)
+upper<-list(mean=I,scale=I,sill=I)
 fit2 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel,
                     optimizer="nlminb",upper=upper,lower=lower,
                     likelihood="Full",type="Standard", 
-                    start=start,fixed=fixed,X=X)
+                    start=start,fixed=fixed)
 print(fit2)
 
 
@@ -518,7 +537,7 @@ print(fit2)
 ###############################################################
 set.seed(524)
 # Define the spatial-coordinates of the points:
-N=400
+N=300
 x <- runif(N, 0, 1)
 y <- runif(N, 0, 1)
 coords <- cbind(x,y)
@@ -593,7 +612,7 @@ print(fit1$param)
 ###############################################################
 
 set.seed(422)
-N=350
+N=250
 x <- runif(N, 0, 1)
 y <- runif(N, 0, 1)
 coords <- cbind(x,y)
@@ -607,28 +626,29 @@ data <- GeoSim(coordx=coords, corrmodel=corrmodel, model="Binomial", n=10,X=X,
 
 
 ## estimating the marginal parameters using independence cl
-fixed <- list(nugget=nugget,power2=4,sill=1,scale=0.2)
+fixed <- list(sill=1)
 start <- list(mean=mean,mean1=mean1,mean2=mean2)
-# Maximum pairwise likelihood:
-fit0 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, start=start,
-          type="Independence",neighb=3,model="Binomial",  fixed=fixed)
-                  
-print(fit0)
 
-## using the estimates as starting values
-fixed <- list(nugget=nugget,power2=4,sill=1)
-start <- as.list(fit0$param)
-start$scale=0.2
+# Maximum conditional pairwise likelihood:
+fit <- GeoFit(data=data, coordx=coords,n=10, X=X, 
+           likelihood="Marginal",type="Independence"
+         ,model="Binomial", start=start, fixed=fixed)
+                  
+print(fit)
+## estimating marginal  and dependnce
+fixed <- list(nugget=0,power2=4,sill=1)
+start <- list(mean=mean,mean1=mean1,mean2=mean2,scale=0.2)
+
 # Maximum conditional pairwise likelihood:
 fit1 <- GeoFit(data=data, coordx=coords, corrmodel=corrmodel,n=10, X=X, 
-                    likelihood="Conditional",type="Pairwise",  neighb=3
-         ,model="Binomial", start=start, fixed=fixed, optimizer="BFGS")
+          likelihood="Conditional",type="Pairwise",  neighb=3
+         ,model="Binomial", start=start, fixed=fixed)
                   
 print(fit1)
 
 
 ###############################################################
-######### Examples of spatio-temporal RFs ###########
+######### Examples of Gaussian spatio-temporal RFs ###########
 ###############################################################
 set.seed(52)
 # Define the temporal sequence:
@@ -674,23 +694,21 @@ fit <- GeoFit(data=data,coordx=coords,coordt=time,
 print(fit)
 
 
-###############################################################
-######### Examples of  spatial bivariate RFs ###########
-###############################################################
 
+###############################################################
+######### Examples of a bivariate Gaussian  RF ###########
+###############################################################
 
 ################################################################
-###
 ### Example 7. Maximum pairwise  likelihood fitting of a
 ### bivariate Gaussian RF with separable Bivariate  matern 
 ### (cross) correlation model 
-###
 ###############################################################
 
 # Define the spatial-coordinates of the points:
-set.seed(8)
-x <- runif(350, 0, 1)
-y <- runif(350, 0, 1)
+set.seed(89)
+x <- runif(200, 0, 1)
+y <- runif(200, 0, 1)
 coords=cbind(x,y)
 # parameters
 param=list(mean_1=0,mean_2=0,scale=0.1,smooth=0.5,sill_1=1,sill_2=1,
@@ -701,8 +719,8 @@ data <- GeoSim(coordx=coords, corrmodel="Bi_Matern_sep",
               param=param)$data
 
 # selecting fixed and estimated parameters
-fixed=list(nugget_1=0,nugget_2=0,smooth=0.5)
-start=list(mean_1=0,mean_2=0,sill_1=var(data[1,]),sill_2=var(data[2,]),
+fixed=list(mean_1=0,mean_2=0,nugget_1=0,nugget_2=0,smooth=0.5)
+start=list(sill_1=var(data[1,]),sill_2=var(data[2,]),
            scale=0.1,pcol=cor(data[1,],data[2,]))
 
 
@@ -710,7 +728,7 @@ start=list(mean_1=0,mean_2=0,sill_1=var(data[1,]),sill_2=var(data[2,]),
 fitcl<- GeoFit(data=data, coordx=coords, corrmodel="Bi_Matern_sep",
                      likelihood="Marginal",type="Pairwise",
                      optimizer="BFGS" , start=start,fixed=fixed,
-                     neighb=c(3,3,3))
+                     neighb=c(4,4,4))
 print(fitcl)
 
 }

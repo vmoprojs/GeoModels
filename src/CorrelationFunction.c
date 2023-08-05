@@ -59,8 +59,25 @@ double CheckCor(int *cormod, double *par)
         R_power1=1/par[0];
         scale=par[1];
         smooth=par[2];
-       if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+       //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
             if(scale<=0 ||smooth<0) rho=-2;
+      break;
+      case 24: //kummer
+        R_power1=par[0];
+        scale=par[1];
+        smooth=par[2];
+       //if(scale<=0 ||  R_power1<0 ||smooth<0) rho=-2;
+            if(scale<=0 ||smooth<0) rho=-2;
+      break;
+    case 21: // hyperg
+    case 22:     
+    case 23:
+        R_power=par[0];
+         R_power1=par[1];
+        scale=par[2];
+        smooth=par[3];
+       //if(scale<=0 ||smooth<1||((2*(R_power1-smooth)*(R_power-smooth))<smooth)||((2*(R_power1+R_power)<(6*smooth+1)))) rho=-2;
+              if(scale<=0 ||smooth<1) rho=-2;
       break;
        case 7:
         R_power1=par[0];
@@ -527,11 +544,39 @@ double CorFct(int *cormod, double h, double u, double *par, int c11, int c22)
         R_power=par[0];
         rho=1-R_pow(sin(h/(2*REARTH[0])),R_power);
     break;
+/*######*/
+    case 21: // hyperg correlation 2 parameters
+        R_power=par[0];
+        R_power1=par[1];
+        scale=par[2];
+        smooth=par[3];
+  rho=CorFunHyperg2(h,R_power, R_power1, smooth, scale);
+        break;
+case 22: // hyperg correlation 1 parameter
+        R_power=par[0];
+        scale=par[1];
+        smooth=par[2];
+        //Rprintf("%f %f %f\n",R_power,smooth,scale);
+       rho=CorFunHyperg(h,R_power, smooth, scale);
+        break;
+case 23: // hyperg correlation 1 parameter with matern
+        R_power=par[0];
+        scale=par[1];
+        smooth=par[2];
+  rho=CorFunHyperg(h,R_power, smooth, scale/(2*R_power));
+        break;
+/*######*/
     case 19: // original   Generalised wend correlation
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
   rho=CorFunW_gen(h, R_power1, smooth, scale);
+        break;
+     case 24: // original   kummer
+        R_power1=par[0];
+        scale=par[1];
+        smooth=par[2];
+  rho=CorKummer(h, R_power1, smooth, scale);
         break;
     case 6: // Bevilacqua Generalised wend correlation function  "better"  parametrization
         R_power1=1/par[0];
@@ -1753,8 +1798,6 @@ double CorFunWitMat(double lag, double scale, double smooth)
   if(smooth==2.5) {rho=exp(-a)*(1+a+ R_pow(a,2)/3);return(rho);}
   if(smooth==3.5) {rho=exp(-a)*(1+a+ R_pow(a,2)*0.4+R_pow(a,3)*0.0666667);return(rho);}
   rho=(R_pow(a,smooth)*bessel_k(a,smooth,1))/(R_pow(2,smooth-1)*gammafn(smooth));
-    
-    //rho=0.4;
  
   return(rho);
 }
@@ -1819,6 +1862,111 @@ double CorFunW2(double lag,double scale,double smoo)
 }
 
 /* generalized wendland function*/
+double CorFunHyperg2(double lag,double R_power,double R_power1,double smooth,double scale)  // mu alpha beta
+{
+    double rho=0.0,x=0.0;double d=2.0;
+
+    x=lag/scale;
+    if(x<1e-32) {rho=1; return(rho);}
+/* if(smooth==0) {
+        //Rprintf("axa\n");
+         if(x<1)    rho=R_pow(1-x,R_power1);//rho=exp(R_power1*log1p(-x));
+         else rho=0;
+         return(rho);
+    }
+    if(smooth==1) {
+         if(x<1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+         else rho=0;
+         return(rho);
+    }
+    if(smooth==2) {
+         if(x<1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+         else rho=0;
+         return(rho);
+    }
+      if(smooth==3) {
+       if(x<1) rho=R_pow(1-x,R_power1+3)*( 1+R_pow(x,1)*(R_power1+3)+
+                    R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 +
+                    R_pow(x,3)*(R_pow(R_power1,3)+9*R_pow(R_power1,2)+ 23*R_power1+15)/15);
+         else rho=0;
+         return(rho);
+    }  */
+    if(x<=1)
+         {
+             rho=(exp((lgammafn(R_power-d/2)+lgammafn(R_power1-d/2))-(lgammafn(R_power-smooth+R_power1-d/2)+lgammafn(smooth-d/2)))
+         *R_pow(1-x*x,R_power-smooth+R_power1-d/2-1)*hypergeo(R_power-smooth,R_power1-smooth,R_power-smooth+R_power1-d/2, 1-x*x));
+      }
+  else {rho=0;}
+   /*/second version
+
+        x=lag;
+        double *param;
+        param=(double *) Calloc(3,double);
+        param[0]=R_power1;param[1]=smooth;param[2]=scale;  //mu,alpha //beta
+        rho=wendintegral(x,param);
+        Free(param);*/
+    return(rho);
+}
+
+
+/* kummer function*/
+double CorKummer(double lag,double R_power,double smooth,double scale)  // mu alpha beta
+{
+  double rho=0.0,x=0.0;
+    x=lag/scale;
+    if(x<1e-32) rho=1;
+    else
+    rho=(gammafn(smooth+R_power)/(gammafn(smooth)))*kummer(R_power,1-smooth,smooth*x*x);
+    return(rho);
+}    
+/* generalized wendland function*/
+double CorFunHyperg(double lag,double R_power,double smooth,double scale)  // mu alpha beta
+{
+    double rho=0.0,x=0.0;double d=2.0;
+
+    x=lag/scale;
+    if(x<1e-32) {rho=1; return(rho);}
+/* if(smooth==0) {
+        //Rprintf("axa\n");
+         if(x<1)    rho=R_pow(1-x,R_power1);//rho=exp(R_power1*log1p(-x));
+         else rho=0;
+         return(rho);
+    }
+    if(smooth==1) {
+         if(x<1) rho=R_pow(1-x,R_power1+1)*(1+x*(R_power1+1));
+         else rho=0;
+         return(rho);
+    }
+    if(smooth==2) {
+         if(x<1) rho=R_pow(1-x,R_power1+2)*(1+x*(R_power1+2)+x*x*(R_power1*R_power1 +4*R_power1 +3 )/3  );
+         else rho=0;
+         return(rho);
+    }
+      if(smooth==3) {
+       if(x<1) rho=R_pow(1-x,R_power1+3)*( 1+R_pow(x,1)*(R_power1+3)+
+                    R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 +
+                    R_pow(x,3)*(R_pow(R_power1,3)+9*R_pow(R_power1,2)+ 23*R_power1+15)/15);
+         else rho=0;
+         return(rho);
+    }  */
+    if(x<=1)
+         {
+             rho=(exp((lgammafn(R_power-d/2)+lgammafn(R_power-d/2))-(lgammafn(2*R_power-smooth-d/2)+lgammafn(smooth-d/2)))
+         *R_pow(1-x*x,2*R_power-smooth-d/2-1)*hypergeo(R_power-smooth,R_power-smooth,2*R_power-smooth-d/2, 1-x*x));
+      }
+  else {rho=0;}
+   /*/second version
+
+        x=lag;
+        double *param;
+        param=(double *) Calloc(3,double);
+        param[0]=R_power1;param[1]=smooth;param[2]=scale;  //mu,alpha //beta
+        rho=wendintegral(x,param);
+        Free(param);*/
+    return(rho);
+}
+
+/* generalized wendland function*/
 double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu alpha beta
 {
     double rho=0.0,x=0.0;
@@ -1851,7 +1999,6 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
          else rho=0;
          return(rho);
     }
-
       /*first version  */
     if(x<=1)
          {
@@ -1869,7 +2016,6 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
         Free(param);*/
     return(rho);
 }
-
 double CorFunWend0_tap(double lag,double scale,double smoo)
 {
     double rho=0.0,x=0;
@@ -1878,7 +2024,6 @@ double CorFunWend0_tap(double lag,double scale,double smoo)
     else rho=0;
     return rho;
 }
-
 double CorFunWend1_tap(double lag,double scale,double smoo)
 {
     double rho=0.0,x=0;
@@ -1887,9 +2032,6 @@ double CorFunWend1_tap(double lag,double scale,double smoo)
     else rho=0;
     return rho;
 }
-
-
-
 double CorFunWend2_tap(double lag,double scale,double smoo)
 {
     double rho=0.0,x=0;
@@ -1898,8 +2040,6 @@ double CorFunWend2_tap(double lag,double scale,double smoo)
     else rho=0;
     return rho;
 }
-
-
 double CorFunWend1(double lag,double scale)
 {
   double rho=0.0,x=0;
@@ -1924,7 +2064,6 @@ double CorFunWend3(double lag,double scale)
   else rho=0;
   return rho;
 }
-
 double CorFunWend5(double lag,double scale)
 {
     double rho=0.0,x=0;
@@ -1933,7 +2072,6 @@ double CorFunWend5(double lag,double scale)
     else rho=0;
     return rho;
 }
-
 
 double CorFunWend4(double lag,double scale)
 {
@@ -1951,7 +2089,6 @@ double CorFunWendhole1(double lag,double scale)
   else rho=0;
   return rho;
 }
-
 double CorFunWendhole2(double lag,double scale)
 {
   double rho=0.0,x=0;
@@ -1960,8 +2097,6 @@ double CorFunWendhole2(double lag,double scale)
   else rho=0;
   return rho;
 }
-
-
 double CorFunWendhole3(double lag,double scale)
 {
   double rho=0.0,x=0;
@@ -1970,7 +2105,6 @@ double CorFunWendhole3(double lag,double scale)
   else rho=0;
   return rho;
 }
-
 double CorFunWendhole(double lag,double scale)
 {
   double rho=0.0,x=0;
@@ -1983,11 +2117,7 @@ double CorFunWendhole(double lag,double scale)
 /************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
 /****************** SPATIAL CORRELATION MATRIX (upper trinagular) *******************************/
-/************************************************************************************************/
-/************************************************************************************************/
 /************************************************************************************************/
 /************************************************************************************************/
 // Computation of the upper (lower) triangular spatial correlation matrix: spatial case

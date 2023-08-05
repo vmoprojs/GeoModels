@@ -87,7 +87,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{ucminf},\code{nlm}, \code{BFGS}, \code{SANN},  \code{L-BFGS-B} and \code{nlminb}. 
+    default. Other possible choices are \code{nlm}, \code{BFGS}, \code{SANN},  \code{L-BFGS-B} and \code{nlminb}. 
     In these last two cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.  }  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
@@ -220,7 +220,7 @@ library(GeoModels)
 ###  of a Gaussian RF with Matern correlation
 ###
 ###############################################################
-
+model="Gaussian"
 # Define the spatial-coordinates of the points:
 set.seed(3)
 N=400  # number of location sites
@@ -243,7 +243,7 @@ smooth=0.5
 param<-list(mean=mean,mean1=mean1,sill=sill,nugget=nugget,scale=scale,smooth=smooth)
 
 # Simulation of the spatial Gaussian RF:
-data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param,X=X)$data
+data <- GeoSim(coordx=coords,model=model,corrmodel=corrmodel, param=param,X=X)$data
 
 fixed<-list(nugget=nugget,smooth=smooth)
 start<-list(mean=mean,mean1=mean1,scale=scale,sill=sill)
@@ -290,7 +290,7 @@ model="LogGaussian"
 corrmodel="GenWend"
 param=list(mean=mean,mean1=mean1,sill=sill,scale=scale,
                     nugget=nugget,power2=4,smooth=smooth)
-# Simulation of a  non stationary weibull RF:
+# Simulation of a  non stationary LogGaussian RF:
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model,X=X,
            param=param)$data
 

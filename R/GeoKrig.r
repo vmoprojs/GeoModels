@@ -16,11 +16,11 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
                #Inv=MatInv(U,method)
                Inv=0
                if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}
-               Invc=backsolve(U, backsolve(U, b, transpose = TRUE))
+               Invc=backsolve(U, backsolve(U, b, transpose = TRUE)) ## R^-1 %*% c
                return(list(a=Invc,bb=Inv))
              }
  if(covmatrix$sparse){
-
+               print("quasparse")
                if(spam::is.spam(covmatrix$covmatrix))  U = try(spam::chol.spam(covmatrix$covmatrix),silent=TRUE)
                else                    U = try(spam::chol.spam(spam::as.spam(covmatrix$covmatrix)),silent=TRUE)
                if(inherits(U,"try-error")) {print(" Covariance matrix is not positive definite");stop()}
@@ -35,6 +35,8 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 ######################################
 ########## START #####################
 ######################################
+if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
+ if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
@@ -165,7 +167,6 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
     if(type %in% c("Tapering","tapering")) {
       covmatrix_true =  GeoCovmatrix(coordx, coordy, coordt, coordx_dyn, corrmodel, distance, grid, maxdist, maxtime, model, n, param,anisopars,
       radius, sparse, NULL, NULL, "Standard",X)
-
        }
     ############
     tapmod=NULL
@@ -507,7 +508,9 @@ if(covmatrix$model==9) # tukeygh
             if(covmatrix$model==26) {  # weibull
                         sh=as.numeric(covmatrix$param['shape'])
                         bcorr=    (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
+                        
                         corri=bcorr*((1-cc^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,cc^2)) -1)
+
          }
 
           if(covmatrix$model==24) {  # loglogistic
@@ -610,6 +613,7 @@ else    {
 
 
 CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
+
 MM=getInv(covmatrix,CC)  #compute (\Sigma^-1) %*% cc
 krig_weights = t(MM$a)
 
@@ -1005,7 +1009,7 @@ return(Kg)
 Prscores=function(data,method="cholesky",matrix)   {
 #if(class(matrix)!="CovMat") stop("A CovMat object is needed as input\n")
 
-if(!inherits(matrix,"CovMat"))  stop("A GeoFit object is needed as input\n")
+if(!inherits(matrix,"GeoCovmatrix"))  stop("A GeoCovmatrix object is needed as input\n")
 
 varcov=matrix$covmatrix
 rownames(varcov)=c();colnames(varcov)=c()

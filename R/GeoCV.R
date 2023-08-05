@@ -30,7 +30,6 @@ space=!spacetime&&!bivariate
 
 dtp=pred=list()
 
-
 model1=fit$model
 if(fit$missp)  ### misspecification
  {if(fit$model=="StudentT")     model1="Gaussian_misp_StudentT"
@@ -39,7 +38,6 @@ if(fit$missp)  ### misspecification
   if(fit$model=="SkewStudentT") model1="Gaussian_misp_SkewStudenT"
   if(fit$model=="Tukeygh")      model1="Gaussian_misp_Tukeygh"
  }
-
 ############################################################
 ########### spatial case ###################################
 ############################################################
@@ -78,8 +76,7 @@ if(estimation) {
                            # start=as.list(fit$param),fixed=as.list(fit$fixed))
           start=fit$param,fixed=fit$fixed)
             
-
-            if(!is.null(fit$anisopars))   
+if(!is.null(fit$anisopars))   
                    {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
 
             param=append(fit_s$param,fit_s$fixed)
@@ -209,7 +206,7 @@ rmse=c(rmse,sqrt(sum(err^2)/N2))
 mae= c(mae,      sum(abs(err))/N2)
 lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
 crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
-#print(i)
+
 i=i+1
 setTxtProgressBar(pb, i)
 }               
@@ -241,8 +238,8 @@ data_tot=cbind(coords,data_tot,fit$X)
 
 
 set.seed(round(seed))
-
 pb <- txtProgressBar(min = 0, max = K, style = 3)
+
 while(i<=K){
 Sys.sleep(0.1)
 ####################################### 
@@ -254,30 +251,40 @@ data_sel_ord=data_sel[order(data_sel[,3]),]
 data_to_pred_ord=data_to_pred[order(data_to_pred[,3]),]
 
 DD=ncol(data_sel_ord)
-k=1 ; coordx_dynnew=Xnew=datanew=list()
+k=1 ; coordx_dynnew=Xnew=Xnew_loc=datanew=coordx_dynnew_loc=list()
+
 
 utt=unique(data_sel_ord[,3])
+utt_1=unique(data_to_pred_ord[,3])
+
+
+for(k in 1:length(utt_1) ){
+  ll=data_to_pred_ord[data_to_pred_ord[,3]==utt_1[k],]
+
+  if(is.matrix(ll)) coordx_dynnew_loc[[k]]=as.matrix(ll)[,1:2]
+  else                                  coordx_dynnew_loc[[k]]=matrix(ll[1:2],nrow=1)
+  if(!is.null(X))  {if(is.matrix(ll))  Xnew_loc[[k]]=as.matrix(ll)[,5:DD]
+                    else               Xnew_loc[[k]]=matrix(ll[5:DD],nrow=1,byrow=T)
+                   }
+  }
+
+
 for(k in 1:length(utt) ){
-ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
-
-datanew[[k]]=as.vector((ss[,4]))
-coordx_dynnew[[k]]=as.matrix(ss[,1:2])
-
-#if(!is.null(X)) { 
-Xnew[[k]]=as.vector(ss[,5:DD])
-#}
+  ss=data_sel_ord[data_sel_ord[,3]==utt[k],]
+  datanew[[k]]=as.vector((ss[,4]))
+  coordx_dynnew[[k]]=as.matrix(ss[,1:2])
+  if(!is.null(X))  Xnew[[k]]=as.matrix(ss[,5:DD])
 }
-if(is.vector(Xnew[[1]])) Xnew=NULL
+if(ncol(Xnew[[1]])==1) Xnew=NULL
 
-#param=as.list(c(fit$param,fit$fixed))
 param=append(fit$param,fit$fixed)
 if(estimation) {
 
-          fit_s= GeoFit2(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
+           fit_s= GeoFit2(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
                             corrmodel=fit$corrmodel,X=Xnew,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
-                            copula=fit$copula, anisopars=fit$anisopars,est.aniso=fit$est.aniso,
-                            model=model1,radius=fit$radius,n=fit$n,
+                            copula=fit$copula, #anisopars=fit$anisopars,#est.aniso=fit$est.aniso,
+                            model="Gaussian",radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
@@ -288,28 +295,56 @@ if(estimation) {
                    {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
            param=append(fit_s$param,fit_s$fixed)
               }
-             
 
-##### to finish---
+#####################################
+if(!local) {
+           pr_st=pr_mse=list()
 
+           for(j in 1:length(utt_1) ){
+         
+            if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
+               pr=GeoKrig(data=datanew,   coordt=utt, coordx_dyn=coordx_dynnew,  #ok
+                   corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
+                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,
+                   X=Xnew,Xloc= Xnew_loc[[j]]) #ok  
+               pr_st[[j]]=pr$pred ; pr_mse[[j]]=pr$mse
+         }
+ }
+if(local) {
+           pr_st=pr_mse=list()
+           for(j in 1:length(utt_1) ){
+            if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
+          
+               pr=GeoKrigloc(data=datanew,   coordt=utt, coordx_dyn=coordx_dynnew,  #ok
+                   corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
+                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,
+                   neighb=neighb,maxdist=maxdist,maxtime=maxtime,
+                   X=Xnew,Xloc=Xnew_loc[[j]]) #ok  
 
+  
+                pr_st[[j]]=pr$pred ; pr_mse[[j]]=pr$mse
+                   }
+}   
+#####################################
 
-err=c(data_to_pred)-c(pr$pred)  
+dd_to_pred=c(data_to_pred[,4])
+N2=length(dd_to_pred)
+err=as.numeric(unlist(pr_st))-dd_to_pred
 
-sqrtvv=sqrt(pr$mse)
+sqrtvv=sqrt(as.numeric(unlist(pr_mse)))
 std=err/sqrtvv
 
 
-N2=length(err)
-rmse=c(rmse,sqrt(sum(err^2)/N2))
-mae= c(mae,      sum(abs(err))/N2)
-lscore=c(lscore, 0.5*sum(std^2+log(2*pi*sqrtvv))/N2 )
-crps=c(crps,sum( sqrtvv*( std*(2*pnorm(std)-1 ) +2*pnorm(std)-1/sqrt(pi)))/N2)
-#print(i)
+rmse=sqrt(sum(err^2)/ N2)
+mae=      sum(abs(err))/N2
+crps=sum( c(sqrtvv)*( std*(2*pnorm(c(std))-1 ) +2*pnorm(c(std))-1/sqrt(pi)))/N2
+
 i=i+1
 setTxtProgressBar(pb, i)
 }               
 close(pb) 
+dtp=dd_to_pred
+pred=pr_st
 } ## end spacetime
 
 return(list(rmse=rmse,mae=mae,crps=crps,lscore=lscore,predicted=pred,data_to_pred=dtp))

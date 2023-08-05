@@ -1,6 +1,7 @@
-export(CheckBiv,CheckDistance,CheckSph,CheckST,	CkCorrModel,CkInput,CkLikelihood,CkModel,	CkType,	CkVarType,CompIndLik2,CompLik,CompLik2,	CorrelationPar,	CorrParam,GeoAniso,	GeoCorrFct_Cop,	GeoCorrFct,GeoCovariogram,GeoCovDisplay,GeoCovmatrix,GeoCV,GeoFit,GeoFit2,	GeoKrig,GeoKrigloc,GeoNA,GeoNeighborhood,GeoNeighIndex,	GeoNosymindices,GeoOutlier,GeoPit,	GeoQQ,GeoResiduals,GeoScatterplot,GeoSim,GeoSimapprox,GeoSimCopula,GeoTests,GeoVarestbootstrap,GeoVariogram,Lik,MatDecomp,NuisParam,Prscores,StartParam,WlsStart,MatSqrt, MatInv, MatLogDet,GeoWLS)
+export(CheckBiv,CheckDistance,CheckSph,CheckST,	CkCorrModel,CkInput,CkLikelihood,CkModel,	CkType,	CkVarType,CompIndLik2,CompLik,CompLik2,	CorrelationPar,	CorrParam,GeoAniso,	GeoCorrFct_Cop,	GeoCorrFct,GeoCovariogram,GeoCovDisplay,GeoCovmatrix,GeoCV,GeoFit,GeoFit2,	GeoKrig,GeoKrigloc,GeoNA,GeoNeighborhood,GeoNeighIndex,	GeoNosymindices,GeoOutlier,GeoPit,	GeoQQ,GeoResiduals,GeoScatterplot,GeoSim,GeoSimapprox,GeoSimCopula,GeoTests,GeoVarestbootstrap,GeoVariogram,Lik,MatDecomp,NuisParam,NuisParam2,Prscores,StartParam,WlsStart,MatSqrt, MatInv, MatLogDet,GeoWLS)
 useDynLib(GeoModels, .registration = TRUE)
 S3method(print,GeoFit) 
+S3method(print,GeoCovmatrix) 
 S3method(print,GeoWLS)
 S3method(plot,GeoVariogram)
 importFrom("grDevices", dev.cur,gray.colors)
@@ -13,8 +14,9 @@ importFrom("utils", "setTxtProgressBar", "txtProgressBar")
 importFrom("utils", "head")
 importFrom("plotrix", "draw.circle")
 importFrom("lamW","lambertW0")
+importFrom("VGAM","qzinegbin","qzipois")
 importFrom("GpGp","fast_Gp_sim")
-import("GPvecchia", "fields", "mapproj", "plot3D", "shape")
+import("GPvecchia", "fields", "mapproj","shape","codetools")
 
 
 

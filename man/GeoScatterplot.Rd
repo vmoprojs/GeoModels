@@ -8,7 +8,7 @@
 \usage{
 GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
            distance='Eucl', grid=FALSE, maxdist=NULL,neighb=NULL,
-           times=NULL, numbins=4, radius=6371, bivariate=FALSE)
+           times=NULL, numbins=4, radius=6371, bivariate=FALSE,\dots)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{n \times d}{n x d})-matrix
@@ -49,6 +49,7 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
     \item{bivariate}{Logical; if \code{FALSE} (the default) the data
     are interpreted as univariate spatial or spatial-temporal realisations. 
     Otherwise they are intrepreted as a a realization from a bivariate field.}
+    \item{\dots}{Optional parameters passed to the plot function.}
 }
 
 \value{Produces a plot. No values are returned.}

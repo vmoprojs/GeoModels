@@ -264,18 +264,18 @@ shape=2
 ## regression parameters
 mean = 1;mean1= -0.2
 # correlation parameters
-sill = 1;nugget = 0;power2=4
+nugget = 0;power2=4
 scale = 0.3;smooth=0    
 
 ## simulation
 param=list(shape=shape,nugget=nugget,mean=mean,mean1=mean1, 
-  scale=scale,sill=sill,power2=power2,smooth=smooth)
+  scale=scale,power2=power2,smooth=smooth)
 
 data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
                 model=model,X=X)$data
 
 #####starting and fixed parameters
-fixed=list(nugget=nugget,power2=power2,smooth=smooth,sill=sill)
+fixed=list(nugget=nugget,power2=power2,smooth=smooth)
 start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 
 ## estimation with pairwise likelihood
@@ -370,73 +370,6 @@ image.plot(xx, xx, matrix(pr$pred[i,],ncol=length(xx)),col=colour,
 image.plot(xx, xx, matrix(pr$mse[i,],ncol=length(xx)),col=colour,
            main = paste("Std err Time=" , i),ylab="")
 }
-par(opar)
-################################################################
-########### Examples of spatial bivariate cokriging ############
-################################################################
-
-################################################################
-###
-### Example 4. Bivariate simple cokriging  of n locations
-### for a Gaussian random fields with separable Matern correlation
-###
-###############################################################
-# Define the spatial-coordinates of the points:
-set.seed(12)
-x = runif(300, 0, 1)
-y = runif(300, 0, 1)
-coords=cbind(x,y)
-
-# Simulation of a spatial bivariate Gaussian random field
-# with Matern separable covariance model
-
-
-param=list(scale=0.3/3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
-          nugget_1=0,nugget_2=0,pcol=0.7,smooth=0.5)
-          
-data = GeoSim(coordx=coords, corrmodel="Bi_matern_sep", param=param)$data
-
-fixed=list(nugget_1=0,nugget_2=0,smooth=0.5,mean_1=0,mean_2=0)
-start=list(sill_1=var(data[,1]),sill_2=var(data[,2]),scale=0.3/3,
-      pcol=cor(data[1,],data[2,]))
-
-# Maximum Composite likelihood fitting of the random field:
-fitcl= GeoFit(data, coordx=coords, corrmodel="Bi_matern_sep",
-        likelihood="Marginal",type="Pairwise",neighb=c(3,3,3),
-        optimizer="BFGS", start=start,fixed=fixed)
-
-
-# locations to predict
-xx=seq(0,1,0.07)
-loc_to_pred=as.matrix(expand.grid(xx,xx))
-colour = rainbow(100)
-
-pr1=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= append(fitcl$param,fitcl$fixed), data=data,which=1,mse=TRUE)
-
-pr2=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel="Bi_matern_sep",
-       param= append(fitcl$param,fitcl$fixed), data=data,which=2,mse=TRUE)
-
-opar=par(no.readonly = TRUE)
-par(mfrow=c(2,3))
-       
-quilt.plot(coords,data[1,])       
-# simple kriging map prediction of the first variable
-image.plot(xx, xx, matrix(pr1$pred,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="First Simple coKriging")
-
-# simple kriging map prediction variance of the first variable
-image.plot(xx, xx, matrix(pr1$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
- 
- quilt.plot(coords,data[2,])  
- # simple kriging map prediction of the second variable
-image.plot(xx, xx, matrix(pr2$pred,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Second Simple coKriging")
-
-# simple kriging map prediction variance of the second variable
-image.plot(xx, xx, matrix(pr2$mse,ncol=length(xx)),col=colour,
-           xlab="",ylab="",main="Std error")
 par(opar)
 }
 \keyword{Composite}

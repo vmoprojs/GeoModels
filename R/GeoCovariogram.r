@@ -172,7 +172,7 @@ fitted$fixed=unlist(fitted$fixed)
     ## selecting nuisance mean annd corr parameters
       if(!bivariate){
        param <- c(fitted$fixed,fitted$param)[CorrelationPar(CkCorrModel(fitted$corrmodel))]
-        nuisance <- c(fitted$fixed,fitted$param)[NuisParam(fitted$model,FALSE,num_betas)]
+        nuisance <- c(fitted$fixed,fitted$param)[NuisParam2(fitted$model,FALSE,num_betas)]
         sel=substr(names(nuisance),1,4)=="mean"
         mm=nuisance[sel]
         nuisance=nuisance[!sel]
@@ -180,7 +180,7 @@ fitted$fixed=unlist(fitted$fixed)
         }
       if(bivariate){
         param <- c(fitted$fixed,fitted$param)[CorrelationPar(CkCorrModel(fitted$corrmodel))]
-        nuisance <- c(fitted$fixed,fitted$param)[NuisParam(fitted$model,FALSE,num_betas)]
+        nuisance <- c(fitted$fixed,fitted$param)[NuisParam2(fitted$model,FALSE,num_betas)]
     }
 
      #############################################

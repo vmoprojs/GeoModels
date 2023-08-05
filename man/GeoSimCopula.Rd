@@ -15,7 +15,7 @@ coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),
       method="cholesky", model='Gaussian', n=1, param,
       anisopars=NULL,radius=6371, sparse=FALSE,
-      copula="Gaussian",X=NULL)
+      copula="Gaussian",seed=NULL, X=NULL)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -59,6 +59,7 @@ coordx_dyn=NULL, corrmodel, distance="Eucl",
   using sparse matrices algorithms (spam packake). It should be used
   with compactly supported covariance models.\code{FALSE} is the default.}
   \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
+  \item{seed}{Numeric; an integer used in set.seed function to reproduce the simulation.}
   \item{X}{Numeric; Matrix of space-time covariates.}
 }
 
@@ -116,7 +117,6 @@ coords=cbind(x,y)
 
 shape1=3
 shape2=3
-sill=1
 smooth=0
 
 
@@ -132,7 +132,7 @@ CorrParam("GenWend")
 
 #### Gaussian copula
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0.1,mean1=0.1,sill=1,scale=0.3,nugget=0,shape=5)
+             mean=0.1,mean1=0.1,scale=0.3,nugget=0,shape=5)
 
 data <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
   copula="Gaussian",sparse=TRUE,X=X)$data
@@ -144,7 +144,7 @@ quilt.plot(coords,data)
 NuisParam("Beta2",num_betas=2,copula="Clayton")
 CorrParam("GenWend")
 param=list(smooth=smooth,power2=4, min=min,max=max,
-             mean=0.2,mean1=0.1,sill=1,scale=0.3,nugget=0,shape=6,nu=4)
+             mean=0.2,mean1=0.1,scale=0.3,nugget=0,shape=6,nu=4)
 data1 <- GeoSimCopula(coordx=coords, corrmodel=corrmodel, model="Beta2",param=param,
   copula="Clayton",sparse=TRUE,X=X)$data
 

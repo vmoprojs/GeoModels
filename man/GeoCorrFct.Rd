@@ -51,10 +51,8 @@ library(GeoModels)
 ### Matern correlation model
 ###
 ###############################################################
-
 # Define the spatial distances
 x = seq(0,1,0.005)
-
 # Correlation Parameters for Matern model 
 CorrParam("Matern")
 NuisParam("Gaussian")
@@ -76,7 +74,6 @@ param=list(smooth=1,sill=1,scale=0.1,nugget=0,power2=1/4,mean=0)
 corr= GeoCorrFct(x=x, corrmodel="GenWend_Matern", param=param,model="Gaussian")
 plot(x,corr,ylim=c(0,1),type="l")
 
-
 ################################################################
 ###
 ### Example 3. Correlation of a t random field with underlying 
@@ -85,38 +82,49 @@ plot(x,corr,ylim=c(0,1),type="l")
 ###############################################################
 CorrParam("GenWend")
 NuisParam("StudentT")
-
 x = seq(0,1,0.005)
 param=list(smooth=1,sill=1,scale=0.5,nugget=0,power2=5,df=1/6,mean=0)
 corr= GeoCorrFct(x=x, corrmodel="GenWend", param=param,model="StudentT")
 plot(x,corr,ylim=c(0,1),type="l")
 
+################################################################
+###
+### Example 4. Correlation of a Loo¡gGaussian random field with underlying 
+### Kummer correlation model
+###
+###############################################################
+CorrParam("Kummer")
+NuisParam("LogGaussian")
+# GenWend Matern Parameters 
+param=list(smooth=1,sill=0.5,scale=0.1,nugget=0,power2=1,mean=0)
+corr= GeoCorrFct(x=x, corrmodel="Kummer", param=param,model="LogGaussian")
+plot(x,corr,ylim=c(0,1),type="l")
 
 ################################################################
 ###
-### Example 4. Correlation of Weibull random field with underlying 
+### Example 5. Correlation of Weibull random field with underlying 
 ### Generalized Cauchy correlation model
 ###
 ###############################################################
 CorrParam("GenCauchy")
 NuisParam("Weibull")
-
 x = seq(0,1,0.005)
 param=list(sill=1,scale=0.2,nugget=0,power1=0.8, power2=0.8,shape=4,mean=0)
 corr= GeoCorrFct(x=x, corrmodel="GenCauchy", param=param,model="Weibull")
 plot(x,corr,ylim=c(0,1),type="l")
+
 ################################################################
 ###
-### Example 5. Covariance of Poisson random field with underlying 
+### Example 6. Covariance of Poisson random field with underlying 
 ### Matern correlation model
 ###
 ###############################################################
 CorrParam("Matern")
 NuisParam("Poisson")
-
 x = seq(0,1,0.005)
 param=list(sill=1,scale=0.2/3,nugget=0,smooth=0.5,mean=2)
 cova= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Poisson",covariance=TRUE)
 plot(x,cova,ylim=c(0,exp(2)),type="l")
+
 }
 

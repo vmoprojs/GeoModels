@@ -386,11 +386,7 @@ upper=upper[sel]
                               lower=lower,upper=upper,
                                fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
                                  X=X,MM=MM)
-    if(optimizer=='ucminf')   
-      CompLikelihood <-ucminf::ucminf(par=param, fn= compindloglik2, hessian=as.numeric(hessian),   
-                        control=list( maxeval=100000),
-                               data=data,fixed=fixed, fan=fname,
-                            n=n,namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
+
                                
     }}
 ######################################################################################
@@ -460,12 +456,6 @@ upper=upper[sel]
         CompLikelihood <- nlm( f= compindloglik_biv2,p=param,     data=data, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n, namesnuis=namesnuis,namesparam=namesparam, 
                                  X=X,MM=MM )
-    if(optimizer=='ucminf') 
-         CompLikelihood <-ucminf::ucminf(par=param, fn= compindloglik_biv2, hessian=as.numeric(hessian),   
-                        control=list( maxeval=100000), 
-                            data=data, fixed=fixed,
-                        fan=fname,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                          X=X )
     if(optimizer=='nlminb') 
         CompLikelihood <- nlminb( objective= compindloglik_biv2,start=param, 
                                      control = list( iter.max=100000),
@@ -520,18 +510,7 @@ upper=upper[sel]
         else CompLikelihood$convergence <- "Optimization may have failed"
         if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
     }
-      if(optimizer=='ucminf'){
-        CompLikelihood$value = -CompLikelihood$value
-        names(CompLikelihood$par)<- namesparam
-        if(CompLikelihood$convergence == 1||CompLikelihood$convergence == 2||CompLikelihood$convergence == 4)
-        CompLikelihood$convergence <- 'Successful'
-        else
-        if(CompLikelihood$convergence == 3)
-        CompLikelihood$convergence <- 'Iteration limit reached'
-        else
-        CompLikelihood$convergence <- "Optimization may have failed"
-        if(CompLikelihood$value==-1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
-    }
+      
     if(optimizer=='L-BFGS-B'||optimizer=='BFGS'||optimizer=='lbfgsb3c'){
         CompLikelihood$value = -CompLikelihood$value
         names(CompLikelihood$par)<- namesparam
