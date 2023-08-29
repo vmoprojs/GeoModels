@@ -159,6 +159,7 @@ double Dist_geodesic(double loni, double lati, double lonj, double latj,double r
   if(val<= -1)  {val2=M_PI*radius;return(val2);}
   if(val>=1)    {val2=0;return(val2);}
   val2 = acos(val)*radius; 
+  //Rprintf("%f %f %f %f %f =%f \n",radius,loni,lati,lonj,latj,val2);
   return(val2);
 }
 

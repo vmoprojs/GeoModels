@@ -42,37 +42,54 @@ set.seed(seed)
   N=nrow(coords)
   pp=NULL
 while(k<=K){
-Sys.sleep(0.1)
-if(method=="cholesky") {
-#print(coords)#print(fit$coordt)
-  if(is.null(fit$copula))
+    Sys.sleep(0.1)
+if(is.null(fit$copula)){
+    if(method=="cholesky")
+    {
 data_sim = GeoSim(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
      corrmodel=fit$corrmodel,model=fit$model,
 	 #param=as.list(c(fit$param,fit$fixed)),
       param=append(fit$param,fit$fixed),
 	 GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
-   X=fit$X,n=fit$n,method=method,
+     X=fit$X,n=fit$n,method=method,
 	 distance=fit$distance,radius=fit$radius)
-else
-data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,
+    }
+     if(method=="TB"||method=="Vecchia")   
+     {
+ data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,
      coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
      corrmodel=fit$corrmodel,model=fit$model,
-   copula=fit$copula,
       param=append(fit$param,fit$fixed),
-   GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
-   X=fit$X,n=fit$n,method=method,
-   distance=fit$distance,radius=fit$radius)
+     GPU=GPU,  local=local,#grid=fit$grid, 
+     X=fit$X,n=fit$n,method=method,
+     M=M, L=L,
+     distance=fit$distance,radius=fit$radius)
+    }
+}
+else{
+    if(method=="cholesky")
+    {
+ data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,
+     coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
+     corrmodel=fit$corrmodel,model=fit$model,
+     copula=fit$copula,
+     param=append(fit$param,fit$fixed),
+     GPU=GPU,  local=local,sparse=sparse,#grid=fit$grid, 
+     X=fit$X,n=fit$n,method=method,
+     distance=fit$distance,radius=fit$radius)
+     }
 }
 
 
 
+
 #print(append(fit$param,fit$fixed))
-if(method=="Vecchia"||method=="TB") {
-                data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model, 
-                param=append(fit$param,fit$fixed),method=method,M=M,L=L,GPU=GPU,  local=local,#grid=fit$grid, 
-                X=fit$X,n=fit$n,distance=fit$distance,radius=fit$radius)
-            }
+#if(method=="Vecchia"||method=="TB") {
+ #               data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt, coordx_dyn=fit$coordx_dyn, corrmodel=fit$corrmodel,model=fit$model, 
+  #              param=append(fit$param,fit$fixed),method=method,M=M,L=L,GPU=GPU,  local=local,#grid=fit$grid, 
+   #             X=fit$X,n=fit$n,distance=fit$distance,radius=fit$radius)
+    #        }
 
 
 res_est=GeoFit( data=data_sim$data, start=fit$param,fixed=fit$fixed,#start=as.list(fit$param),fixed=as.list(fit$fixed),

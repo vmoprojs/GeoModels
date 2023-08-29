@@ -20,7 +20,7 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
     taper=NULL,tapsep=NULL, 
      time=NULL, type="Standard",type_mse=NULL,
      type_krig="Simple",weigthed=TRUE,which=1,
-     copula=NULL, X=NULL,Xloc=NULL)
+     copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -94,6 +94,8 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
     \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
     \item{Xloc}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification
+     associated to predicted locations.}
+        \item{Mloc}{Numeric; Vector of spatio(temporal) estimated means 
      associated to predicted locations.}
 }
 

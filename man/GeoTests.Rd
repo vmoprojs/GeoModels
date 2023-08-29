@@ -182,7 +182,7 @@ fitH1 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                    optimizer="nlminb",
                     start=start,fixed=fixed)
 
-fitH1$param
+unlist(fitH1$param)
 
 ##### H0: Gaussianity (i.e tail1=1, skew=0 fixed)
 fixed=list(power2=power2,nugget=nugget,mean=mean,tail=1,skew=0)

@@ -72,7 +72,7 @@ else                    fixed$sill=1
     coordt=unname(coordt);
     if(is.null(coordx_dyn)){
     coordx=unname(coordx);coordy=unname(coordy)}
-
+    #fixedtemp=initparam$fixed['mean']
     initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist,neighb,maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
@@ -90,7 +90,8 @@ else                    fixed$sill=1
 
 if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","optimize","SANN")))
              stop("optimizer is not correct\n")
-
+if((optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb'))&is.null(lower)&is.null(upper))
+             stop("lower and upper bound are missing\n")
 ######################## handling lower and upper bound parameters####################################        
     if(optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb','multiNelder-Mead') || length(initparam$param)==1){
    
@@ -121,8 +122,7 @@ if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead',
 ## in the case on external fixed mean
   MM=NULL
   if(!is.null(fixed))
-      if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean}
-
+     if(length(fixed$mean)>1) {MM=as.numeric(fixed$mean);initparam$mean=1e-07}
     ###################################################################################
     ###################################################################################
 #updating with aniso parameters
@@ -260,6 +260,14 @@ if(likelihood!="Full") {if(is.null(neighb)&&is.numeric(maxdist)&&likelihood=="Ma
 if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
                                           initparam$coordy=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
                                         }   
+
+if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
+        "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
+        "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
+        "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
+        "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
+        "Kumaraswamy")) {  if(!is.null(ff$sill)) ff$sill=NULL}
+
 
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,

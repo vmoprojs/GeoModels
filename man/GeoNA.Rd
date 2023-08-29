@@ -74,7 +74,7 @@ data = GeoSim(coordx=coords, corrmodel=corrmodel,
 
 
 data[1:100]=NA
-
+# removing NA
 a=GeoNA(data,coordx=coords)
 a$perc # percentage of NA values 
 #a$coordx# spatial coordinates without missing values

@@ -8,23 +8,32 @@ GeoResiduals<-function(fit)
 {
 if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 ######
+extmean=FALSE
+if(!fit$bivariate)
+    {if(length(fit$fixed$mean)>1) {extmean=TRUE; mmext=fit$fixed$mean;fit$fixed$mean=0}  ## external fixed mean
+     }
 
 fit$param=unlist(fit$param)
 fit$fixed=unlist(fit$fixed)
 model=fit$model        #type of model
 num_betas=fit$numbetas  #number of mean parameters
 
+
+
 if(!fit$bivariate)
 {
+
 ## extracting mean parameters
 namescorr <- CorrParam(fit$corrmodel) 
-namesnuis <- NuisParam2(fit$model,fit$bivariate,num_betas)
+namesnuis <- NuisParam(fit$model,fit$bivariate,num_betas)
 param <- c(fit$param, fit$fixed)
 namesparam<- names(param)
 paramcorr <- param[namescorr]
 nuisance <- param[namesnuis]
 sel=substr(names(nuisance),1,4)=="mean"
 beta2=as.numeric(nuisance[sel])
+beta2=beta2[!is.na(beta2)]
+
 ## names of estimated and fixed parameters
 nm=names(fit$param)
 nf=names(fit$fixed)
@@ -33,8 +42,9 @@ copula=fit$copula
 #################################
 #### computing mean ########
 #################################
+if(extmean) mu=mmext
+else mu=fit$X%*%beta2  
 
-mu=fit$X%*%beta2  
 #################################
 #### computing residuals ########
 #################################
@@ -60,9 +70,7 @@ if(model=="Kumaraswamy2") {
 #else {           #### non-copula models
 ###  positive multiplicative models
 if(model %in% c("Gamma","Weibull","LogLogistic","LogGaussian"))
-{
- #print(head(dd))
- #print(exp(c(mu)))   
+{  
 res1=dd/exp(c(mu))
 }
 ### additive  models  on the real line
@@ -138,6 +146,24 @@ fit$param=fit$param[!is.na(fit$param)]
 fit$fixed=fit$fixed[!is.na(fit$fixed)]
 
 
+
+###adding mean and variance if missing for some reason
+if(model %in% c("Gaussian","SkewGaussian","Logistic","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
+ "Gaussian_misp_StudentT","Gaussian_misp_Tukeygh","StudentT","TwoPieceGauss",
+ "TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh",
+ "TwoPieceBimodal","Gaussian_misp_SkewStudentT","SkewStudentT")){
+if(!sum(names(fit$param)=="mean")) fit$param["mean"]=0
+if(!sum(names(fit$param)=="sill")) fit$param["sill"]=1}
+
+if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
+        "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
+        "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
+        "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
+        "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
+        "Kumaraswamy")) {  if(!sum(names(fit$param)=="mean")) fit$param["mean"]=0}
+
+
+
 ### formatting data
 if(fit$spacetime) 
 {if(!is.list(fit$coordx_dyn)) 
@@ -163,7 +189,7 @@ if(fit$bivariate)
  ns=fit$ns
 
 namescorr <- CorrParam(fit$corrmodel) 
-namesnuis <- NuisParam2(fit$model,fit$bivariate,num_betas)
+namesnuis <- NuisParam(fit$model,fit$bivariate,num_betas)
 param <- c(fit$param, fit$fixed)
 namesparam<- names(param)
 paramcov <- param[namescorr]

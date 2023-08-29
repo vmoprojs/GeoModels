@@ -13,7 +13,7 @@ GeoNeighborhood(data=NULL, coordx, coordy=NULL,
 coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
                distance="Eucl", grid=FALSE, 
                loc, neighb=NULL,maxdist=NULL,
-               maxtime=NULL, radius=6371, time=NULL, X=NULL)
+               maxtime=NULL, radius=6371, time=NULL, X=NULL,M=NULL)
 }
 \arguments{
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -55,6 +55,7 @@ coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
     circle distance. Default value is the radius of the earth in Km (i.e. 6371)}  
    \item{time}{Numeric; a value  giving the temporal instant for which a neighborhood is computed.}
   \item{X}{Numeric; an optional Matrix of spatio (temporal) covariates.}
+   \item{M}{Numeric; an estimated spatio (temporal) mean vector.}
 }
 
 

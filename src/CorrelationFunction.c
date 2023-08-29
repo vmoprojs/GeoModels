@@ -758,6 +758,32 @@ case 23: // hyperg correlation 1 parameter with matern
         if(h)  rho=R_pow(arg,-R_power)*CorFunWitMat(h,scale_s*R_pow(arg,sep/2),smooth);
         else  rho=R_pow(arg,-R_power);
         break;
+
+        case 87:
+          R_power_t=par[0];
+        R_power_s=par[1];
+        R_power=par[2];
+        scale_s=par[3];
+        scale_t=par[4];
+        sep=par[5];
+        smooth=par[6];
+        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
+        rho=R_pow(arg,R_power)*CorFunW_gen(h,R_power_s,smooth,scale_s*R_pow(arg,sep));
+        break;
+      case 88:
+        R_power_s=par[0];
+        R_power=par[1];
+        R_power_t=par[2];
+        scale_s=par[3];
+        scale_t=par[4];
+        sep=par[5];
+        smooth=par[6];
+        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
+        rho=R_pow(arg,R_power)*CorFunW_gen(u,R_power_t,smooth,scale_t*R_pow(arg,sep));
+        break;
+
+
+
     case 63:  //
          R_power_t=par[0];
         R_power_s=par[1];
@@ -825,29 +851,7 @@ case 23: // hyperg correlation 1 parameter with matern
         arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
         rho=R_pow(arg,R_power)*CorFunW2(u,scale_t*R_pow(arg,sep),R_power_t); ////2.5+2*2
         break;
-    case 87:
-          R_power_t=par[0];
-        R_power_s=par[1];
-        R_power=par[2];
-        scale_s=par[3];
-        scale_t=par[4];
-        sep=par[5];
-        smooth=par[6];
-        arg=R_pow(1+R_pow(u/scale_t,R_power_t),-1);
-        rho=R_pow(arg,R_power)*CorFunW_gen(h,R_power_s,smooth,scale_s*R_pow(arg,sep));
-        break;
-      case 88:
-        R_power_s=par[0];
-        R_power=par[1];
-        R_power_t=par[2];
-        scale_s=par[3];
-        scale_t=par[4];
-        sep=par[5];
-        smooth=par[6];
-        arg=R_pow(1+R_pow(h/scale_s,R_power_s),-1);
-        rho=R_pow(arg,R_power)*CorFunW_gen(u,R_power_t,smooth,scale_t*R_pow(arg,sep));
-        break;
-        case 69:
+            case 69:
           R_power_s=par[0];
           R_power_t=par[1];
           scale_s=par[2];
@@ -910,6 +914,15 @@ case 23: // hyperg correlation 1 parameter with matern
           scale_s=par[2];
           scale_t=par[3];
           rho=CorFunW2(h,scale_s,R_power_s)*CorFunW2(u,scale_t,R_power_t);
+        break;
+          case 78:
+            scale_s=par[0];
+            scale_t=par[1];
+            smooth_s=par[2];
+            smooth_t=par[3];
+            R_power_s=par[4];
+            R_power_t=par[5];
+          rho=CorFunW_gen(h, R_power_s, smooth_s, scale_s)*CorFunW_gen(u, R_power_t, smooth_t, scale_t);
         break;
       // END non-separable correlation functions
       // START separable correlation functions:

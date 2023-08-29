@@ -287,7 +287,13 @@ namesparam=names(param)
 sel=pmatch(namesparam,namesupper)
 lower=lower[sel]
 upper=upper[sel]
+#### not exactly zero for the mean parameters starting values
+sel=substr(names(param),1,4)=="mean"&param==0
+param[sel]=0.1
+###
+param=as.numeric(param)
 
+#print(model)
  ###
    if(!onlyvar){
   ##############################.  spatial or space time ############################################
@@ -296,22 +302,30 @@ upper=upper[sel]
       
          optimizer="optimize"  
          if(is.na(lower)||is.na(upper))  {
-            if(model %in% c(2,14,16,45,11)) {lower=-5;upper=5}
+            if(model %in% c(2,14,16,45,11,30,36)) {lower=-5;upper=5}
             else                            {lower=-1e+10;upper=1e+10}
            }
+         else{
+             if(model %in% c(2,14,16,45,11,30,36)) {lower=-5;upper=5}
+         }  
 
+
+#print(lower);print(upper)
      CompLikelihood <- optimize(f= compindloglik2,    
                               data=data, fixed=fixed, fan=fname,  lower=lower, n=n,
                                namesnuis=namesnuis,namesparam=namesparam, maximum = FALSE,
                               upper= upper,  X=X,MM=MM)}
    if(length(param)>1) {
-    if(optimizer=='L-BFGS-B'&&!parallel)
+    
+   
+    if(optimizer=='L-BFGS-B'&&!parallel){
       CompLikelihood <- optim(par=param,fn= compindloglik2, 
                               control=list(factr=1e-10,pgtol=1e-14, maxit=100000), 
                                 data=data, fixed=fixed,
                               fan=fname, lower=lower, method='L-BFGS-B',n=n,
                                namesnuis=namesnuis,namesparam=namesparam, 
                               upper=upper,  X=X,MM=MM,   hessian=FALSE)
+  }
       if(optimizer=='L-BFGS-B'&&parallel){
         ncores=max(1, parallel::detectCores() - 1)
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
@@ -333,8 +347,7 @@ upper=upper[sel]
                               hessian=FALSE, method='BFGS',n=n,
                               namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
    if(optimizer=='SANN'){ 
-   print(param)
-    CompLikelihood <- optim(par=param, fn= compindloglik2,     
+      CompLikelihood <- optim(par=param, fn= compindloglik2,     
                            control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000),data=data, fixed=fixed, fan=fname,
                               hessian=FALSE, method='SANN',n=n,
@@ -378,7 +391,7 @@ upper=upper[sel]
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f= compindloglik2,p=param,steptol = 1e-4,    data=data, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n, namesnuis=namesnuis,namesparam=namesparam, 
-                               iterlim=100000,   X=X)
+                               iterlim=100000,   X=X,MM=MM)
   
     if(optimizer=='nlminb')
      CompLikelihood <-nlminb(objective= compindloglik2,start=param,   data=data, fixed=fixed,

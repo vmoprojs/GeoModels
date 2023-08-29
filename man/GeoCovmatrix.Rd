@@ -240,17 +240,25 @@ The associated parameters in the argument \code{param} are
   where \eqn{\psi(u)=\nu+u^{0.5\alpha_t} }
 
 
-    \item \eqn{Wenx}\code{_}\eqn{space}, \eqn{x=0,1,2} defined as:
-      \deqn{R(h, u) =\phi(u)^{3.5+2x}Wenx(h/\phi(u),\mu_s),\quad x=0,1,2}
-      where  \eqn{\phi(u)=(1+u^{0.5\alpha_t})^{-\gamma}},
-      \eqn{0<  \gamma  \leq \alpha_t/2},
-       \eqn{\mu_s \ge  0.5(d+5)+x}.
+
+
+      \item \eqn{Gneiting}\code{_}\eqn{mat}\code{_}\eqn{S},  defined as:
+         \deqn{R(h, u) =\phi(u)^{\tau_t}Mat(h\phi(u)^{-\beta},\nu_s)}
+      where  \eqn{\phi(u)=(1+u^{0.5\alpha_t})},
+       \eqn{\tau_t \ge  3.5+\nu_s}, \eqn{\beta \in [0,1]}
       
-        \item \eqn{Wenx}\code{_}\eqn{time}, \eqn{x=0,1,2} defined as:
-      \deqn{R(h, u) =\phi(h)^{3.5+2x}Wenx(u/\phi(h);\mu_t),\quad x=0,1,2}
-      where  \eqn{\phi(h)=(1+h^{0.5\alpha_s})^{-\gamma}},
-      \eqn{0< \gamma  \leq \alpha_s/2}, 
-       \eqn{\mu_t \ge  0.5(d+5)+x}.
+      \item \eqn{Gneiting}\code{_}\eqn{mat}\code{_}\eqn{T},  defined interchanging h with u 
+      in \eqn{Gneiting}\code{_}\eqn{mat}\code{_}\eqn{S}
+
+
+    \item \eqn{Gneiting}\code{_}\eqn{wen}\code{_}\eqn{S},  defined as:
+      \deqn{R(h, u) =\phi(u)^{\tau_t}GenWend(h \phi(u)^{\beta},\nu_s,\mu_s)}
+      where  \eqn{\phi(u)=(1+u^{0.5\alpha_t})},
+      \eqn{\tau_t \geq 2.5+2\nu_s}, \eqn{\beta \in [0,1]}
+      
+      \item \eqn{Gneiting}\code{_}\eqn{wen}\code{_}\eqn{T},  defined interchanging h with u 
+      in \eqn{Gneiting}\code{_}\eqn{wen}\code{_}\eqn{S}
+
 
         \item \eqn{Multiquadric}\code{_}\eqn{st} defined as:
   \deqn{R(h, u)= ((1-0.5\alpha_s)^2/(1+(0.5\alpha_s)^2-\alpha_s \psi(u) cos(h)))^{a_s} , \quad h \in [0,\pi]}
@@ -277,10 +285,11 @@ The associated parameters in the argument \code{param} are
     \deqn{R(h, u) =Exp(h)Exp(u)}
     \item  \eqn{Matern}\code{_}\eqn{Matern} defined as:
       \deqn{R(h, u) =Matern(h;\kappa_s)Matern(u;\kappa_t)}
+      \item  \eqn{GenWend}\code{_}\eqn{GenWend} defined as 
+     \deqn{R(h, u) = GenWend(h;\kappa_s,\mu_s) GenWend(u;\kappa_t,\mu_t)}.
     \item  \eqn{Stable}\code{_}\eqn{Stable} defined as:
       \deqn{R(h, u) =Stable(h;\alpha_s)Stable(u;\alpha_t)}
-    \item  \eqn{Wendx}\code{_}\eqn{Wendy} defined as 
-     \deqn{R(h, u) = Wendx(h;\mu_s) Wendy(u;\mu_t),  x,y=0,1,2}.
+
   }
 
   Note that some models are nested. (The \eqn{Exp}\code{_}\eqn{Exp} with \eqn{Matern}\code{_}\eqn{Matern} for instance.)

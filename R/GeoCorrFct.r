@@ -30,12 +30,20 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
   #############################################################################################
     # Check the user input
  
-     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     if(is.null(CkModel(model)))   stop("The name of the  model  is not correct\n")
     if(!is.numeric(x)) stop("Distances must be numeric\n")
     if(sum(x<0)>=1) stop("Distances must be positive\n")
+    if(!is.list(param)) stop("param  must be a list\n")
+
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
+
+    if(!bivariate) {if(is.null(param$sill)) param$sill=1}
+
+
+
+
    
 mu=0;nuisance=0
 mm=0

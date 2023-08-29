@@ -16,7 +16,7 @@ fit$param=unlist(fit$param)
 fit$fixed=unlist(fit$fixed)
 pp=c(fit$param,fit$fixed)
 MM=as.numeric(pp["mean"])
-VV=as.numeric(pp["sill"])
+if(!is.null(as.numeric(pp["sill"]))) VV=as.numeric(pp["sill"])
 
 opar=par(no.readonly = TRUE)
 on.exit(par(opar))   
@@ -523,20 +523,20 @@ if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="SAS Histogram",yli
 ####################################### OK
 if(model %in% c("Tukeyh"))
 {
+
+  inverse_lamb=function(x,tail){
+    value = sqrt(VGAM::lambertW(tail*x*x)/tail);
+    return(sign(x)*value);
+  }
+ qth=function(x,tail,VV){
+    a= x*(1 + VGAM::lambertW(tail*x*x))
+    b=inverse_lamb(x,tail)
+    c=dnorm(inverse_lamb(x,tail),0,1)
+    return(b*c/(a*sqrt(VV)))
+ }
 tail = as.numeric(pp["tail"])
 ll=seq(min(dd),max(dd),  (max(dd)-min(dd))/100 )
-inverse_lamb=function(x,tail)
-{
-  value = sqrt(VGAM::lambertW(tail*x*x)/tail);
-   return(sign(x)*value);
-}
 
-qth=function(x,tail,VV){
-a= x*(1 + VGAM::lambertW(tail*x*x))
-b=inverse_lamb(x,tail)
-c=dnorm(inverse_lamb(x,tail),0,1)
-return(b*c/(a*sqrt(VV)))
-}
 ds=qth((ll-MM)/sqrt(VV),tail,VV)
 if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),xlab="",main="Tukey-h Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...) 

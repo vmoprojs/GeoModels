@@ -77,16 +77,18 @@ CkCorrModel <- function(corrmodel)
                              gneiting_GC2=54,Gneiting_GC2=54,
                              sinpower_st=56,Sinpower_st=56,    #ok
                              multiquadric_st=58,Multiquadric_st=58,   #ok
-                             gneiting_mat_time=61,Gneiting_mat_time=61, #ok
-                             gneiting_mat_space=62,Gneiting_mat_space=62, #ok
+                             gneiting_mat_T=61,Gneiting_mat_T=61, #ok
+                             gneiting_mat_S=62,Gneiting_mat_S=62, #ok
                              Wen0_space=63,wen0_space=63,  #ok
                              Wen0_time=64,wen0_time=64,    #ok
                              Wen1_space=65,wen1_space=65,  #ok
                              Wen1_time=66,wen1_time=66,    #ok
                              Wen2_space=67,wen2_space=67,  #ok
                              Wen2_time=68,wen2_time=68,    #ok
-                             Wen_time=88,
-                             Wen_space=87,
+                             #Wen_time=88,
+                             #Wen_space=87,
+                             Gneiting_wen_S=87,gneiting_wen_S=87,
+                             Gneiting_wen_T=88,gneiting_wen_T=88, #ok
               # spatial-temporal separable models
                              Wend0_Wend0=69,wend0_wend0=69, #ok
                              Wend0_Wend1=70,wend0_wend1=70, #ok
@@ -97,13 +99,10 @@ CkCorrModel <- function(corrmodel)
                              Wend2_Wend0=75,wend2_wend0=75, #ok
                              Wend2_Wend1=76,wend2_wend1=76, #ok
                              Wend2_Wend2=77,wend2_wend2=77, #ok 
+                             GenWend_GenWend=78,Genwend_Genwend=78, #ok 
                              exp_cauchy=82,Exp_Cauchy=82,
                              exp_exp=84,Exp_Exp=84,
                              Matern_Matern=86, matern_matern=86,  #ok
-                             #exp_gauss=86, Exp_Gauss=86,
-                             #exp_cos=88,Exp_Cos=88,
-                             #matern_cauchy=90,Matern_Cauchy=90,
-                             #matern_exp=92, Matern_Exp=92,
                              stable_stable=94,Stable_Stable=94,
                              prove=96,
               # Bivariate models
@@ -874,7 +873,9 @@ CorrelationPar <- function(corrmodel)
     if(corrmodel==86){
       param <- c('scale_s','scale_t','smooth_s','smooth_t')
       return(param)}  
-
+     if(corrmodel==78){
+      param <- c('scale_s','scale_t','smooth_s','smooth_t','power_s','power_t')
+      return(param)} 
        # sinpower_st
     if(corrmodel==56){
       param <- c('scale_s','scale_t','smooth_t')

@@ -78,11 +78,10 @@ Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.rese
 
 library(GeoModels)
 set.seed(1428)
-NN = 1000
+NN = 1500
 coords = cbind(runif(NN),runif(NN))
 ###
 scale=0.5/3
-param = list(mean=0,sill=1,nugget=0,scale=scale,smooth=0.5)
 corrmodel = "Matern"; 
 
 param = list(mean=0,sill=1,nugget=0,scale=scale,smooth=0.5,skew=0)
@@ -94,4 +93,16 @@ alpha=0.005  #parameter for outliers detection alghoritm
 outlier=GeoOutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
 quilt.plot(coords,data)
 for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.02,lwd=2) 
+nrow(outlier) # number of outliers
+
+param = list(mean=0,sill=1,nugget=0.4,scale=scale,smooth=0.5)
+data = GeoSim(coordx = coords,corrmodel = corrmodel,
+                  model = "Gaussian",param = param)$data
+
+K=15         #parameter for outliers detection alghoritm
+alpha=0.005  #parameter for outliers detection alghoritm
+outlier=GeoOutlier(data=data, coordx = coords,neighb=K,alpha=alpha)
+quilt.plot(coords,data)
+for (i in 1:nrow(outlier))  plotrix::draw.circle(outlier[i,1], outlier[i,2],radius=0.02,lwd=2)
+nrow(outlier) # number of outliers
 }

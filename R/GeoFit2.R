@@ -42,15 +42,13 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
  
 bivariate<-CheckBiv(CkCorrModel(corrmodel))    
 if(!bivariate){
-
 if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
         'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
         'Beta2','Kumaraswamy2','Beta','Kumaraswamy')){
-if(is.null(fixed$sill)) fixed$sill=1
-else                    fixed$sill=1
-}
+                        if(is.null(fixed$sill)) fixed$sill=1
+                        else                    fixed$sill=1}
 }
 #############################################################################
 
@@ -78,21 +76,31 @@ else                    fixed$sill=1
 
 
    ## in the case on external fixed mean
-
+  #MM=NULL
+  #if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=as.numeric(fixed$mean);initparam$mean=1e-07}
+  
+  
+  ## in the case on external fixed mean
   MM=NULL
-  if(is.na(initparam$fixed['mean'])&length(c(initparam$X))==1) {MM=fixed$mean;initparam$mean=0}
+  if(!is.null(fixed))
+     if(length(fixed$mean)>1) {MM=as.numeric(fixed$mean);initparam$mean=1e-07}
+
   
 
-
     ## moving sill from starting to fixed parameters if necessary
-        if(sum(initparam$namesparam=='sill')==1){
-    if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
-    {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
-    a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
+  #      if(sum(initparam$namesparam=='sill')==1){
+  #  if(initparam$model %in%  c(2,14,16,21,42,50,26,24,30,46,43,11)) 
+  #  {initparam$param=initparam$param[initparam$namesparam!='sill'];initparam$namesparam=names(initparam$param)
+  #  a=1; names(a)="sill";initparam$fixed=c(initparam$fixed,a)}}
 
-
+  
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
+
+
+    if((optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb'))&is.null(lower)&is.null(upper))
+             stop("lower and upper bound are missing\n")
+
 
       if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","optimize","SANN")))
              stop("optimizer is not correct\n")
@@ -123,7 +131,7 @@ else                    fixed$sill=1
       initparam$upper <- uu;initparam$lower <- ll
      }}
 
-
+     
 ###############################################################################################
     fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,unname(initparam$data), 
@@ -272,6 +280,12 @@ if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(l
                                           initparam$coordy=initparam$coordx[1:(length(initparam$coordx)/length(initparam$coordt))]
                                         }   
 
+if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
+        "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
+        "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
+        "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
+        "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
+        "Kumaraswamy")) {  if(!is.null(ff$sill)) ff$sill=NULL}
 
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,

@@ -78,6 +78,15 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
     dyn<- is.list(fitted$coordx_dyn)
     
 
+
+if (fitted$model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
+        "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
+        "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
+        "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
+        "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
+        "Kumaraswamy")) { fitted$param$sill=1}
+
+
 opar=par(no.readonly = TRUE)
 on.exit(par(opar))
 
@@ -217,10 +226,7 @@ if(!bivariate) {
 if(!(binomial||geom||binomialneg||binomialnegZINB||Gaussian_misp_Binomial||
        Gaussian_misp_BinomialNeg||Gaussian_misp_Poisson)) nui['nugget']=0
 else                                     nui['nugget']=nuisance['nugget']
-    #nui['nugget']=1-nui['sill']
-  #   nui=nuisance
-  #  if(gamma||weibull||studentT||loglogistic) {nui['sill']=1;nui['nugget']=1-nui['sill']}
-   #print(nui)
+
     if(fitted$model=="Gaussian_misp_Binomial") fitted$model="Binomial"
     if(fitted$model=="Gaussian_misp_BinomialNeg") fitted$model="BinomialNeg"
     if(fitted$model=="Gaussian_misp_Poisson") fitted$model="Poisson"
@@ -854,10 +860,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                 if(gaussian) {result$variogram11 <- variogram11;result$variogram12 <- variogram12;result$variogram22 <- variogram22}
                 }}}
 
-       #print("here")
-       #par(mfrow=c(1,1))
-       #par(resetPar())
-  #par(opar) 
+
     if(!is.null(result))
     return(result)
   }

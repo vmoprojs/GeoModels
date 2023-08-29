@@ -446,7 +446,6 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
 
 
 
-
 ##################
 if(!bivariate){
 if(is.null(MM)) lname="comploglik2"
@@ -455,7 +454,6 @@ else            lname="comploglik2MM"
 
 
 coords=cbind(coordx,coordy)
-
 
 if(!onlyvar){
   

@@ -305,7 +305,7 @@ fit <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Conditional",type="Pairwise",X=X,
                     optimizer="nlminb",lower=lower,upper=upper,
                     start=start,fixed=fixed)
-print(fit$param)
+print(unlist(fit$param))
 
 
 ################################################################
@@ -341,7 +341,7 @@ start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
 fit1 <- GeoFit2(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",
                     start=start,fixed=fixed)
-print(fit1$param)
+print(unlist(fit1$param))
 
 
 

@@ -1,9 +1,11 @@
 GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
-                             distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL, radius=6371, time=NULL, X=NULL)
+            distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL,
+                 radius=6371, time=NULL, X=NULL,M=NULL)
 {
   
   
   XX=NULL
+  M_sel=NULL
   numtime=1
   sel_ss=1
   sel_tt=1
@@ -63,16 +65,18 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
                                           }
   #################################
   if(space){
-    sel_ss=data_sel=numpoints=XX=list()
+    sel_ss=data_sel=numpoints=XX=M_sel=list()
     for(i in 1:Nloc)
     {
       ss=out$nn.idx[i,];
       sel_ss[[i]]=coords[ss,]
       numpoints[[i]]=nrow(sel_ss[[i]])
       if(!is.null(data)) data_sel[[i]]=data[ss]
+      if(!is.null(M)) M_sel[[i]]=M[ss]
       if(!is.null(X)) XX[[i]]=X[ss,]
     }
   }
+
   #####################################################################################
   if(spacetime)
   {
@@ -81,7 +85,7 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
  
     out_t <- list(ind=cbind(as.vector(out_t),seq(time)))
 
-    sel_ss=numpoints=data_sel=sel_tt=XX=list()
+    sel_ss=numpoints=data_sel=sel_tt=XX=M_sel=list()
     k=1
     for(i in 1:Nloc){
       sel_s=out$nn.idx[i,];
@@ -90,6 +94,7 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
         sel_t=out_t$ind[,1][out_t$ind[,2]==j]
         sel_tt[[j]]=coordt[sel_t]
         if(!is.null(data)) data_sel[[k]]=data[sel_t,sel_s]
+       # if(!is.null(M)) M_sel[[k]]=data[sel_t,sel_s]   to improveeeee
         k=k+1
       }
       if(!is.null(X)) {
@@ -104,11 +109,12 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   {
     Nloc=nrow(loc)
     if(dyn) coords=rbind(coords,coords)
-    sel_ss=numpoints=data_sel=sel_tt=XX=list()
+    sel_ss=numpoints=data_sel=sel_tt=XX=M_sel=list()
     for(i in 1:Nloc){
       sel=out$nn.idx[i,]
       sel_ss[[i]]=coords[sel,]
       numpoints[[i]]=ncol(sel_ss[[i]])
+      if(!is.null(M)) {M_sel[[i]]=cbind(M[ss,1],M[ss,2])}
       if(!is.null(data))data_sel[[i]]=matrix(data[,sel],nrow=2)
       if(!is.null(X))   XX[[i]]=X[c(sel,2*sel),]
     }
@@ -116,9 +122,10 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   ##################################################################################
   ##################################################################################
   ##################################################################################
-  
+
   if(length(XX)==0) XX=NULL
   if(length(data_sel)==0) data_sel=NULL
+  if(length(M_sel)==0) M_sel=NULL
   return(list(data=data_sel,coordx=sel_ss,coordt=sel_tt,distance=distance, 
-              numpoints=numpoints,numtime=numtime,radius=radius,spacetime=spacetime,X=XX))
+              numpoints=numpoints,numtime=numtime,radius=radius,spacetime=spacetime,X=XX,M=M_sel))
 } 

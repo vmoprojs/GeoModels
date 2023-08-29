@@ -43,6 +43,7 @@ if(fit$missp)  ### misspecification
 ############################################################
 if(space)
 {
+    print(space);print(spacetime);print(bivariate);print(local);print(estimation);print(K)
 N=length(fit$data)
 coords=cbind(fit$coordx,fit$coordy)
 data=fit$data
@@ -73,9 +74,8 @@ if(estimation) {
                             local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=fit$optimizer, lower=fit$lower,upper=fit$upper,
-                           # start=as.list(fit$param),fixed=as.list(fit$fixed))
-          start=fit$param,fixed=fit$fixed)
-            
+                           start=fit$param,fixed=fit$fixed)
+        
 if(!is.null(fit$anisopars))   
                    {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
 
@@ -83,18 +83,20 @@ if(!is.null(fit$anisopars))
            
               }
  
-if(!local) pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
+if(!local) {pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-	            model=fit$model, n=fit$n, mse=TRUE,#ok
+	            model=fit$model, n=fit$n, mse=FALSE,#ok
               param=param, anisopars=fit_s$anisopars,
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+             print("1")}
 
-if(local) pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
+if(local) {pr=GeoKrigloc(data=fit$data[sel_data], coordx=coords[sel_data,],  
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
-              model=fit$model, n=fit$n, mse=TRUE,#ok
+              model=fit$model, n=fit$n, mse=FALSE,#ok
               neighb=neighb,maxdist=maxdist,
               param=param, anisopars=fit_s$anisopars,
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc) #ok
+              print("2")}
 
 pred[[i]]=as.numeric(pr$pred)
 err=data_to_pred-pr$pred  
