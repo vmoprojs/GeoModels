@@ -4,7 +4,7 @@
 \title{Spatial (bivariate) and spatio temporal optimal linear  local  prediction 
           for Gaussian and non Gaussian RFs.}
 \description{
-For a  given set of  spatial location sites and temporal instants,
+For a  given set of  spatial location sites (and temporal instants),
 the function computes optmal local  linear prediction and the associated mean squared error 
 for the Gaussian and non Gaussian case using a spatial (temporal) neighborhood
 computed using the  function \code{\link{GeoNeighborhood}}
@@ -24,16 +24,12 @@ coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE,
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data used for prediction.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates used for prediction. qn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
+   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates used for prediction. \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
     spatial coordinates used for prediction; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
-  \item{coordt}{A numeric vector giving 1-dimension of
+    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+   \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates used for prediction; the default is \code{NULL}
     then a spatial random field is expected.}
   \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
@@ -76,8 +72,8 @@ coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE,
      kriging is performed}
     \item{type_mse}{String; if  \code{Theoretical} then theoretical MSE pairwise kriging is computed.
        If \code{SubSamp} then  an estimation based on subsampling is computed.}  
-   \item{type_krig}{String; the type of kriging. If \code{Simple} (the
-    default) then simple kriging is performed. (See the Section \bold{Details}).}
+         \item{type_krig}{String; the type of kriging. If \code{Simple} (the
+    default) then simple kriging is performed. If \code{Optim} then optimal kriging is performed for some non-Gaussian RFs}
    \item{weigthed}{Logical; if \code{TRUE} then decreasing weigths coming 
   from a compactly supported correlation function
   with compact support \code{maxdist} (\code{maxtime})are used in the pairwise kriging.}
@@ -166,14 +162,11 @@ x = runif(1000, 0, 1)
 y = runif(1000, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
-corrmodel = "Wend0"
-mean=0
-sill=1
-nugget=0
-scale=0.2
-param=list(mean=mean,sill=sill,nugget=nugget,
+corrmodel = "GenWend"
+mean=0; sill=1
+nugget=0; scale=0.2
+param=list(mean=mean,sill=sill,nugget=nugget,smooth=0,
 scale=scale,power2=4)
-
 
 # Simulation of the spatial Gaussian random field:
 data = GeoSim(coordx=coords, corrmodel=corrmodel,
@@ -184,7 +177,7 @@ loc_to_pred=matrix(runif(8),4,2)
 ################################################################
 ###
 ### Example 1. Comparing spatial kriging with local kriging for
-### a Gaussian random field with exponential correlation.
+### a Gaussian random field with GenWend correlation.
 ### 
 ###############################################################
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
@@ -208,12 +201,12 @@ require(fields)
 set.seed(78)
 coords=cbind(runif(50),runif(50))
 coordt=seq(0,5,0.25)
-corrmodel="Exp_Exp"
-param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2)
+corrmodel="Matern_Matern"
+param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2,
+  smooth_s=0.5,smooth_t=0.5)
 
 data = GeoSim(coordx=coords, coordt=coordt,
-corrmodel="Exp_Exp", 
-                         param=param)$data
+     corrmodel=corrmodel, param=param)$data
 ##  four location to predict
 loc_to_pred=matrix(runif(8),4,2)
 ## three temporal instants to predict

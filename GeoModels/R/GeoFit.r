@@ -127,12 +127,13 @@ if((length(c(CorrParam(corrmodel),NuisParam2(model,bivariate,2,copula=copula)))=
     if(!is.null(initparam$error))   stop(initparam$error)
     ## checking for upper and lower bound for method 'L-BFGS-B' and optimize method
 
-if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead','multinlminb',"BFGS","Nelder-Mead","optimize","SANN")))
+if(!(optimizer %in% c('L-BFGS-B','nlminb','nlm','nmkb','nmk','multiNelder-Mead',
+    'multinlminb',"BFGS","Nelder-Mead","optimize","SANN","bobyqa","sbplx")))
              stop("optimizer is not correct\n")
-if((optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb'))&is.null(lower)&is.null(upper))
+if((optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb',"bobyqa","sbplx"))&is.null(lower)&is.null(upper))
              stop("lower and upper bound are missing\n")
 ######################## handling lower and upper bound parameters####################################        
-    if(optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb','multiNelder-Mead') || length(initparam$param)==1){
+    if(optimizer %in% c('L-BFGS-B','nlminb','nmkb','multinlminb','multiNelder-Mead',"bobyqa","sbplx") || length(initparam$param)==1){
    
     if(!is.null(lower)||!is.null(upper)){
        if(!is.list(lower)||!is.list(upper))  stop("lower and upper bound must be a list\n")
@@ -314,7 +315,16 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
         "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
         "Kumaraswamy")) {  if(!is.null(ff$sill)) ff$sill=NULL}
 
-
+conf.int=NULL
+if(likelihood=="Full"&&type=="Standard") 
+{if(varest){
+   alpha=0.05 
+   aa=qnorm(1-(1-alpha)/2)*fitted$stderr
+   pp=as.numeric(fitted$par)
+   low=pp-aa; upp=pp+aa
+   conf.int=rbind(low,upp)
+   }
+}
     ### Set the output object:
     GeoFit <- list(      anisopars=anisopars,
                          bivariate=initparam$bivariate,
@@ -324,6 +334,7 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
                          coordy = initparam$coordy,
                          coordt = initparam$coordt,
                          coordx_dyn=coordx_dyn,
+                         conf.int=conf.int,
                          convergence = fitted$convergence,
                          copula=copula,
                          corrmodel = corrmodel,

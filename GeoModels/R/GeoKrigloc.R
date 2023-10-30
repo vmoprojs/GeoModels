@@ -50,7 +50,7 @@ if(space){
         #    Sys.sleep(0.1)
             
             pr=GeoKrig(loc=loc[i,], data=neigh$data[[i]],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
-                X=neigh$X[[i]],Xloc= Xloc[i,],Mloc=Mloc[i],
+                X=neigh$X[[i]],Xloc= Xloc[i,],Mloc=Mloc[i], type_krig=type_krig,
                 model=model, param=param,anisopars=anisopars, mse=mse,copula=copula)
                 res1=c(res1,pr$pred)
                 if(mse) res2=c(res2,pr$mse)
@@ -76,7 +76,7 @@ if(spacetime)
              if(!is.null(M)) param$mean=neigh$M[[k]]
             pr=GeoKrig(data=neigh$data[[k]],coordx=neigh$coordx[[k]],coordt=neigh$coordt[[k]],loc=loc[i,],time=time[j], #ok
                X=neigh$X[[k]],  Mloc=Mloc[i+(Nloc)*(j-1)], #ok
-               Xloc= Xloc[i+(Nloc)*(j-1),],
+               Xloc= Xloc[i+(Nloc)*(j-1),], type_krig=type_krig,
              corrmodel=corrmodel,distance=distance, model=model, param=param,anisopars=anisopars, mse=mse,copula=copula,n=n)
             res1=c(res1,pr$pred)
             if(mse) res2=c(res2,pr$mse)
@@ -94,7 +94,7 @@ neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxd
           {
            
             pr=GeoKrig(loc=matrix(loc[i,],ncol=2),coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
-                X=neigh$X,,Xloc= Xloc[i,],which=which,
+                X=neigh$X,,Xloc= Xloc[i,],which=which,type_krig=type_krig,
                 model=model, param=param,anisopars=anisopars, mse=mse, data=neigh$data[[i]],copula=copula)
                 res1=c(res1,pr$pred)
                if(mse) res2=c(res2,pr$mse)
@@ -139,7 +139,7 @@ if(Tloc==1)  {c(pred);c(varpred)}
                    spacetime = spacetime,
                    time=time,
               #     type=type,
-              #     type_krig=type_krig,
+                  type_krig=type_krig,
                    mse=varpred)
               #     mse2=varpred2)
     structure(c(Kg, call = call), class = c("Kg"))

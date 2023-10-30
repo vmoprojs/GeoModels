@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \title{Lists the Parameters of a Correlation Model}
 \description{
-  The procedure returns a list with the parameters of a given
+  The procedure returns a list with the  names of the parameters of a given
   correlation model.
 }
 \usage{

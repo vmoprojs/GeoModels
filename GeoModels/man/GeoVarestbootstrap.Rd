@@ -22,8 +22,7 @@ GPU=NULL,local=c(1,1),optimizer="Nelder-Mead",
     when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}.}
        \item{upper}{An optional named list giving the values  for the upper bound of the space parameter
     when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}.}
-       \item{method}{String; The method of simulation. Default is \code{cholesky}.
-           For large data set two options are \code{Vecchia} or {TB}}
+       \item{method}{String; The method of simulation. Default is \code{cholesky}. For large data set two options are \code{Vecchia} or \code{TB}}
          \item{alpha}{ Numeric; The level of the confidence interval. }
          \item{M}{Numeric; the number of neighboords in the Vecchia method.} 
       \item{L}{Numeric; the number of lines in the  turning band method.} 

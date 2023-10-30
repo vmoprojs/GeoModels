@@ -3,8 +3,11 @@
 \encoding{UTF-8}
 \title{n-fold  kriging Cross-validation}
 \description{The procedure use the \code{\link{GeoKrig}} or \code{\link{GeoKrigloc}} function to compute n-fold  kriging cross-validation using informations from a \code{\link{GeoFit}} object.  The function returns some prediction scores.}
-\usage{GeoCV(fit, K=100, estimation=FALSE, optimizer="Nelder-Mead",lower=NULL, upper=NULL,
-  n.fold=0.05,local=FALSE,neighb=NULL, maxdist=NULL,maxtime=NULL,sparse=FALSE, which=1,seed=1)}
+\usage{GeoCV(fit, K=100, estimation=FALSE, optimizer="Nelder-Mead",
+     lower=NULL, upper=NULL, n.fold=0.05,local=FALSE,
+    neighb=NULL, maxdist=NULL,maxtime=NULL,sparse=FALSE,
+    type_krig="Simple", which=1,seed=1)}
+
 \arguments{
   \item{fit}{An object of class
     \code{\link{GeoFit}}.}
@@ -26,6 +29,8 @@
        if local kriging is performed.}
        \item{sparse}{Logical; if \code{TRUE} kriging and simulation are computed with sparse matrices algorithms 
           using spam package. Default is FALSE. It should be used with compactly supported covariances.} 
+         \item{type_krig}{String; the type of kriging. If \code{Simple} (the
+    default) then simple kriging is performed. If \code{Optim} then optimal kriging is performed for some non-Gaussian RFs}
       \item{which}{Numeric; In the case of bivariate  cokriging it indicates which variable to predict.
            It can be 1 or 2}
      \item{seed}{Numeric; The seed used in the  n-fold  kriging cross-validation. Default is 1. Comparison between

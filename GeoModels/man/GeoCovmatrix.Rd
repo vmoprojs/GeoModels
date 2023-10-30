@@ -126,7 +126,7 @@ Here there is the list of all the implemented space and space-time and bivariate
  correlation models. 
 The argument \code{param} is a list including all the parameters of a given
 correlation  model specified by  the argument \code{corrmodel}.
-For each correlation model one can check the associated  correlation parameters using \code{\link{CorrParam}}.
+For each correlation model one can check the associated  parameters' names using \code{\link{CorrParam}}.
 In what follows 
 \eqn{\kappa>0}, \eqn{\beta>0}, \eqn{ \alpha, \alpha_s, \alpha_t \in (0,2] },  and \eqn{\gamma \in [0,1]}.
 The associated parameters in the argument \code{param} are 
@@ -189,10 +189,8 @@ The associated parameters in the argument \code{param} are
      The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2} respectively. 
 
     \item \eqn{GenWend_{\_}Matern} (Generalized Wendland Matern in  Bevilacqua et al. (2022)). It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be divided by 
-    \eqn{(\Gamma(\beta+2\kappa+1)/\Gamma(\beta))^{1/(1+2\kappa)}. When  eqn{\beta} goes to infinity it is the Matern model.
-    }
-
-     
+    \eqn{(\Gamma(\beta+2\kappa+1)/\Gamma(\beta))^{1/(1+2\kappa)}}. When  \eqn{\beta} goes to infinity it is the Matern model.
+    
 
      \item \eqn{Hypergeometric2} (Hypegeometric model in Alegria and Emery (2022)) defined as:
       \deqn{R(h) =  A (1-h^2)^{\beta+\alpha-\kappa-2} F(\beta-\kappa,\alpha-\kappa,\beta+\alpha-\kappa-1,1-h^2) 1(h \in [0,1]) }
@@ -356,7 +354,7 @@ The associated parameters in the argument \code{param} are
  In what follows we assume \eqn{\sigma^2,\sigma_1^2,\sigma_2^2,\tau^2,\tau_1^2,\tau_2^2,
  a,a_s,a_t,a_{11},a_{22},a_{12},\kappa_{11},\kappa_{22},\kappa_{12},f_{11},f_{12},f_{21},f_{22}} positive.
 
- The associated parameters in  \code{param} are 
+ The associated names of the parameters in  \code{param} are 
 \code{sill}, \code{sill_1},\code{sill_2},
 \code{nugget}, \code{nugget_1},\code{nugget_2},
 \code{scale},\code{scale_s},\code{scale_t}, \code{scale_1},\code{scale_2},\code{scale_12},
@@ -372,30 +370,9 @@ The associated parameters in the argument \code{param} are
   with nugget parameter  \eqn{\tau^2} between 0 and 1.
   Similarly if \eqn{R(h,u)} is a spatio-temporal correlation model given in standard notation,
    then the covariance model is \eqn{\sigma^2} if \eqn{h=0} and \eqn{u=0} and 
-  \deqn{C(h,u)=(\sigma^2+\tau^2 1(h=0,u=0)) R(h/a_s ,u/a_t,...) \quad h>0, u>0 }
+  \deqn{C(h,u)=\sigma^2(1-\tau^2 )R(h/a_s ,u/a_t,...) \quad h>0, u>0 }
 
   Here \sQuote{...} stands for additional parameters.
-
-    Let \eqn{R(h)} be a spatial taper  given in standard notation.
-   Then the taper function applied with an arbitrary compact support (\eqn{d_s}) equals to:
-  \deqn{T(h)= R( h/d_s)}
-
-
-    Then the tapered covariance function is given by:
-       \deqn{C^{tap}(h)= T(h)C(h) }
-
-
-  Similarly if \eqn{R(h,u)} is a spatio-temporal taper given in standard notation, then the taper
-  function applied with  arbitrary compact supports \eqn{(d_s, d_t)^T}  equals to:
-
-  \deqn{T(h,u)= R(h/d_s,u/d_t)}
-
-
-
-  Then the tapered covariance function is  given by:
-       \deqn{C^{tap}(h,u)= T(h,u)C(h,u) }
-
-  Compact supports \eqn{d_s} and \eqn{d_t} can be set by the user with  \code{maxdist} and \code{maxtime}.
 
   The bivariate models implemented are the following :
   \enumerate{
@@ -422,19 +399,6 @@ The associated parameters in the argument \code{param} are
     is a special case when  \eqn{f=f_{12}=f_{21}}.   
  Bivariate LMC models, in the current version of the package, is obtained with \eqn{R(h)}  equal to the exponential correlation  model.
  }
-
-The bivariate spatial tapers  implemented are the following :
- \enumerate{
-  \item \eqn{Bi}\code{_}\eqn{Wendlandx}, \eqn{x=0,1,2}  defined as:
-    \deqn{T_{ij}(h)=r_{ij}   Wendx(h/d_{ij},x), \quad i,j=1,2 \quad x=0,1,2 \quad h\ge 0}
-     with   \eqn{r_{ii}=1}  and  \eqn{r_{12}=r_{21}} to be fixed using \code{tapsep}.
-  }
-
-  If \eqn{T_{ij}(h)} is a bivariate taper,
-  Then the tapered bivariate covariance function is  given by:
-       \deqn{C_{ij}^{tap}(h)= T_{ij}(h)C_{ij}(h) }
-
-  Compact supports \eqn{d_{11},d_{12},d_{22}}  can be set by the user with  \code{maxdist}.
 
 }
 \references{

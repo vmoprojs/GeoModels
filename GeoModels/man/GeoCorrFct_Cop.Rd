@@ -3,9 +3,9 @@
 \encoding{UTF-8}
 \title{Spatial and Spatio-temporal correlation or  covariance of (non) Gaussian random fields (copula models)}
 \description{
-  The function computes the  correlations 
-  a spatial or spatio-temporal or a bivariate spatial Gaussian or non Gaussian randomm field
-  witha  given  covariance model and a  set of spatial (temporal) distances.
+  The function computes the  correlations of a spatial or spatio-temporal 
+  or a bivariate spatial Gaussian or non Gaussian copula randomm field
+  with a  given  covariance model and a  set of spatial (temporal) distances.
 }
 \usage{
 GeoCorrFct_Cop(x,t=NULL,corrmodel, 

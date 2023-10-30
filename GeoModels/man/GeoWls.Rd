@@ -4,8 +4,8 @@
 \encoding{UTF-8}
 \title{WLS of Random Fields}
 \description{
-  the function returns the parameters' estimates and the estimates' variances
-  of a random field obtained by the weigthed least squares estimator.
+  the function returns the parameters' estimates of a random field obtained by 
+  the weigthed least squares estimator.
 }
 \usage{
 GeoWLS(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, 

@@ -211,6 +211,7 @@ The first three combinations can be used for any model. The standard likelihood 
     \item \code{Gaussian}, for a Gaussian random field.   
     \item \code{StudentT}, for a StudentT random field (see  Bevilacqua M., Caamaño C., Arellano Valle R.B., Morales-Oñate V., 2020).
     \item \code{Tukeyh}, for a Tukeyh random field.
+    \item \code{Tukeyh2}, for a Tukeyhh random field. (see Caamaño et al., 2023)
     \item \code{Logistic}, for a Logistic random field.
  }   
    random fields with positive values and  right skewed marginal distribution:
@@ -239,7 +240,7 @@ random fields with marginal counts data
      \item \code{BinomialNeg} for a negative Binomial random field.
      \item \code{BinomialNegZINB} for a zero inflated negative Binomial random field.
   }
-random fields using Gaussian and Clayton copula with the following marginal distribution:
+random fields using Gaussian and Clayton copula (see Bevilacqua, Alvarado  and Caamaño, 2023) with the following marginal distribution:
  \itemize{   
     \item \code{Gaussian} for Gaussian random field.
     \item \code{Beta2}  for Beta   random field.
@@ -265,13 +266,12 @@ random fields using Gaussian and Clayton copula with the following marginal dist
   Two types  of binary weights can be used in  the weighted composite likelihood estimation based on pairs,
   one based on neighboords and one based on distances.
    
-  In the first  case  binary weights are set to 1 and 0 otherwise
-  depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  fast nearest neighbour search.
+  In the first  case  binary weights are set to 1 or 0 depending if the pairs are neighboords of a certain order (1, 2, 3, ..) specified by the parameter (\code{neighb}). This weighting scheme is effecient for large-data sets since the computation of the 'useful' pairs  in based on  fast nearest neighbour 
+  search (Caamaño et al., 2023).
 
-  In the second case, binary weights are set to 1 and 0 otherwise
-  depending if the pairs have distance lower than  (\code{maxdist}).
+  In the second case, binary weights are set to 1 or 0 depending if the pairs have distance lower than  (\code{maxdist}).
   This weighting scheme is less inefficient for large data.
-  The same arguments of \code{neighb} applies  for\code{maxtime} that sets
+  The same arguments of \code{neighb} applies  for \code{maxtime} that sets
    the  order (1, 2, 3, ..) of temporal neighboords in spatial-temporal field.
 
   The \code{varest=TRUE} parameter specifies if the standard error estimation of the estimated parameters must be computed.
@@ -322,6 +322,7 @@ random fields using Gaussian and Clayton copula with the following marginal dist
   \item{coordy}{A \eqn{d}{d}-dimensional vector of spatial coordinates;}
   \item{coordt}{A \eqn{t}{t}-dimensional vector of temporal coordinates;}
   \item{coordx_dyn}{A  list of dynamical (in time) spatial coordinates;}
+  \item{conf.int}{Confidence intervals for  standard maximum likelihood estimation;}
   \item{convergence}{A string that denotes if convergence is reached;}
   \item{copula}{The type of copula;}
   \item{corrmodel}{The correlation model;}
@@ -350,7 +351,7 @@ random fields using Gaussian and Clayton copula with the following marginal dist
   \item{numtime}{The number of the temporal realisations of the random fields;}
   \item{param}{A list of the   parameters' estimates;}
   \item{radius}{The radius of the sphere in the case of great  circle distance;}
-   \item{stderr}{The vector of standard errors;}
+  \item{stderr}{The vector of standard errors for  standard maximum likelihood estimation;}
   \item{sensmat}{The sensitivity matrix;}
   \item{varcov}{The matrix of the variance-covariance of the estimates;}
   \item{varimat}{The variability matrix;}
@@ -369,7 +370,7 @@ random fields using Gaussian and Clayton copula with the following marginal dist
 \references{
 
 
-  Composite-likelihood:
+  \bold{General Composite-likelihood}:
 
   Varin, C., Reid, N. and Firth, D. (2011). An Overview of Composite
   Likelihood Methods. \emph{Statistica Sinica}, \bold{21}, 5--42.
@@ -379,7 +380,7 @@ random fields using Gaussian and Clayton copula with the following marginal dist
   \emph{Biometrika}, \bold{92}, 519--528.
 
 
-  Weighted Composite-likelihood for non Gaussian random fields: 
+  \bold{Non Gaussian random fields}: 
 
   Alegrıa A., Caro S., Bevilacqua M., Porcu E., Clarke J. (2017) \emph{Estimating covariance functions of multivariate skew-Gaussian random fields on the sphere}. Spatial Statistics \bold{22} 388-402
 
@@ -395,11 +396,13 @@ random fields using Gaussian and Clayton copula with the following marginal dist
 
   Bevilacqua M., Caamaño C., Arellano-Valle R. B., Camilo Gomez C. (2022) A class of random fields with two-piece marginal distributions for modeling point-referenced data with spatial outliers. \emph{Test}  10.1007/s11749-021-00797-5
   
-  Modelling Point Referenced Spatial Count Data: A Poisson Process Approach (2021)
-  Morales-Navarrete D. and Bevilacqua M.,  Caamaño-Carrillo C., Castro L. M.
-  arXiv:2105.03734 
+  Morales-Navarrete D., Bevilacqua M., Caamaño C., Castro  L.M. (2022) Modelling Point Referenced Spatial Count Data: A Poisson Process Approach   \emph{TJournal of the American Statistical Association} To appear
 
-  Weighted Composite-likelihood for Gaussian random fieldss:
+  Caamaño C., Bevilacqua M., López C., Morales-Oñate V. (2023) Nearest neighbours weighted composite likelihood based on pairs for (non-)Gaussian massive spatial data with an application to Tukey-hh random fields estimation  \emph{Computational Statistics and Data Analysis} To appear
+
+  Bevilacqua M., Alvarado E., Caamaño C., (2023) A flexible Clayton-like spatial copula with application to bounded support data \emph{Journal of Multivariate Analysis} To appear 
+
+  \bold{Weighted Composite-likelihood for (non-)Gaussian random fields}:
 
   Bevilacqua, M. Gaetan, C., Mateu, J. and Porcu, E. (2012)
   Estimating space and space-time covariance functions for large data
@@ -409,8 +412,10 @@ random fields using Gaussian and Clayton copula with the following marginal dist
 
   Bevilacqua, M., Gaetan, C. (2015) Comparing composite likelihood methods based on pairs for spatial Gaussian random fields.  \emph{Statistics and Computing}, \bold{25(5)},  877-892.
 
+  Caamaño C., Bevilacqua M., López C., Morales-Oñate V. (2023) Nearest neighbours weighted composite likelihood based on pairs for (non-)Gaussian massive spatial data with an application to Tukey-hh random fields estimation  \emph{Computational Statistics and Data Analysis} To appear
 
-  Sub-sampling estimation:
+
+  \bold{Sub-sampling estimation}:
 
   Heagerty, P. J. and Lumley T. (2000) Window Subsampling of Estimating
   Functions with Application to Regression Models.

@@ -155,6 +155,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
   \item{coordy}{A \eqn{d}{d}-dimensional vector of spatial coordinates;}
   \item{coordt}{A \eqn{t}{t}-dimensional vector of temporal coordinates;}
   \item{coordx_dyn}{A  list of dynamical (in time) spatial coordinates;}
+  \item{conf.int}{Confidence intervals for  standard maximum likelihood estimation;}
   \item{convergence}{A string that denotes if convergence is reached;}
   \item{copula}{The type of copula;}
   \item{corrmodel}{The correlation model;}
@@ -182,7 +183,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
   \item{numtime}{The number of the temporal realisations of the RF;}
   \item{param}{A list of the  parameters' estimates;}
   \item{radius}{The radius of the sphere in the case of great  circle distance;}
-   \item{stderr}{The vector of standard errors;}
+  \item{stderr}{The vector of standard errors for  standard maximum likelihood estimation;}
   \item{sensmat}{The sensitivity matrix;}
   \item{varcov}{The matrix of the variance-covariance of the estimates;}
   \item{varimat}{The variability matrix;}

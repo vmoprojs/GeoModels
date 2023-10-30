@@ -551,6 +551,17 @@ if(!onlyvar){
                                fan=fname,hessian=TRUE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, 
                                iterlim=100000, weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
   
+
+     if(optimizer=='bobyqa')   
+  {
+   # print(n);print(as.name(lname))
+    #  CompLikelihood <-minqa::bobyqa(par=param, fn=eval(as.name(lname)),lower=lower,upper=upper,  
+     #                   control = list( maxfun=100000),
+      #                  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,namescorr=namescorr, 
+       #                 namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,
+        #                aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+    }
+
     if(optimizer=='nlminb'){
 
     # tt1 <- proc.time() 
@@ -560,15 +571,10 @@ if(!onlyvar){
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
      # tt1 <- proc.time()-tt1;print(tt1[3]/as.numeric(CompLikelihood$iterations))
-      
-
     }
-    #if(optimizer=='ucminf')   
-     # CompLikelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),   
-      #                  control=list( maxeval=100000),
-       #                     colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2,fixed=fixed, fan=fname,
-        #                    n=n,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-      
+ 
+
+                           
 
     #  if(optimizer=='sa')
     #    CompLikelihood <- optimization::optim_sa(start=param, fun=eval(as.name(lname)), maximization = FALSE, 
@@ -647,12 +653,15 @@ if(!onlyvar){
         CompLikelihood <- nlm( f=comploglik_biv2,p=param,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-  #  if(optimizer=='ucminf') 
-   #      CompLikelihood <-ucminf::ucminf(par=param, fn=comploglik_biv2, hessian=as.numeric(hessian),   
-    #                    control=list( maxeval=100000), 
-     #                    colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
-      #                  fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, 
-       #                 weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+    
+   if(optimizer=='bobyqa')   {
+        #CompLikelihood <- minqa::bobyqa(fn=comploglik_biv2,par=param, 
+        #                             control = list(iter.max=100000),
+        #                      lower=lower,upper=upper,
+        #                        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
+        #                       fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
+        #                       weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+                      }
     if(optimizer=='nlminb') 
         CompLikelihood <- nlminb( objective=comploglik_biv2,start=param, 
                                      control = list(iter.max=100000),
@@ -749,6 +758,21 @@ if(!onlyvar){
         if(CompLikelihood$value>= 1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
         CompLikelihood$counts=as.numeric(CompLikelihood$iterations)
     }
+
+
+     if(optimizer=='bobyqa'){
+
+     
+        CompLikelihood$par <- CompLikelihood$par
+        names(CompLikelihood$par)<- namesparam
+        CompLikelihood$value <- -CompLikelihood$fval
+        if(CompLikelihood$ierr == 0) { CompLikelihood$convergence <- 'Successful' }
+        else {CompLikelihood$convergence <- "Optimization may have failed" }
+        if(CompLikelihood$fval >= 1.0e8) CompLikelihood$convergence <- 'Optimization may have failed: Try with other starting parameters'
+        CompLikelihood$counts=as.numeric(CompLikelihood$feval)
+    }
+
+
 
     if(optimizer=='nlminb'||optimizer=='multinlminb'){
 

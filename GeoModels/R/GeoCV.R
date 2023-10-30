@@ -5,7 +5,7 @@
 GeoCV=function(fit, K=100, estimation=FALSE, 
    optimizer="Nelder-Mead",lower=NULL, upper=NULL,
     n.fold=0.05, local=FALSE,neighb=NULL,maxdist=NULL,maxtime=NULL,
-        sparse=FALSE, which=1,seed=1)
+        sparse=FALSE, type_krig="Simple", which=1,seed=1)
 {
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
@@ -86,7 +86,7 @@ if(estimation) {
                             optimizer=optimizer, lower=lower,upper=upper,
                            start=fit$param,fixed=fit$fixed)
 
-          print(unlist(fit_s$param))
+          #print(unlist(fit_s$param))
         
 if(!is.null(fit$anisopars))   {   fit$param$angle=NULL;fit$param$ratio=NULL; fit$fixed$angle=NULL;fit$fixed$ratio=NULL}
             param=append(fit_s$param,fit_s$fixed)
@@ -97,7 +97,7 @@ if(!local) {
              pr=GeoKrig(data=fit$data[sel_data], coordx=coords[sel_data,],  
 	            corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
 	            model=fit$model, n=fit$n, mse=TRUE,#ok
-              param=param, anisopars=fit$anisopars,
+              param=param, anisopars=fit$anisopars, type_krig=type_krig,
                radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc,Mloc=Mloc) #ok
            
              }
@@ -107,7 +107,7 @@ if(local) {
               corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords[-sel_data,], #ok
               model=fit$model, n=fit$n, mse=TRUE,#ok
               neighb=neighb,maxdist=maxdist,
-              param=param, anisopars=fit$anisopars,
+              param=param, anisopars=fit$anisopars, type_krig=type_krig,
               radius=fit$radius, sparse=sparse, X=X,Xloc=Xloc,Mloc=Mloc) #ok
               }
 
@@ -221,7 +221,7 @@ if(!local) {
             if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
                pr=GeoKrig(data=datanew,   coordt=utt, coordx_dyn=coordx_dynnew,  #ok
                    corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
-                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,
+                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,type_krig=type_krig,
                    X=Xnew,Xloc= Xnew_loc[[j]]) #ok  
                pr_st[[j]]=pr$pred ; pr_mse[[j]]=pr$mse
          }
@@ -233,7 +233,7 @@ if(local) {
             if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
                pr=GeoKrigloc(data=datanew,   coordt=utt, coordx_dyn=coordx_dynnew,  #ok
                    corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
-                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,
+                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,type_krig=type_krig,
                    neighb=neighb,maxdist=maxdist,maxtime=maxtime,
                    X=Xnew,Xloc=Xnew_loc[[j]]) #ok  
                 pr_st[[j]]=pr$pred ; pr_mse[[j]]=pr$mse
@@ -339,7 +339,7 @@ if(!local)
 	       corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=loc_to_pred, #ok
 	          model=fit$model, n=fit$n, mse=TRUE,#ok
            param=param, 
-           radius=fit$radius, sparse=sparse,   time=NULL, 
+           radius=fit$radius, sparse=sparse,   time=NULL,  type_krig=type_krig,
              which=which, X=X,Xloc=Xloc,Mloc=Mloc) 
     }#ok  
 
@@ -350,7 +350,7 @@ if(local)
             model=fit$model, n=fit$n, mse=TRUE,#ok
            neighb=neighb, maxdist=maxdist,
            param=param, 
-           radius=fit$radius, sparse=sparse,   time=NULL, 
+           radius=fit$radius, sparse=sparse,   time=NULL, type_krig=type_krig,
              which=which, X=X,Xloc=Xloc,Mloc=Mloc) #ok  
    }   
 

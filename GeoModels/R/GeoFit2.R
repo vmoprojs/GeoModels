@@ -288,6 +288,17 @@ if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(l
                                           initparam$coordy=initparam$coordy[1:(length(initparam$coordy)/length(initparam$coordt))]
                                         }   
 
+conf.int=NULL
+if(likelihood=="Full"&&type=="Standard") 
+{if(varest){
+   alpha=0.05 
+   aa=qnorm(1-(1-alpha)/2)*fitted$stderr
+   pp=as.numeric(fitted$par)
+   low=pp-aa; upp=pp+aa
+   conf.int=rbind(low,upp)
+   }
+}
+
 if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
         "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
         "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
@@ -304,6 +315,7 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
                          coordy = initparam$coordy,
                          coordt = initparam$coordt,
                          coordx_dyn=coordx_dyn,
+                         conf.int=conf.int,
                          convergence = fitted$convergence,
                          copula=copula,
                          corrmodel = corrmodel,

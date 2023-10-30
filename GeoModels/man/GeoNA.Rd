@@ -10,9 +10,7 @@ coordx_dyn=NULL, grid=FALSE, X=NULL, setting="spatial")}
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data.}
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates. qn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
+    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates. \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
     spatial coordinates ; \code{coordy} is interpreted only if \code{coordx} is a numeric

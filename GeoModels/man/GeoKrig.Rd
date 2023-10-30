@@ -2,23 +2,19 @@
 \alias{GeoKrig}
 \encoding{UTF-8}
 \title{Spatial (bivariate) and spatio temporal optimal linear prediction 
-          for Gaussian and non Gaussian RFs.}
+          for Gaussian and non Gaussian random fields.}
 \description{
-For a  given set of  spatial location sites and temporal instants,
+For a  given set of  spatial location sites (and temporal instants),
 the function computes optimal linear prediction and associated mean square error 
 for the Gaussian and non Gaussian case.
-
 }
 \usage{
 GeoKrig(data, coordx, coordy=NULL, coordt=NULL, 
 coordx_dyn=NULL, corrmodel,distance="Eucl",
     grid=FALSE, loc, maxdist=NULL, maxtime=NULL,
-    method="cholesky", 
-    model="Gaussian", n=1,nloc=NULL,mse=FALSE, 
-    lin_opt=TRUE, 
-    param, anisopars=NULL,radius=6371, sparse=FALSE,
-    taper=NULL,tapsep=NULL, 
-     time=NULL, type="Standard",type_mse=NULL,
+    method="cholesky", model="Gaussian", n=1,nloc=NULL,mse=FALSE, 
+    lin_opt=TRUE,  param, anisopars=NULL,radius=6371, sparse=FALSE,
+    taper=NULL,tapsep=NULL, time=NULL, type="Standard",type_mse=NULL,
      type_krig="Simple",weigthed=TRUE,which=1,
      copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL)
 }
@@ -26,15 +22,11 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data used for prediction.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates used for prediction. qn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
+  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates used for prediction. \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
     spatial coordinates used for prediction; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
   \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates used for prediction; the default is \code{NULL}
     then a spatial random field is expected.}
@@ -84,8 +76,8 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
      kriging is performed}
     \item{type_mse}{String; if  \code{Theoretical} then theoretical MSE pairwise kriging is computed.
        If \code{SubSamp} then  an estimation based on subsampling is computed.}  
-   \item{type_krig}{String; the type of kriging. If \code{Simple} (the
-    default) then simple kriging is performed. (See the Section \bold{Details}).}
+           \item{type_krig}{String; the type of kriging. If \code{Simple} (the
+    default) then simple kriging is performed. If \code{Optim} then optimal kriging is performed for some non-Gaussian RFs}
    \item{weigthed}{Logical; if \code{TRUE} then decreasing weigths coming 
   from a compactly supported correlation function
   with compact support \code{maxdist} (\code{maxtime})are used in the pairwise kriging.}
@@ -106,20 +98,12 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
   temporal istants and a correlation model
 \code{corrmodel} with some fixed parameters and given  the type of RF (\code{model}) the function computes
   simple  kriging, for the specified spatial locations
-  \code{loc} and temporal instants \code{time},
-  providing also the respective mean square error.
+  \code{loc} and temporal instants \code{time}, providing also the respective mean square error.
   For the choice of the spatial or spatio temporal correlation model see details in \code{\link{GeoCovmatrix}} function.
-  The list \code{param} specifies mean and covariance parameters, see
-  \code{\link{CorrParam}} and \code{\link{GeoCovmatrix}} for details.
-The \code{type_krig} parameter indicates the type of kriging. In the
+  The list \code{param} specifies mean and covariance parameters, see \code{\link{CorrParam}} and \code{\link{GeoCovmatrix}} for details. The \code{type_krig} parameter indicates the type of kriging. In the
 case of simple kriging, the known mean can be specified by the parameter
   \code{mean} in the  list \code{param} (See examples).
-In the Gaussian case, it is possible to perform kriging based on covariance
-tapering for simple kriging (Furrer et. al, 2008).
-In this case, space or space-time tapered function and spatial or spatio- temporal compact support
- must be specified. For the choice of a space or space-time tapered function see \code{\link{GeoCovmatrix}}.
- When performing kriging with covariance tapering,
- sparse matrix algorithms are exploited using the package \code{spam}.}
+}
 
 \value{
   Returns an object of class \code{Kg}.
@@ -170,7 +154,6 @@ In this case, space or space-time tapered function and spatial or spatio- tempor
 \seealso{\code{\link{GeoCovmatrix}}}
 
 
-
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
 Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}
@@ -186,26 +169,22 @@ library(GeoModels)
 
 ################################################################
 ###
-### Example 1. Spatial simple kriging of n sites of a
+### Example 1. Spatial  kriging of a
 ### Gaussian random fields with Gen wendland correlation.
 ###
 ################################################################
 
 model="Gaussian"
 set.seed(79)
-x = runif(300, 0, 1)
-y = runif(300, 0, 1)
+x = runif(400, 0, 1)
+y = runif(400, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
 corrmodel = "GenWend"
-mean=0
-sill=1
-nugget=0
-scale=0.2
-smooth=0
-power2=4
-param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=smooth,power2=power2)
+mean=0; sill=5; nugget=0
+scale=0.2;smooth=0;power2=4
 
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=smooth,power2=power2)
 
 # Simulation of the spatial Gaussian random field:
 data = GeoSim(coordx=coords, corrmodel=corrmodel,
@@ -224,11 +203,11 @@ fit = GeoFit(data, coordx=coords, corrmodel=corrmodel,model=model,
                     start=start,fixed=fixed)
 
 # locations to predict
-xx=seq(0,1,0.04)
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
 pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-       param= param, data=data,mse=TRUE)
+       model=model,param= param, data=data,mse=TRUE)
 
 colour = rainbow(100)
 
@@ -238,7 +217,7 @@ quilt.plot(coords,data,col=colour)
 # simple kriging map prediction
 image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
            xlab="",ylab="",
-           main="Simple Kriging with  exponential model ")
+           main=" Kriging ")
 
 # simple kriging MSE map prediction variance
 image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
@@ -247,19 +226,77 @@ par(opar)
 
 ################################################################
 ###
-### Example 2. Spatial  simple kriging of the residuals of a 
-###            Weibull random field 
+### Example 2. Spatial  kriging of a Skew
+### Gaussian random fields with Matern correlation.
+###
+################################################################
+model="SkewGaussian"
+set.seed(79)
+x = runif(400, 0, 1)
+y = runif(400, 0, 1)
+coords=cbind(x,y)
+# Set the exponential cov parameters:
+corrmodel = "Matern"
+mean=0
+sill=2
+nugget=0
+scale=0.1
+smooth=0.5
+skew=3
+param=list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=smooth,skew=skew)
+
+# Simulation of the spatial skew Gaussian random field:
+data = GeoSim(coordx=coords, corrmodel=corrmodel,model=model,
+              param=param)$data
+
+fixed=list(nugget=nugget,smooth=smooth)
+start=list(mean=0,scale=scale,sill=1,skew=skew)
+I=Inf
+lower=list(mean=-I,scale=0,sill=0,skew=-I)
+upper=list(mean= I,scale=I,sill=I,skew=I)
+# Maximum pairwise likelihood fitting :
+fit = GeoFit2(data, coordx=coords, corrmodel=corrmodel,model=model,
+                    likelihood='Marginal', type='Pairwise',neighb=3,
+                    optimizer="nlminb", lower=lower,upper=upper,
+                    start=start,fixed=fixed)
+
+# locations to predict
+xx=seq(0,1,0.03)
+loc_to_pred=as.matrix(expand.grid(xx,xx))
+## optimal linear kriging
+pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
+       model=model,param= param, data=data,mse=TRUE)
+
+colour = rainbow(100)
+
+opar=par(no.readonly = TRUE)
+par(mfrow=c(1,3))
+quilt.plot(coords,data,col=colour)
+# simple kriging map prediction
+image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
+           xlab="",ylab="",
+           main=" Kriging ")
+
+# simple kriging MSE map prediction variance
+image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
+           xlab="",ylab="",main="Std error")
+par(opar)
+
+################################################################
+###
+### Example 3. Spatial  kriging  of a 
+###   Gamma random field with mean spatial regression
 ###
 ###############################################################
 set.seed(312)
-model="Weibull"
+model="Gamma"
 corrmodel = "GenWend"  
 # Define the spatial-coordinates of the points:
-NN=100
+NN=400
 coords=cbind(runif(NN),runif(NN))
 ## matrix covariates
 a0=rep(1,NN)
-a1=runif(NN,-1,1)
+a1=runif(NN,0,1)
 X=cbind(a0,a1)
  ##Set model parameters
 shape=2
@@ -272,7 +309,6 @@ scale = 0.3;smooth=0
 ## simulation
 param=list(shape=shape,nugget=nugget,mean=mean,mean1=mean1, 
   scale=scale,power2=power2,smooth=smooth)
-
 data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
                 model=model,X=X)$data
 
@@ -281,34 +317,36 @@ fixed=list(nugget=nugget,power2=power2,smooth=smooth)
 start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 
 ## estimation with pairwise likelihood
-
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
               neighb=3,likelihood="Conditional",type="Pairwise",
               start=start,fixed=fixed, model = model)
-## computing residuals              
-res=GeoResiduals(fit2)
-
-# locations to predict
-xx=seq(0,1,0.08)
+             
+# locations to predict with associated covariates
+xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
+NP=nrow(loc_to_pred)
+a0=rep(1,NP)
+a1=runif(NP,0,1)
+Xloc=cbind(a0,a1)
 
-#optimal linear  kriging for residuals
-pr=GeoKrig(data=res$data, coordx=coords,loc=loc_to_pred,corrmodel=corrmodel,model=model,mse=TRUE,
-       sparse=TRUE,param=append(res$param,res$fixed))
+#optimal linear  kriging 
+pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel=corrmodel,model=model,mse=TRUE,
+        X=X,Xloc=Xloc,
+       sparse=TRUE,param=append(fit2$param,fit2$fixed))
 
-## map of residuals
-
+## map 
 opar=par(no.readonly = TRUE)
 par(mfrow=c(1,3))
-quilt.plot(coords,res$data,main="Residuals")
+quilt.plot(coords,data,main="Data")
 map=matrix(pr$pred,ncol=length(xx))
 mapmse=matrix(pr$mse,ncol=length(xx))
 image.plot(xx, xx, map,
-           xlab="",ylab="",main="Residuals Kriging ")
+           xlab="",ylab="",main="Kriging ")
 
 image.plot(xx, xx, mapmse,
-           xlab="",ylab="",main="Simple Kriging ")
+           xlab="",ylab="",main="MSE")
 par(opar)
+
 
 ################################################################
 ########### Examples of spatio temporal kriging ############
@@ -323,15 +361,15 @@ par(opar)
 ###############################################################
 model="Gaussian"
 # Define the spatial-coordinates of the points:
-x = runif(60, 0, 1)
-y = runif(60, 0, 1)
+x = runif(30, 0, 1)
+y = runif(30, 0, 1)
 #coords=cbind(x,y)
-times=1:6
+times=1:5
 
-# Define model correlation and associated parameters
+# Define model correlation modek and associated parameters
 corrmodel="Wend0_Wend0"
 param=list(nugget=0,mean=0,power2_s=4,power2_t=4,
-        scale_s=0.15,scale_t=2,sill=1)
+        scale_s=0.1,scale_t=2,sill=1)
 
 # Simulation of the space time Gaussian random field:
 set.seed(31)

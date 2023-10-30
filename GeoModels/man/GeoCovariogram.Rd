@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \title{Computes the fitted  variogram model.}
 \description{
-  The procedure computes and plots covariance  or semivariogram estimated fitting a Gaussian,
+  The procedure computes and plots estimated covariance  or semivariogram  models of a Gaussian
   or a  non Gaussian spatial (temporal or  bivariate spatial) random  field. It allows to add 
   the empirical estimates in order to compare them with the fitted model.
 }
