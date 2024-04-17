@@ -16,7 +16,7 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
     lin_opt=TRUE,  param, anisopars=NULL,radius=6371, sparse=FALSE,
     taper=NULL,tapsep=NULL, time=NULL, type="Standard",type_mse=NULL,
      type_krig="Simple",weigthed=TRUE,which=1,
-     copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL)
+     copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL,spobj=NULL,spdata=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -89,6 +89,8 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
      associated to predicted locations.}
         \item{Mloc}{Numeric; Vector of spatio(temporal) estimated means 
      associated to predicted locations.}
+           \item{spobj}{An object of class sp or spacetime}
+   \item{spdata}{Character:The name of data in the sp or spacetime object}
 }
 
 \details{
@@ -232,8 +234,8 @@ par(opar)
 ################################################################
 model="SkewGaussian"
 set.seed(79)
-x = runif(400, 0, 1)
-y = runif(400, 0, 1)
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
 corrmodel = "Matern"
@@ -292,7 +294,7 @@ set.seed(312)
 model="Gamma"
 corrmodel = "GenWend"  
 # Define the spatial-coordinates of the points:
-NN=400
+NN=300
 coords=cbind(runif(NN),runif(NN))
 ## matrix covariates
 a0=rep(1,NN)
@@ -390,7 +392,7 @@ fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel
 param=append(fit$param,fit$fixed)
 
 # locations to predict
-xx=seq(0,1,0.05)
+xx=seq(0,1,0.06)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
 times_to_pred=1:2

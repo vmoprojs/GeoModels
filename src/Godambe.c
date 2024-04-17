@@ -25,13 +25,16 @@ void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, double *c
 
             //Rprintf("END: Sensitivity!!!!!\n");
    
+   /* spatial case*/
             if(!*spt&&!*biv) Vari_SubSamp(betas,coordx,coordy,coordt,cormod,data,dst,eps,flagcor,flagnuis,
                                           grid,like,mean,model,NN,nbetas,npar,nparc,nparcT,nuis,np,parcor, type_lik, 
                                           varimat,winc,winstp,weigthed,X);
             else {
+               /* spacetime*/ 
                 if(*spt)   Vari_SubSamp_st2(betas,coordx,coordy,coordt,cormod,data,dst,eps,flagcor,flagnuis,
                                          like,mean,model,NN,nbetas,npar,nparc,nparcT,nuis,np,parcor,type_lik,
                                          varimat,winc,winstp,winct,winstp_t,weigthed,X,ns,NS);
+                  /* bivariate*/ 
                 if(*biv) Vari_SubSamp_biv(betas,coordx,coordy,coordt,cormod,data,dst,eps,flagcor,flagnuis,
                                           grid,like,model,NN,npar,nparc,nparcT,nuis,np,parcor, type_lik, varimat,winc,winstp,weigthed,X,ns,NS);
             }

@@ -7,8 +7,8 @@
 ### decomposition of a square  matrix
 MatDecomp<-function(mtx,method)    {
         if(method=="cholesky")  {
-            mat.decomp <- try(chol(mtx), silent=TRUE)
-            #mat.decomp <- try(Rfast::cholesky(mtx,parallel=TRUE))
+           # mat.decomp <- try(chol(mtx), silent=TRUE)
+            mat.decomp <- try(FastGP::rcppeigen_get_chol(mtx))
             if (inherits(mat.decomp , "try-error")) return (FALSE)
         }
         if(method=="svd")      {
@@ -25,15 +25,20 @@ MatSqrt<-function(mat.decomp,method)    {
         return(varcov.sqrt)
     }
 ### inverse a square matrix given a decomposition
-MatInv<-function(mat.decomp,method)    {
-
-        if(method=="cholesky")  varcov.inv <- chol2inv(mat.decomp)
-        if(method=="svd")
-        {
-              tol = sqrt(.Machine$double.eps)
-              e <- mat.decomp$d;e[e > tol] <- 1/e[e > tol]
-              varcov.inv<-mat.decomp$v %*% diag(e,nrow=length(e)) %*% t(mat.decomp$u)
-        }
+#MatInv<-function(mat.decomp,method)    {
+#        if(method=="cholesky")  varcov.inv <- chol2inv(mat.decomp)
+#        if(method=="svd")
+#        {
+#              tol = sqrt(.Machine$double.eps)
+#              e <- mat.decomp$d;e[e > tol] <- 1/e[e > tol]
+#              varcov.inv<-mat.decomp$v %*% diag(e,nrow=length(e)) %*% t(mat.decomp$u)
+#        }
+#        return(varcov.inv)
+#    }
+### inverse a square matrix given a decomposition
+MatInv<-function(mtx)    {
+     varcov.inv <- try(FastGP::rcppeigen_invert_matrix(mtx))
+            if (inherits(varcov.inv , "try-error")) return (FALSE)
         return(varcov.inv)
     }
 ### determinant a square matrix given a decomposition
@@ -51,14 +56,14 @@ MatLogDet<-function(mat.decomp,method)    {
 
 GeoCovmatrix <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl", grid=FALSE,
                        maxdist=NULL, maxtime=NULL, model="Gaussian", n=1, param, anisopars=NULL,radius=6371,
-                       sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL)
+                       sparse=FALSE,taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL,spobj=NULL)
 
 {
   ########################################################################################################
   ##########  Internal function: computing covariance matrix #############################################
   ########################################################################################################
     Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, NS, nuisance, numpairs,
-                           numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,copula,X)
+                           numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,copula,ML,other_nuis)
     {
 
 ###################################################################################
@@ -75,7 +80,6 @@ if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
      
 corr=double(numpairstot)
-
 cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
     corr=corr,coordx,coordy,coordt,corrmodel,nuisance,paramcorr,radius,ns,NS,
  INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
@@ -83,30 +87,23 @@ cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "in
       }
 ###############################################################
    if(type=="Tapering")  {
-
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
        corr=double(numpairs)
-  
         #cr=.C(fname,  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
         #  as.integer(corrmodel), as.double(nuisance), as.double(paramcorr),as.double(radius),as.integer(ns),
         #   as.integer(NS),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-
 cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
      corr=corr, coordx,coordy,coordt,corrmodel,nuisance, paramcorr,radius,ns,NS,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
-
      ## deleting correlation equual  to 1 because there are problems  with hipergeometric function
         sel=(abs(cr$corr-1)<.Machine$double.eps);cr$corr[sel]=0
       }
     }  
 ###################################################################################
 ###################################################################################
-###################################################################################
-
 
 if(model==1)   ## gaussian case
 {
@@ -375,8 +372,6 @@ if(!bivariate)
         varcov=varcov*vv
       }
     if(type=="Tapering")  {
-        
-        #print(setup)
           vcov <- vv*corr;
           varcov <- new("spam",entries=vcov,colindices=setup$ja,
                              rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
@@ -399,9 +394,7 @@ if(!bivariate)
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
       }
-
 }
-
 #################################################################################
 ############# covariance models defined on a bounded support of the real line ###
 #################################################################################
@@ -504,70 +497,56 @@ if(!bivariate)
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
         }
       }
-
 }
 
 #################################################################################
 ################ models defined on the positive real line #######################
 #################################################################################
+if(model %in% c(21,26,24,22)) 
+    {
+
+         mu = ML   ## mean  function
 
 if(model==21)   ##  gamma case
     {
       if(!bivariate) {
          corr=cr$corr*(1-as.numeric(nuisance['nugget']))
          corr=corr^2   ### gamma correlation
-         sel=substr(names(nuisance),1,4)=="mean"
-         mm=as.numeric(nuisance[sel])
-         mu = X%*%mm   ## mean function
          vv=exp(mu)^2 * 2/as.numeric(nuisance['shape'])
-
         }
      if(bivariate){}
-}
+    }
 ###############################################################
 if(model==26)   ##  weibull case
     {
-
         if(!bivariate) {
          corr=cr$corr*(1-as.numeric(nuisance['nugget']))
          sh=as.numeric(nuisance['shape'])
-         sel=substr(names(nuisance),1,4)=="mean"
-         mm=as.numeric(nuisance[sel])
-         mu = X%*%mm
          vv=exp(mu)^2 * (gamma(1+2/sh)/gamma(1+1/sh)^2-1)
          # weibull correlations
-        bcorr=    gamma(1+1/sh)^2/(gamma(1+2/sh)-gamma(1+1/sh)^2)
-        corr=bcorr*((1-corr^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,corr^2))-1)
+         bcorr=    gamma(1+1/sh)^2/(gamma(1+2/sh)-gamma(1+1/sh)^2)
+         corr=bcorr*((1-corr^2)^(1+2/sh)*Re(hypergeo::hypergeo(1+1/sh,1+1/sh ,1 ,corr^2))-1)
         }
   if(bivariate) {}
-}
+    }
 ###############################################################
     if(model==24)   ## log-logistic case
     {
-
        if(!bivariate) {
-         corr=cr$corr*(1-as.numeric(nuisance['nugget']))
-         sh=as.numeric(nuisance['shape'])
-         sel=substr(names(nuisance),1,4)=="mean"
-         mm=as.numeric(nuisance[sel])
-         mu = X%*%mm   ## mean  function
-         vv=(exp(mu))^2* (2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
-    corr= ((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
+       corr=cr$corr*(1-as.numeric(nuisance['nugget']))
+       sh=as.numeric(nuisance['shape'])
+       vv=(exp(mu))^2* (2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
+       corr= ((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
              (Re(hypergeo::hypergeo(-1/sh,-1/sh ,1 ,corr^2))* Re(hypergeo::hypergeo(1/sh,1/sh ,1 ,corr^2)) -1)
         }
    if(bivariate){}
-}
-
-
+    }
 ###############################################################
 if(model==22)  {  ## Log Gaussian
-       if(!bivariate) {
+      if(!bivariate) {
       corr=cr$corr*(1-as.numeric(nuisance['nugget']))
       vvar=as.numeric(nuisance['sill'])
       corr=(exp(vvar*corr)-1)/(exp(vvar)-1)
-            sel=substr(names(nuisance),1,4)=="mean"
-            mm=as.numeric(nuisance[sel])
-            mu = X%*%mm
             vv=(exp(mu))^2*(exp(vvar)-1) #/(exp(vvar*0.5))^2
              }
     if(bivariate){}
@@ -575,7 +554,7 @@ if(model==22)  {  ## Log Gaussian
 #################################################################################
 ################ covariance matrix for models defined on the positive real line #
 #################################################################################
-if(model %in% c(24,26,21,22)){
+
        if(type=="Standard"){
      # Builds the covariance matrix:
         varcov <-  diag(dime)
@@ -599,18 +578,12 @@ if(model %in% c(24,26,21,22)){
 ###############################################################
 ################################ start discrete #models ########
 ###############################################################
-if(model %in% c(2,11,30,16,14,43,45,46)){ #  binomial (negative)Gaussian type , Poisson (inflated)
+if(model %in% c(2,11,30,16,14,43,45,46,57,58)){ #  binomial (negative)Gaussian type , Poisson (inflated)
 
 if(model==2||model==11)
 {if(length(n)==1) n=rep(n,dime)}
 if(!bivariate){
-
-            
-            sel=substr(names(nuisance),1,4)=="mean"
-            mm=as.numeric(nuisance[sel])
-            mu = X%*%mm
-            other_nuis=as.numeric(nuisance[!sel])
-
+            mu=ML
 
 if(type=="Standard")  {
   corr=double(numpairstot)
@@ -629,19 +602,19 @@ if(type=="Standard")  {
               as.integer(corrmodel), as.double(c(mu)),as.integer(n), as.double(other_nuis), as.double(paramcorr),as.double(radius),
               as.integer(ns), as.integer(NS),as.integer(model),
               PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-
   #cr=dotCall64::.C64(fname,SIGNATURE =
    #    c("double","double","double","double",  "integer","double","integer","double","double","double","integer","integer","integer"),
    #     corr=corr, coordx,coordy,coordt,corrmodel,c(mu), min(n),other_nuis,paramcorr,radius,ns,NS,model,
   #INTENT = c("w","r","r","r","r","r","r","r", "r", "r","r", "r", "r"),
    #          PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
-
      corr=cr$corr # ojo que corr en este caso es una covarianza y ya va con el nugget
+
+
      varcov <-  diag(dime)
      varcov[lower.tri(varcov)] <- corr
      varcov <- t(varcov)
      varcov[lower.tri(varcov)] <- corr
+
 }
 ############################
 ############################
@@ -675,7 +648,7 @@ if(type=="Standard")  {
         }
 
             ## updating the diagonal with variance
-  if(model %in% c(2,11)) { pg=pnorm(mu); vv=pg*(1-pg)*n; diag(varcov)=vv }
+  if(model %in% c(2,11)) { pg=pnorm(mu);  vv=pg*(1-pg)*n; diag(varcov)=vv }
   if(model %in% c(14))   { pg=pnorm(mu); vv=  (1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(16))   { pg=pnorm(mu); vv=n*(1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
@@ -703,14 +676,31 @@ return(varcov)
   #############################################################################################
   #################### end internal function ##################################################
   #############################################################################################
-    # Check the user input
 
-    spacetime<-CheckST(CkCorrModel(corrmodel))
-    bivariate<-CheckBiv(CkCorrModel(corrmodel))
-    space=!(spacetime||bivariate)
-    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
-    if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
-    ## setting zero mean and nugget if no mean or nugget is fixed
+
+ if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+ if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
+
+bivariate<-CheckBiv(CkCorrModel(corrmodel))
+spacetime<-CheckST(CkCorrModel(corrmodel))
+space=!spacetime&&!bivariate
+
+##############################################################################
+###### extracting sp object informations if necessary              ###########
+##############################################################################
+
+if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,NULL); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,NULL); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+}
+#######################################################
+     ## setting zero mean and nugget if no mean or nugget is fixed
     if(!bivariate){
     if(is.null(param$mean)) param$mean<-0
     if(is.null(param$nugget)) param$nugget<-0  
@@ -726,8 +716,6 @@ return(varcov)
     if(is.null(param$sill_2)) param$sill_2<-0 
 
 }
-
-    
 
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
@@ -769,7 +757,7 @@ if(!bivariate){
 
 if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
-        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB', 'PoissonGammaZIP','PoissonGammaZIP1','PoissonGamma',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
         'Beta2','Kumaraswamy2','Beta','Kumaraswamy')){
 if(is.null(param$sill)) param$sill=1
@@ -777,24 +765,14 @@ else                    param$sill=1
 }
 }
 
-
-
-
 #######################################
-    if(grid) { 
-               coords=as.matrix(expand.grid(coordx,coordy))
-               grid=FALSE
-             }
-    else
-    {   coords=coordx
-        if(!is.null(coordy)) coords=cbind(coordx,coordy)
-    }         
+    if(grid) { coords=as.matrix(expand.grid(coordx,coordy)); grid=FALSE }
+    else     { coords=coordx; if(!is.null(coordy)) coords=cbind(coordx,coordy)}         
 
     coords_orig=coords
   
     if(!is.null(anisopars)) {  coords=GeoAniso(coords,c(anisopars$angle,anisopars$ratio))}
 #######################################
-    
     checkinput <- CkInput(coords[,1], coords[,2], coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,copula,X)
@@ -867,12 +845,42 @@ else
 
     if(initparam$model %in% c(43,45)) initparam$namesnuis=initparam$namesnuis[!initparam$namesnuis %in% "nugget"]
 
+
+
+other_nuis=NULL
+ML=0
+##### sill parameter fixed for some models
+if(!bivariate){
+
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
+        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB', 'PoissonGammaZIP','PoissonGammaZIP1','PoissonGamma',
+        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) 
+{
+
+
+
+### setting mean because mean affect variance in this case
+parc=initparam$param[initparam$namescorr]
+sel1=!(names(initparam$param) %in% names(parc))
+inip=initparam$param[sel1] ## deleting corr parameters
+
+sel=substr(names(inip),1,4)=="mean"
+beta=as.numeric(inip[sel]) ## mean parameters
+other_nuis=as.numeric(inip[!sel]) # other nuis parameters
+if((dim(initparam$X)[2])>1){ ML=initparam$X%*%c(beta) }
+else     { if(sum(sel)>1)                  ML=beta 
+           else  ML=initparam$X*c(beta) }
+} 
+}
+
+
 ######  calling main correlation functions
     covmatrix<- Cmatrix(initparam$bivariate,cc[,1],cc[,2],initparam$coordt,initparam$corrmodel,dime,n,initparam$ns,
-                        initparam$NS,
-                        initparam$param[initparam$namesnuis],
+                        initparam$NS, initparam$param[initparam$namesnuis],
                         initparam$numpairs,numpairstot,initparam$model,
-                        initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,copula,initparam$X)
+                        initparam$param[initparam$namescorr],setup,initparam$radius,initparam$spacetime,spacetime_dyn,initparam$type,copula,ML,other_nuis)
 
 
     if(type=="Tapering") sparse=TRUE

@@ -5,14 +5,12 @@
 \title{Simulation of Gaussian and non Gaussian Random Fields.}
 \description{
   Simulation of Gaussian and some non Gaussian spatial, spatio-temporal and spatial bivariate 
- random fields.
-  The function return a realization of a Random Field for a given covariance model and covariance parameters.
-  Simulation is based on Cholesky decomposition.
+ random fields. The function return a realization of a random Field for a given covariance model and covariance parameters.Simulation is based on Cholesky decomposition.
 }
 \usage{
 GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),method="cholesky", model='Gaussian', n=1, param,
-      anisopars=NULL,radius=6371, sparse=FALSE, seed=NULL,X=NULL)
+      anisopars=NULL,radius=6371, sparse=FALSE,X=NULL,spobj=NULL,nrep=1)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -55,8 +53,10 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
   \item{sparse}{Logical; if \code{TRUE} then  cholesky decomposition is performed
   using sparse matrices algorithms (spam packake). It should be used
   with compactly supported covariance models.\code{FALSE} is the default.}
-   \item{seed}{Numeric; an integer used in set.seed function to reproduce the simulation.}
   \item{X}{Numeric; Matrix of space-time covariates.}
+  \item{spobj}{An object of class sp or spacetime}
+   \item{nrep}{Numeric; Numbers of indipendent replicates.}
+  
 }
 
 
@@ -81,9 +81,9 @@ GeoSim(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="E
   \item{numtime}{The number the temporal realisations of the RF;}
   \item{param}{The vector of  parameters' estimates;}
   \item{radius}{The radius of the sphere if coordinates are passed in lon/lat format;}
-  \item{randseed}{The seed used for the random simulation;}
   \item{spacetime}{\code{TRUE} if spatio-temporal and \code{FALSE} if
   spatial RF;}
+  \item{nrep}{The number of indipendent replicates;}
 }
 
 
@@ -101,8 +101,8 @@ library(mapproj)
 
 ################################################################
 ###
-### Example 1. Simulation of a spatial Gaussian RF on a regular grid
-###
+### Example 1. Simulation of a spatial Gaussian RF 
+### with Matern and Generalized Wendland correlations
 ###############################################################
 
 # Define the spatial-coordinates of the points:
@@ -113,8 +113,6 @@ set.seed(261)
 data1 <- GeoSim(coordx=coords, corrmodel="Matern", param=list(smooth=0.5,
              mean=0,sill=1,scale=0.4/3,nugget=0))$data
 
-# Simulation of a spatial Gaussian RF with Generalized Wendland correlation function
-# using sparse alghorithm matrices
 set.seed(261)
 data2 <- GeoSim(coordx=coords,  corrmodel="GenWend", param=list(smooth=0,
               power2=4,mean=0,sill=1,scale=0.4,nugget=0))$data
@@ -128,8 +126,7 @@ par(opar)
 ################################################################
 ###
 ### Example 2. Simulation of a spatial geometric RF 
-### with  underlying exponential correlation
-### on a regular grid
+### with  underlying Wend0 correlation
 ###
 ################################################################
 
@@ -148,7 +145,7 @@ quilt.plot(coords,sim$data,nlevel=max(sim$data),col=terrain.colors(max(sim$data+
 ################################################################
 ###
 ### Example 3. Simulation of a spatial Weibull  RF
-### with  underlying exponential correlation 
+### with  underlying Matern correlation on a regular grid
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
@@ -156,8 +153,8 @@ x <- seq(0,1,0.032)
 y <- seq(0,1,0.032)
 set.seed(261)
 # Simulation of a spatial Gaussian RF with Matern correlation function
-data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Exponential",model="Weibull", 
-         param=list(shape=1.2,mean=0,scale=0.3/3,nugget=0))$data
+data1 <- GeoSim(x,y,grid=TRUE, corrmodel="Matern",model="Weibull", 
+         param=list(shape=1.2,mean=0,scale=0.3/3,nugget=0,smooth=0.5))$data
 image.plot(x,y,data1,main="Weibull RF",xlab="",ylab="")
 
 
@@ -165,7 +162,7 @@ image.plot(x,y,data1,main="Weibull RF",xlab="",ylab="")
 ################################################################
 ###
 ### Example 4. Simulation of a spatial t  RF
-### with  with  underlying exponential correlation 
+### with  with  underlying Generalized Wendland correlation 
 ###
 ###############################################################
 # Define the spatial-coordinates of the points:
@@ -216,8 +213,7 @@ lines(density(data2),lty=3)
 ################################################################
 ###
 ### Example 6. Simulation of a bivariate Gaussian RF
-### with separable bivariate exponential correlation model
-### on a regular grid.
+### with  bivariate Matern correlation model
 ###
 ###############################################################
 
@@ -229,9 +225,10 @@ coords <- cbind(x,y)
 # Simulation of a bivariate spatial Gaussian RF:
 # with a separable Bivariate Matern
 set.seed(12)
-param=list(mean_1=4,mean_2=2,scale=0.12,smooth=0.5,
+param=list(mean_1=4,mean_2=2,smooth_1=0.5,smooth_2=0.5,smooth_12=0.5,
+           scale_1=0.12,scale_2=0.1,scale_12=0.15,
            sill_1=1,sill_2=1,nugget_1=0,nugget_2=0,pcol=0.5)
-data <- GeoSim(coordx=coords,corrmodel="Bi_matern_sep",
+data <- GeoSim(coordx=coords,corrmodel="Bi_matern",
               param=param)$data
 opar=par(no.readonly = TRUE)
 par(mfrow=c(1,2))

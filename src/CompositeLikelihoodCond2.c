@@ -1,5 +1,7 @@
 #include "header.h"
 
+
+ // if(CheckCor(cormod,par)==-2){rho[0]=-2;return;}
 /******************************************************************************************/
 /******************************************************************************************/
 /********************* SPATIAL CASE *****************************************************/
@@ -13,6 +15,7 @@ void Comp_Cond_Gauss2mem(int *cormod, double *data1,double *data2,int *NN,
     double  weights=1.0,sill,nugget,corr,bl,l2;
     sill=nuis[1];nugget=nuis[0];
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
+    //if(CheckCor(cormod,par)==-2){*res=LOW; return;}
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                       corr=CorFct(cormod,lags[i],0,par,0,0);
@@ -560,6 +563,36 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
+
+void Comp_Cond_PoisGammaZIP2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU)
+{
+
+    int i=0, uu,vv;
+    double weights=1.0,corr,mui,muj,bl,l2=0.0,u,v;
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2]; double shape=nuis[3];
+
+
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+                        u=data1[i];v=data2[i];
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                          uu=(int) u;vv=(int) v;
+                    l2=one_log_PoisgammaZIP(vv,muj,mup,shape);
+                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      bl=log(biv_PoissonGammaZIP(corr,uu,vv,mui, muj,mup,nugget1,nugget2,shape))-l2;
+                      *res+= bl*weights;
+                    }}
+
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
 /*********************************************************/
 void Comp_Cond_Pois2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -772,6 +805,39 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+
+
+/******************************************************/
+void Comp_Cond_BinomnegBinary2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU)
+{
+    int i=0,  uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+       if( nugget>=1||nugget<0){*res=LOW; return;}
+       Rprintf("%d\n",NN[0]);
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                  ai=mean1[i];aj=mean2[i];
+                  corr=CorFct(cormod,lags[i],0,par,0,0);
+                p11=pbnorm22(ai,aj,(1-nugget)*corr);
+                p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
+                u=data1[i];v=data2[i];
+                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                uu=(int) u;vv=(int) v;
+                l2=dbinom(vv,1,1-pow(p2,NN[0]),1);
+                bl=log(biv_binegbinary(NN[0],uu,vv,p1,p2,p11))-l2;
+
+            *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 
 void Comp_Cond_TWOPIECETukeyh2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,

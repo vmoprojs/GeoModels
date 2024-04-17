@@ -5,7 +5,8 @@
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSim <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, anisopars=NULL, radius=6371, sparse=FALSE,seed=NULL,X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param, anisopars=NULL, radius=6371,
+      sparse=FALSE,X=NULL,spobj=NULL,nrep=1)
 {
 ####################################################################
 ############ internal function #####################################
@@ -18,61 +19,6 @@ else                 dims=length(coordx)*length(coordy)
 if(!is.null(coordt)) dimt=length(coordt)
 return(dims*dimt)
 }
-forGaussparam<-function(model,param,bivariate)
-{
-   if(model %in% c("SkewGaussian","TwoPieceGaussian","TwoPieceGauss"))  {
-     if(!bivariate) param[which(names(param) %in% c("skew"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("skew_1","skew_2"))] <- NULL
-
-   }
-
-     if(model %in% c("SkewStudentT","TwoPieceStudentT")){
-     if(!bivariate) param[which(names(param) %in% c("df","skew"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("df_1","df_2","skew_1","skew_2"))] <- NULL
-   }
-       if(model %in% c("TwoPieceBimodal")){
-     if(!bivariate) param[which(names(param) %in% c("df","shape","skew"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("df_1","df_2","shape_1","shape_2","skew_1","skew_2"))] <- NULL
-   }
-
-    if(model %in% c("Tukeygh","SinhAsinh","TwoPieceTukeyh")){
-     if(!bivariate) param[which(names(param) %in% c("skew","tail"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("skew_1","skew_2","tail_1","tail_2"))] <- NULL
-   }
-      if(model %in% c("Tukeyh"))  {
-     if(!bivariate) param[which(names(param) %in% c("tail"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("tail_1","tail_2"))] <- NULL
-   }
-
-      if(model %in% c("Tukeyh2"))  {
-     if(!bivariate) param[which(names(param) %in% c("tail1","tail2"))] <- NULL
-     #if(bivariate)  param[which(names(param) %in% c("tail_1","tail_2"))] <- NULL
-   }
-
-
-    if(model %in% c("Gamma","LogLogistic","Weibull","PoissonGamma","PoissonWeibull"))  {
-     if(!bivariate) param[which(names(param) %in% c("shape"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("shape_1","shape_2"))] <- NULL
-   }
-     if(model %in% c("Beta",'Kumaraswamy','Kumaraswamy2'))  {
-     if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
-      #    if(!bivariate) param[which(names(param) %in% c("shape1","shape2"))] <- NULL
-     if(!bivariate) param[which(names(param) %in% c("shape1","shape2","min","max"))] <- NULL
-     if(bivariate)  {}
-   }
-     if(model %in% c("StudentT"))  {
-     if(!bivariate) param[which(names(param) %in% c("df"))] <- NULL
-     if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
-   }
-    if(model %in% c("PoissonZIP","BinomialNegZINB"))  {
-     if(!bivariate) param[which(names(param) %in% c("pmu","nugget1","nugget2"))] <- NULL
-    # if(bivariate)  param[which(names(param) %in% c("df_1","df_2"))] <- NULL
-   }
-
- return(param)
-}
-##############################################################################
-########### for Gaussian and non Gaussian RF obtained using Gaussian RF ######
 ##############################################################################
      RFfct1<- function(ccov,dime,nuisance,simd,X,ns)
     {
@@ -90,8 +36,7 @@ forGaussparam<-function(model,param,bivariate)
                                                 }
                                if(num_betas>1)  { mm=c(mm,as.numeric((nuisance[sel])));
                                                   sim = X%*%mm+simd
-                                                }
-                                   
+                                                }  
                               }
                 if(bivariate)  {
                   sel1=substr(names(nuisance),1,6)=="mean_1";
@@ -103,8 +48,6 @@ forGaussparam<-function(model,param,bivariate)
                    if(num_betas1>1)  mm1=c(mm1,as.numeric((nuisance[sel1])))
                    if(num_betas2==1) mm2=nuisance$mean_2
                    if(num_betas2>1)  mm2=c(mm2,as.numeric((nuisance[sel2])))
-
-
                   X11=as.matrix(X[1:ns[1],]);
                   X22=as.matrix(X[(ns[1]+1):(ns[2]+ns[1]),]);
 
@@ -114,21 +57,14 @@ forGaussparam<-function(model,param,bivariate)
                   else            sim <- c(rep(as.numeric(nuisance['mean_1']),ns[1]),
                                          rep(as.numeric(nuisance['mean_2']),ns[2])) + simd
                   }
-
             if(!spacetime&&!bivariate) sim <- c(sim)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
-       #   }
         return(sim)
     }
-
-    
 ####################################################################
 ############# END internal functions ###############################
 ####################################################################
 
-if(!is.null(seed))  set.seed(seed)
-        #assign(x = ".Random.seed", value = seed, envir = .GlobalEnv)
-    
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -140,64 +76,64 @@ if(!is.null(seed))  set.seed(seed)
                numxgrid=length(xgrid);numygrid=length(ygrid) }
 
     spacetime_dyn=FALSE
-    ##############################################################################
-    ##############################################################################
-    bivariate<-CheckBiv(CkCorrModel(corrmodel))
-    spacetime<-CheckST(CkCorrModel(corrmodel))
+##############################################################################
+###### extracting sp object informations if necessary              ###########
+##############################################################################
+bivariate<-CheckBiv(CkCorrModel(corrmodel))
+spacetime<-CheckST(CkCorrModel(corrmodel))
+space=!spacetime&&!bivariate
+if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,NULL); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,NULL); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+}
+###############################################################
+###############################################################
+
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
-   ################################################################################
     unname(coordt);
     if(is.null(coordx_dyn)){
     unname(coordx);unname(coordy)}
 
-if(!bivariate) {
-    if(is.null(param$sill))
+if(!bivariate) { if(is.null(param$sill))  param$sill=1 }
 
-if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
-        "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
-        'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
-        'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
-        'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) param$sill=1
-else param$sill=1
-}
 
 ################################################################################
 ################ starting spatial and spatiotemporal case#######################
 ################################################################################
  if(!bivariate)
     { 
-      sel=substr(names(param),1,4)=="mean";
-      num_betas=sum(sel)   ## number of covariates
-
+ ############### check on parameters
+ sel=substr(names(param),1,4)=="mean";
+ num_betas=sum(sel)   ## number of covariates
         if(!length(param$mean)>1){
     if( !all(names(unlist(param)) %in% c(CorrParam(corrmodel), NuisParam2(model,bivariate,num_betas=num_betas))) )
-       stop("only nuisance and correlation parameters must be included in param\n")
+       stop("Nuisance and correlation parameters must be included in param\n")
     }
-    
-    k=1
 #################################
     if(model %in% c("SkewGaussian","Beta",'Kumaraswamy','Kumaraswamy2','LogGaussian',#"Binomial","BinomialNeg","BinomialNegZINB",
-                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","PoissonGamma","PoissonWeibull",
+                    "StudentT","SkewStudentT","Poisson","TwoPieceTukeyh","PoissonZIP","PoissonGamma","PoissonGammaZIP","PoissonWeibull",
                      "TwoPieceBimodal", "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","Tukeyh","Tukeyh2","Tukeygh","SinhAsinh",
                     "Gamma","Weibull","LogLogistic","Logistic","BinomialLogistic"))
        {
-        if(spacetime_dyn){
-                       env <- new.env()
-                       #coords=do.call(rbind,args=c(coordx_dyn),envir = env)
-                       if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)
-                     }
-
-  
+           if(spacetime_dyn){env <- new.env();if(is.list(X))  X=do.call(rbind,args=c(X),envir = env)}
 
            if(num_betas==1)  mm<-param$mean
-           if(num_betas>1)   mm<- X%*%as.numeric((param[sel]))
-           param$mean=0;if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
-
+           if(num_betas>1)   { BB=param[sel];
+                               if(!is.null(BB$sill)) BB$sill=NULL
+                               mm= X%*%as.numeric(BB) }
+           param$mean=0;
+           if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
 
         if((model %in% c("SkewGaussian","TwoPieceGaussian","Logistic",
-          "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","PoissonZIP","Tukeyh","Tukeyh2","PoissonGamma","PoissonWeibull",
+          "TwoPieceGauss","Gamma","Weibull","LogLogistic","Poisson","PoissonZIP","Tukeyh","Tukeyh2","PoissonGamma","PoissonGammaZIP","PoissonWeibull",
           'LogGaussian',"TwoPieceTukeyh","TwoPieceBimodal", "Tukeygh","SinhAsinh",
-                    "StudentT","SkewStudentT","TwoPieceStudentT","Gaussian")))   ##
+                    "StudentT","SkewStudentT","TwoPieceStudentT","Gaussian")))  
         {
           vv<-param$sill;
           param$sill=1#-param$nugget
@@ -205,49 +141,139 @@ else param$sill=1
         if(model%in% c("SkewGaussian","SkewStudentT","TwoPieceTukeyh","TwoPieceBimodal",
                "TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss"))
                { sk<-param$skew
-
                if(model%in% c("TwoPieceTukeyh")) tl<-param$tail
                if(model%in% c("TwoPieceBimodal")) bimo<-param$shape
                }
        }
 #################################
   if(model %in% c("Tukeygh","SinhAsinh"))  {
-        
           param$mean=0
           sk<-param$skew; tl<-param$tail}
-
     if(model %in% c("Tukeyh"))  {
           param$mean=0
           tl<-param$tail}
-
          if(model %in% c("Tukeyh2"))  {
           param$mean=0
           t1l<-param$tail1
           t2l<-param$tail2
-
           }
 #################################
    if(model %in% c("Wrapped"))  {
-        k=2;
             if(num_betas==1) mm<-2*atan(param$mean)+pi;
             if(num_betas>1)  mm<-2*atan(X%*%as.numeric((param[sel])))+pi;
             param$mean=0
             if(num_betas>1) {for(i in 1:(num_betas-1)) param[[paste("mean",i,sep="")]]=0}
         }
 
-    npoi=1
+if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
+               "TwoPieceStudentT","TwoPieceGaussian"))
+     { nugget=param$nugget;param$nugget=0}  ### ojo!!
+
+
+zz=param[grep("mean", names(param))]   
+ll=list(sill=param$sill,nugget=param$nugget)
+mc=append(zz,ll)
+
+pc=param[CorrParam(corrmodel)]
+#print(append(pc,mc))
+
+ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
+                   distance=distance,grid=grid,model="Gaussian", n=n,
+                param=append(mc,pc), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
+
+######################
+# matrix decomposition and square root
+if(!sparse) {
+   decompvarcov <- MatDecomp(ccov$covmatrix,method)
+   if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
+   sqrtvarcov <- MatSqrt(decompvarcov,method)
+}
+else {
+ cholS <- spam::chol(ccov$covmatrix)
+ # cholS is the upper triangular part of the permutated matrix Sigma
+ iord <- spam::ordering(cholS, inv=TRUE)
+ R <- spam::as.spam(cholS)
+}
+######################
+##############################################
+## putting 2 nugget
+ if(model%in% c("PoissonZIP","BinomialNegZINB","PoissonGammaZIP"))
+{
+  II=diag(nrow(ccov$covmatrix));
+  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1)
+  II <- t(II);
+  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1)
+  ccov_with_nug=(ccov$covmatrix)*(II)
+
+if(!sparse) {
+  decompvarcov1 <- MatDecomp(ccov_with_nug,method)
+  if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
+  sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
+  }
+  else {
+   cholS1 <- spam::chol(ccov_with_nug)
+   iord1 <- spam::ordering(cholS1, inv=TRUE)
+   R1 <- spam::as.spam(cholS1)
+  }
+}
+##############################################
+## putting 1 nugget
+if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
+               "TwoPieceStudentT","TwoPieceGaussian"))
+{
+  II=diag(nrow(ccov$covmatrix));
+  II[lower.tri(II)] <- (1-nugget);
+  II <- t(II);
+  II[lower.tri(II)] <- (1-nugget)
+  ccov_with_nug=ccov$covmatrix*II
+
+if(!sparse) {
+  decompvarcov1 <- MatDecomp(ccov_with_nug,method)
+if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
+  sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
+  }
+  else {   
+    cholS1 <- spam::chol(ccov_with_nug)
+    iord1 <- spam::ordering(cholS1, inv=TRUE)
+    R1 <- spam::as.spam(cholS1)
+   }
+}
+##########################################################################################################################################
+ numtime=1
+ numcoord=ccov$numcoord;
+ if(spacetime) numtime=ccov$numtime;
+ dime<-numcoord*numtime
+
+########################
+   if(spacetime_dyn) {
+       coords=NULL
+       coords=do.call(rbind,args=c(coordx_dyn))
+       ns=lengths(coordx_dyn)/2
+       coordx <- coords[,1]; coordy <- coords[,2]
+       dime=sum(ns)
+       ccov$numtime=1
+   }
+   else { dime=ddim(coordx,coordy,coordt)}
+########################
+    
+SIM=list()
+###################################################
+### starting number of replicates
+###################################################
+for( L in 1:nrep){
+    k=1;  npoi=1
 ################################# how many random fields ################
     if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1
-    if(model %in% c("Weibull")) k=2
+    if(model %in% c("Weibull","Wrapped")) k=2
     if(model %in% c("LogLogistic","Logistic")) k=4
     if(model %in% c("Binomial"))   k=max(round(n))
     if(model %in% c("BinomialLogistic"))   k=2*max(round(n))
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB"))
                  { k=99999;if(model %in% c("Geometric")) {model="BinomialNeg";n=1}}
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-    if(model %in% c("PoissonGamma")) {k=2+2*round(param$shape);npoi=999999999}
+    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*round(param$shape);npoi=999999999}
     if(model %in% c("PoissonWeibull")) {k=4;npoi=999999999}
-    if(model %in% c("PoissonZIP","BinomialNegZINB")) {param$nugget=param$nugget1}
+    if(model %in% c("PoissonZIP","BinomialNegZINB","PoissonGammaZIP")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {k=round(param$shape)}
     if(model %in% c("Beta"))  {k=round(param$shape1)+round(param$shape2);}
     if(model %in% c("Kumaraswamy","Kumaraswamy2"))  k=4
@@ -258,58 +284,10 @@ else param$sill=1
 
   ################################################################################
   ################################################################################
-   ns=NULL
-   if(spacetime_dyn) {
-        coords=NULL
-       coords=do.call(rbind,args=c(coordx_dyn))
-       ns=lengths(coordx_dyn)/2
-       coordx <- coords[,1]; coordy <- coords[,2]
-       dime=sum(ns)
-   }
-   else { dime=ddim(coordx,coordy,coordt)}
-   
    dd=array(0,dim=c(dime,1,k))
 
-   cumu=NULL;#s=0 # for negative binomial  case
+   cumu=NULL;
  #########################################
-
-#### computing correlation matrix  of the Gaussian random field
-if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
-               "TwoPieceStudentT","TwoPieceGaussian"))
-     { nugget=param$nugget;param$nugget=0}  ### ojo!!
-
-
-ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
-                   distance=distance,grid=grid,model="Gaussian", n=n,
-                param=forGaussparam(model,param,bivariate), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
-
-
-
- if(model%in% c("PoissonZIP","BinomialNegZINB"))
-  {
-    II=diag(nrow(ccov$covmatrix));
-  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1)
-  II <- t(II);
-  II[lower.tri(II)] <- (1-param$nugget2)/(1-param$nugget1)
-  ccov_with_nug=(ccov$covmatrix)*(II)
-
-   }
-
-## putting nugget
-if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
-               "TwoPieceStudentT","TwoPieceGaussian"))
-{
-  II=diag(nrow(ccov$covmatrix));
-  II[lower.tri(II)] <- (1-nugget);
-  II <- t(II);
-  II[lower.tri(II)] <- (1-nugget)
-  ccov_with_nug=ccov$covmatrix*II
-}
-
-if(spacetime_dyn) ccov$numtime=1
-  numcoord=ccov$numcoord;numtime=ccov$numtime;
-  dime<-numcoord*numtime
-  xx=double(dime)
 
 #########################################################
 KK=1;sel=NULL;ssp=double(dime)
@@ -318,25 +296,13 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
                "TwoPieceStudentT","TwoPieceGaussian"))
 {
   ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-  if(sparse) {
-                  if(spam::is.spam(ccov_with_nug))
-                    simD=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime),ccov_with_nug) )
-                  else
-                  simD=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov_with_nug)) )
-               }
-    else
-    {
-        decompvarcov <- MatDecomp(ccov_with_nug,method)
-        if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
-        sqrtvarcov <- MatSqrt(decompvarcov,method)
-       #if(!is.null(GPU)) simD=(gpuR::crossprod(sqrtvarcov,ss))# []
-       #else 
-       simD=crossprod(sqrtvarcov,ss)
-    }
+  if(sparse) simD=as.numeric((array(rnorm(1*dime),c(1,dime)) %*% R1) [,iord1] )
+    else     #simD=crossprod(sqrtvarcov1,ss) 
+             simD=sqrtvarcov1%*%ss
 
       ccov1=ccov
       ccov1$covmatrix=ccov_with_nug
-      if(!spacetime) simDD <- c(simD)
+      if(space) simDD <- c(simD)
       else simDD <- matrix(simD, nrow=ccov1$numtime, ncol=ccov1$numcoord,byrow=TRUE)
 }
 
@@ -345,45 +311,30 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
 
     ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
    #### simulating with cholesky decomposition using GPU
-    if(!is.null(GPU)&&sparse) sparse=FALSE   ### if gpu no sparse
-
-    if(!is.null(GPU)) {  ## todo...
+    #if(!is.null(GPU)) {  ## todo...
                          ## here we wave to set the context!!!
                          ## setContext(id=3L)  example
                          ##varcov=gpuR::vclMatrix(varcov, type="float")
                          ##ss=gpuR::vclMatrix(ss, type="float")
-                       }
-    #### simulating with matrix decomposition using sparse or dense matrices without nugget!
-    if(sparse) {
-                  if(spam::is.spam(ccov$covmatrix))
-                    simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmatrix) )
-                  else
-                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov$covmatrix)) )
-               }
-    else
-    {
-        decompvarcov <- MatDecomp(ccov$covmatrix,method)
-        if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
-        sqrtvarcov <- MatSqrt(decompvarcov,method)
-       #if(!is.null(GPU)) simd=(gpuR::crossprod(sqrtvarcov,ss))# []
-       #else 
-       simd=crossprod(sqrtvarcov,ss)
-    }
+     #                  }
+    #### simulating N(0,1) with matrix decomposition using sparse or dense matrices without nugget!
+      if(sparse)   simd=as.numeric((array(rnorm(1*dime),c(1,dime)) %*% R) [,iord] )
+      else         #simd=crossprod(sqrtvarcov,ss) 
+                   simd=sqrtvarcov%*%ss
+
     #######################################################################
     nuisance<-param[ccov$namesnuis]
     sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
-    
     ####################################
     ####### starting cases #############
     ####################################
     if(model %in% c("Binomial", "BinomialNeg","BinomialNegZINB")) {
-
         simdim <- dim(sim)
         sim <- as.numeric(sim>0)
         dim(sim) <- simdim
          }
     ####################################
-    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
+    if(model %in% c("Weibull","SkewGaussian","SkewGauss","Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonGammaZIP","PoissonWeibull","PoissonZIP","Beta","Kumaraswamy","Kumaraswamy2",
               "LogGaussian","TwoPieceTukeyh",
                 "Gamma","LogLogistic","Logistic","StudentT",
                 "SkewStudentT","TwoPieceStudentT","TwoPieceGaussian","TwoPieceGauss","TwoPieceBimodal")) {
@@ -405,7 +356,7 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
    if(sum(apply(sel,2,prod))==0) break  ## stopping rule
  }
   ####################################
- if(model %in% c("PoissonGamma"))   {
+ if(model %in% c("PoissonGamma","PoissonGammaZIP"))   {
    if(KK==1){sim3=NULL;for(i in 3:k)  {sim3=cbind(sim3,dd[,,i]^2)}}
    #################################
    pois1=0.5*(dd[,,1]^2+dd[,,2]^2)
@@ -431,17 +382,17 @@ if(model %in% c("PoissonWeibull"))   {
  ###############################################################################################
  #### simulation for discrete random field based on indipendent copies  of GRF ######
  ###############################################################################################
- if(model %in% c("Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonWeibull","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
+ if(model %in% c("Binomial","BinomialLogistic","Poisson","PoissonGamma","PoissonGammaZIP","PoissonWeibull","PoissonZIP","BinomialNeg","BinomialNegZINB"))   {
 
    if(model %in% c("poisson","Poisson","PoissonGamma","PoissonWeibull"))   {sim=colSums(sel);byrow=TRUE}
     
-    if(model %in% c("PoissonZIP"))   {
-     ####
-      decompvarcov1 <- MatDecomp(ccov_with_nug,method)
-      if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
-      sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
+    if(model %in% c("PoissonZIP","PoissonGammaZIP"))   {
       ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-      a=crossprod(sqrtvarcov1,ss)
+
+      if(sparse)   a=as.numeric((array(rnorm(1*dime),c(1,dime)) %*% R1) [,iord1] )
+      else         #a=crossprod(sqrtvarcov1,ss) 
+                       a=sqrtvarcov1%*%ss
+
      ###
       a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
       sim=a*colSums(sel);
@@ -484,12 +435,11 @@ if(model %in% c("BinomialLogistic"))   {
   if(model %in% c("BinomialNegZINB"))   {
            sim=NULL
           for(p in 1:dime) sim=c(sim,which(cumu[,p]>0,arr.ind=T)[n]-n)
-    ####
-      decompvarcov1 <- MatDecomp(ccov_with_nug,method)
-      if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite");stop()}
-      sqrtvarcov1 <- MatSqrt(decompvarcov1,method)
       ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
-      a=crossprod(sqrtvarcov1,ss)
+
+      if(sparse)   a=as.numeric((array(rnorm(1*dime),c(1,dime)) %*% R1) [,iord1] )
+      else         #a=crossprod(sqrtvarcov1,ss) 
+                   a=sqrtvarcov1%*%ss
      ###
           a[a<as.numeric(param$pmu)]=0;a[a!=0]=1
           sim=a*sim
@@ -500,11 +450,11 @@ if(model %in% c("BinomialLogistic"))   {
 #############################################
 
     if(!grid)  {
-                if(!spacetime) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=byrow)
         }
     else{
-        if(!spacetime)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
 }
@@ -580,16 +530,14 @@ if(model %in% c("TwoPieceStudentT"))   {
 ############### formatting data #############
 #############################################
     if(!grid)  {
-                if(!spacetime) sim <- c(aa)
+                if(space) sim <- c(aa)
                 else                       sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{
-        if(!spacetime)  sim <- array(aa, c(numxgrid,numygrid))
+        if(space)  sim <- array(aa, c(numxgrid,numygrid))
         else                        sim <- array(aa, c(numxgrid,numygrid, numtime))
             }
 }
-
-
 
 #########################################################################################################
 #### simulation for continuos random field  (on the positive real line) based on indipendent copies  of GRF ######
@@ -609,13 +557,12 @@ if(model %in% c("LogLogistic","Logistic"))   {
       #sim=mm+log(exp(sim2)-1)*(vv)^(0.5)
      }
 
-
   if(!grid)  {
-                if(!spacetime) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{
-        if(!spacetime)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
 }
@@ -634,11 +581,11 @@ if(model %in% c("Gamma","Weibull"))   {
 ############### formatting data #############
 #############################################
          if(!grid)  {
-                if(!spacetime) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{
-        if(!spacetime)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
 }
@@ -671,11 +618,11 @@ if(model %in% c("Beta","Kumaraswamy","Kumaraswamy2"))   {
      }
     }
          if(!grid)  {
-                if(!spacetime) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{
-        if(!spacetime)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
         }
@@ -719,7 +666,7 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
     if(model %in% c("Tukeyh2"))   {
        sim=c(t(sim))
        sel=sim>0
-      # print(t1l);print(t2l)
+
        bb=sim*exp(t1l*sim^2/2)*as.numeric(sel);  bb[bb==0]=1
        aa=sim*exp(t2l*sim^2/2)*as.numeric(!sel); aa[aa==0]=1
        sim= mm+sqrt(vv)*(aa*bb)
@@ -730,12 +677,12 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
   {sim=c(t(sim));sim=mm+sqrt(vv)*sinh( (1/tl)*(asinh(sim)+sk));byrow=TRUE}
  ### formatting data
   if(!grid)  {
-                if(!spacetime) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime,
                                                           ncol=numcoord,byrow=byrow)
         }
          else{
-        if(!spacetime)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
 
@@ -751,11 +698,16 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
     sim=sim_temp
     }
 ###################################################################
+
+SIM[[L]]=sim
+} 
+######################################################################
+##########  end of replicates ########################################
+######################################################################
+}
+###################################################################
 ################ end spatial and spatiotemporal case###############
 ###################################################################
-} 
-
-
 
 
 ################################################################
@@ -763,11 +715,36 @@ if(model %in% c("Gaussian","LogGaussian","LogGauss","Tukeygh","Tukeyh","Tukeyh2"
 ################################################################
 if(bivariate){
 
-      sel1=substr(names(param),1,6)=="mean_1";
-       num_betas1=sum(sel1)
-       sel2=substr(names(param),1,6)=="mean_2";
-       num_betas2=sum(sel2)
-     num_betas=c(num_betas1,num_betas2)
+ sel1=substr(names(param),1,6)=="mean_1";num_betas1=sum(sel1)
+ sel2=substr(names(param),1,6)=="mean_2";num_betas2=sum(sel2); 
+ num_betas=c(num_betas1,num_betas2)
+
+zz=param[grep("mean", names(param))]   
+pc=param[CorrParam(corrmodel)]
+
+#print(append(pc,zz))
+ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
+                   distance=distance,grid=grid,model="Gaussian", n=n,
+                param=append(pc,zz), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
+
+#######################
+## matrix decomposition and square root
+#######################
+
+if(!sparse){
+  decompvarcov <- MatDecomp(ccov$covmatrix,method)
+  if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
+  sqrtvarcov <- MatSqrt(decompvarcov,method)
+}
+else {
+
+ cholS <- spam::chol(ccov$covmatrix)
+ # cholS is the upper triangular part of the permutated matrix Sigma
+ iord <- spam::ordering(cholS, inv=TRUE)
+ R <- spam::as.spam(cholS)
+
+ }
+#######################
 
        k=1
 ############################################################################################
@@ -791,7 +768,7 @@ if(bivariate){
             tl1<-param$tail_1;tl2<-param$tail_2;sk=c(tl1,tl2)
         }
     if(model %in% c("Wrapped"))  {
-        k=2;
+     
             mm1<-2*atan(param$mean_1)+pi;param$mean_1=0;
             mm2<-2*atan(param$mean_2)+pi;param$mean_2=0;
             mm=c(mm1,mm2)
@@ -802,16 +779,16 @@ if(bivariate){
     npoi=1
     ################################# how many random fields ################
     if(model %in% c("SkewGaussian","LogGaussian")) k=1
-    if(model %in% c("Weibull")) k=2
+    if(model %in% c("Weibull","Wrapped")) k=2
     if(model %in% c("LogLogistic","Logistic")) k=4
     if(model %in% c("Binomial"))   k=max(round(n))
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB")){ k=99999;
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                }
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-    if(model %in% c("PoissonGamma")) {k=2+2*round(param$shape);npoi=999999999}
+    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*round(param$shape);npoi=999999999}
     if(model %in% c("PoissonWeibull")) {k=4;npoi=999999999}
-    if(model %in% c("PoissonZIP","BinomialNegZINB")) {param$nugget=param$nugget1}
+    if(model %in% c("PoissonZIP","BinomialNegZINB","PoissonGammaZIP")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {  k=max(param$shape_1,param$shape_2)}
     if(model %in% c("StudentT"))  k=round(1/param$df)+1
 
@@ -837,10 +814,12 @@ if(model%in% c("SkewGaussian"))
      { nugget=param$nugget;param$nugget=0}  ### ojo!!
 
 
-ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
-                   distance=distance,grid=grid,model="Gaussian", n=n,
-                param=forGaussparam(model,param,bivariate), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
+SIM=list()
 
+###################################################
+### starting number of replicates
+###################################################
+for( L in 1:nrep){
 
 if(spacetime_dyn) ccov$numtime=1
   numcoord=ccov$numcoord;numtime=ccov$numtime;
@@ -855,19 +834,10 @@ while(KK<=npoi) {
     ss=matrix(rnorm(dime) , nrow=dime, ncol = 1)
 
     #### simulating with matrix decomposition using sparse or dense matrices without nugget!
-    if(sparse) {
-                  if(spam::is.spam(ccov$covmatrix))
-                    simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), ccov$covmatrix) )
-                  else
-                  simd=as.numeric(spam::rmvnorm.spam(1,mu=rep(0, dime), spam::as.spam(ccov$covmatrix)) )
-               }
-    else
-    {
-        decompvarcov <- MatDecomp(ccov$covmatrix,method)
-        if(is.logical(decompvarcov)){print(" Covariance matrix is not positive definite");stop()}
-        sqrtvarcov <- MatSqrt(decompvarcov,method)
-        simd=crossprod(sqrtvarcov,ss)
-    }
+    if(sparse) simd=as.numeric((array(rnorm(1*dime),c(1,dime)) %*% R) [,iord] )
+    else     #simd=crossprod(sqrtvarcov,ss)
+             simd=sqrtvarcov%*%ss 
+
     #######################################################################
     nuisance<-param[ccov$namesnuis]
     if(i==1&&(model=="SkewGaussian")) ccov$param["pcol"]=0
@@ -875,6 +845,7 @@ while(KK<=npoi) {
     ####################################
 
     sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
+
     if(model %in% c("Weibull","SkewGaussian","Binomial","Poisson","LogGaussian","Gamma")) {
      dd[,,i]=t(sim)
      }
@@ -930,11 +901,11 @@ if(model %in% c("Gamma","Weibull"))   {
 
 ############### formatting data #############
          if(!grid)  {
-                if(!spacetime&&!bivariate) sim <- c(sim)
+                if(space) sim <- c(sim)
                 else                       sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         }
          else{
-        if(!spacetime&&!bivariate)  sim <- array(sim, c(numxgrid,numygrid))
+        if(space)  sim <- array(sim, c(numxgrid,numygrid))
         else                        sim <- array(sim, c(numxgrid,numygrid, numtime))
             }
 }
@@ -961,7 +932,7 @@ if (model %in% c("SinhAsinh"))
 }
 
 ##################################################################
-###########formatting data for space time dynamic case. #########
+###########formatting data for bivariate dynamic case. #########
     if(spacetime_dyn) {
                     sim_temp=list()
                     for(k in 1:length(coordt))
@@ -970,10 +941,18 @@ if (model %in% c("SinhAsinh"))
                          sim_temp[[k]]=c(sim)[indx] }
     sim=sim_temp
     }
-################################################################
-################ end bivariate  case#######################
-################################################################
+
+SIM[[L]]=sim
+} 
+######################################################################
+##########  end of replicates ########################################
+######################################################################
 }
+######################################################################
+##########  end of bivariate  ########################################
+######################################################################
+
+if(nrep==1) SIM=SIM[[1]] 
 
 ##################################################################
 #######################################
@@ -987,7 +966,7 @@ if (model %in% c("SinhAsinh"))
     coordt = ccov$coordt,
     coordx_dyn =coordx_dyn,
     corrmodel = corrmodel,
-    data = sim,
+    data = SIM,
     distance = distance,
     grid = grid,
     model = model,
@@ -997,9 +976,10 @@ if (model %in% c("SinhAsinh"))
     numtime = ccov$numtime,
     param = ccov$param,
     radius = radius,
-    randseed=.Random.seed,
+    #randseed=.Random.seed,
     spacetime = spacetime,
     sparse=ccov$sparse,
+    nrep=nrep,
     X=X)
 #}
 ##############################################

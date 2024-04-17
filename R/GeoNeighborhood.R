@@ -1,9 +1,9 @@
 GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
             distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL,
-                 radius=6371, time=NULL, X=NULL,M=NULL)
+                 radius=6371, time=NULL, X=NULL,M=NULL,spobj=NULL,spdata=NULL)
 {
-  #####################
-    nbor=function(coords,loc,distance,maxdist,neighb){
+  ############## internal function#######
+  nbor=function(coords,loc,distance,maxdist,neighb){
   ### to improve!
   if(distance=="Geod"||distance=="Chor")
   {
@@ -46,11 +46,25 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   spacetime=FALSE
   if(!is.null(coordt)) {spacetime=TRUE}
   if(spacetime) if(!is.vector(time))  stop("time parameter is missing")
-  
+
+
+
+  space=!spacetime&&!bivariate 
+##################
+  if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,spdata); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,spdata); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+   if(!is.null(a$Y)&&!is.null(a$X)) {data=a$Y ; X=a$X }
+}
+################ 
   dyn=FALSE
   if(!is.null(coordx_dyn))  dyn=TRUE  
-
- 
 
   ## handling spatial coordinates
   if(is.null(coordy)) {coords=as.matrix(coordx)}else{
@@ -63,7 +77,7 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   #####################################
   sel_tt=NULL
   colnames(loc)=NULL;colnames(coords)=NULL;
-  space=!spacetime&&!bivariate 
+
   ##################################################################
 
 

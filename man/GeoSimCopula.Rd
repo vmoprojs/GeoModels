@@ -15,7 +15,7 @@ coordx_dyn=NULL, corrmodel, distance="Eucl",
       GPU=NULL, grid=FALSE, local=c(1,1),
       method="cholesky", model='Gaussian', n=1, param,
       anisopars=NULL,radius=6371, sparse=FALSE,
-      copula="Gaussian",seed=NULL, X=NULL)
+      copula="Gaussian",seed=NULL, X=NULL,spobj=NULL,nrep=1)
 }
 \arguments{
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
@@ -61,6 +61,8 @@ coordx_dyn=NULL, corrmodel, distance="Eucl",
   \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
   \item{seed}{Numeric; an integer used in set.seed function to reproduce the simulation.}
   \item{X}{Numeric; Matrix of space-time covariates.}
+    \item{spobj}{An object of class sp or spacetime}
+    \item{nrep}{Numeric; Numbers of indipendent replicates.}
 }
 
 

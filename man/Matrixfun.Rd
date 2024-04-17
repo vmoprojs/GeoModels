@@ -9,13 +9,14 @@
 }
 \usage{
 MatSqrt(mat.decomp,method) 
-MatInv(mat.decomp,method)
+MatInv(mtx)
 MatLogDet(mat.decomp,method)
 }
 
-\value{The function returna a  square root or inverse  or  log determinant of a (semi)positive definite matrix, given a matrix decomposition.}
+\value{The function returna a  square root or inverse  or  log determinant of a (semi)positive definite matrix using the function in the FastGP package.}
 
 \arguments{
+  \item{mtx}{numeric; a squared symmetric positive definite matrix.}
   \item{mat.decomp}{numeric; a matrix decomposition.}
   \item{method}{string; the type of matrix decomposition. Two possible choices: \code{cholesky} and \code{svd}.}
 }
@@ -48,6 +49,6 @@ Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.rese
  ## decomposition with cholesky method  
  b=MatDecomp(a$covmat,method="cholesky")
  ## inverse of covariance matrix
- inverse=MatInv(b,method="cholesky")
+ inverse=MatInv(a$covmat)
 }
 \keyword{Composite}

@@ -3,7 +3,8 @@
 \encoding{UTF-8}
 \title{Computes fitted covariance and/or  variogram}
 \description{
-  The procedure return a GeoFit object associated to  the estimated residuals
+  The procedure return a GeoFit object associated to  the estimated residuals. For  a random field Y defined on the real line (Gaussian, Skew Gaussian, Tukeyh etcc) they are computed as (Y-m)/sqrt(v) where m and v are the estimated mean and variance respectively.
+  For  a random field Y defined on the positive real line (Gamma, Weibull, Log-Gaussian) they are computed as Y/m where m is estimated mean.
 }
 \usage{GeoResiduals(fit)}
 \arguments{

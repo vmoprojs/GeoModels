@@ -44,7 +44,7 @@ fxy <- function(x,y, tol = 15){
   return(bol )
 }
 fxy <- Vectorize(fxy)
-
+#########################################
 indices <- function(X,Y)
  {
              res = NULL;res_d = NULL
@@ -59,12 +59,9 @@ indices <- function(X,Y)
             return(list(xy = res,d = res_d[,2]))
  }
 
-
 ##########################################
 nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)  
   {
- 
-     
             if(is.null(maxdist)) 
                {
                #nearest = RANN::nn2(x,y,k = K,treetype = c("kd"))} ### case neighboord
@@ -108,10 +105,6 @@ nn2Geo <- function(x,y, K = 1,distance=0,maxdist=NULL,radius=6371)
 spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
                          ,numtime,maxtime=1,maxdist=NULL,distance="Eucl",radius=6371)
 {
-  # distance="Eucl"
-  # coordx_dyn=NULL
-  # radius=6371
-  # maxdist=NULL
   
   ##############
   m_s=list();m_t=m_st=NULL;
@@ -170,7 +163,6 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
      
     }
   }
-
   ######
   SS = data.table::rbindlist(m_s)
   TT = data.table::rbindlist(m_t)

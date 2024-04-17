@@ -55,12 +55,20 @@ double CheckCor(int *cormod, double *par)
         if(scale<=0 || R_power<3.5) rho=-2;
         break;
     case 19: // Generalised wendland
+               R_power1=par[0];
+        scale=par[1];
+        smooth=par[2];
+       //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+      
+            if(scale<=0 ||smooth<-0.5||R_power1>(1.5+smooth) ) rho=-2;
+      break;
     case 6:
         R_power1=1/par[0];
         scale=par[1];
         smooth=par[2];
        //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
-            if(scale<=0 ||smooth<0) rho=-2;
+    
+            if(scale<=0 ||smooth<-0.5||R_power1>(1.5+smooth) ) rho=-2;
       break;
       case 24: //kummer
       case 25:  
@@ -2015,7 +2023,6 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
       }
   else {rho=0;}
    /*/second version
-
         x=lag;
         double *param;
         param=(double *) Calloc(3,double);
@@ -2156,7 +2163,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
     double psj=0.0,dd=0.0,ai=0.0,aj=0.0,p1=0.0,p2=0.0,p=0,corr=0.0,p00=0,p11=0,bi,bj;
 
 
-        for(i=0;i<(ncoord[0]-1);i++){
+    for(i=0;i<(ncoord[0]-1);i++){
       for(j=(i+1);j<ncoord[0];j++){
 
         dd=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
@@ -2173,7 +2180,7 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
          rho[h]=fmin2(nn[i],nn[j])*(psj-p1*p2);} 
       if(*model==14)       rho[h]=(psj-p1*p2)/((-psj+p1+p2)*p1*p2);
       if(*model==16)       rho[h]=cov_binom_neg(nn[0],psj,p1,p2);
-      if(*model==45)
+      if(*model==45)     //BinomialNegZINB
       {
 
            p=pnorm(nuis[2],0,1,1,0);
@@ -2204,12 +2211,10 @@ void CorrelationMat_dis2(double *rho,double *coordx, double *coordy, double *coo
            ai=exp(mean[i]);aj=exp(mean[j]);
           // Rprintf("%f\n",nuis[1]);
            dd=sqrt(ai*aj)*corr_pois((1-nuis[0])*corr,ai, aj); // it's the  covariance poisson
-
            p=pnorm(nuis[2],0,1,1,0);
            psj=pbnorm22(nuis[2],nuis[2],(1-nuis[1])*corr);
            p1=1-2*p+psj;
           rho[h]=p1*dd +  ai*aj*(p1-pow((1-p),2));
-         // Rprintf("%f %f  %f %f  \n",rho[h],ai,aj,nuis[0]);
        }
 
             h++;
@@ -2608,7 +2613,7 @@ double dis=0.0;
 	      h++;
 	      }}}
 
-if(*spt) {
+if(spt[0]) {
   int t=0,v=0,i=0,j=0,h=0;
 double dis=0.0, dit=0.0;
  //Rprintf("%d %d %d\n",*ntime,*nloc,*tloc);
@@ -2616,13 +2621,13 @@ double dis=0.0, dit=0.0;
         for(v=0;v<(*tloc);v++){
            for(t=0;t<*ntime;t++){
             // Rprintf("%f %d \n",time[v],*nloc);
-
                       dit=fabs(coordt[t]-time[v]);
                 for(i=0;i<ns[t];i++){
                    dis=dist(type[0],coordx[(i+NS[t])],locx[j],
                                     coordy[(i+NS[t])],locy[j],radius[0]);
-                 //  Rprintf("%f %d %f %f\n",cc[h],*cormod,dis,dit,par[0]);
+            
        cc[h]=CorFct(cormod,dis,dit,par,0,0);
+    // Rprintf("%f %d %f %f\n",cc[h],*cormod,dis,dit,par[0]);
         h++;}}}}
 }
 if(biv[0]) {

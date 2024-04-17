@@ -1,5 +1,4 @@
 
-
 #include <R.h>
 #include <Rinternals.h>
 #include <stdlib.h> // for NULL
@@ -41,12 +40,34 @@ extern void GodambeMat(double *betas,int *biv,double *coordx, double *coordy, do
                        double *sensmat, int *spt,  int *type_lik, double *varimat,
                        int *vartype, double *winc, double *winstp,double *winct,double *winstp_t,int *weigthed, double *X,int *ns,int *NS);
 extern void Maxima_Minima_dist(double *res,double *coordx,double *coordy,int *nsize,int *type_dist,double *radius);
-extern void spectral_density(int *L,int *model,int *p, double *matrix ,double *matrix_out,
-                             double *C, double *a, double *nu1,double *Cg, double *ag, double *nu1g);
-extern void pairs(int *ncoords,double *data,double *coordx,double *coordy,double *numbins,double *bins,double *v0,double *v1,double *v2,double *maxdist);
-extern void simu_on_coords(int *Ndim,int *Mcoords,int *Mu,double *coords,double *amatrix,
-                           double *matrix_phi,double *matrix_u,double *matrix_out);
 
+/* for Turning band */
+extern void spectraldensityC(double u,int model,int d,int L,double *f,double *av,double *Cv,double *nu1v,double *nu2v);
+extern void extraer(double *coord,int sequen1,double *sub_coord,int fila,int col, int d);
+extern void rellenar_indice(int *index,int inicio, int final,int largo);
+extern void u_index_extraer(double *u_index,double *u, int *index,int largo,int d,int filas);
+extern void mult_mat(double *z, double *x, int xrows, int xcols, double *y, int yrows, int ycols);
+extern void tcrossprod(double *z, double *x,  int xrows, int xcols, double *y, int yrows, int ycols);
+extern void mult_x_cons(double *x, double cte,int largo);
+extern void sumar_matrices(double *x0, double *x,double *y,int largo);
+extern void restar_matrices(double *x0, double *x,double *y,int largo);
+extern void cos_vec(double *x_cos,double *x,int largo);
+extern void sen_vec(double *x_sen,double *x,int largo);
+extern void llenar_simu(double *x,double *simu, int N,int *P, int m);
+extern void extraer_col(int inicio, int final,double *x_original,double *x);
+extern void llenar_simu1(double *simu1,double *simu,int *m,int *P,int *N,int lim, int i,double *L1);
+extern void C_tcrossprod(Rcomplex *z, Rcomplex *x,  int xrows, int xcols, Rcomplex *y, int yrows, int ycols);
+extern void C_mult_mat(Rcomplex *z, Rcomplex *x, int xrows, int xcols, Rcomplex *y, int yrows, int ycols);
+extern void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, int *N, int *L,int *model,double *u,double *a0,double *nu0,double *A,double *B,
+    int *sequen,int *largo_sequen,int *n,double *coord,double *phi, int *vtype,int *m1,double *simu1,double *L1);
+
+/*****/
+
+extern void pairs(int *ncoords,double *data,double *coordx,double *coordy,double *numbins,double *bins,double *v0,double *v1,double *v2,double *maxdist);
+
+/*extern void simu_on_coords(int *Ndim,int *Mcoords,int *Mu,double *coords,double *amatrix,
+                           double *matrix_phi,double *matrix_u,double *matrix_out);
+*/
 /********************** for variogrms computations  ****************************************************/
 
 extern void Binned_Variogram_biv2(double *bins,double *coordx, double *coordy, double *coordt, double *data,
@@ -185,6 +206,9 @@ extern void Comp_Pair_Pois2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU);
 extern void Comp_Pair_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU);
+extern void Comp_Pair_PoisGammaZIP2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU);
 extern void Comp_Pair_Gauss_misp_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN,
@@ -445,6 +469,9 @@ extern void Comp_Cond_Gauss_misp_PoisGamma2mem(int *cormod, double *data1,double
 extern void Comp_Cond_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                              double *nuis, int *local,int *GPU);
+extern void Comp_Cond_PoisGammaZIP2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+                             double *nuis, int *local,int *GPU);
 extern void Comp_Cond_Pois2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                         double *nuis, int *local,int *GPU);
@@ -460,6 +487,9 @@ extern void Comp_Cond_BinomNNGauss2mem(int *cormod, double *data1,double *data2,
 extern void Comp_Cond_BinomNNLogi2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                                double *nuis, int *local,int *GPU);
+extern  void Comp_Cond_BinomnegBinary2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+                                double *nuis, int *local,int *GPU);
 extern void Comp_Cond_BinomnegGauss2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                                  double *nuis, int *local,int *GPU);
@@ -637,6 +667,9 @@ extern void Comp_Pair_BinomnegGauss2mem_aniso(int *cormod, double *coord1,double
 extern void Comp_Pair_BinomnegLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                                       double *nuis, int *local,int *GPU);
+extern  void Comp_Pair_BinomnegBinary2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+                                double *nuis, int *local,int *GPU);
 extern void Comp_Pair_BinomnegGaussZINB2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
                                            double *nuis, int *local,int *GPU);
@@ -850,9 +883,9 @@ extern void biv_binomneg_call(int *NN,int *u, int *v, double *p01, double *p10,d
 
 extern void biv_binom_call(int *NN,int *u, int *v, double *p01, double *p10,double *p11,double *res);
 
-extern void matrix_temp(int *N ,double *matrix, double *l1 ,double *l2 ,double *v11 ,double *v21,double *v12,double *v22);
+/*extern void matrix_temp(int *N ,double *matrix, double *l1 ,double *l2 ,double *v11 ,double *v21,double *v12,double *v22);*/
 
-extern void vector_to_select(int *N, double *matrix);
+/*extern void vector_to_select(int *N, double *matrix);*/
 
 
 extern void lgnd (int *lmax,double *x, double *p);
@@ -861,13 +894,14 @@ extern void qnorm55_call(double *p, double *mu, double *sigma, int *lower_tail, 
 
 extern void integr_kuma(double *x, int n, void *ex);
 
+
 static const R_CMethodDef CEntries[] = {
     {"hyperg_U_e_call",                     (DL_FUNC) &hyperg_U_e_call,      4},
     {"integr_kuma",               (DL_FUNC) &integr_kuma,              3},
     {"lgnd",                      (DL_FUNC) &lgnd,                     3},
     {"qnorm55_call",              (DL_FUNC) &qnorm55_call,             6},
-    {"matrix_temp",               (DL_FUNC) &matrix_temp,              8},
-    {"vector_to_select",          (DL_FUNC) &vector_to_select,         2},
+    /*{"matrix_temp",               (DL_FUNC) &matrix_temp,              8},*/
+   /* {"vector_to_select",          (DL_FUNC) &vector_to_select,         2},*/
     {"biv_binomneg_call",         (DL_FUNC) &biv_binomneg_call,        7},
     {"biv_binom_call",            (DL_FUNC) &biv_binom_call,           7},
     {"biv_gamma_call",            (DL_FUNC) &biv_gamma_call,           7},
@@ -911,8 +945,28 @@ static const R_CMethodDef CEntries[] = {
     {"pairs",                       (DL_FUNC) &pairs,                       10},
     {"SetGlobalVar2",               (DL_FUNC) &SetGlobalVar2,               12},
     {"SetGlobalVar",               (DL_FUNC) &SetGlobalVar,               29},
-    {"simu_on_coords",              (DL_FUNC) &simu_on_coords,               8},
-    {"spectral_density",            (DL_FUNC) &spectral_density,            11},
+   /* {"simu_on_coords",              (DL_FUNC) &simu_on_coords,               8},*/
+
+/* for Turning band */
+    {"spectraldensityC",            (DL_FUNC) &spectraldensityC,            9},
+    {"extraer",                     (DL_FUNC) &extraer,                    6},
+    {"rellenar_indice",             (DL_FUNC) &rellenar_indice,            4},
+    {"u_index_extraer",             (DL_FUNC) &u_index_extraer,            6},
+    {"mult_mat",                    (DL_FUNC) &mult_mat,                   7},
+    {"tcrossprod",                  (DL_FUNC) &tcrossprod,                 7},
+    {"mult_x_cons",                 (DL_FUNC) &mult_x_cons,                3},
+    {"sumar_matrices",              (DL_FUNC) &sumar_matrices,             4},
+    {"restar_matrices",             (DL_FUNC) &restar_matrices,            4},
+    {"cos_vec",                     (DL_FUNC) &cos_vec,                    3},
+    {"sen_vec",                     (DL_FUNC) &sen_vec,                    3},
+    {"llenar_simu",                 (DL_FUNC) &llenar_simu,                5},
+    {"extraer_col",                 (DL_FUNC) &extraer_col,                4},
+    {"llenar_simu1",                (DL_FUNC) &llenar_simu1,               8},
+    {"C_tcrossprod",                (DL_FUNC) &C_tcrossprod,               7},
+    {"C_mult_mat",                  (DL_FUNC) &C_mult_mat,                 7},
+    {"for_c",                       (DL_FUNC) &for_c,                     23},
+
+
     {"VectCorrelation",             (DL_FUNC) &VectCorrelation,             11},
     {"VectCorrelation_biv",         (DL_FUNC) &VectCorrelation_biv,         12},
     {"vpbnorm",                     (DL_FUNC) &vpbnorm,                      9},
@@ -938,6 +992,7 @@ static const R_CMethodDef CEntries[] = {
     {"Comp_Pair_BinomNNGauss_misp2mem",         (DL_FUNC) &Comp_Pair_BinomNNGauss_misp2mem,         12},
     {"Comp_Pair_Gauss_misp_PoisGamma2mem",         (DL_FUNC) &Comp_Pair_Gauss_misp_PoisGamma2mem,         12},
     {"Comp_Pair_PoisGamma2mem",         (DL_FUNC) &Comp_Pair_PoisGamma2mem,         12},
+    {"Comp_Pair_PoisGammaZIP2mem",         (DL_FUNC) &Comp_Pair_PoisGammaZIP2mem,         12},
     {"Comp_Pair_Pois2mem",         (DL_FUNC) &Comp_Pair_Pois2mem,         12},
     {"Comp_Pair_BinomGauss2mem",         (DL_FUNC) &Comp_Pair_BinomGauss2mem,         12},
     {"Comp_Pair_BinomLogi2mem",         (DL_FUNC) &Comp_Pair_BinomLogi2mem,         12},
@@ -974,6 +1029,7 @@ static const R_CMethodDef CEntries[] = {
     {"Comp_Pair_BinomLogi_st2mem",         (DL_FUNC) &Comp_Pair_BinomLogi_st2mem,         12},
     {"Comp_Pair_BinomNNGauss_st2mem",         (DL_FUNC) &Comp_Pair_BinomNNGauss_st2mem,         12},
     {"Comp_Pair_BinomNNLogi_st2mem",         (DL_FUNC) &Comp_Pair_BinomNNLogi_st2mem,         12},
+    {"Comp_Pair_BinomnegBinary2mem",         (DL_FUNC) &Comp_Pair_BinomnegBinary2mem,         12},
     {"Comp_Pair_BinomnegGauss_st2mem",         (DL_FUNC) &Comp_Pair_BinomnegGauss_st2mem,         12},
     {"Comp_Pair_BinomnegLogi_st2mem",         (DL_FUNC) &Comp_Pair_BinomnegLogi_st2mem,         12},//96
     {"Comp_Pair_TWOPIECETukeyh_st2mem",         (DL_FUNC) &Comp_Pair_TWOPIECETukeyh_st2mem,         12},
@@ -1019,10 +1075,12 @@ static const R_CMethodDef CEntries[] = {
     {"Comp_Cond_BinomNNGauss_misp2mem",         (DL_FUNC) &Comp_Cond_BinomNNGauss_misp2mem,         12},
     {"Comp_Cond_Gauss_misp_PoisGamma2mem",         (DL_FUNC) &Comp_Cond_Gauss_misp_PoisGamma2mem,         12},
     {"Comp_Cond_PoisGamma2mem",         (DL_FUNC) &Comp_Cond_PoisGamma2mem,         12},
+    {"Comp_Cond_PoisGammaZIP2mem",         (DL_FUNC) &Comp_Cond_PoisGammaZIP2mem,         12},
     {"Comp_Cond_Pois2mem",         (DL_FUNC) &Comp_Cond_Pois2mem,         12},
     {"Comp_Cond_BinomGauss2mem",         (DL_FUNC) &Comp_Cond_BinomGauss2mem,         12},
     {"Comp_Cond_BinomLogi2mem",         (DL_FUNC) &Comp_Cond_BinomLogi2mem,         12},
     {"Comp_Cond_BinomNNGauss2mem",         (DL_FUNC) &Comp_Cond_BinomNNGauss2mem,         12},
+    {"Comp_Cond_BinomnegBinary2mem",         (DL_FUNC) &Comp_Cond_BinomnegBinary2mem,         12},
     {"Comp_Cond_BinomNNLogi2mem",         (DL_FUNC) &Comp_Cond_BinomNNLogi2mem,         12},
     {"Comp_Cond_BinomnegGauss2mem",         (DL_FUNC) &Comp_Cond_BinomnegGauss2mem,         12},
     {"Comp_Cond_TWOPIECETukeyh2mem",         (DL_FUNC) &Comp_Cond_TWOPIECETukeyh2mem,         12},

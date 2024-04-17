@@ -22,7 +22,7 @@ void Comp_Pair_Gauss2mem(int *cormod, double *data1,double *data2,int *NN,
     double  weights=1.0,sill,nugget,corr,bl;
     sill=nuis[1];nugget=nuis[0];
     if(sill<0 || nugget<0||nugget>1){*res=LOW; return;}
-
+//Rprintf("%d %f\n",npairs[0],nugget);
     for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
   //Rprintf("%f %f %f  %d\n",lags[i],data1[i],data2[i],*npairs);
@@ -353,6 +353,36 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+/******************************************************/
+void Comp_Pair_BinomnegBinary2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU)
+{
+    int i=0,  uu=0,vv=0;
+    double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0;
+    double p1=0.0,p2=0.0;//probability of marginal success
+    double p11=0.0;//probability of joint success
+    double nugget=nuis[0];
+       if( nugget>=1||nugget<0){*res=LOW; return;}
+    
+
+    for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                  ai=mean1[i];aj=mean2[i];
+                  corr=CorFct(cormod,lags[i],0,par,0,0);
+                p11=pbnorm22(ai,aj,(1-nugget)*corr);
+                p1=pnorm(ai,0,1,1,0); p2=pnorm(aj,0,1,1,0);
+                u=data1[i];v=data2[i];
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                uu=(int) u;vv=(int) v;
+                bl=log(biv_binegbinary(NN[0],uu,vv,p1,p2,p11));
+
+            *res+= weights*bl;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 /*********************************************************/
 void Comp_Pair_BinomnegLogi2mem(int *cormod, double *data1,double *data2,int *NN,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -643,8 +673,9 @@ void Comp_Pair_PoisGamma2mem(int *cormod, double *data1,double *data2,int *NN,
     double weights=1.0,corr,mui,muj,bl;
     double nugget=nuis[0];
 
+    //Rprintf("%f %f\n",exp(mean1[1]),exp(mean2[1]));
       if(nugget<0||nugget>=1){*res=LOW; return;}
-  // Rprintf("%d   \n",npairs[0]);
+
       for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
@@ -654,6 +685,34 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                       uu=(int) data1[i];  ww=(int) data2[i];
                       bl=biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]);
                       *res+= log(bl)*weights;
+                    }}
+
+    if(!R_FINITE(*res))  *res = LOW;
+    return;
+}
+
+void Comp_Pair_PoisGammaZIP2mem(int *cormod, double *data1,double *data2,int *NN,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU)
+{
+
+    int i=0, uu,vv;
+    double weights=1.0,corr,mui,muj,bl,u,v;
+   double nugget1=nuis[0];double nugget2=nuis[1];
+    double mup=nuis[2]; double shape=nuis[3];
+
+
+      if(nugget1<0||nugget1>=1||nugget2<0||nugget2>=1){*res=LOW; return;}
+      for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                    mui=exp(mean1[i]);muj=exp(mean2[i]);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
+                        u=data1[i];v=data2[i];
+                         if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                          uu=(int) u;vv=(int) v;
+                        if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                      bl=log(biv_PoissonGammaZIP(corr,uu,vv,mui, muj,mup,nugget1,nugget2,shape));
+                      *res+= bl*weights;
                     }}
 
     if(!R_FINITE(*res))  *res = LOW;
@@ -2022,16 +2081,14 @@ void Comp_Pair_Weibull_st2mem(int *cormod, double *data1,double *data2,int *NN,
     double corr,zi,zj,weights=1.0,bl=0.0;
   double nugget=nuis[0];
      if(nugget<0||nugget>=1||nuis[2]<0) {*res=LOW;  return;}
-
+    //Rprintf("%d\n",npairs[0]);
        for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                                 zi=data1[i];
                                 zj=data2[i];
-
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                                    // if(*weigthed) weights=CorFunBohman(lags,maxdist[0]);
                                       bl=biv_Weibull((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[2]);
-
                                       *res+= weights*log(bl);
                          }}
     if(!R_FINITE(*res))*res = LOW;

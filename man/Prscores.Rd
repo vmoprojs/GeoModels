@@ -2,11 +2,10 @@
 \alias{Prscores}
 \encoding{UTF-8}
 \title{
-Computation of three predictive scores: RMSE, LSCORE, CRPS
-for spatial, spatiotemporal and bivariate Gaussian RF.}
+Computation of predictive scores}
 \description{
-  The function computes RMSE, LSCORE, CRPS predictive scores.
-}
+  The function computes RMSE, MAE, LSCORE, CRPS predictive scores based on drop-one 
+prediction for a spatial, spatiotemporal and bivariate Gaussian RFs}
 \usage{
 Prscores(data,  method="cholesky", matrix)
 }
@@ -23,7 +22,7 @@ Prscores(data,  method="cholesky", matrix)
   For a given covariance matrix object (\code{\link{GeoCovmatrix}})
   and a given spatial, spatiotemporal or bivariare realization
   from a Gaussian random field,
-  the function computes three predictive scores.}
+  the function computes four predictive scores based on drop-one prediction.}
 
 \value{
   Returns a list  containing the following informations:
@@ -53,12 +52,11 @@ Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.rese
 \examples{
 
 library(GeoModels)
-library(fields)
 
 ################################################################
 ######### Examples of predictive score computation  ############
 ################################################################
-
+set.seed(8)
   # Define the spatial-coordinates of the points:
 x <- runif(500, 0, 2)
 y <- runif(500, 0, 2)

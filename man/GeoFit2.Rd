@@ -23,7 +23,7 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
        start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, 
       vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
+      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
 }
 
 \arguments{
@@ -133,6 +133,8 @@ GeoFit2(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
     correspond to no overlapping. See \bold{Details} for more information.}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
   \item{nosym}{Logical; if TRUE simmetric weights are not considered. This allows a faster but less efficient CL estimation. }
+      \item{spobj}{An object of class sp or spacetime}
+   \item{spdata}{Character:The name of data in the sp or spacetime object}
 }
 
 \details{

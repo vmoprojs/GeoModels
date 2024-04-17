@@ -5,7 +5,8 @@
 GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,neighb=NULL,
               maxdist=NULL,maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, anisopars=NULL, 
               radius=6371, sparse=FALSE, time=NULL, type="Standard",
-              type_mse=NULL, type_krig="Simple",weigthed=TRUE, which=1,copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL)
+              type_mse=NULL, type_krig="Simple",weigthed=TRUE, which=1,copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL,
+              spobj=NULL,spdata=NULL)
 
 
 {
@@ -14,11 +15,27 @@ GeoKrigloc= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, co
 M=NULL
 spacetime=FALSE
 bivariate=FALSE
-if(!is.null(coordt)) spacetime=TRUE
-if(!is.null(dim(data))) if(nrow(data)==2&&is.null(coordt)) bivariate=TRUE
 
-
+########################################################
+####### extracting sp objects if necessary 
+########################################################
+bivariate<-CheckBiv(CkCorrModel(corrmodel))
+spacetime<-CheckST(CkCorrModel(corrmodel))
 space=!spacetime&&!bivariate
+if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,spdata); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,spdata); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+   if(!is.null(a$Y)&&!is.null(a$X)) {data=a$Y ; X=a$X }
+}
+########################################################
+
+
 
 if(is.null(coordx_dyn)){
 coords=coordx

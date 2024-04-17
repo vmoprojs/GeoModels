@@ -29,6 +29,8 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
   #################### end internal function ##################################################
   #############################################################################################
     # Check the user input
+
+   # if(covariance&&variogram||!covariance&&!variogram) covariance=TRUE;variogram=FALSE
  
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     if(is.null(CkModel(model)))   stop("The name of the  model  is not correct\n")
@@ -54,7 +56,7 @@ if(spacetime) nt=length(t)
 else nt=1
 
 num_betas=c(1,1)
-if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
+if(!bivariate) if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
 
 
 mu=as.numeric(param$mean)
@@ -63,35 +65,45 @@ mu=as.numeric(param$mean)
        
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
-        #print(nuisance)
         sel=substr(names(nuisance),1,4)=="mean"
         mm=as.numeric(nuisance[sel])
         nuisance=nuisance[!sel]
         }
       if(bivariate){
+
+        if(!covariance) param$sill_1=param$sill_2=1
+        
+
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
-        nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
+        nuisance <- c(param)[NuisParam(model,bivariate,num_betas)]
+
+
     }
- 
+
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
 
-
-
 ####### Gaussian
    if(model=="Gaussian"){
-        vs=as.numeric(nuisance["sill"])
-        
-        if(bivariate){  cova11 <- correlation[(0*length(nx)+1):(1*length(nx))]
-                        cova12 <- correlation[(1*length(nx)+1):(2*length(nx))]
-                        cova22 <- correlation[(3*length(nx)+1):(4*length(nx))]
+        if(bivariate){  
+
+                        cova11 <- correlation[1:nx]
+                        cova12 <- correlation[(nx+1):(2*nx)]
+                        cova22 <- correlation[(3*nx+1):(4*nx)]
+                        variogram11  <- correlation[(4*nx+1):(5*nx)]
+                        variogram12  <- correlation[(5*nx+1):(6*nx)]
+                        variogram22  <- correlation[(7*nx+1):(8*nx)]
+                      
                                }
         else { 
-        cova <- correlation*(1-as.numeric(nuisance["nugget"]))
-
+             vs=as.numeric(nuisance["sill"])
+             cova <- correlation*(1-as.numeric(nuisance["nugget"]))
         }
 }
 
+
+
+if(!bivariate){
 ##########################
 ###### non Gaussian cases
 ##########################
@@ -374,13 +386,19 @@ if(model=="Poisson") {
                            cova=cc
                          }
                       }
-                     
+  } ## end not bivariate                 
 #################################################################
 
-if(!covariance) vs=1
-
- res=cova*vs; 
-if(variogram) res=vs*(1-cova)
+if(!bivariate){
+   if(!covariance) vs=1
+   res=cova*vs; 
+   if(variogram) res=vs*(1-cova)
+ }
+if(bivariate)
+{
+ if(!variogram) res=rbind(cova11,cova12,cova22)
+ else  res=rbind(variogram11,variogram12,variogram22)
+}
 
 return(res)
 

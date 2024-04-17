@@ -23,6 +23,7 @@ comploglik2MM <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fix
         Mean=MM   ### for non constant fixed mean
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
         res=double(1)
+       # print(head(MM))
 ################################
 if(!type_cop) { # not copula models
          if(aniso){     ### anisotropy
@@ -36,7 +37,7 @@ if(!type_cop) { # not copula models
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
          }  
       else{      ### not anisotropy
-        #print(length(Mean));print(length(data1));print(length(data2));print(length(colidx));print(length(rowidx));
+;
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx], Mean[rowidx], other_nuis,local,GPU,
@@ -83,13 +84,12 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
         res=double(1)
 
-
 ############################################
 if(!type_cop) { # not copula models 
+
         if(aniso){
             anisopar<-param[namesaniso]
-               #print(anisopar)
-            coords1=GeoAniso (coords, anisopars=anisopar)
+            coords1=GeoAniso(coords, anisopars=anisopar)
           c1=c(t(coords1[colidx,]));c2=c(t(coords1[rowidx,]))
           result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
@@ -99,7 +99,6 @@ if(!type_cop) { # not copula models
         }
          else
          {
-          #print(length(Mean));print(length(data1));print(length(data2));print(length(colidx));print(length(rowidx));
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx], Mean[rowidx], other_nuis,local,GPU,
@@ -121,8 +120,6 @@ if(!type_cop) { # not copula models
         }
          else
          {
-
-
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer","integer","integer"), 
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx], Mean[rowidx], other_nuis,local,GPU,type_cop,cond_pair,
@@ -133,7 +130,7 @@ if(!type_cop) { # not copula models
 
          return(-result)
       }
-
+      
 comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed, fan, n, 
                           namescorr, namesnuis,namesparam,namesaniso,weigthed,X,GPU,local,MM,aniso,type_cop,cond_pair)
       {
@@ -187,7 +184,9 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
     if(all(model==1,likelihood==4,type==2)) fname <- 'Comp_Diff_Gauss'
     
     namesaniso=c("angle","ratio")
-  
+   
+
+
 
    if(length(n)==1) n=rep(n,dimat)
 ####################### conditional ##############################################
@@ -262,6 +261,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==16,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==54,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegBinary'
+                                              if(varest & vartype==2) hessian <- TRUE}
     if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
                                               if(varest & vartype==2) hessian <- TRUE} 
     if(all(model==39,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEBIMODAL'
@@ -272,6 +273,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==43,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==57,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisGammaZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}                                          
     if(all(model==44,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==45,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGaussZINB'
@@ -310,6 +313,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
     if(all(model==14,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==16,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==54,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegBinary'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==15,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisbinGauss'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -374,6 +379,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
     if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
+                                              if(varest & vartype==2) hessian <- TRUE}
+    if(all(model==57,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGammaZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
     if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'
                                               if(varest & vartype==2) hessian <- TRUE}
@@ -565,6 +572,8 @@ if(!onlyvar){
     if(optimizer=='nlminb'){
 
     # tt1 <- proc.time() 
+
+
      CompLikelihood <-nlminb(objective=eval(as.name(lname)),start=param,colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,
                                 control = list( iter.max=100000),
                               lower=lower,upper=upper,

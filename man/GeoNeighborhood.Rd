@@ -13,7 +13,8 @@ GeoNeighborhood(data=NULL, coordx, coordy=NULL,
 coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
                distance="Eucl", grid=FALSE, 
                loc, neighb=NULL,maxdist=NULL,
-               maxtime=NULL, radius=6371, time=NULL, X=NULL,M=NULL)
+               maxtime=NULL, radius=6371, time=NULL, 
+               X=NULL,M=NULL,spobj=NULL,spdata=NULL)
 }
 \arguments{
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -56,6 +57,8 @@ coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
    \item{time}{Numeric; a value  giving the temporal instant for which a neighborhood is computed.}
   \item{X}{Numeric; an optional Matrix of spatio (temporal) covariates.}
    \item{M}{Numeric; an estimated spatio (temporal) mean vector.}
+    \item{spobj}{An object of class sp or spacetime}
+   \item{spdata}{Character:The name of data in the sp or spacetime object}
 }
 
 

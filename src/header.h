@@ -1,12 +1,31 @@
 //#include <stdio.h>
-#include <stdlib.h>
+
+#ifndef  USE_FC_LEN_T
+# define USE_FC_LEN_T
+#endif
+#include <Rconfig.h>
+#include <R_ext/BLAS.h>
+#ifndef FCONE
+# define FCONE
+#endif
+
+
 #include <R.h>
-#include <Rmath.h>
 #include <Rinternals.h>
-#include <R_ext/Applic.h>
+#include <Rmath.h>
+#include <R_ext/Lapack.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <R_ext/Applic.h>
+#include <R_ext/Complex.h>
+#include <R_ext/Print.h>
+#include <R_ext/Linpack.h>
+#include <R_ext/Applic.h>
+
+
 
 
 
@@ -452,6 +471,7 @@ double one_log_gammagem(double z,double shape,double n);
 double one_log_bomidal(double z,double m, double sill,double nu,double delta, double eta);
 double one_log_BinomnegZIP(int z,double n, double mu, double mup);
 double one_log_PoisZIP(int z,double lambda, double mup);
+double one_log_PoisgammaZIP(int z,double lambda, double mup,double shape);
 double one_log_loglogistic(double z,double m, double shape);
 double one_log_logistic(double z,double m, double sill);
 double one_log_negbinom_marg(int u,int N, double p);
@@ -464,7 +484,11 @@ double biv_Poisson(double corr,int r, int t, double mean_i, double mean_j);
 double appellF4(double a,double b,double c,double d,double x,double y);
 double biv_PoissonGamma(double corr,int r, int t, double mean_i, double mean_j, double a);
 double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2);
+double biv_PoissonGammaZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2,double shape);
+
 double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget1,double nugget2,double mup);
+
+
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
 
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
@@ -481,6 +505,7 @@ double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, d
 double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill);
 
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11);
+double biv_binegbinary(int NN, int u, int v,double pu,double pv, double p11);
 double biv_binom222(int n1,int n2, int u, int v, double p01,double p10,double p11);
 double bin_aux(int a,int NN,int u,int v,double p1, double p2,double p11);
 double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11);
@@ -541,6 +566,27 @@ double corr_pois1(double rho,double lambda1,double lambda2);
 double marg_p(double categ_0,double psm,int *model,int n);
 
 double CheckCor(int *cormod, double *par);
+
+
+/*
+void spectraldensityC(double u,int model,int d,int L,double *f,double *av,double *Cv,double *nu1v,double *nu2v);
+void extraer(double *coord,int sequen1,double *sub_coord,int fila,int col, int d);
+void rellenar_indice(int *index,int inicio, int final,int largo);
+void u_index_extraer(double *u_index,double *u, int *index,int largo,int d,int filas);
+void mult_mat(double *z, double *x, int xrows, int xcols, double *y, int yrows, int ycols);
+void tcrossprod(double *z, double *x,  int xrows, int xcols, double *y, int yrows, int ycols);
+void mult_x_cons(double *x, double cte,int largo);
+void sumar_matrices(double *x0, double *x,double *y,int largo);
+void restar_matrices(double *x0, double *x,double *y,int largo);
+void cos_vec(double *x_cos,double *x,int largo);
+void sen_vec(double *x_sen,double *x,int largo);
+void llenar_simu(double *x,double *simu, int N,int *P, int m);
+void extraer_col(int inicio, int final,double *x_original,double *x);
+void llenar_simu1(double *simu1,double *simu,int *m,int *P,int *N,int lim, int i,double *L1);
+void C_tcrossprod(Rcomplex *z, Rcomplex *x,  int xrows, int xcols, Rcomplex *y, int yrows, int ycols);
+void C_mult_mat(Rcomplex *z, Rcomplex *x, int xrows, int xcols, Rcomplex *y, int yrows, int ycols);
+*/
+
 
 void Comp_supp(double *c_supp,int *cormod, double h,double u, double *par);
 double CorFct(int *cormod, double h, double u, double *par, int c11, int c22);
@@ -830,11 +876,6 @@ double pbnorm_two_piece( int *cormod, double h, double u,
 
 
 
-/*----------------------------------------------------------------
-File name: Distributions.c
-Description: procedures for the computation of useful distributions
-End
- ---------------------------------------------------------------*/
 
 // 4)
 /*----------------------------------------------------------------

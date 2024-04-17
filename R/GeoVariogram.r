@@ -318,29 +318,37 @@ if(x$bivariate)       bivariate=TRUE
 #### space time case ##############
 ###################################
     if(ispatim){
-        par(mfrow=c(2,2), mai=c(.5,.5,.3,.3), mgp=c(1.4,.5, 0))
+        par(mfrow=c(2,2)) 
 
-plot.default(x$centers, x$variograms, xlab='h', ylab=expression(gamma(h)),
-     ylim=c(0, max(x$variograms)), xlim=c(0, max(x$centers)),
-     main="Marginal spatial semi-variogram",...)
-
-plot.default(x$bint, x$variogramt, xlab='t', ylab=expression(gamma(t)),
-     ylim=c(0, max(x$variogramt)),xlim=c(0,max(x$bint)),
-     main="Marginal temporal semi-variogram",...)
 
          evario = matrix(x$variogramst,nrow=length(x$centers),ncol=length(x$bint),byrow=TRUE)
          evario = rbind(c(0,x$variogramt),cbind(x$variograms,evario))
          evario.grid = as.matrix(expand.grid(c(0,x$centers),c(0,x$bint)))
-         scatterplot3d::scatterplot3d(evario.grid[,1],evario.grid[,2], c(evario),
+    scatterplot3d::scatterplot3d(evario.grid[,1],evario.grid[,2], c(evario),
                               type="h",highlight.3d=TRUE,cex.axis=.7,cex.lab=.7,
                               main=paste("Empirical",vario.main),xlab="Distance",
                               ylab="Time",zlab=vario.zlab,mar=c(2,2,2,2),mgp=c(0,0,0))
-    par(mai=c(.2,.2,.2,.2),mgp=c(1,.3, 0))
+    #par(mai=c(.2,.2,.2,.2),mgp=c(1,.3, 0))
+    par(mai=c(.2,.2,.2,.2))
      persp(c(0,x$centers), c(0,x$bint), evario,
       xlab="h", ylab="u", zlab=expression(gamma(h,u)),
       ltheta=90, shade=0.75, ticktype="detailed", phi=30,
       theta=30,main="Space-time semi-variogram",cex.axis=.8,
       cex.lab=.8)
+
+
+
+
+   par(mai=c(.5,.5,.5,.5),mgp=c(1.6,.6,0))
+plot.default(x$bint, x$variogramt, xlab='t', ylab=expression(gamma(t)),
+     ylim=c(0, max(x$variogramt)),xlim=c(0,max(x$bint)),
+     main="Marginal temporal semi-variogram",...)
+
+   par(mai=c(.5,.5,.5,.5),mgp=c(1.6,.6,0))
+
+plot.default(x$centers, x$variograms, xlab='h', ylab=expression(gamma(h)),
+     ylim=c(0, max(x$variograms)), xlim=c(0, max(x$centers)),
+     main="Marginal spatial semi-variogram",...)
             }
 ############################spatial case#########################################
         if(!ispatim && !bivariate)    plot.default(x$centers, x$variograms,...)

@@ -2,7 +2,7 @@
 \alias{GeoFit}
 \alias{print.GeoFit}
 \encoding{UTF-8}
-\title{Max-Likelihood-Based Fitting of Gaussian and non Gaussian random fieldss.}
+\title{Max-Likelihood-Based Fitting of Gaussian and non Gaussian random fields.}
 \description{
   Maximum weighted composite-likelihood fitting for Gaussian  and some Non-Gaussian  
   univariate spatial, spatio-temporal and bivariate spatial random fieldss
@@ -20,7 +20,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
       start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, 
       vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
+      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
 }
 
 \arguments{
@@ -130,6 +130,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
     correspond to no overlapping. See \bold{Details} for more information.}
   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
     \item{nosym}{Logical; if TRUE simmetric weights are not considered. This allows a faster but less efficient CL estimation. }
+      \item{spobj}{An object of class sp or spacetime}
+   \item{spdata}{Character:The name of data in the sp or spacetime object}
 }
 
 \details{
@@ -443,7 +445,6 @@ library(GeoModels)
 set.seed(3)
 N=300  # number of location sites
 x <- runif(N, 0, 1)
-set.seed(6)
 y <- runif(N, 0, 1)
 coords <- cbind(x,y)
 
@@ -504,9 +505,8 @@ print(fit1)
 ###############################################################
 # Define the spatial-coordinates of the points:
 set.seed(3)
-N=100  # number of location sites
+N=250  # number of location sites
 x <- runif(N, 0, 1)
-set.seed(6)
 y <- runif(N, 0, 1)
 coords <- cbind(x,y)
 
@@ -698,7 +698,6 @@ time <- seq(1, 9, 1)
 
 # Define the spatial-coordinates of the points:
 x <- runif(20, 0, 1)
-set.seed(42)
 y <- runif(20, 0, 1)
 coords=cbind(x,y)
 

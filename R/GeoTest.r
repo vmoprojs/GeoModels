@@ -114,18 +114,23 @@ StatiTest <- function(df, model1, model2, statistic)
           model1$fixed=unlist(model1$fixed)
           model2$fixed=unlist(model2$fixed)
           namesparam <- names(model1$param)[!names(model1$param)%in%names(model2$param)]
+         
   ### composite likelihood case 
   if(model1$likelihood %in% c("Marginal","Conditional","Difference"))
   {
           # compute the Wald-type statistic:
           if(statistic=='Wald'){
-              theta <- model1$param[namesparam]-model2$fixed[namesparam]
+              mm2=model2$fixed[namesparam]
+              if(any(is.na(mm2))) mm2=rep(0,df)
+              theta <- model1$param[namesparam]-mm2
               varcov <- model1$varcov[namesparam,namesparam]# Restricted variance-covariance matrix
               W <- t(theta)%*%solve(varcov)%*%theta
               nu <- df}
           if(statistic=="WilksCB"){
               W <- 2*(model1$logCompLik-model2$logCompLik)
-              theta <- model1$param[namesparam]-model2$fixed[namesparam]
+              mm2=model2$fixed[namesparam]
+              if(any(is.na(mm2))) mm2=rep(0,df)
+              theta <- model1$param[namesparam]-mm2
               G <- solve(model1$varcov)[namesparam,namesparam]
               H <- model1$sensmat[namesparam,namesparam]
               W <- W*((t(theta)%*%G%*%theta)/(t(theta)%*%H%*%theta))
@@ -140,15 +145,15 @@ StatiTest <- function(df, model1, model2, statistic)
               G <- H%*%Ji%*%H# compute the Godambe matrix
               varcov <- solve(G)# variance-covariance matrix
 
-              if(statistic=="WilksPSS"){
-                  W <- 2*(model1$logCompLik-model2$logCompLik)
-                  varcov <- varcov[namesparam,namesparam]
-                  G <- try(solve(varcov),silent=TRUE)
-                  score <- null$score[namesparam]# select the score related to the null
-                  Hi <- Hi[namesparam,namesparam]# select the inversed of sens related to the null
-                  Rao <- t(score)%*%Hi%*%G%*%Hi%*%score# compute the Rao statistic
-                  W <- W*Rao/(t(score)%*%Hi%*%score)
-                  nu <- df}
+              #if(statistic=="WilksPSS"){
+              #    W <- 2*(model1$logCompLik-model2$logCompLik)
+              #    varcov <- varcov[namesparam,namesparam]
+              #    G <- try(solve(varcov),silent=TRUE)
+              #    score <- null$score[namesparam]# select the score related to the null
+              #    Hi <- Hi[namesparam,namesparam]# select the inversed of sens related to the null
+              #    Rao <- t(score)%*%Hi%*%G%*%Hi%*%score# compute the Rao statistic
+              #    W <- W*Rao/(t(score)%*%Hi%*%score)
+              #    nu <- df}
               if(statistic=="WilksRJ"){
                   W <- 2*(model1$logCompLik-model2$logCompLik)
                   lambda <- eigen(solve(Hi[namesparam, namesparam])%*%varcov[namesparam, namesparam])$values
@@ -175,8 +180,14 @@ StatiTest <- function(df, model1, model2, statistic)
   {
       if(statistic=='Wald'){
 
-              theta <- model1$param[namesparam]-model2$fixed[namesparam]
-              varcov <- model1$varcov[namesparam,namesparam]
+                 mm2=model2$fixed[namesparam]
+              if(any(is.na(mm2))) mm2=rep(0,df)
+
+              theta <- model1$param[namesparam]-mm2
+              
+              varcov <- as.matrix(model1$varcov[namesparam,namesparam])
+           
+    
               W <- t(theta)%*%solve(varcov)%*%theta
               nu <- df}
        if(statistic=="Wilks"){

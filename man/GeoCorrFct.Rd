@@ -122,9 +122,56 @@ plot(x,corr,ylim=c(0,1),type="l")
 CorrParam("Matern")
 NuisParam("Poisson")
 x = seq(0,1,0.005)
-param=list(scale=0.2/3,nugget=0,smooth=0.5,mean=2)
+param=list(scale=0.6/3,nugget=0,smooth=0.5,mean=2)
 cova= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Poisson",covariance=TRUE)
 plot(x,cova,ylim=c(0,exp(2)),type="l")
+
+
+################################################################
+###
+### Example 7. Correlation of a space time Gaussian random field 
+### with underlying  spacetime separable Matern correlation model
+###
+###############################################################
+
+## spatial and temporal distances 
+h<-seq(0,3,by=0.05)
+times<-seq(0,3,by=0.05)
+
+# Correlation Parameters for the space time separable Matern model 
+CorrParam("Matern")
+NuisParam("Gaussian")
+# Matern Parameters 
+param=list(sill=1,scale_s=0.8/3,scale_t=1,nugget=0,mean=0,smooth_s=1.5,smooth_t=0.5)
+
+corr= GeoCorrFct(x=h,t=times,corrmodel="Matern_Matern", param=param,model="Gaussian")
+
+cc=matrix(corr,nrow=length(h),ncol=length(times))
+persp(cc,x= h,y=times, theta = 20, phi = 30, 
+                   ticktype = "detailed",zlab="",xlab="Distance",ylab="Time")
+
+
+################################################################
+###
+### Example 8. Correlation of a bivariate Gaussian random field 
+### with underlying  separable bivariate  Matern correlation model
+###
+###############################################################
+# Define the spatial distances
+x = seq(0,1,0.005)
+# Correlation Parameters for the bivariate sep Matern model 
+CorrParam("Bi_Matern_sep")
+# Matern Parameters 
+param=list(sill_1=1,sill_2=1,smooth=0.5,scale=0.2/3,mean_1=0,
+                       mean_2=0,nugget_1=0,nugget_2=0,pcol=0.2)
+corr= GeoCorrFct(x=x, corrmodel="Bi_Matern_sep", param=param,model="Gaussian")
+
+# first correlation
+plot(x,corr[1,],ylim=c(0,1),type="l")
+# cross correlation
+plot(x,corr[2,],ylim=c(0,1),type="l")
+# second correlation
+plot(x,corr[3,],ylim=c(0,1),type="l")
 
 }
 

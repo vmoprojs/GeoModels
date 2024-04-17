@@ -6,7 +6,7 @@
 \usage{GeoCV(fit, K=100, estimation=FALSE, optimizer="Nelder-Mead",
      lower=NULL, upper=NULL, n.fold=0.05,local=FALSE,
     neighb=NULL, maxdist=NULL,maxtime=NULL,sparse=FALSE,
-    type_krig="Simple", which=1,seed=1)}
+    type_krig="Simple", which=1)}
 
 \arguments{
   \item{fit}{An object of class
@@ -33,8 +33,6 @@
     default) then simple kriging is performed. If \code{Optim} then optimal kriging is performed for some non-Gaussian RFs}
       \item{which}{Numeric; In the case of bivariate  cokriging it indicates which variable to predict.
            It can be 1 or 2}
-     \item{seed}{Numeric; The seed used in the  n-fold  kriging cross-validation. Default is 1. Comparison between
-     different models in terms  of n-fold  kriging cross-validation must be performed using the same seed}
 }
 
 \value{

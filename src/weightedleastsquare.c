@@ -281,27 +281,28 @@ int h=0, i=0, j=0;
   if(md<mm[1]) mm[1]=md;
   step=mm[1]/(*nbins-1);
   bins[0]=0;
-  for(h=1;h<*nbins;h++)
-    bins[h]=bins[h-1]+step;
+  for(h=1;h<*nbins;h++) 
+         {bins[h]=bins[h-1]+step;}
   //computes the empirical variogram:
-  // Computes the log-likelihood:
     for(t=0;t<ntime[0];t++){
     for(i=0;i<ns[t];i++){
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
            lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
-           
-              if(lags<=dista[t][v]) {
-                     for(h=0;h<(*nbins-1);h++)     {
-      if((bins[h]<=lags) && (lags<bins[h+1])){
+      if(lags<=dista[t][v]) {
+      for(h=0;h<(*nbins-1);h++)     {
+       if((bins[h]<=lags) && (lags<bins[h+1])){
                x=data[(i+NS[t])];
                y=data[(j+NS[v])];
               if(!(ISNAN(x)||ISNAN(y))){
                   marg_moms[h+t*(*nbins-1)]+=0.5*pow(x-y,2);
-                  marg_lbins[h+t*(*nbins-1)]+=1;
-                  
-              }}}}}}
+                  marg_lbins[h+t*(*nbins-1)]+=1;}
+                                              }
+    }
+  }
+}
+}
    else {
          for(j=0;j<ns[v];j++){
              lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
@@ -313,8 +314,11 @@ int h=0, i=0, j=0;
                 a=data[(i+NS[v])];b=data[(j+NS[v])];
                  if(!(ISNAN(x)||ISNAN(y)||ISNAN(a)||ISNAN(b))){
                      cross_moms[h+(v-t-1)*(*nbins-1)]+=0.5*(x-y)*(a-b);
-                     cross_lbins[h+(v-t-1)*(*nbins-1)]+=1;
-                 }}}}}
+                     cross_lbins[h+(v-t-1)*(*nbins-1)]+=1;}
+                   }
+                 }
+               }
+         }
         }
                }}}
   return;

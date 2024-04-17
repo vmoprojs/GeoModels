@@ -10,7 +10,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
                           optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
                          type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-                         winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE)
+                         winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
 {
 
 ###########  first preliminary check  ###############
@@ -39,10 +39,32 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
           }
     if(type=='Pairwise') 
     
-    if(is.null(neighb)||is.null(maxdist)) stop("neighb and/or maxdist and/or  maxtime must be fixed")
-    if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements")}
+    if(is.null(neighb)||is.null(maxdist)) stop("neighb and/or maxdist and/or  maxtime must be fixed\n")
+    if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements\n")}
+    if(!is.character(optimizer)) stop("invalid optimizer\n")
+     if(!is.character(distance)) stop("invalid distance\n")
  
-bivariate<-CheckBiv(CkCorrModel(corrmodel))    
+##############################################################################
+###### extracting sp object informations if necessary              ###########
+##############################################################################
+bivariate<-CheckBiv(CkCorrModel(corrmodel))
+spacetime<-CheckST(CkCorrModel(corrmodel))
+space=!spacetime&&!bivariate
+if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,spdata); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,spdata); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+   if(!is.null(a$Y)&&!is.null(a$X)) {data=a$Y ; X=a$X }
+}
+###############################################################
+###############################################################  
+
+       
 if(!bivariate){
 if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
@@ -139,17 +161,14 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
       initparam$upper <- uu;initparam$lower <- ll
      }}
 
-     
 ###############################################################################################
-    fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
                                    coordx_dyn,unname(initparam$data), 
                                    initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
                                     initparam$lower,initparam$model,initparam$n ,
                                      initparam$namescorr,initparam$namesnuis,
                                    initparam$namesparam,initparam$numparam,optimizer,onlyvar,parallel, initparam$param,initparam$spacetime,initparam$type,#27
                                    initparam$upper,names(upper),varest, initparam$ns, unname(initparam$X),sensitivity,copula,MM)
-
-
 ######################################################
 ######updating starting and names  parameters 
 ######################################################
@@ -163,18 +182,18 @@ initparam$param=aa[sel]
 ######################################################
 
 
-
 #updating with aniso parameters
 update.aniso=function(param,namesparam,fixed,namesfixed,lower,upper,anisopars,estimate_aniso)
 {
  un_anisopars=unlist(anisopars); namesaniso=names(un_anisopars)  
- kk=unlist(anisopars)*estimate_aniso
+ anisostart=unlist(anisopars)[estimate_aniso]
+ anisofixed=unlist(anisopars)[!estimate_aniso]
+ if(length(anisostart)==0) anisostart=NULL
+ if(length(anisofixed)==0) anisofixed=NULL
  ll=c(0,1)
  uu=c(pi,1e+25);
  lwr=c(lower,ll[estimate_aniso])
  upr=c(upper,uu[estimate_aniso])
- anisostart=kk[kk>0]
- anisofixed=kk[kk==0]
  param=c(param,anisostart)
  fixed=c(fixed,anisofixed)
  namesparam=names(param);namesfixed=names(fixed)
@@ -183,11 +202,10 @@ update.aniso=function(param,namesparam,fixed,namesfixed,lower,upper,anisopars,es
   if(!estimate_aniso[1]& estimate_aniso[2]) fixed["angle"]=un_anisopars['angle']
   if(!estimate_aniso[1]&!estimate_aniso[2]) {fixed["angle"]=un_anisopars['angle'];fixed["ratio"]=un_anisopars['ratio']}
     }
+   
 a=list(param=param,fixed=fixed,namesparam=namesparam,namesfixed=namesfixed,lower=lwr,upper=upr)
 return(a)
 }
-
-
 
 aniso=FALSE
 if(!is.null(anisopars)) {
@@ -198,6 +216,7 @@ if(!is.null(anisopars)) {
                   initparam$namesparam=qq$namesparam; initparam$namesfixed=qq$namesfixed
                   initparam$lower=qq$lower; initparam$upper=qq$upper
                        }
+          
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
@@ -289,6 +308,7 @@ if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(l
                                         }   
 
 conf.int=NULL
+pvalues=NULL
 if(likelihood=="Full"&&type=="Standard") 
 {if(varest){
    alpha=0.05 
@@ -296,6 +316,7 @@ if(likelihood=="Full"&&type=="Standard")
    pp=as.numeric(fitted$par)
    low=pp-aa; upp=pp+aa
    conf.int=rbind(low,upp)
+     pvalues= 2*pnorm(-abs(pp/fitted$stderr))
    }
 }
 
@@ -346,6 +367,7 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
                          neighb=initparam$neighb,
                          numpairs=initparam$numpairs,
                          missp=missp,
+                         pvalues=pvalues,
                          radius = radius,
                          spacetime = initparam$spacetime,
                          stderr = fitted$stderr,

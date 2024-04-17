@@ -5,7 +5,7 @@
 GeoCV=function(fit, K=100, estimation=FALSE, 
    optimizer="Nelder-Mead",lower=NULL, upper=NULL,
     n.fold=0.05, local=FALSE,neighb=NULL,maxdist=NULL,maxtime=NULL,
-        sparse=FALSE, type_krig="Simple", which=1,seed=1)
+        sparse=FALSE, type_krig="Simple", which=1)
 {
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
@@ -52,7 +52,7 @@ Mloc=NULL
 if(length(fit$fixed$mean)>1)  tempM=fit$fixed$mean
 if(!is.null(X)) tempX=fit$X
 
-set.seed(round(seed))
+#set.seed(round(seed))
 pb <- txtProgressBar(min = 0, max = K, style = 3)
 while(i<=K){
 Sys.sleep(0.1)
@@ -147,14 +147,16 @@ NS=cumsum(ns)
 NS=c(c(0,NS)[-(length(ns)+1)],NT)
 
 if(!space_dyn){
-data_tot=NULL
-for(k in 1:T) 
+data_tot=cc=NULL
+for(k in 1:T) {
+cc=rbind(cc,coords)
 data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),fit$data[k,]))
-data_tot=cbind(coords,data_tot,fit$X)
+}
+data_tot=cbind(cc,data_tot,fit$X)
 }
 
 
-set.seed(round(seed))
+#set.seed(round(seed))
 pb <- txtProgressBar(min = 0, max = K, style = 3)
 
 while(i<=K){
@@ -197,10 +199,14 @@ if(ncol(Xnew[[1]])==1) Xnew=NULL
 param=append(fit$param,fit$fixed)
 if(estimation) {
 
+print(datanew)
+print(coordx_dynnew)
+print(utt)
+print(Xnew)
            fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
                             corrmodel=fit$corrmodel,X=Xnew,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
-                            copula=fit$copula, #anisopars=fit$anisopars,#est.aniso=fit$est.aniso,
+                            copula=fit$copula, anisopars=fit$anisopars,est.aniso=fit$est.aniso,
                             model=model1,radius=fit$radius,n=fit$n,
                             local=fit$local,GPU=fit$GPU,
                             maxdist=fit$maxdist, neighb=fit$neighb,maxtime=fit$maxtime,distance=fit$distance,
@@ -283,7 +289,7 @@ if(!is.null(X)) {
                 if(!is.list(fit$X)){X1=fit$X[1:ns[1],];X2=fit$X[(ns[1]+1):(ns[1]+ns[2]),]}
                 if( is.list(fit$X)){X1=fit$X[[1]];X2=fit$X[[2]]}
                 }
-set.seed(round(seed))
+#set.seed(round(seed))
 
 pb <- txtProgressBar(min = 0, max = K, style = 3)
 #param=as.list(c(fit$param,fit$fixed))

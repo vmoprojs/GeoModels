@@ -11,7 +11,7 @@
 GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
           distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
           model="Gaussian", n=1, param, anisopars=NULL, radius=6371, sparse=FALSE,
-          taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL)
+          taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL,spobj=NULL)
 }
 
 \arguments{
@@ -67,6 +67,7 @@ GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
    \code{Standard} (the default) or \code{Tapering} for tapered covariance matrix. }
      \item{copula}{String; the type of copula. It can be "Clayton" or "Gaussian"}
    \item{X}{Numeric; Matrix of space-time covariates.}
+         \item{spobj}{An object of class sp or spacetime}
    }
 
 
@@ -122,8 +123,8 @@ In the spatial case, the covariance matrix of the
   or a point (given in lon/lat degree format) on a  sphere of arbitrary radius.
 
 
-Here there is the list of all the implemented space and space-time and bivariate 
- correlation models. 
+A list with all the implemented space and space-time and bivariate 
+ correlation models is given below.
 The argument \code{param} is a list including all the parameters of a given
 correlation  model specified by  the argument \code{corrmodel}.
 For each correlation model one can check the associated  parameters' names using \code{\link{CorrParam}}.
@@ -137,13 +138,6 @@ The associated parameters in the argument \code{param} are
 \itemize{
   \item Spatial correlation models:
     \enumerate{
-    \item \eqn{Cauchy} defined as:
-    \deqn{R(h) = \left(1+h^2\right)^{-\beta/2}}{R(h) = (1+h^2)^(-\beta/2)}
-     It is a special case of the  \code{Gencauchy} model.
-
-    \item \eqn{Exp} defined as:
-    \deqn{R(h)  =e^{-h}}
-    This model is a special case of the \code{Matern} and the \code{Stable} model.
 
     \item \eqn{GenCauchy} (generalised \eqn{Cauchy} in Gneiting and Schlater (2004)) defined as:
     \deqn{R(h) = ( 1+h^{\alpha} )^{-\beta / \alpha}} 
@@ -161,49 +155,21 @@ The associated parameters in the argument \code{param} are
     \item \eqn{Kummer{\_}Matern} It is a rescaled version of the  \eqn{Kummer} model  
      that is \eqn{h} must be divided by \eqn{2(\kappa(1+\alpha)^{0.5}}.  When  \eqn{\alpha} goes to infinity it is the Matern model. 
 
-    \item \eqn{Stable} defined as:
-    \deqn{R(h) = e^{-h^{\alpha}}}{R(h)=exp(-h ^{\alpha})}
-    If \eqn{h} is the geodesic distance then \eqn{\alpha \in (0,1]}.
-
     \item \eqn{Wave} defined as:
     \deqn{R(h)=sin(h)/h} 
     This model is valid only for dimensions less than or equal to 3.
-
-    \item \eqn{Wend0} defined as:
-      \deqn{R(h) = (1-h )^{\mu} 1(h \in [0,1])}
-      where  \eqn{\mu \ge 0.5(d+1)}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 2}.
-
-    \item \eqn{Wend1} defined as:
-      \deqn{R(h) = (1-h )^{\mu+1} (1+(\mu+1) h) 1(h \in [0,1])}
-      where   \eqn{\mu \ge 0.5(d+1)+1}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 4}.
-
-     \item \eqn{Wend2} defined as:
-      \deqn{R(h) = (1-h )^{\mu+2} (1+(\mu+2) h+ (1/3)((\mu+1)^2-1) h^2 ) 1(h \in [0,1])  }
-      where \eqn{\mu \ge 0.5(d+1)+2}. If \eqn{h} is the geodesic distance then \eqn{\mu \ge 6}.
 
     \item \eqn{GenWend} (Generalized Wendland in  Bevilacqua et al.(2019)) defined as:
       \deqn{R(h) =  A (1-h^2)^{\beta+\kappa} F(\beta/2,(\beta+1)/2,2\beta+\kappa+1,1-h^2) 1(h \in [0,1]) }
       where   \eqn{\mu \ge 0.5(d+1)+\kappa}
        and \eqn{A=(\Gamma(\kappa)\Gamma(2\kappa+\beta+1))/(\Gamma(2\kappa)\Gamma(\beta+1-\kappa)2^{\beta+1})} and $F(.,.,.)$ 
       is the Gaussian hypergeometric function.
-     The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2} respectively. 
+     The cases \eqn{\kappa=0,1,2} correspond to the \eqn{Wend0}, \eqn{Wend1} and \eqn{Wend2}  models respectively. 
 
     \item \eqn{GenWend_{\_}Matern} (Generalized Wendland Matern in  Bevilacqua et al. (2022)). It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be divided by 
     \eqn{(\Gamma(\beta+2\kappa+1)/\Gamma(\beta))^{1/(1+2\kappa)}}. When  \eqn{\beta} goes to infinity it is the Matern model.
     
-
-     \item \eqn{Hypergeometric2} (Hypegeometric model in Alegria and Emery (2022)) defined as:
-      \deqn{R(h) =  A (1-h^2)^{\beta+\alpha-\kappa-2} F(\beta-\kappa,\alpha-\kappa,\beta+\alpha-\kappa-1,1-h^2) 1(h \in [0,1]) }
-      where   \eqn{\mu \ge 0.5(d+1)+\kappa}
-       and \eqn{A=(\Gamma(\beta-1)\Gamma(\alpha-1))/(\Gamma(\beta+\alpha-\kappa-1)\Gamma(\kappa-1))} and $F(.,.,.)$ 
-      is the Gaussian hypergeometric function.
-
-
      \item \eqn{Hypergeometric} (Parsimonious Hypegeometric model in Alegria and Emery (2022)) defined as the model \eqn{Hypergeometric2} with the restriction \eqn{\beta=\alpha}. 
-
-
-     \item \eqn{Hypergeometric{\_}Matern} It is a rescaled version of the  Parsimonious  \eqn{Hypergeometric} model  
-     that is \eqn{h} must be divided by \eqn{2\beta}.  When  \eqn{\beta} goes to infinity it is the Matern model. 
 
       \item \eqn{Multiquadric} defined as:
     \deqn{R(h) = (1-\alpha0.5)^{2\beta}/(1+(\alpha0.5)^{2}-\alpha cos(h))^{\beta}, \quad h \in [0,\pi]}
@@ -384,12 +350,12 @@ The associated parameters in the argument \code{param} are
    The model  \eqn{Bi}\code{_}\eqn{Matern}\code{_}\eqn{contr}  (constrained matern)
    is a special case when \eqn{a_{12}=0.5  (a_{11} + a_{22})} and  \eqn{\kappa_{12}=0.5  (\kappa_{11} + \kappa_{22})}
 
- \item \eqn{Bi}\code{_}\eqn{Wendx}  (\eqn{x=0,1,2}) defined as:
-    \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))   Wendx(h/a_{ij},\nu_{ij}+1) \quad i,j=1,2.\quad h\ge 0}
+ \item \eqn{Bi}\code{_}\eqn{GenWend}   defined as:
+    \deqn{C_{ij}(h)=\rho_{ij} (\sigma_i  \sigma_j+\tau_i^2 1(i=j,h=0))   GenWend(h/a_{ij},\nu_{ij},\kappa_ij) \quad i,j=1,2.\quad h\ge 0}
      where \eqn{\rho=\rho_{12}=\rho_{21}} is the correlation colocated parameter and   \eqn{\rho_{ii}=1}.
-   The model  \eqn{Bi}\code{_}\eqn{Wendx}\code{_}\eqn{sep}  (separable wendland) is a special case when
+   The model  \eqn{Bi}\code{_}\eqn{GenWend}\code{_}\eqn{sep}  (separable Genwendland) is a special case when
   \eqn{a=a_{11}=a_{12}=a_{22}} and \eqn{\mu=\mu_{11}=\mu_{12}=\mu_{22}}.
-   The model  \eqn{Bi}\code{_}\eqn{Wendx}\code{_}\eqn{contr}  (constrained matern)
+   The model  \eqn{Bi}\code{_}\eqn{GenWend}\code{_}\eqn{contr}  (constrained Genwendland)
    is a special case when \eqn{a_{12}=0.5  (a_{11} + a_{22})} and  \eqn{\mu_{12}=0.5  (\mu_{11} + \mu_{22})}
 
   \item  \eqn{Bi}\code{_}\eqn{LMC} defined as:
@@ -484,19 +450,19 @@ dim(matrix1$covmatrix)
 ################################################################
 ###
 ### Example 2. Spatial covariance matrix associated to
-### the Generalized Wendland correlation model
+### the GeneralizedWendland-Matern correlation model
 ###
 ###############################################################
 
 # Correlation Parameters for Gen Wendland model 
-CorrParam("GenWend")
+CorrParam("GenWend_Matern")
 # Gen Wendland Parameters 
-param=list(sill=1,scale=0.2,nugget=0,smooth=0,power2=4)
+param=list(sill=1,scale=0.04,nugget=0,smooth=0,power2=1.5)
 
-matrix3 = GeoCovmatrix(coordx=coords, corrmodel="GenWend", param=param,sparse=TRUE)
+matrix2 = GeoCovmatrix(coordx=coords, corrmodel="GenWend_Matern", param=param,sparse=TRUE)
 
-# Percentage of no zero values in the tapered matrix
-matrix3$nozero
+# Percentage of no zero values 
+matrix2$nozero
 
 
 ################################################################
@@ -510,77 +476,78 @@ matrix3$nozero
 CorrParam("Kummer")
 param=list(sill=1,scale=0.2,nugget=0,smooth=0.5,power2=1)
 
-matrix4 = GeoCovmatrix(coordx=coords, corrmodel="Kummer", param=param)
+matrix3 = GeoCovmatrix(coordx=coords, corrmodel="Kummer", param=param)
 
-matrix4$covmatrix[1:4,1:4]
+matrix3$covmatrix[1:4,1:4]
 
 
 ################################################################
 ###
 ### Example 4. Covariance matrix associated to
-### the space-time double exponential correlation model
+### the space-time double Matern correlation model
 ###
 ###############################################################
 
 # Define the temporal-coordinates:
 times = seq(1, 4, 1)
 
-# Define covariance parameters
-param=list(scale_s=0.3,scale_t=0.5,sill=1)
+# Correlation Parameters for double Matern model
+CorrParam("Matern_Matern")
 
-# Correlation Parameters for double exp model
-CorrParam("Exp_Exp")
+# Define covariance parameters
+param=list(scale_s=0.3,scale_t=0.5,sill=1,smooth_s=0.5,smooth_t=0.5)
 
 # Simulation of a spatial Gaussian random field:
-matrix5 = GeoCovmatrix(coordx=coords, coordt=times, corrmodel="Exp_Exp",
+matrix4 = GeoCovmatrix(coordx=coords, coordt=times, corrmodel="Matern_Matern",
                      param=param)
 
-dim(matrix5$covmatrix)
+dim(matrix4$covmatrix)
 
 ################################################################
 ###
-### Example 5. Covariance matrix associated to
-### a  skew gaussian RF with Exp correlation model
+### Example 5. Spatial Covariance matrix associated to
+### a  skew gaussian RF with Matern correlation model
 ###
 ###############################################################
 
-param=list(sill=1,scale=0.3/3,nugget=0,skew=4)
+param=list(sill=1,scale=0.3/3,nugget=0,skew=4,smooth=0.5)
 # Simulation of a spatial Gaussian random field:
-matrix6 = GeoCovmatrix(coordx=coords,  corrmodel="Exp", param=param, 
+matrix5 = GeoCovmatrix(coordx=coords,  corrmodel="Matern", param=param, 
                      model="SkewGaussian")
 
 # covariance matrix
-matrix6$covmatrix[1:10,1:10]
+matrix5$covmatrix[1:4,1:4]
 
 ################################################################
 ###
-### Example 6. Covariance matrix associated to
+### Example 6. Spatial Covariance matrix associated to
 ### a  Weibull RF with Genwend correlation model
 ###
 ###############################################################
 
 param=list(scale=0.3,nugget=0,shape=4,mean=0,smooth=1,power2=5)
 # Simulation of a spatial Gaussian random field:
-matrix7 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
+matrix6 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param, 
                      sparse=TRUE,model="Weibull")
 
-# covariance matrix
-matrix7$nozero
+# Percentage of no zero values 
+matrix6$nozero
 
 ################################################################
 ###
-### Example 7. Covariance matrix associated to
-### a  binomial gaussian RF with Wendland correlation model
+### Example 7. Spatial Covariance matrix associated to
+### a  binomial gaussian RF with Generalized Wendland correlation model
 ###
 ###############################################################
 
-param=list(scale=0.2,nugget=0,power2=4)
+param=list(mean=0.2,scale=0.2,nugget=0,power2=4,smooth=0)
 # Simulation of a spatial Gaussian random field:
-matrix8 = GeoCovmatrix(coordx=coords,  corrmodel="Wend0", param=param,n=5, 
+matrix7 = GeoCovmatrix(coordx=coords,  corrmodel="GenWend", param=param,n=5, 
+                     sparse=TRUE,
                      model="Binomial")
 
-# covariance matrix
-matrix8$covmatrix[1:10,1:10]
+as.matrix(matrix7$covmatrix)[1:4,1:4]
+
 
 ################################################################
 ###
@@ -591,18 +558,20 @@ matrix8$covmatrix[1:10,1:10]
 
 set.seed(8)
 # Define the spatial-coordinates of the points:
-x = runif(10, -1, 1)
-y = runif(10, -1, 1)
+x = runif(4, 0, 1)
+y = runif(4, 0, 1)
 coords = cbind(x,y)
 
 # Parameters 
-param=list(scale=0.3,mean_1=0,mean_2=0,sill_1=1,sill_2=1,
-             nugget_1=0,nugget_2=0,smooth=0.5,pcol=-0.25)
+param=list(mean_1=0,mean_2=0,sill_1=1,sill_2=2,
+           scale_1=0.1,  scale_2=0.1,  scale_12=0.1,
+           smooth_1=0.5, smooth_2=0.5, smooth_12=0.5,
+            nugget_1=0,nugget_2=0,pcol=-0.25)
 
 # Covariance matrix 
-matrix9 = GeoCovmatrix(coordx=coords, corrmodel="Bi_matern_sep", param=param)$covmatrix
+matrix8 = GeoCovmatrix(coordx=coords, corrmodel="Bi_matern", param=param)$covmatrix
 
-head(matrix9)
+matrix8
 
 }
 \keyword{Simulation}

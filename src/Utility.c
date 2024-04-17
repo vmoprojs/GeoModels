@@ -22,7 +22,7 @@ void ludcmp(double **a, int n, int *indx, double *dd)
 {
     int i,imax=0,j,k;
     double   big,dum,sum,temp,*vv;
-    vv=(double *) Calloc(n,double);
+    vv=(double *) R_Calloc(n,double);
     *dd = 1.0;
     for (i=0;i<n;i++)
     {
@@ -56,7 +56,7 @@ void ludcmp(double **a, int n, int *indx, double *dd)
             dum = 1.0 / a[j][j];
             for (i=j+1;i<n;i++) a[i][j] *= dum;}
     }
-    Free(vv);
+    R_Free(vv);
 }
 
 
@@ -319,9 +319,9 @@ else{  //no tapering
    }
  // saving  spatial distances   
     *npairs=h;
-    lags= (double *) Calloc(*npairs,double);
+    lags= (double *) R_Calloc(*npairs,double);
     for(i=0;i<*npairs;i++)  lags[i]=tlags[i];  
-     //Free(tlags);
+     //R_Free(tlags);
 	return;
 }
 
@@ -394,11 +394,11 @@ void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *id
 }  // end no tapering case
 
     *npairs=h;
-    lags= (double *) Calloc(*npairs,double);
-    lagt= (double *) Calloc(*npairs,double);
+    lags= (double *) R_Calloc(*npairs,double);
+    lagt= (double *) R_Calloc(*npairs,double);
     for(i=0;i<*npairs;i++)  
         {lags[i]=tlags[i];lagt[i]=tlagt[i];  }
-    // Free(tlags); Free(tlagt);   
+    // R_Free(tlags); R_Free(tlagt);   
 
   return;
 }
@@ -473,13 +473,13 @@ void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx
 
 
   *npairs=count;
-  first_1 =(int *)  Calloc(count,int);
-  second_1=(int *)  Calloc(count,int);
-  lags_1=(double *) Calloc(count,double);
+  first_1 =(int *)  R_Calloc(count,int);
+  second_1=(int *)  R_Calloc(count,int);
+  lags_1=(double *) R_Calloc(count,double);
   for(i=0;i<count;i++) { lags_1[i]=tlags[i];
                          first_1[i]=tfirst[i];
                          second_1[i]=tsecond[i];}
-  //Free(tlags);Free(tfirst);Free(tsecond);
+  //R_Free(tlags);R_Free(tfirst);R_Free(tsecond);
   return;
 }
 
@@ -829,66 +829,66 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
 
 
   //Spatial settings: //Spatial settings:
-  maxdist=(double *) Calloc(3,double);//spatial threshould
+  maxdist=(double *) R_Calloc(3,double);//spatial threshould
   if(maxdist==NULL) {*ismal=0; return;}
 
-  maxtime=(double *) Calloc(1,double);//temporal threshold
+  maxtime=(double *) R_Calloc(1,double);//temporal threshold
     if(maxtime==NULL) {*ismal=0; return;}
 
-  ntime=(int *) Calloc(1,int);//number of times
+  ntime=(int *) R_Calloc(1,int);//number of times
     if(ntime==NULL) {*ismal=0; return;}
     *ntime=*times;
 
 /**********************************/
-  ncoord=(int *) Calloc(1,int);//number of total spatial coordinates
+  ncoord=(int *) R_Calloc(1,int);//number of total spatial coordinates
 
    // ncoord=(int *) R_alloc(1, sizeof(int));
 
   if(ncoord==NULL) {*ismal=0; return;}
   ncoord[0]=*nsite;
 
-  ncoordx=(int *) Calloc(1,int);//number of the first spatial coordinates
+  ncoordx=(int *) R_Calloc(1,int);//number of the first spatial coordinates
   if(ncoordx==NULL) {*ismal=0; return;}
   *ncoordx=*nsitex;
-  ncoordy=(int *) Calloc(1,int);//number of the second spatial coordinates
+  ncoordy=(int *) R_Calloc(1,int);//number of the second spatial coordinates
   if(ncoordy==NULL) {*ismal=0; return;}
   *ncoordy=*nsitey;
 /************************/
-  npairs=(int *) Calloc(1,int);//effective number of pairs
+  npairs=(int *) R_Calloc(1,int);//effective number of pairs
   //npairs=(int *) R_alloc(1, sizeof(int));
   if(npairs==NULL) {*ismal=0; return;}
 
-  isbiv=(int *) Calloc(1,int);//is a bivariate random field?
+  isbiv=(int *) R_Calloc(1,int);//is a bivariate random field?
   if(isbiv==NULL) {*isbiv=0; return;}
   isbiv[0]=biv[0];  
 
-  ismem=(int *) Calloc(1,int);//is distances computed using memory allocation
+  ismem=(int *) R_Calloc(1,int);//is distances computed using memory allocation
   if(ismem==NULL) {*ismal=0; return;}
   *ismem=mem[0];
 
-  isst=(int *) Calloc(1,int);//is a spatio-temporal random field?
+  isst=(int *) R_Calloc(1,int);//is a spatio-temporal random field?
   if(isst==NULL) {*ismal=0; return;}
   isst[0]=st[0]; 
     
-  cdyn=(int *) Calloc(1,int);//dynamic coords
+  cdyn=(int *) R_Calloc(1,int);//dynamic coords
   if(dyn==NULL) {*cdyn=0; return;}
   cdyn[0]=dyn[0]; 
 
-  istap=(int *) Calloc(1,int);//is tapering?
+  istap=(int *) R_Calloc(1,int);//is tapering?
   if(istap==NULL) {*ismal=0; return;}
   istap[0]=tap[0];
 
-  type=(int *) Calloc(1,int);//type of distance
+  type=(int *) R_Calloc(1,int);//type of distance
   if(type==NULL) {*ismal=0; return;}
 
-  REARTH=(double *) Calloc(1,double);//radius of hearth
+  REARTH=(double *) R_Calloc(1,double);//radius of hearth
    if(REARTH==NULL) {*ismal=0; return;}
     REARTH[0]=radius[0];
 
   //double *REARTH=*radius;//definition
     
 
-  tapsep=(double *) Calloc(5,double);
+  tapsep=(double *) R_Calloc(5,double);
            if(tapsep==NULL){*ismal=0; return;}
 
   
@@ -907,10 +907,10 @@ void SetGlobalVar(int *biv,double *coordx,double *coordy,double *coordt,int *gri
                        }
                    if(isbiv[0]){  
                                    int i=0;
-                                   dista= (double **) Calloc(ntime[0],double *);
+                                   dista= (double **) R_Calloc(ntime[0],double *);
                                    if(dista==NULL) {*ismal=0; return;}
                                    for(i=0;i<ntime[0];i++){
-                                   dista[i]=(double *) Calloc(ntime[0],double);
+                                   dista[i]=(double *) R_Calloc(ntime[0],double);
                                    if(dista[i]==NULL) {*ismal=0; return;}}
                                   
                                   if(srange[1]) maxdist[0]=srange[1];
@@ -935,20 +935,20 @@ if(!isst[0]&&!isbiv[0]) {// spatial case
           if(istap[0])  // tapering case
             {
               *npairs=(int)( (*ncoord)  * (*ncoord));
-              tlags=(double *) Calloc(*npairs,double);
+              tlags=(double *) R_Calloc(*npairs,double);
               if(tlags==NULL){*ismal=0; return;}
             }  // end tapering case
           else 
             { // distances composite likelihood  
             *npairs= (int)( 0.5 * (*ncoord) * (*ncoord-1));
-            tlags= (double *) Calloc(*npairs,double *);
+            tlags= (double *) R_Calloc(*npairs,double *);
             if(tlags==NULL) {*ismal=0; return;}
             } // end  no tapering case
 
 
  // computing spatial distances and indexes      
  Space_Dist(coordx,coordy,ia,idx,ismal,ja,colidx,rowidx,srange[1]);
- Free(tlags);
+ R_Free(tlags);
       if(!ismal[0]) return;
   /***********************************************************/  
 }  // end spatial case
@@ -970,11 +970,11 @@ else {  //spatio temporal case or bivariate case
         }
        if(isbiv[0])              {
                                    int i=0;
-                                   dista= (double **) Calloc(ntime[0],double *);
+                                   dista= (double **) R_Calloc(ntime[0],double *);
            
                                    if(dista==NULL) {*ismal=0; return;}
                                    for(i=0;i<ntime[0];i++){
-                                   dista[i]=(double *) Calloc(ntime[0],double);
+                                   dista[i]=(double *) R_Calloc(ntime[0],double);
                                    if(dista[i]==NULL) {*ismal=0; return;}}
            
                                   if(srange[1]) maxdist[0]=srange[1];
@@ -990,17 +990,17 @@ else {  //spatio temporal case or bivariate case
         {
           // allocating vectors
            *npairs=(int)( qq * qq );
-           tlags=(double *) Calloc(*npairs,double);
+           tlags=(double *) R_Calloc(*npairs,double);
            if(tlags==NULL){*ismal=0; return;}
          
          if(isst[0])    { //spatio temporal case
-                           tlagt=(double *) Calloc(*npairs,double);
+                           tlagt=(double *) R_Calloc(*npairs,double);
                            if(tlagt==NULL){*ismal=0; return;}
                            }
          if(isbiv[0])         { //bivariate case
-                           tfirst=(int *) Calloc(*npairs,int);
+                           tfirst=(int *) R_Calloc(*npairs,int);
                            if(tfirst==NULL){*ismal=0; return;}
-                           tsecond=(int *) Calloc(*npairs,int);
+                           tsecond=(int *) R_Calloc(*npairs,int);
                            if(tsecond==NULL){*ismal=0; return;}
                               }
            tapsep[0]=sep[0];tapsep[1]=sep[1];tapsep[2]=sep[2];tapsep[3]=sep[3];tapsep[4]=sep[4];
@@ -1012,37 +1012,37 @@ else {  // distance for composite likelihood
                if(isst[0])  npairs[0]=(int)(qq * (qq-1) * 0.5);
                if(isbiv[0]) npairs[0]=(int)(qq * (qq-1) * 0.5);
     
-               tlags= (double *) Calloc(*npairs,double *);
+               tlags= (double *) R_Calloc(*npairs,double *);
     
               if(tlags==NULL) {*ismal=0; return;}
           // allocates the matrix of temporal distances:
           if(isst[0]) {
              //memory allocation of matrix temporal distances
               
-             tlagt= (double *) Calloc(*npairs,double *);
+             tlagt= (double *) R_Calloc(*npairs,double *);
               
              if(tlagt==NULL) {*ismal=0; return;}
                      }
           if(isbiv[0]) {
               
-            tfirst=(int *) Calloc(*npairs,int);
+            tfirst=(int *) R_Calloc(*npairs,int);
               
             if(tfirst==NULL){*ismal=0; return;}
               
-            tsecond=(int *) Calloc(*npairs,int);
+            tsecond=(int *) R_Calloc(*npairs,int);
               
             if(tsecond==NULL){*ismal=0; return;}
                       }
        }
 if(isst[0])  {SpaceTime_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
                                         ns,NS,colidx,rowidx,srange,trange);
-               Free(tlags); Free(tlagt);}
+               R_Free(tlags); R_Free(tlagt);}
 if(isbiv[0]) {
     
     SpaceBiv_Dist(coordx,coordy,coordt,ia,idx,ismal,ja,tapmodel,
                                      ns,NS,colidx,rowidx,srange);
     
-               Free(tlags);Free(tfirst);Free(tsecond);
+               R_Free(tlags);R_Free(tfirst);R_Free(tsecond);
     
 }
   if(!ismal[0]) return;
@@ -1059,22 +1059,22 @@ void DeleteGlobalVar(void)
 {
   int i=0;
   // Delete all the global variables:
-  Free(maxdist);Free(maxtime);
-  Free(ncoord);Free(ncoordx);Free(ncoordy); 
-  Free(npairs);
-  Free(type);Free(REARTH);
-  Free(tapsep);
-  if(isbiv[0])for(i=0;i<ntime[0];i++)  Free(dista[i]);
-  Free(dista);
-  Free(ntime);
+  R_Free(maxdist);R_Free(maxtime);
+  R_Free(ncoord);R_Free(ncoordx);R_Free(ncoordy); 
+  R_Free(npairs);
+  R_Free(type);R_Free(REARTH);
+  R_Free(tapsep);
+  if(isbiv[0])for(i=0;i<ntime[0];i++)  R_Free(dista[i]);
+  R_Free(dista);
+  R_Free(ntime);
   if(ismem[0]) {
-           Free(lags);
-           if(isst[0])    {Free(lagt);}
-           if(isbiv[0])   {Free(first);Free(second);}
+           R_Free(lags);
+           if(isst[0])    {R_Free(lagt);}
+           if(isbiv[0])   {R_Free(first);R_Free(second);}
   }
-  Free(isbiv); Free(istap);
-  Free(isst);Free(ismem);
-  Free(cdyn);
+  R_Free(isbiv); R_Free(istap);
+  R_Free(isst);R_Free(ismem);
+  R_Free(cdyn);
   return;
 }
 /*#######################################################################*/
@@ -1143,19 +1143,19 @@ else{
 
 void DeleteGlobalVar2(void)
 {
-  Free(ncoord);  Free(ntime);
-  Free(maxdist);Free(maxtime);
+  R_Free(ncoord);  R_Free(ntime);
+  R_Free(maxdist);R_Free(maxtime);
 
-  if(!isst[0]&&!isbiv[0]) { Free(lags);}
+  if(!isst[0]&&!isbiv[0]) { R_Free(lags);}
   else {
-  if(isst[0]) {Free(lags);Free(lagt);}
+  if(isst[0]) {R_Free(lags);R_Free(lagt);}
   if(isbiv[0]){
     
-    Free(lags_1);Free(first_1);Free(second_1);}
+    R_Free(lags_1);R_Free(first_1);R_Free(second_1);}
   }
-  Free(isbiv);
-  Free(isst);
-  Free(npairs);
+  R_Free(isbiv);
+  R_Free(isst);
+  R_Free(npairs);
   return;
 }
 

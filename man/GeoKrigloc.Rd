@@ -18,7 +18,8 @@ coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE,
            param, anisopars=NULL,radius=6371,
            sparse=FALSE, time=NULL, type="Standard",type_mse=NULL,
             type_krig="Simple",weigthed=TRUE, 
-            which=1, copula=NULL,X=NULL,Xloc=NULL,Mloc=NULL)
+            which=1, copula=NULL,X=NULL,Xloc=NULL,
+            Mloc=NULL,spobj=NULL,spdata=NULL)
 }
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
@@ -85,6 +86,8 @@ coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE,
      associated to predicted locations.}
     \item{Mloc}{Numeric; Vector of spatio(temporal) estimated means 
      associated to predicted locations.}
+                \item{spobj}{An object of class sp or spacetime}
+   \item{spdata}{Character:The name of data in the sp or spacetime object}
 }
 
 \details{

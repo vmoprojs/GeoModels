@@ -5,7 +5,8 @@
 
 # Simulate spatial and spatio-temporal random felds:
 GeoSimCopula <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),method="cholesky",model='Gaussian', n=1, param,anisopars=NULL, radius=6371, sparse=FALSE,copula="Gaussian",seed=NULL,X=NULL)
+     local=c(1,1),method="cholesky",model='Gaussian', n=1, param,anisopars=NULL, radius=6371, sparse=FALSE,
+     copula="Gaussian",seed=NULL,X=NULL,spobj=NULL,nrep=1)
 {
 
 if(!is.null(seed))  set.seed(seed)
@@ -17,12 +18,41 @@ if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
 
+##############################################################################
+###### extracting sp object informations if necessary              ###########
+##############################################################################
+bivariate<-CheckBiv(CkCorrModel(corrmodel))
+spacetime<-CheckST(CkCorrModel(corrmodel))
+space=!spacetime&&!bivariate
+if(!is.null(spobj)) {
+   if(space||bivariate){
+        a=sp2Geo(spobj,NULL); coordx=a$coords 
+       if(!a$pj) {if(distance!="Chor") distance="Geod"}
+    }
+   if(spacetime){
+        a=sp2Geo(spobj,NULL); coordx=a$coords ; coordt=a$coordt 
+        if(!a$pj) {if(distance!="Chor") distance="Geod"}
+     }
+}
+###############################################################
+###############################################################
+
 if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")
 
 
 
 #### corr parameters
 paramcorr=param[CorrParam(corrmodel)]
+
+    
+SIM=list()
+###################################################
+### starting number of replicates
+###################################################
+for( L in 1:nrep){
+
+
+
 ####Gaussian copula #############################################
 if(copula=="Gaussian")
 {
@@ -30,7 +60,7 @@ param1=c(list(mean=0,sill=1,nugget=param$nugget),paramcorr)
 
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Gaussian', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse)
+     local=local,method=method,model='Gaussian', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
 unif=pnorm(sim$data,mean=0,sd=1);
 }
 ####beta copula #############################################
@@ -40,11 +70,11 @@ pp=round(as.numeric(param['nu']))
 param1=c(list(shape1=pp,shape2=2,sill=1,mean=0,min=0,max=1,nugget=param$nugget),paramcorr)
 sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
     distance=distance,GPU=GPU, grid=grid,
-     local=local,method=method,model='Beta', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse)
+     local=local,method=method,model='Beta', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
 unif=(sim$data)^(pp/2)
 }
 ####################################################################
-####################################################################
+
 if(sim$spacetime||sim$bivariate) DD=dim(simcop)
   if(!sim$bivariate){
            if(is.null(dim(X))) {X=as.matrix(rep(1,sim$numcoord*sim$numtime))}
@@ -60,8 +90,6 @@ if(sim$spacetime||sim$bivariate) DD=dim(simcop)
 ##############################
 if(!sim$bivariate) {}
 
-
-
 ####################################
 ############ discrete  RF ##########
 ####################################
@@ -72,7 +100,7 @@ if(model=="BinomialNeg") {
  simcop=qnbinom(unif, size=n, prob=pnorm(mm))
 }
 if(model=="BinomialNegZINB") {
- simcop=qzinegbin(unif, size=n, #prob = pnorm(mm), 
+ simcop=qzinegbin(unif, size=n, #prob = pnorm(mm),                # require package VGAM
         munb=   n*(1-pnorm(mm))/pnorm(mm),#,n/pnorm(mm)-n,
         pstr0 = as.numeric(param$pmu))
 }
@@ -108,7 +136,8 @@ simcop=actuar::qllogis(unif,shape = p2,scale=exp(mm)/cc)
 if(model=="LogGaussian")
 { 
     vv=as.numeric(param$sill)
-   simcop = qlnorm(unif, exp(mm)-vv/2, sqrt(vv))
+   simcop = qlnorm(unif, mm-vv/2, sqrt(vv))
+     #simcop = qlnorm(unif, 1+mm, sqrt(vv))
 }
 ##############################
 ##############################
@@ -315,8 +344,17 @@ if(sim$spacetime||sim$bivariate) {dim(simcop)=DD}
 else {if (!grid) simcop=c(simcop)
      }
 ##############################
+
+
+
+
+SIM[[L]]=simcop
+}
+#### end numrep ##############
 ##############################
 ##############################
+
+ if(nrep==1) SIM=SIM[[1]] 
 
     GeoSim_Copula <- list(bivariate = sim$bivariate,
     coordx = sim$coordx,
@@ -324,7 +362,7 @@ else {if (!grid) simcop=c(simcop)
     coordt = sim$coordt,
     coordx_dyn =sim$coordx_dyn,
     corrmodel = corrmodel,
-    data = simcop,
+    data = SIM,
     distance = sim$distance,
     grid = sim$grid,
     model = sim$model,
@@ -338,6 +376,7 @@ else {if (!grid) simcop=c(simcop)
     spacetime = sim$spacetime,
     sparse=sim$sparse,
     copula=copula,
+    nrep=nrep,
     X=X)
 #}
 ##############################################

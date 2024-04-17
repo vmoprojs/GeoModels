@@ -137,6 +137,12 @@ if(fan== "Ind_Pair_LogLogistic")            {  shape=nuis[2]
                                            res=sum(dnorm(data, mean =mm , sd =sqrt(vv), log = TRUE))}
     if(fan=="Ind_Pair_BinomnegGauss")     res=sum(dnbinom(data, n, pnorm(mm), log = TRUE))
     if(fan=="Ind_Pair_PoisGamma")         {mm=exp(mm);res=sum(dnbinom(data, nuis[2], mu=mm, log = TRUE))}
+
+    if(fan=="Ind_Pair_PoisGammaZIP")      {mm=exp(mm);pp=pnorm(nuis[3])
+                                           res1=sum(log(pp+(1-pp)*dnbinom(data[data==0], nuis[2],mu=mm[data==0],0)));
+                                           res2=sum(log(1-pp)+dnbinom(data[data!=0],nuis[2],mu=mm[data!=0],1)); res=res1+res2}
+
+
     if(fan=="Ind_Pair_Gauss_misp_PoisGamma") {mm=exp(mm);res=sum(dnorm(data, mean = mm, sd =sqrt(mm*(1+mm/nuis[2])), log = TRUE))}
     if(fan=="Ind_Pair_PoisZIP")           {mm=exp(mm);pp=pnorm(nuis[3])
                                             res1=sum(log(pp+(1-pp)*dpois(data[data==0],mm[data==0],0)));
@@ -245,6 +251,7 @@ return(-res)
     if( model==38 ) fname <- 'Ind_Pair_TWOPIECETukeyh'               #
     if( model==30 ) fname <- 'Ind_Pair_Pois'                         #
     if( model==46 ) fname <- 'Ind_Pair_PoisGamma'
+    if( model==57 ) fname <- 'Ind_Pair_PoisGammaZIP'
     if( model==43 ) fname <- 'Ind_Pair_PoisZIP'
     if( model==44 ) fname <- 'Ind_Pair_Gauss_misp_PoisZIP'
     if( model==45 ) fname <- 'Ind_Pair_BinomnegGaussZINB'

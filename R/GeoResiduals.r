@@ -9,9 +9,11 @@ GeoResiduals<-function(fit)
 if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 ######
 extmean=FALSE
-if(!fit$bivariate)
-    {if(length(fit$fixed$mean)>1) {extmean=TRUE; mmext=fit$fixed$mean;fit$fixed$mean=0}  ## external fixed mean
-     }
+if(!fit$bivariate) {if(length(fit$fixed$mean)>1) {extmean=TRUE; mmext=fit$fixed$mean;fit$fixed$mean=0}}  ## external fixed mean
+     
+
+nm=names(fit$param)
+nf=names(fit$fixed)
 
 fit$param=unlist(fit$param)
 fit$fixed=unlist(fit$fixed)
@@ -34,9 +36,7 @@ sel=substr(names(nuisance),1,4)=="mean"
 beta2=as.numeric(nuisance[sel])
 beta2=beta2[!is.na(beta2)]
 
-## names of estimated and fixed parameters
-nm=names(fit$param)
-nf=names(fit$fixed)
+
 copula=fit$copula
 
 #################################
@@ -138,13 +138,21 @@ if(model %in% c("Gaussian_misp_SkewStudentT","SkewStudentT"))
 ##
 #}
 
-fit$param=fit$param[nm]
-fit$fixed=fit$fixed[nf]
+## names of estimated and fixed parameters
 
+obj=as.list(fit$param)
+fit$param=obj[nm]
+fit$fixed=obj[nf]
+
+
+#### servono?
+ a=fit$param;b=fit$fixed
+ll=replace(a, is.na(a),a[match(names(b),names(a))][is.na(b)])
+ll[lengths(ll) == 0] <- NA
+fit$param=ll
 ### deleting NA
 fit$param=fit$param[!is.na(fit$param)]
 fit$fixed=fit$fixed[!is.na(fit$fixed)]
-
 
 
 ###adding mean and variance if missing for some reason
@@ -153,14 +161,24 @@ if(model %in% c("Gaussian","SkewGaussian","Logistic","Tukeyh","Tukeyh2","Tukeygh
  "TwoPieceStudentT","TwoPieceGaussian","TwoPieceTukeyh",
  "TwoPieceBimodal","Gaussian_misp_SkewStudentT","SkewStudentT")){
 if(!sum(names(fit$param)=="mean")) fit$param["mean"]=0
-if(!sum(names(fit$param)=="sill")) fit$param["sill"]=1}
+if(!sum(names(fit$param)=="sill")) fit$param["sill"]=1
+
+   sel=substr(names(unlist(fit$fixed)),1,4)=="mean"
+            if(sum(sel)>=1) fit$fixed=fit$fixed[!sel]
+}
+
+
 
 if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",  "LogGaussian", 
         "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
         "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
         "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
         "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
-        "Kumaraswamy")) {  if(!sum(names(fit$param)=="mean")) fit$param["mean"]=0}
+        "Kumaraswamy")) {  
+            if(!sum(names(fit$param)=="mean")) fit$param["mean"]=0              
+            sel=substr(names(unlist(fit$fixed)),1,4)=="mean"
+            if(sum(sel)>=1) fit$fixed=fit$fixed[!sel]
+}
 
 
 
