@@ -498,7 +498,7 @@ if(!onlyvar){
                               colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                                data1=data1,data2=data2,fixed=fixed,fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
-                               parallel = list(forward = FALSE),
+                               parallel = list(forward = FALSE,loginfo=FALSE),
                               upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=TRUE,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
