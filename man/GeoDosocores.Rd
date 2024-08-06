@@ -1,13 +1,13 @@
-\name{Prscores}
-\alias{Prscores}
+\name{GeoDoScores}
+\alias{GeoDoScores}
 \encoding{UTF-8}
 \title{
-Computation of predictive scores}
+Computation of drop-one predictive scores}
 \description{
   The function computes RMSE, MAE, LSCORE, CRPS predictive scores based on drop-one 
 prediction for a spatial, spatiotemporal and bivariate Gaussian RFs}
 \usage{
-Prscores(data,  method="cholesky", matrix)
+GeoDoScores(data,  method="cholesky", matrix)
 }
 
 \arguments{
@@ -67,7 +67,7 @@ matrix1 <- GeoCovmatrix(coordx=coords, corrmodel="Matern", param=list(smooth=0.5
 data <- GeoSim(coordx=coords, corrmodel="Matern", param=list(mean=0,smooth=0.5,
                       sill=1,scale=0.2,nugget=0))$data
 
-Pr_scores <- Prscores(data,matrix=matrix1)
+Pr_scores <- GeoDoScores(data,matrix=matrix1)
 
 Pr_scores
 

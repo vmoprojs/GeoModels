@@ -10,18 +10,19 @@ for the Gaussian and non Gaussian case using a spatial (temporal) neighborhood
 computed using the  function \code{\link{GeoNeighborhood}}
 }
 \usage{
-GeoKrigloc(data, coordx, coordy=NULL, coordt=NULL,
-coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
-           loc, neighb=NULL, maxdist=NULL, 
-           maxtime=NULL, method="cholesky",
-           model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
-           param, anisopars=NULL,radius=6371,
-           sparse=FALSE, time=NULL, type="Standard",type_mse=NULL,
-            type_krig="Simple",weigthed=TRUE, 
-            which=1, copula=NULL,X=NULL,Xloc=NULL,
-            Mloc=NULL,spobj=NULL,spdata=NULL)
+GeoKrigloc(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL,
+    coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, 
+    loc, neighb=NULL, maxdist=NULL, 
+    maxtime=NULL, method="cholesky",
+    model="Gaussian", n=1,nloc=NULL, mse=FALSE,  
+    param, anisopars=NULL,radius=6371,
+    sparse=FALSE, time=NULL, type="Standard",type_mse=NULL,
+    type_krig="Simple",weigthed=TRUE, 
+    which=1, copula=NULL,X=NULL,Xloc=NULL,
+    Mloc=NULL,spobj=NULL,spdata=NULL,parallel=FALSE,ncores=NULL)
 }
 \arguments{
+   \item{estobj}{An object of class Geofit that includes information about data, model and estimates.}
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data used for prediction.}
@@ -88,6 +89,10 @@ coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE,
      associated to predicted locations.}
                 \item{spobj}{An object of class sp or spacetime}
    \item{spdata}{Character:The name of data in the sp or spacetime object}
+       \item{parallel}{Logical; if \code{TRUE} then 
+      the prediction computation is  parallelized 
+      }
+       \item{ncores}{Numeric; number of cores involved in parallelization.} 
 }
 
 \details{
@@ -175,6 +180,15 @@ scale=scale,power2=4)
 data = GeoSim(coordx=coords, corrmodel=corrmodel,
               param=param)$data
 
+# Maximum pairwise likelihood fitting of the space time random field:
+
+start=list(scale=scale,sill=sill,mean=mean)
+fixed=list(power2=4,smooth=0,nugget=0)
+fit = GeoFit(data, coordx=coords, corrmodel=corrmodel, 
+              start=start,fixed=fixed,
+             likelihood='Conditional', type='Pairwise',
+              neighb=3)
+
 # locations to predict
 loc_to_pred=matrix(runif(8),4,2)
 ################################################################
@@ -183,12 +197,10 @@ loc_to_pred=matrix(runif(8),4,2)
 ### a Gaussian random field with GenWend correlation.
 ### 
 ###############################################################
-pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-      model=model,param= param, data=data,mse=TRUE)
+param=append(fit$param,fit$fixed)
+pr=GeoKrig(fit,loc=loc_to_pred,mse=TRUE)
 
-pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,coordx=coords,
-corrmodel=corrmodel,
-      model=model,neighb=100, param= param,mse=TRUE)
+pr_loc=GeoKrigloc(fit,loc=loc_to_pred,neighb=100,mse=TRUE)
 
 pr$pred;
 pr_loc$pred
@@ -202,7 +214,7 @@ pr_loc$pred
 require(GeoModels)
 require(fields)
 set.seed(78)
-coords=cbind(runif(50),runif(50))
+coords=cbind(runif(100),runif(100))
 coordt=seq(0,5,0.25)
 corrmodel="Matern_Matern"
 param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2,
@@ -210,22 +222,89 @@ param=list(nugget=0,mean=0,scale_s=0.2/3,scale_t=0.25/3,sill=2,
 
 data = GeoSim(coordx=coords, coordt=coordt,
      corrmodel=corrmodel, param=param)$data
+
+
+# Maximum pairwise likelihood fitting of the space time random field:
+start = list(scale_s=0.2/3,scale_t=0.25,sill=2,mean=0)
+fixed = list(smooth_s=0.5,smooth_t=0.5,nugget=0)
+I=Inf
+lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
+upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
+fit = GeoFit(data, coordx=coords, coordt=coordt, model=model, corrmodel=corrmodel, 
+             likelihood='Conditional', type='Pairwise',start=start,fixed=fixed,
+             optimizer="nlminb",lower=lower,upper=upper,
+              neighb=3,maxtime=1)
+
 ##  four location to predict
 loc_to_pred=matrix(runif(8),4,2)
 ## three temporal instants to predict
 time=c(0.5,1.5,3.5)
 
 
-pr=GeoKrig(data=data,loc=loc_to_pred,time=time,
-coordx=coords,coordt=coordt,corrmodel=corrmodel,
-  model="Gaussian", param= param, mse=TRUE)
-pr_loc=GeoKrigloc(data=data,loc=loc_to_pred,
-time=time,coordx=coords,coordt=coordt,corrmodel=corrmodel,
-  neigh=25,maxtime=1,model="Gaussian", param= param, mse=TRUE)
+pr=GeoKrig(fit,loc=loc_to_pred,time=time,mse=TRUE)
+pr_loc=GeoKrigloc(fit,loc=loc_to_pred,time=time,
+  neigh=25,maxtime=1, mse=TRUE)
 
 ##  full and local prediction 
 pr$pred
 pr_loc$pred
+
+
+
+############################################################
+#### Example: spatio bivariate  Gaussian local cokriging ######
+############################################################
+#set.seed(6)
+#NN=1500 # number of spatial locations 
+#x = runif(NN, 0, 1); 
+#y = runif(NN, 0, 1) 
+#coords=cbind(x,y) 
+
+## setting parameters
+#mean_1 = 2; mean_2= -1
+#nugget_1 =0;nugget_2=0
+#sill_1 =0.5; sill_2 =1; 
+
+### correlation parameters
+#CorrParam("Bi_Matern")
+#scale_1=0.2/3; scale_2=0.15/3; scale_12=0.5*(scale_2+scale_1) 
+#smooth_1=smooth_2=smooth_12=0.5
+#pcol = -0.4
+#param= list(nugget_1=nugget_1,nugget_2=nugget_2,
+#          sill_1=sill_1,sill_2=sill_2,
+#          mean_1=mean_1,mean_2=mean_2,
+#          smooth_1=smooth_1, smooth_2=smooth_2,smooth_12=smooth_12,
+#          scale_1=scale_1, scale_2=scale_2,scale_12=scale_12,
+#          pcol=pcol)
+
+## simulation
+#data = GeoSim(coordx=coords, corrmodel="Bi_Matern",model=model,param=param)$data
+
+#fixed=list(mean_1=mean_1,mean_2=mean_2, nugget_1=nugget_1,nugget_2=nugget_2, 
+#       smooth_1=smooth_1, smooth_2=smooth_2,smooth_12=smooth_12)
+
+#start=list( sill_1=sill_1,sill_2=sill_2,
+#        scale_1=scale_1,scale_2=scale_2,scale_12=scale_12, pcol=pcol)
+
+## estimation with maximum likelihood 
+#fit = GeoFit(data=data,coordx=coords, corrmodel="Bi_Matern",
+#likelihood="Full",type="Standard",optimizer="BFGS",
+ # likelihood="Marginal",type="Pairwise",optimizer="BFGS",neighb=5,
+  #start=start,fixed=fixed)
+
+###### co-kriging for the fist component ##############
+#xx=seq(0,1,0.022)
+#loc_to_pred=as.matrix(expand.grid(xx,xx))
+#pr1 = GeoKrigloc(fit,which=1,mse=TRUE,loc=loc_to_pred,neighb=100)
+
+#opar=par(no.readonly = TRUE)
+#par(mfrow=c(1,2))
+#zlim=c(-2.5,2.5)
+#colour = rainbow(100)
+#quilt.plot(coords,data[1,] ,col=colour,main = paste(" Fist component"))   
+#quilt.plot(loc_to_pred,pr1$pred,col=colour,
+#          main = paste(" Kriging first component"),ylab="")
+#par(opar)
 
 }
 \keyword{Composite}

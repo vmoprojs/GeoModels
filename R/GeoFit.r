@@ -15,6 +15,8 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
 ###########  first preliminary check  ###############
     call <- match.call()
 
+    if(is.null(start)) stop("Starting parameters are missing")
+
     if(is.null(corrmodel)&& likelihood=="Marginal"&&type=="Independence") 
     {
         if(is.null(coordt)){corrmodel="Exponential";tlist=list(nugget=0,scale=1)}
@@ -74,6 +76,11 @@ if(!is.null(spobj)) {
      }
    if(!is.null(a$Y)&&!is.null(a$X)) {data=a$Y ; X=a$X }
 }
+
+###### setting nugget if missing
+if(!bivariate)
+   if(!sum(substr(names(unlist(append(start,fixed))),1,6)=="nugget")) fixed$nugget=0
+
 ###############################################################
 ###############################################################  
 if(!bivariate){
@@ -81,7 +88,7 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson","Binary_misp_BinomialNeg",
         'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
-        "PoissonGamma","PoissonGammaZIP",
+        "PoissonGamma","PoissonGammaZIP","PoissonGammaZIP1",
         'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) {
 if(!is.null(start$sill)) stop("sill parameter must not be considered for this model\n")    
 if(is.null(fixed$sill)) fixed$sill=1
@@ -227,6 +234,7 @@ if(!is.null(anisopars)) {
     }
     ###################################################################################
     ###################################################################################
+
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:

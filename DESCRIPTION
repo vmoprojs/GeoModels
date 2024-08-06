@@ -2,27 +2,27 @@ Package: GeoModels
 Type: Package
 Title: Procedures for Gaussian and Non Gaussian Geostatistical (Large)
         Data Analysis
-Version: 2.0.1
-Date: 2024-04-10
+Version: 2.0.4
+Date: 2024-07-09
 Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
                email = "moreno.bevilacqua89@gmail.com",comment = c(ORCID = "0000-0001-8384-840X")),
               person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl",comment = c(ORCID = "0000-0003-1922-6571")),person("Christian", "Caamaño-Carrillo", role = "aut",email = "chcaaman@ubiobio.cl",comment = c(ORCID = "0000-0001-7241-3099")))
 Maintainer: Moreno Bevilacqua <moreno.bevilacqua89@gmail.com>
 Description: Functions for Gaussian and Non Gaussian (bivariate) spatial and spatio-temporal data analysis are provided for a) (fast) simulation of random fields,  b) inference  for random fields using standard likelihood and a likelihood approximation  method called  weighted composite likelihood based on pairs and b) prediction using (local) best linear unbiased prediction. Weighted composite likelihood can be very efficient for estimating massive datasets. Both regression and spatial (temporal) dependence analysis can be jointly performed. Flexible covariance models for spatial and spatial-temporal data on Euclidean domains and spheres are provided. There are also many useful functions for plotting and performing diagnostic analysis. Different non Gaussian random fields can be considered in the analysis. Among them, random fields with marginal distributions such as Skew-Gaussian, Student-t, Tukey-h, Sin-Arcsin, Two-piece, Weibull, Gamma, Log-Gaussian, Binomial, Negative Binomial  and Poisson. See the URL for the papers associated with this package, as for instance, Bevilacqua and Gaetan (2015) <doi:10.1007/s11222-014-9460-6>, Bevilacqua et al. (2016) <doi:10.1007/s13253-016-0256-3>, Vallejos et al. (2020) <doi:10.1007/978-3-030-56681-4>, Bevilacqua et. al (2020) <doi:10.1002/env.2632>, Bevilacqua et. al (2021) <doi:10.1111/sjos.12447>, Bevilacqua et al. (2022) <doi:10.1016/j.jmva.2022.104949>, Morales-Navarrete et al. (2023) <doi:10.1080/01621459.2022.2140053>, and a large class of examples and tutorials.
-Depends: R (>= 4.1.0), GPvecchia,fields, mapproj, shape, codetools
+Depends: R (>= 4.1.0), fields, mapproj, shape, codetools
 License: GPL (>= 3)
 Encoding: UTF-8
-Imports: methods, spam, scatterplot3d, dfoptim, dotCall64, FastGP,
-        optimParallel, parallel, plotrix, pracma, pbivnorm, zipfR, sn,sp,
-        nabor, numDeriv, hypergeo, lamW, GpGp,VGAM, data.table
-Suggests: actuar, GoFKernel
+Imports: methods, spam, scatterplot3d, dotCall64, FastGP, plotrix,
+        pracma, pbivnorm, zipfR, sn,sp, lamW, nabor, hypergeo,VGAM,
+        data.table, foreach,future, doFuture,progressr
+Suggests: actuar, GoFKernel, optimParallel, numDeriv
 Repository: CRAN
 URL: https://vmoprojs.github.io/GeoModels-page/
 BugReports: https://github.com/vmoprojs/GeoModels/issues
 NeedsCompilation: yes
-Packaged: 2023-08-29 02:34:17 UTC; morenobevilacqua
+Packaged: 2024-05-16 16:26:18 UTC; morenobevilacqua
 Author: Moreno Bevilacqua [aut, cre] (<https://orcid.org/0000-0001-8384-840X>),
   Víctor Morales-Oñate [aut] (<https://orcid.org/0000-0003-1922-6571>),
   Christian Caamaño-Carrillo [aut]
     (<https://orcid.org/0000-0001-7241-3099>)
-Date/Publication: 2023-08-29 08:30:06 UTC
+Date/Publication: 2024-05-16 16:40:59 UTC

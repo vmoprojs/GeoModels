@@ -28,7 +28,10 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
   #############################################################################################
   #################### end internal function ##################################################
   #############################################################################################
-    # Check the user input
+    call <- match.call()
+
+   # opar=par(no.readonly = TRUE)
+#on.exit(par(opar))
 
    # if(covariance&&variogram||!covariance&&!variogram) covariance=TRUE;variogram=FALSE
  
@@ -83,6 +86,10 @@ mu=as.numeric(param$mean)
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
 
+if(is.null(t)) t=0
+if(length(t)>1)  A=as.matrix(expand.grid(x,t)) 
+
+
 ####### Gaussian
    if(model=="Gaussian"){
         if(bivariate){  
@@ -97,7 +104,9 @@ correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                }
         else { 
              vs=as.numeric(nuisance["sill"])
-             cova <- correlation*(1-as.numeric(nuisance["nugget"]))
+
+             if(length(t)>1) cova <- correlation*(1-as.numeric(nuisance["nugget"])) + as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+             else   cova <- correlation*(1-as.numeric(nuisance["nugget"]))+as.numeric(nuisance["nugget"])*I(x==0)
         }
 }
 
@@ -111,20 +120,28 @@ if(!bivariate){
    if(model=="SkewGausssian") {    
             if(bivariate) {}
               else {
-              correlation1=(1-as.numeric(nuisance['nugget']) )*correlation  
+
+               if(length(t)>1) correlation1=(1-as.numeric(nuisance['nugget']) )*correlation  + as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+               else correlation1=(1-as.numeric(nuisance['nugget']) )*correlation  +as.numeric(nuisance["nugget"])*I(x==0)
+
               vv=as.numeric(nuisance['sill']);sk=as.numeric(nuisance['skew']);sk2=sk^2;corr2=correlation^2;  
               cc=(2*sk2)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + (correlation1*vv)/(vv+sk2*(1-2/pi))
               vs=(vv+sk2*(1-2/pi))
+              
               cova=cc; 
                }
                    }
   ##########################################
    if(model=="StudentT")        { if(bivariate) {}
                         else {
-                              correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))
+                              
+                 if(length(t)>1) correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                 else            correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                               nu=1/as.numeric(nuisance['df']);sill=as.numeric(nuisance['sill'])
                               vs=sill*(nu)/(nu-2)
                               cc=((nu-2)*gamma((nu-1)/2)^2*Re(hypergeo::hypergeo(0.5,0.5 ,nu/2 ,correlation^2))*correlation1)/(2*gamma(nu/2)^2)
+                              
                               cova=cc;
                                }
                   }
@@ -132,17 +149,25 @@ if(!bivariate){
 
  if(model=="Tukeyh")        { if(bivariate) {}
                         else {
-                              correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+                             
+
+    if(length(t)>1) correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+             else   correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                               h=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
                               vs=  sill*(1-2*h)^(-1.5)    
                               cc=(correlation*(1-2*h)^(1.5))/((1-h)^2-(h*correlation)^2)^(1.5)
+                             
                               cova=cc;
                              }
                   }
    if(model=="Tukeyh2")        { if(bivariate) {}
                         else {
-                              correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+                              
+                if(length(t)>1) correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                else       correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                               hr=as.numeric(nuisance['tail1']); hl=as.numeric(nuisance['tail2'])
                               sill=as.numeric(nuisance['sill'])
                               corr=correlation
@@ -161,13 +186,18 @@ if(!bivariate){
                              vv1=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                              cc=(p1+p2+2*p3-mm^2)/vv1  # correlation
                              vs=as.numeric(nuisance['sill'])*vv1
-                              cova=cc; 
+                            
+                             cova=cc; 
                              } 
                   }   
 ##########################################
   if(model=="Tukeygh")       { if(bivariate) {}
                         else {
-                              correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+                             
+                          if(length(t)>1)
+               correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)  
+                          else     correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                               rho=correlation
                               tail=as.numeric(nuisance['tail'])
                               sill=as.numeric(nuisance['sill'])
@@ -183,16 +213,19 @@ if(!bivariate){
                                A2=2*exp(0.5*eta2*  (1-tail*(1-rho2))  / (u*u- tail2*rho2)  );
                                A3=eta2*sqrt(u*u- rho2*tail*tail);
                                cc=((A1-A2+1)/A3-mu*mu)/vs;
+                               
                                cova=cc;
                             } 
                         if(tail<=1e-05&&abs(eta)>1e-05){
                               vs=sill*( -exp(eta^2)+exp(eta^2*2))*eta^(-2)
                               cc= (( -exp(eta^2)+exp(eta^2*(1+rho)))*eta^(-2))/vs
+                              
                               cova=cc;
                             } 
                         if(tail>1e-05&&abs(eta)<=1e-05){
                               vs=  sill*(1-2*tail)^(-1.5)     
                               cc=(-rho/((1+h*(tail-1))*(-1+tail+tail*rho)*(1+tail*(-2+tail-tail*rho^2))^0.5))/vs
+                              
                               cova=cc;
                             } 
                         if(tail<=1e-05&&abs(eta)<=1e-05){
@@ -203,8 +236,13 @@ if(!bivariate){
 
 
 if(model=="Kumaraswamy"||model=="Kumaraswamy2")  { if(bivariate) {}
-                            else {
-correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+else {
+
+
+if(length(t)>1)
+               correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0) 
+else correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
 if(model=="Kumaraswamy"){
 ga=as.numeric(nuisance['shape2'])
 eta=as.numeric(nuisance['shape1'])
@@ -230,7 +268,11 @@ vs=sill
 ##########################
  if(model=="SinhAsinh") { if(bivariate) {}
                         else {
-                          correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+
+                          if(length(t)>1)
+                            correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                          else correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                           corr=correlation
                           d=as.numeric(nuisance['tail']); 
                           e=as.numeric(nuisance['skew']); 
@@ -265,7 +307,11 @@ cova=corr;
 ##########################################
  if(model=="TwopieceT")        { if(bivariate) {}
                         else {
-                              correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))
+
+                            if(length(t)>1)
+                                   correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                              else correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
                               nu=1/as.numeric(nuisance['df']); sk=as.numeric(nuisance['skew']);sill=as.numeric(nuisance['sill'])
                               sk2=sk^2
                               vs=sill* ((nu/(nu-2))*(1+3*sk2) - 4*sk2*(nu/pi)*(gamma(0.5*(nu-1))/gamma(0.5*nu))^2)
@@ -285,8 +331,12 @@ cova=corr;
   ##########################################
   if(model=="TwopieceTukeyh")        { if(bivariate) {}
                         else {
+                              
 
-                              correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))
+                              if(length(t)>1) correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                              else correlation1=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
+
                               tail=as.numeric(nuisance['tail']); sk=nuisance['skew'];sill=nuisance['sill']
                               corr2=correlation1^2;sk2=sk^2
                               gg2=(1-(1-corr2)*tail)^2
@@ -307,7 +357,11 @@ cova=corr;
  if(model=="TwopieceGauss")        { 
                         if(bivariate) {}
                         else {        
-                        correlation1=correlation*(1-as.numeric(nuisance['nugget']))
+
+                         if(length(t)>1) correlation1=correlation*(1-as.numeric(nuisance['nugget']))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                        else correlation1=correlation*(1-as.numeric(nuisance['nugget']))+as.numeric(nuisance["nugget"])*I(x==0)
+
+
                         corr2=sqrt(1-correlation1^(2))
                         sk=as.numeric(nuisance['skew']); sk2=sk^2
                         ll=qnorm((1-sk)/2)
@@ -321,7 +375,12 @@ cova=corr;
     ##########################################
  if(model=="Gamma")        { if(bivariate) {}
                         else {
-                              correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+                              
+                          if(length(t)>1) correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                          else   correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
+
+
                               vs=2*exp(mm)^2/as.numeric(nuisance['shape'])
                               cc=correlation^2
                               cova=cc;
@@ -331,7 +390,11 @@ cova=corr;
 if(model=="Weibull")        { if(bivariate) {} 
                         else {
                          
-                        correlation=correlation*(1-as.numeric(nuisance['nugget'] )  )
+
+                        if(length(t)>1)   correlation=correlation*(1-as.numeric(nuisance['nugget'] )  )+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                        else correlation=correlation*(1-as.numeric(nuisance['nugget'] )  )+as.numeric(nuisance["nugget"])*I(x==0)
+
+
                         sh=as.numeric(nuisance["shape"])
                         vs=exp(mm)^2*(gamma(1+2/sh)/gamma(1+1/sh)^2-1)
                         auxcorr= (gamma(1+1/sh))^2/((gamma(1+2/sh))-(gamma(1+1/sh))^2)
@@ -342,7 +405,12 @@ if(model=="Weibull")        { if(bivariate) {}
 ##########################################
 if(model=="Loglogistic")    { if(bivariate) {}  
                       else { 
-                     correlation=correlation*(1-as.numeric(nuisance['nugget'] ))
+
+
+                     if(length(t)>1)  correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                     else correlation=correlation*(1-as.numeric(nuisance['nugget'] ))+as.numeric(nuisance["nugget"])*I(x==0)
+
+
                      sh=as.numeric(nuisance["shape"])
                      vs=exp(mm)^2*(2*sh*sin(pi/sh)^2/(pi*sin(2*pi/sh))-1)
                      cc=((pi*sin(2*pi/sh))/(2*sh*(sin(pi/sh))^2-pi*sin(2*pi/sh)))*
@@ -353,14 +421,19 @@ if(model=="Loglogistic")    { if(bivariate) {}
                     }
 if(model=="LogGaussian")    { if(bivariate) {}  
                       else {    
+                    
+                    if(length(t)>1)  correlation=correlation*(1-as.numeric(nuisance["nugget"]))  +as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                    else  correlation=correlation*(1-as.numeric(nuisance["nugget"]))   +as.numeric(nuisance["nugget"])*I(x==0)
+
+
                     vvar=as.numeric(nuisance["sill"])
-                    yy=vvar*correlation*(1-as.numeric(nuisance["nugget"]))
+                    yy=vvar*correlation
                     cc<-(exp(yy)-1)/(exp(vvar)-1)
                     vs<-(exp(vvar)-1)
                     cova=cc; 
                      }
                   }
-
+#############################################
 if(model=="Binomial"||model=="BinomialNeg"||model=="Geometric"||model=="BinomialnegZINB")
    {
                     if(bivariate) {}
@@ -372,13 +445,18 @@ if(model=="Binomial"||model=="BinomialNeg"||model=="Geometric"||model=="Binomial
                                      pg=pnorm(as.numeric(nuisance['pmu']))
                                      vs=n*(1-pp)*(1-pg)*(1+n*pg*(1-pp)) /pp^2
                                                }
-                           cova=correlation
+                          ## en este caso el nugget ya se computo
+                           if(length(t)>1)  cova=correlation     +as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                           else cova=correlation     +as.numeric(nuisance["nugget"])*I(x==0)
                            }
    }
 if(model=="Poisson") {
                     if(bivariate) {}
                     if(!bivariate) {   
-                           correlation=(1-as.numeric(nuisance['nugget']))*correlation   
+                           if(length(t)>1) correlation=(1-as.numeric(nuisance['nugget']))*correlation  +as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+                           else correlation=(1-as.numeric(nuisance['nugget']))*correlation  +as.numeric(nuisance["nugget"])*I(x==0)
+
+
                            corr2=correlation^2    
                            vs=exp(mu);
                            z=2*vs/(1-corr2)
@@ -400,7 +478,145 @@ if(bivariate)
  else  res=rbind(variogram11,variogram12,variogram22)
 }
 
-return(res)
+GeoCorrFct <- list(corr=res,
+                   distances=x,
+                    times=t,
+                    model=model,
+                    distance=distance,  
+                    param=param,
+                    radius=radius,
+                    n=n,
+                    covariance=covariance,
+                    variogram=variogram,
+                    spacetime=spacetime,
+                    bivariate=bivariate)
+
+structure(c(GeoCorrFct, call = call), class = c("GeoCorrFct"))
+
+
+
 
 }
+
+
+
+
+plot.GeoCorrFct<- function(x,type="p",...)
+  {
+
+if(!inherits(x,"GeoCorrFct"))       stop("Enter an object obtained from the function GeoCorrFct\n")
+
+#opar=par(no.readonly = TRUE)
+#on.exit(par(opar))
+
+old.par <- par(no.readonly = TRUE)
+
+space=!x$bivariate&&!x$spacetime
+################################# spatial ###################################################################
+if(space) {
+    if(type=="p") { plot(x$distances,x$corr,xlab="Distances",type="p",axes=FALSE,...);axis(1);axis(2)}
+    if(type=="l") { 
+                   if(as.numeric(x$param$nugget)>0){maxcor=max(x$corr)
+                                                    plot.new(); plot.window(xlim=c(0,max(x$distances)),ylim= c(0,maxcor))
+                                                    if(!x$variogram) points(0,maxcor,pch=20) else points(0,0,pch=20)
+                                                    sel=x$distances>0
+                                                    lines(x$distances[sel],x$corr[sel],...)
+                                                    axis(1);axis(2)}
+                   else  {   plot(x$distances,x$corr,type="l",axes=FALSE,...)        ;axis(1);axis(2)}                    
+                  } 
+   }
+
+if(x$bivariate){
+##################################  bivariate ##################################################################
+  if(type=="p") {
+par(mfrow=c(1,3))
+ plot(x$distances,x$corr[1,],xlab="Distances",main="1st component",axes=FALSE,type="p",...);axis(1);axis(2)
+ plot(x$distances,x$corr[2,],xlab="Distances",main="Cross component",axes=FALSE,type="p",...);axis(1);axis(2)
+ plot(x$distances,x$corr[3,],xlab="Distances",main="2nd component",axes=FALSE,type="p",...);axis(1);axis(2)
+}
+  if(type=="l") {
+  par(mfrow=c(1,3))  
+###########
+          if(as.numeric(x$param$nugget_1)>0){
+                                                    maxcor=max(x$corr[1,])
+                                                    plot.new(); plot.window(xlim=c(0,max(x$distances)),ylim= c(0,maxcor));title(main="1st component")
+                                                    if(!x$variogram) points(0,maxcor,pch=20) else points(0,0,pch=20)
+                                                    sel=x$distances>0
+                                                    lines(x$distances[sel],x$corr[1,][sel],...)
+                                                    axis(1);axis(2)
+          }
+          else   { plot(x$distances,x$corr[1,],xlab="Distances",main="1st component",axes=FALSE,type="l",...);axis(1);axis(2) }
+##########
+          if(as.numeric(x$param$nugget_1)>0||as.numeric(x$param$nugget_2)>0) {
+
+                                                    maxcor=max(x$corr[2,])
+                                                    mincor=min(x$corr[2,])
+                                                    plot.new(); plot.window(xlim=c(0,max(x$distances)),ylim= c(mincor,maxcor));title(main="Cross component")
+                                                    if(!x$variogram) {
+                                                    bb=as.numeric(x$param$pcol*sqrt( (x$param$nugget_1+x$param$sill_1)*(x$param$nugget_2+x$param$sill_2)))
+                                                    points(0,bb,pch=20) }
+                                                    else points(0,0,pch=20)
+                                                    sel=x$distances>0
+                                                    lines(x$distances[sel],(x$corr[2,])[sel],...)
+                                                    axis(1);axis(2)
+          }
+          else  plot(x$distances,x$corr[2,],xlab="Distances",main="Cross component",axes=FALSE,type="l",...);axis(1);axis(2)
+##########
+          if(as.numeric(x$param$nugget_2)>0){
+
+                                                    maxcor=max(x$corr[3,])
+                                                    plot.new(); plot.window(xlim=c(0,max(x$distances)),ylim= c(0,maxcor));title(main="2nd component")
+                                                    if(!x$variogram) points(0,maxcor,pch=20) else points(0,0,pch=20)
+                                                    sel=x$distances>0
+                                                    lines(x$distances[sel],x$corr[3,][sel],...)
+                                                    axis(1);axis(2)
+          }
+          else   { plot(x$distances,x$corr[3,],xlab="Distances",main="2nd component",axes=FALSE,type="l",...);axis(1);axis(2) }
+  }
+}
+####################################################################################################
+if(x$spacetime){
+par(mfrow=c(1,3))
+cc=matrix(x$corr,nrow=length(x$distances),ncol=length(x$times))
+
+persp(cc,x= x$distances,y=x$times, theta = 20, phi = 30, 
+     ticktype = "detailed",zlab="",xlab="Distance",ylab="Time")
+# A=as.matrix(expand.grid(x$distances,x$times)) 
+#scatterplot3d::scatterplot3d(A[,1],A[,2], c(cc),
+#                              type="h",highlight.3d=TRUE,cex.axis=.7,cex.lab=.7,
+#                              main="",
+#                              ,xlab="Distance",ylab="Time")
+
+
+ if(type=="p") {  plot( x$distances,cc[,1],type="p",xlab="Spatial Distances",main="Spatial Marginal",axes=FALSE,...)    ;axis(1);axis(2)
+                  print("gere")
+                  plot( x$times,cc[1,],    type="p",xlab="Times",main="Temporal marginal",axes=FALSE,...)    ;axis(1);axis(2)
+              }
+
+ if(type=="l") { 
+
+    if(as.numeric(x$param$nugget)>0){
+
+        maxcor=max(cc[1,])
+        plot.new(); plot.window(xlim=c(0,max(x$distances)),ylim= c(0,maxcor));title(main="Spatial Marginal")
+        if(!x$variogram) points(0,maxcor,pch=20) else points(0,0,pch=20)
+        sel=x$distances>0
+        lines(x$distances[sel],(cc[,1])[sel],...)
+         axis(1);axis(2)
+
+        maxcor=max(cc[,1])
+        plot.new(); plot.window(xlim=c(0,max(x$times)),ylim= c(0,maxcor));title(main="Temporal marginal")
+        if(!x$variogram) points(0,maxcor,pch=20) else points(0,0,pch=20)
+        sel=x$times>0
+        lines(x$times[sel],(cc[1,])[sel],...)
+        axis(1);axis(2)
+     }
+    else { plot( x$distances,cc[,1],type="l",xlab="Spatial Distances",main="Spatial Marginal",axes=FALSE,...)    ;axis(1);axis(2)
+            plot( x$times,cc[1,],    type="l",xlab="Times",main="Temporal marginal",axes=FALSE,...)    ;axis(1);axis(2)
+         }   
+   }
+}
+################################################################################################
+par(old.par)
+}  
 

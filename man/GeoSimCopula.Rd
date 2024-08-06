@@ -95,6 +95,13 @@ coordx_dyn=NULL, corrmodel, distance="Eucl",
 
 
 
+\references{
+
+  Bevilacqua M., Alvarado E.,  Caamano C. (2024) A flexible Clayton-like spatial copula with application to bounded support data.  \emph{Journal of Multivariate Analysis}   \bold{201}
+
+
+}
+
 \author{Moreno Bevilacqua, \email{moreno.bevilacqua89@gmail.com},\url{https://sites.google.com/view/moreno-bevilacqua/home},
 Víctor Morales Oñate, \email{victor.morales@uv.cl}, \url{https://sites.google.com/site/moralesonatevictor/},
 Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.researchgate.net/profile/Christian-Caamano}

@@ -14,7 +14,8 @@ coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
                distance="Eucl", grid=FALSE, 
                loc, neighb=NULL,maxdist=NULL,
                maxtime=NULL, radius=6371, time=NULL, 
-               X=NULL,M=NULL,spobj=NULL,spdata=NULL)
+               X=NULL,M=NULL,spobj=NULL,spdata=NULL,
+               parallel=FALSE,ncores=NULL)
 }
 \arguments{
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
@@ -59,6 +60,8 @@ coordt=NULL, coordx_dyn=NULL, bivariate=FALSE,
    \item{M}{Numeric; an estimated spatio (temporal) mean vector.}
     \item{spobj}{An object of class sp or spacetime}
    \item{spdata}{Character:The name of data in the sp or spacetime object}
+    \item{parallel}{Logical; if \code{TRUE} then  parallelizzation is used}
+    \item{ncores}{Numeric; number of cores involved in parallelization.} 
 }
 
 

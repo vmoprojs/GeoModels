@@ -10,7 +10,7 @@
 GeoVariogram(data, coordx, coordy=NULL, coordt=NULL, 
 coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
               grid=FALSE, maxdist=NULL,neighb=NULL,
-              maxtime=NULL, memdist=FALSE,numbins=NULL, 
+              maxtime=NULL, numbins=NULL, 
               radius=6371, type='variogram',bivariate=FALSE)
 }
 \arguments{
@@ -45,7 +45,6 @@ coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
     non-equispaced spatial sites.}
   \item{maxdist}{A numeric value denoting the spatial maximum distance,
    see the Section \bold{Details}.}
-       \item{memdist}{ Logical; if \code{FALSE} then  all  the distances are computed during the semivariogram computation. If \code{TRUE} then the nabor package is used to find the distances specificing a \code{maxdist} and a \code{neighb}. The second option can be useful for large datasets}
    \item{neighb}{Numeric; an optional positive integer indicating the 
     order of neighborhood. See the Section \bold{Details} for more information.}
    \item{maxtime}{A numeric value denoting the temporal maximum distance,
@@ -79,7 +78,7 @@ coordx_dyn=NULL,cloud=FALSE, distance="Eucl",
   the shorter distances will be considered in the calculation of
   the semivariogram.
 
-   The \code{maxdist} parameter can be coupled with the \code{neighb} parameter (setting \code{memdist=T}). This is useful when handling large dataset.
+   The \code{maxdist} parameter can be coupled with the \code{neighb} parameter. This is useful when handling large dataset.
 
   The \code{maxtime} parameter indicates the maximum temporal distance below which
   the shorter distances will be considered in the calculation of
@@ -210,7 +209,7 @@ param=list(mean_1=0,mean_2=0,scale_1=0.1/3,scale_2=0.15/3,scale_12=0.15/3,
 data = GeoSim(coordx=coords, corrmodel="Bi_matern", param=param)$data
 
 # Empirical  semi-(cross)variogram estimation:
-biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=c(0.5,0.5,0.5))  
+biv_vario=GeoVariogram(data,coordx=coords, bivariate=TRUE,maxdist=0.5)  
 
 plot(biv_vario,pch=20)
       

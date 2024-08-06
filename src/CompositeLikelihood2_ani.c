@@ -7,7 +7,7 @@
 
 
 // Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
-void Comp_Pair_Gauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -28,7 +28,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 /******************************************************************************************/
-void Comp_Diff_Gauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Diff_Gauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -52,7 +52,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /******************************************************************************************/
-void Comp_Pair_WrapGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_WrapGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -78,7 +78,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /******************************************************************************************/
-void Comp_Pair_SinhGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_SinhGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -99,7 +99,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /******************************************************************************************/
-void Comp_Pair_SkewGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_SkewGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -121,7 +121,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Gamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -144,7 +144,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Weibull2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Weibull2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -169,7 +169,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 /*********************************************************/
-void Comp_Pair_Kumaraswamy2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Kumaraswamy2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -196,7 +196,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 /*********************************************************/
-void Comp_Pair_Kumaraswamy22mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Kumaraswamy22mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -221,7 +221,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Beta2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Beta2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -245,7 +245,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_LogGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_LogGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -268,7 +268,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_PoisbinnegGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_PoisbinnegGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -290,14 +290,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     u=data1[i];v=data2[i];
     if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u;  vv=(int) v;
-                        bl=biv_poisbinneg(NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_poisbinneg(N1[0],uu,vv,p1,p2,p11);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 /*********************************************************/
-void Comp_Pair_PoisbinGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_PoisbinGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -319,7 +319,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     u=data1[i];v=data2[i];
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u; vv=(int) v;
-                        bl=biv_poisbin(NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_poisbin(N1[0],uu,vv,p1,p2,p11);
 
                     *res+= weights*log(bl);
                 }}
@@ -329,7 +329,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 /*********************************************************/
-void Comp_Pair_BinomnegGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomnegGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -352,14 +352,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                          if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u;
                          vv=(int) v;
-                        bl=biv_binomneg (NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_binomneg (N1[0],uu,vv,p1,p2,p11);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
 /*********************************************************/
-void Comp_Pair_BinomnegLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomnegLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -384,14 +384,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                          if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u;
                          vv=(int) v;
-                        bl=biv_binomneg (NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_binomneg (N1[0],uu,vv,p1,p2,p11);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
 /*********************************************************/
-void Comp_Pair_BinomnegGaussZINB2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomnegGaussZINB2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -411,14 +411,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                          if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u;
                          vv=(int) v;
-                        bl=biv_binomnegZINB(NN[0],corr,uu,vv,ai,aj,nugget1,nugget2,mup);
+                        bl=biv_binomnegZINB(N1[0],corr,uu,vv,ai,aj,nugget1,nugget2,mup);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
 /******************************************************************************************/
-void Comp_Pair_BinomGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -439,14 +439,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                 u=data1[i];v=data2[i];
                         if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u; vv=(int) v;
-                        bl=biv_binom (NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_binom (N1[0],uu,vv,p1,p2,p11);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
 /******************************************************************************************/
-void Comp_Pair_BinomLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -466,14 +466,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
                         if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                           uu=(int) u; vv=(int) v;
-                        bl=biv_binom (NN[0],uu,vv,p1,p2,p11);
+                        bl=biv_binom (N1[0],uu,vv,p1,p2,p11);
                     *res+= weights*log(bl);
                 }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
 
-void Comp_Pair_BinomNNGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomNNGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -492,7 +492,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  p1=pnorm(ai,0,1,1,0);
                  p2=pnorm(aj,0,1,1,0);
                  u=data1[i];v=data2[i];
-                 n1=NN[i];n2=NN[i+npairs[0]];
+                 n1=N1[i];n2=N2[i];
                  if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                  uu=(int) u; vv=(int) v;
                  bl=biv_binom222(n1,n2,uu,vv,p1,p2,p11);
@@ -504,7 +504,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 
-void Comp_Pair_BinomNNGauss_misp2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomNNGauss_misp2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -530,7 +530,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  p1=pnorm(ai,0,1,1,0);
                  p2=pnorm(aj,0,1,1,0);
                  u=data1[i];v=data2[i];
-                 n1=NN[i];n2=NN[i+npairs[0]];
+                 n1=N1[i];n2=N2[i];
                  if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                  M[0][0]=n1*p1*(1-p1);   M[1][1]=n2*p2*(1-p2);  // var1 var2
                  M[0][1]= fmin_int(n1,n2)*(p11-p1*p2) ;       // covariance
@@ -550,7 +550,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 
-void Comp_Pair_BinomNNLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BinomNNLogi2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -569,7 +569,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  p11=pblogi22(ai,aj,(1-nugget)*corr);
                  p1=1/(1+exp(-ai));p2=1/(1+exp(-aj));
                  u=data1[i];v=data2[i];
-                 n1=NN[i];n2=NN[i+npairs[0]];
+                 n1=N1[i];n2=N2[i];
                  if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
                  uu=(int) u; vv=(int) v;
                  bl=biv_binom222(n1,n2,uu,vv,p1,p2,p11);
@@ -580,7 +580,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 /*********************************************************/
-void Comp_Pair_LogLogistic2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_LogLogistic2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -602,7 +602,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Logistic2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Logistic2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -623,7 +623,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Pois2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Pois2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -649,7 +649,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_PoisGamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_PoisGamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -676,7 +676,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 
-void Comp_Pair_Gauss_misp_PoisGamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_PoisGamma2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -719,7 +719,7 @@ double **M;
 
 
 /*********************************************************/
-void Comp_Pair_PoisZIP2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_PoisZIP2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -748,7 +748,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Gauss_misp_Pois2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_Pois2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -785,7 +785,7 @@ double **M;
     return;
 }
 
-void Comp_Pair_Gauss_misp_PoisZIP2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_PoisZIP2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -813,7 +813,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 /*********************************************************/
-void Comp_Pair_Gauss_misp_SkewT2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_SkewT2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -848,7 +848,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Gauss_misp_T2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_T2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -877,7 +877,7 @@ lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
 
 
 /*********************************************************/
-void Comp_Pair_Tukeyhh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Tukeyhh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -906,7 +906,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 
 /*********************************************************/
-void Comp_Pair_Tukeyh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Tukeyh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -929,7 +929,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_Gauss_misp_Tukeygh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Gauss_misp_Tukeygh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -968,7 +968,7 @@ lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
     return;
 }
 /*********************************************************/
-void Comp_Pair_T2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_T2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -994,7 +994,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_TWOPIECETukeyh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_TWOPIECETukeyh2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -1022,7 +1022,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 /*********************************************************/
-void Comp_Pair_TWOPIECET2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_TWOPIECET2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -1054,7 +1054,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 
 /*********************************************************/
-void Comp_Pair_TWOPIECEGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_TWOPIECEGauss2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -1082,7 +1082,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
-void Comp_Pair_TWOPIECEBIMODAL2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_TWOPIECEBIMODAL2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU)
 {
@@ -1166,7 +1166,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /******************************************************************************************/
 
 // Composite marginal (pariwise) log-likelihood for the spatial Gaussian model:
-void Comp_Pair_GaussCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_GaussCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1183,14 +1183,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                       *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 
-void Comp_Pair_TCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_TCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1207,14 +1207,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                       *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 
-void Comp_Pair_BetaCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_BetaCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1230,14 +1230,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                         *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 
-void Comp_Pair_Beta2Cop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Beta2Cop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1253,14 +1253,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                        *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 
-void Comp_Pair_KumaraswamyCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_KumaraswamyCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1276,13 +1276,13 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                         *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
-void Comp_Pair_Kumaraswamy2Cop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_Kumaraswamy2Cop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1298,14 +1298,14 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                       *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;
     return;
 }
 
-void Comp_Pair_PoisCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *NN,
+void Comp_Pair_PoisCop2mem_aniso(int *cormod, double *coord1,double *coord2, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
@@ -1321,7 +1321,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     lag= hypot(coord1[2*i]-coord2[2*i],coord1[2*i+1]-coord2[2*i+1]);
                       corr=CorFct(cormod,lag,0,par,0,0);
                        if(*weigthed) weights=CorFunBohman(lag,maxdist[0]);
-           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,NN[i],NN[i+npairs[0]]);
+           bl=biv_cop(corr,type_cop[0],cond[0],data1[i],data2[i],mean1[i],mean2[i],nuis,model,N1[i],N2[i]);
                         *res+= bl*weights;
                     }}
     if(!R_FINITE(*res))  *res = LOW;

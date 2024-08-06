@@ -385,17 +385,15 @@ param=as.numeric(param)
   #}
 
 
-    if(optimizer=='nmk')
-      CompLikelihood <-dfoptim::nmk(par=param, fn= compindloglik2, control = list(maxfeval=100000,tol=1e-10),
-                            data=data,fixed=fixed, fan=fname,
-                           n=n,namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
-    if(optimizer=='nmkb')
-    {
-      CompLikelihood <-dfoptim::nmkb(par=param, fn= compindloglik2, control = list(maxfeval=100000,tol=1e-10),
-                         lower=lower,upper=upper,
-                            data=data, fixed=fixed, fan=fname,
-                         n=n,namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
-    }
+   # if(optimizer=='nmk')
+    #  CompLikelihood <-dfoptim::nmk(par=param, fn= compindloglik2, control = list(maxfeval=100000,tol=1e-10),
+     #                       data=data,fixed=fixed, fan=fname,
+      #                     n=n,namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
+   # if(optimizer=='nmkb')
+    #  CompLikelihood <-dfoptim::nmkb(par=param, fn= compindloglik2, control = list(maxfeval=100000,tol=1e-10),
+     #                    lower=lower,upper=upper,
+      #                      data=data, fixed=fixed, fan=fname,
+       #                  n=n,namesnuis=namesnuis,namesparam=namesparam,  X=X,MM=MM)
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f= compindloglik2,p=param,steptol = 1e-4,    data=data, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n, namesnuis=namesnuis,namesparam=namesparam, 
@@ -464,15 +462,15 @@ param=as.numeric(param)
                               reltol=1e-14, maxit=100000), data=data, fixed=fixed, fan=fname,
                               hessian=FALSE, method='Nelder-Mead',n=n,
                                namesnuis=namesnuis,namesparam=namesparam ,  X=X,MM=MM )
-    if(optimizer=='nmk')
-        CompLikelihood <- dfoptim::nmk(par=param, fn= compindloglik_biv2, control = list(maxfeval=100000,tol=1e-10),
-                                 data=data, fixed=fixed, fan=fname,
-                            n=n,  namesnuis=namesnuis,namesparam=namesparam ,  X=X ,MM=MM)
-    if(optimizer=='nmkb')
-        CompLikelihood <- dfoptim::nmkb(par=param, fn= compindloglik_biv2, control = list(maxfeval=100000,tol=1e-10),
-                             lower=lower,upper=upper,
-                                 data=data, fixed=fixed, fan=fname,
-                            n=n,  namesnuis=namesnuis,namesparam=namesparam ,  X=X ,MM=MM)
+    #if(optimizer=='nmk')
+     #   CompLikelihood <- dfoptim::nmk(par=param, fn= compindloglik_biv2, control = list(maxfeval=100000,tol=1e-10),
+      #                           data=data, fixed=fixed, fan=fname,
+       #                     n=n,  namesnuis=namesnuis,namesparam=namesparam ,  X=X ,MM=MM)
+    #if(optimizer=='nmkb')
+       # CompLikelihood <- dfoptim::nmkb(par=param, fn= compindloglik_biv2, control = list(maxfeval=100000,tol=1e-10),
+        #                     lower=lower,upper=upper,
+         #                        data=data, fixed=fixed, fan=fname,
+          #                  n=n,  namesnuis=namesnuis,namesparam=namesparam ,  X=X ,MM=MM)
      if(optimizer=='nlm') 
         CompLikelihood <- nlm( f= compindloglik_biv2,p=param,     data=data, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n, namesnuis=namesnuis,namesparam=namesparam, 

@@ -1,6 +1,6 @@
 GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
             distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL,
-                 radius=6371, time=NULL, X=NULL,M=NULL,spobj=NULL,spdata=NULL)
+                 radius=6371, time=NULL, X=NULL,M=NULL,spobj=NULL,spdata=NULL,parallel=FALSE,ncores=NULL)
 {
   ############## internal function#######
   nbor=function(coords,loc,distance,maxdist,neighb){
@@ -19,18 +19,15 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   if(is.null(neighb)) neighb=min(100, NN)
   
   ## computing neigh indexes
-  if(distance=="Geod"||distance=="Chor")  {
-                                           #out<- RANN::nn2(coords_p,loc_p, k=neighb,searchtype=searchtype,radius=maxdist)
+  if(distance=="Geod"||distance=="Chor")  {#out<- RANN::nn2(coords_p,loc_p, k=neighb,searchtype=searchtype,radius=maxdist)
                                            out<- nabor::knn(coords_p,loc_p, k=neighb,radius=maxdist)
                                            }
-  if(distance=="Eucl")                    {
-                                          # out<- RANN::nn2(coords,loc,     k=neighb,searchtype=searchtype,radius=maxdist)
+  if(distance=="Eucl")                    {# out<- RANN::nn2(coords,loc,     k=neighb,searchtype=searchtype,radius=maxdist)
                                            out<- nabor::knn(coords,loc, k=neighb,radius=maxdist)
                                           }
     return(out)                                       
     }
   #####################  
-  
   XX=NULL
   MM=NULL
   numtime=1
@@ -46,8 +43,6 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   spacetime=FALSE
   if(!is.null(coordt)) {spacetime=TRUE}
   if(spacetime) if(!is.vector(time))  stop("time parameter is missing")
-
-
 
   space=!spacetime&&!bivariate 
 ##################
@@ -77,18 +72,15 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   #####################################
   sel_tt=NULL
   colnames(loc)=NULL;colnames(coords)=NULL;
-
+  ##################################################################
   ##################################################################
 
-
-
-
-
-  #################################
   if(space){
 
     sel_ss=data_sel=numpoints=XX=MM=list()
     out= nbor(coords,loc,distance,maxdist,neighb)
+
+   
     for(i in 1:Nloc)
     {
       ss=out$nn.idx[i,];

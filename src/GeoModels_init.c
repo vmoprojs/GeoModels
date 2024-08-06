@@ -76,6 +76,10 @@ extern void Binned_Variogram_st2(double *bins, double *bint, double *coordx, dou
        int *lbint, double *moms,double *momst, double *momt, int *nbins, int *nbint, int *ns,int *NS);
 extern void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins);
 extern void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2, double *vdist, int *lbins, double *moms, int *nbins,double *mm);
+extern void Binned_Variogram_biv2new(double *bins, int *np,double *data1, double *data2,  double *vdist, double *mm,
+     double *moms00,double *moms10,double *moms11,
+       int *lbins00,int *lbins10,int *lbins11,
+     int *nbins,int *first, int *second);
 extern void Binned_Variogram_st2_dyn(double *bins, double *bint, double *coordx, double *coordy, double *coordt,double *data, int *lbins, int *lbinst,
                               int *lbint, double *moms,double *momst, double *momt, int *nbins, int *nbint, int *ns,int *NS);
 extern void Cloud_Variogram2(double *bins,double *coordx, double *coordy, double *coordt, double *data, int *lbins, double *moms, int *nbins);
@@ -925,6 +929,7 @@ static const R_CMethodDef CEntries[] = {
     {"CorrelationMat_st_tap",       (DL_FUNC) &CorrelationMat_st_tap,       10},
     {"Binned_Variogram2",           (DL_FUNC) &Binned_Variogram2,            8},
     {"Binned_Variogram2new",        (DL_FUNC) &Binned_Variogram2new,         9},
+     {"Binned_Variogram_biv2new",        (DL_FUNC) &Binned_Variogram_biv2new,         15},
     {"Binned_Variogram_biv2",       (DL_FUNC) &Binned_Variogram_biv2,       12},
     {"Binned_Variogram_st2",        (DL_FUNC) &Binned_Variogram_st2,        16},
     {"Binned_Variogram_st2_dyn",    (DL_FUNC) &Binned_Variogram_st2_dyn,    16},

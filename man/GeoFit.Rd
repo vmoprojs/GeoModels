@@ -276,40 +276,12 @@ random fields using Gaussian and Clayton copula (see Bevilacqua, Alvarado  and C
   The same arguments of \code{neighb} applies  for \code{maxtime} that sets
    the  order (1, 2, 3, ..) of temporal neighboords in spatial-temporal field.
 
-  The \code{varest=TRUE} parameter specifies if the standard error estimation of the estimated parameters must be computed.
-  For Gaussian random fieldss and standard  likelihood estimation, standard  errors  are computed as square root of the diagonal elements of the inverse of the Hessian matrix (asymptotic covariance matrix of the estimates under increasing domain).
-  For Gaussian and non Gaussian  random fieldss and composite  likelihood estimation, standard errors estimate are computed as square root of the diagonal elements of the
-  Godambe Information matrix. (asymptotic covariance matrix of the estimates under increasing domain  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
-
-  For standard error estimation  of weighted composite likelihood estimation
-   the option \code{sensitivity=TRUE} must be used. Then the  resulting  object  must be updated   using the function \code{GeoVarestbootstrap}. This allows to perform standard error estimation (it could be computationally intensive).
+  For estimation of the variance-covariance matrix of  the  weighted composite likelihood  estimates
+   the option \code{sensitivity=TRUE} must be specified. Then the  \code{GeoFit}  object  must be updated   using the function \code{GeoVarestbootstrap}. This allows to estimate  the Godambe Information matrix  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
+  Then standard error estimation, confidence intervals,  pvalues  and composite likelihood information critera can be obtained.
    
-  The option  \code{varest=TRUE}  is deprecated for composite likelihood estimation and the comments below should not be considered.
-  The \code{varest=TRUE} option allows std error estimation trough a sub-sampling procedure.
-  In the  the sub-sampling procedure,\code{winconst}
-   and \code{winstp} parameters represent respectively a positive constant used to
-  determine the sub-window size and the the step with which the
-  sub-window moves. 
-  In the spatial case (subset of \eqn{R^2}{R^2}), the domain is seen as
-  a rectangle \eqn{B \times H}{BxH}, therefore the size of the
-  sub-window side \eqn{b}{b} is given by \eqn{b=winconst \times
-  \sqrt(B)}{b=winconst x sqrt(B)} (similar is of \eqn{H}{H}).
-  For a complete description see Lee and Lahiri (2002).
-  By default \code{winconst} is set \eqn{B / (4 \times \sqrt(B))}{B / (4
-  x sqrt(B))}.  The \code{winstp} parameter is used to determine the sub-window step. The latter is given by the
-  proportion of the sub-window size, so that when \code{winstp=1} there
-  is not overlapping between contiguous sub-windows.
-  In the spatial case by default \code{winstp=0.5}.
-  The sub-window is moved
-  by successive steps in order to cover the entire spatial
-  domain.
-  Observations, that fall in disjoint or overlapping windows
-  are considered independent samples.
-
-  In the spatio-temporal case  \code{winconst_t} represents
-  the lenght of the temporal sub-window. By default the size of the
-  sub-window is computed following the rule established in Li et al. (2007).
-  By default \code{winstp} is the time step.
+  The option  \code{varest=TRUE}  is deprecated.
+  
 }
 
 \value{

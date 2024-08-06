@@ -9,7 +9,7 @@ the function computes optimal linear prediction and associated mean square error
 for the Gaussian and non Gaussian case.
 }
 \usage{
-GeoKrig(data, coordx, coordy=NULL, coordt=NULL, 
+GeoKrig(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL, 
 coordx_dyn=NULL, corrmodel,distance="Eucl",
     grid=FALSE, loc, maxdist=NULL, maxtime=NULL,
     method="cholesky", model="Gaussian", n=1,nloc=NULL,mse=FALSE, 
@@ -19,6 +19,7 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
      copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL,spobj=NULL,spdata=NULL)
 }
 \arguments{
+  \item{estobj}{An object of class Geofit that includes information about data, model and estimates.}
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data used for prediction.}
@@ -146,11 +147,6 @@ case of simple kriging, the known mean can be specified by the parameter
 \references{
   Gaetan, C. and Guyon, X. (2010) \emph{Spatial Statistics and Modelling}.
   Spring Verlang, New York.
-  Furrer R.,  Genton, M.G. and  Nychka D. (2006). \emph{Covariance
-  Tapering for Interpolation of Large Spatial Datasets}.
-  Journal of Computational and Graphical Statistics, \bold{15-3}, 502--523.
-
-
 }
 
 \seealso{\code{\link{GeoCovmatrix}}}
@@ -164,7 +160,6 @@ Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.rese
 \examples{
 
 library(GeoModels)
-
 ################################################################
 ########### Examples of spatial kriging ############
 ################################################################
@@ -178,8 +173,8 @@ library(GeoModels)
 
 model="Gaussian"
 set.seed(79)
-x = runif(400, 0, 1)
-y = runif(400, 0, 1)
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
 coords=cbind(x,y)
 # Set the exponential cov parameters:
 corrmodel = "GenWend"
@@ -200,16 +195,22 @@ lower=list(mean=-I,scale=0,sill=0)
 upper=list(mean= I,scale=I,sill=I)
 # Maximum pairwise likelihood fitting :
 fit = GeoFit(data, coordx=coords, corrmodel=corrmodel,model=model,
-                    likelihood='Marginal', type='Pairwise',neighb=3,
-                    optimizer="nlminb", lower=lower,upper=upper,
-                    start=start,fixed=fixed)
+             likelihood='Marginal', type='Pairwise',neighb=3,
+             optimizer="nlminb", lower=lower,upper=upper,
+             start=start,fixed=fixed)
 
 # locations to predict
 xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 
-pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-       model=model,param= param, data=data,mse=TRUE)
+## first option
+#param=append(fit$param,fit$fixed)
+#pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
+#       model=model,param=param,data=data,mse=TRUE)
+
+## second option using object GeoFit
+pr=GeoKrig(fit,loc=loc_to_pred,mse=TRUE)
+
 
 colour = rainbow(100)
 
@@ -258,16 +259,15 @@ lower=list(mean=-I,scale=0,sill=0,skew=-I)
 upper=list(mean= I,scale=I,sill=I,skew=I)
 # Maximum pairwise likelihood fitting :
 fit = GeoFit2(data, coordx=coords, corrmodel=corrmodel,model=model,
-                    likelihood='Marginal', type='Pairwise',neighb=3,
-                    optimizer="nlminb", lower=lower,upper=upper,
-                    start=start,fixed=fixed)
+              likelihood='Marginal', type='Pairwise',neighb=3,
+              optimizer="nlminb", lower=lower,upper=upper,
+              start=start,fixed=fixed)
 
 # locations to predict
 xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 ## optimal linear kriging
-pr=GeoKrig(loc=loc_to_pred,coordx=coords,corrmodel=corrmodel,
-       model=model,param= param, data=data,mse=TRUE)
+pr=GeoKrig(fit,loc=loc_to_pred,mse=TRUE)
 
 colour = rainbow(100)
 
@@ -300,7 +300,7 @@ coords=cbind(runif(NN),runif(NN))
 a0=rep(1,NN)
 a1=runif(NN,0,1)
 X=cbind(a0,a1)
- ##Set model parameters
+##Set model parameters
 shape=2
 ## regression parameters
 mean = 1;mean1= -0.2
@@ -310,9 +310,9 @@ scale = 0.3;smooth=0
 
 ## simulation
 param=list(shape=shape,nugget=nugget,mean=mean,mean1=mean1, 
-  scale=scale,power2=power2,smooth=smooth)
+           scale=scale,power2=power2,smooth=smooth)
 data = GeoSim(coordx=coords,corrmodel=corrmodel, param=param,
-                model=model,X=X)$data
+              model=model,X=X)$data
 
 #####starting and fixed parameters
 fixed=list(nugget=nugget,power2=power2,smooth=smooth)
@@ -322,7 +322,7 @@ start=list(mean=mean,mean1=mean1, scale=scale,shape=shape)
 fit2 = GeoFit(data=data,coordx=coords,corrmodel=corrmodel,X=X,
               neighb=3,likelihood="Conditional",type="Pairwise",
               start=start,fixed=fixed, model = model)
-             
+
 # locations to predict with associated covariates
 xx=seq(0,1,0.03)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
@@ -332,9 +332,7 @@ a1=runif(NP,0,1)
 Xloc=cbind(a0,a1)
 
 #optimal linear  kriging 
-pr=GeoKrig(data=data, coordx=coords,loc=loc_to_pred,corrmodel=corrmodel,model=model,mse=TRUE,
-        X=X,Xloc=Xloc,
-       sparse=TRUE,param=append(fit2$param,fit2$fixed))
+pr=GeoKrig(fit2,loc=loc_to_pred,Xloc=Xloc,sparse=TRUE,mse=TRUE)
 
 ## map 
 opar=par(no.readonly = TRUE)
@@ -356,62 +354,119 @@ par(opar)
 
 ################################################################
 ###
-### Example 3. Spatio temporal simple kriging of n locations
+### Example 4. Spatio temporal simple kriging of n locations
 ### sites and m temporal instants for a Gaussian random fields
 ### with estimated double Wendland correlation.
 ###
 ###############################################################
 model="Gaussian"
 # Define the spatial-coordinates of the points:
-x = runif(30, 0, 1)
-y = runif(30, 0, 1)
-#coords=cbind(x,y)
-times=1:5
+x = runif(300, 0, 1)
+y = runif(300, 0, 1)
+coords=cbind(x,y)
+times=1:4
 
 # Define model correlation modek and associated parameters
 corrmodel="Wend0_Wend0"
 param=list(nugget=0,mean=0,power2_s=4,power2_t=4,
-        scale_s=0.1,scale_t=2,sill=1)
+           scale_s=0.2,scale_t=2,sill=1)
 
 # Simulation of the space time Gaussian random field:
 set.seed(31)
 data=GeoSim(coordx=coords,coordt=times,corrmodel=corrmodel,sparse=TRUE,
-           param=param)$data
+            param=param)$data
 
 # Maximum pairwise likelihood fitting of the space time random field:
 start = list(scale_s=0.15,scale_t=2,sill=1,mean=0)
 fixed = list(nugget=0,power2_s=4,power2_t=4)
-I=Inf
-lower=list(scale_s=0,scale_t=0,sill=0,mean=-I)
-upper=list(scale_s=I,scale_t=I,sill=I,mean=I)
+
 fit = GeoFit(data, coordx=coords, coordt=times, model=model, corrmodel=corrmodel, 
              likelihood='Conditional', type='Pairwise',start=start,fixed=fixed,
-              neighb=3,maxtime=1)
-
-
-param=append(fit$param,fit$fixed)
+             neighb=3,maxtime=1)
 
 # locations to predict
-xx=seq(0,1,0.06)
+xx=seq(0,1,0.04)
 loc_to_pred=as.matrix(expand.grid(xx,xx))
 #  Define the times to predict
-times_to_pred=1:2
+times_to_pred=2
 
-pr=GeoKrig(loc=loc_to_pred,time=times_to_pred,coordx=coords,coordt=times,
-      sparse=TRUE,corrmodel=corrmodel, param=param,data=data,mse=TRUE)
+pr=GeoKrig(fit,loc=loc_to_pred,time=times_to_pred,sparse=TRUE,mse=TRUE)
 
 opar=par(no.readonly = TRUE)
-par(mfrow=c(2,3))
+par(mfrow=c(1,3))
 zlim=c(-2.5,2.5)
 colour = rainbow(100)
 
-for(i in 1:2) {
-quilt.plot(coords,data[i,] ,col=colour,main = paste(" data  at Time=" , i))   
-image.plot(xx, xx, matrix(pr$pred[i,],ncol=length(xx)),col=colour,
-        main = paste(" Kriging Time=" , i),ylab="")
-image.plot(xx, xx, matrix(pr$mse[i,],ncol=length(xx)),col=colour,
-           main = paste("Std err Time=" , i),ylab="")
-}
+
+quilt.plot(coords,data[2,] ,col=colour,main = paste(" data  at Time 2"))   
+image.plot(xx, xx, matrix(pr$pred,ncol=length(xx)),col=colour,
+           main = paste(" Kriging at Time 2"),ylab="")
+image.plot(xx, xx, matrix(pr$mse,ncol=length(xx)),col=colour,
+           main = paste("Std err Time at time 2"),ylab="")
+
+
 par(opar)
+
+
+################################################################
+###
+### Example r. Spatial bivariate  simple cokriging of n locations
+### sites  for a bivariate Gaussian random fields
+### with estimated Matern correlation.
+###
+###############################################################
+#set.seed(6)
+#NN=1500 # number of spatial locations 
+#x = runif(NN, 0, 1); 
+#y = runif(NN, 0, 1) 
+#coords=cbind(x,y) 
+
+## setting parameters
+#mean_1 = 2; mean_2= -1
+#nugget_1 =0;nugget_2=0
+#sill_1 =0.5; sill_2 =1; 
+
+### correlation parameters
+#CorrParam("Bi_Matern")
+#scale_1=0.2/3; scale_2=0.15/3; scale_12=0.5*(scale_2+scale_1) 
+#smooth_1=smooth_2=smooth_12=0.5
+#pcol = -0.4
+#param= list(nugget_1=nugget_1,nugget_2=nugget_2,
+#          sill_1=sill_1,sill_2=sill_2,
+#          mean_1=mean_1,mean_2=mean_2,
+#          smooth_1=smooth_1, smooth_2=smooth_2,smooth_12=smooth_12,
+#          scale_1=scale_1, scale_2=scale_2,scale_12=scale_12,
+#          pcol=pcol)
+
+## simulation
+#data = GeoSim(coordx=coords, corrmodel="Bi_Matern",model=model,param=param)$data
+
+#fixed=list(mean_1=mean_1,mean_2=mean_2, nugget_1=nugget_1,nugget_2=nugget_2, 
+#       smooth_1=smooth_1, smooth_2=smooth_2,smooth_12=smooth_12)
+
+#start=list( sill_1=sill_1,sill_2=sill_2,
+#        scale_1=scale_1,scale_2=scale_2,scale_12=scale_12, pcol=pcol)
+
+## estimation with maximum likelihood 
+#fit = GeoFit(data=data,coordx=coords, corrmodel="Bi_Matern",
+ #likelihood="Full",type="Standard",optimizer="BFGS",
+  #likelihood="Marginal",type="Pairwise",optimizer="BFGS",neighb=5,
+  #start=start,fixed=fixed)
+
+###### co-kriging for the fist component ##############
+#xx=seq(0,1,0.022)
+#loc_to_pred=as.matrix(expand.grid(xx,xx))
+#pr1 = GeoKrig(fit,which=1,mse=TRUE,loc=loc_to_pred)
+
+#opar=par(no.readonly = TRUE)
+#par(mfrow=c(1,2))
+#zlim=c(-2.5,2.5)
+#colour = rainbow(100)
+#quilt.plot(coords,data[1,] ,col=colour,main = paste(" Fist component"))   
+#quilt.plot(loc_to_pred,pr1$pred,col=colour,
+#           main = paste(" Kriging first component"),ylab="")
+#par(opar)
+
+
 }
 \keyword{Composite}

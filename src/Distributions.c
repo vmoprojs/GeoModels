@@ -17,6 +17,63 @@ void  hyperg_call(double *a,double *b,double *x,double *res)
 
 
 
+
+double onef2( double a, double b,double c,double x,double *err )
+{
+double n, a0, sum, t;
+double an, bn, cn, max, z;
+double stop=1.37e-17;
+an = a;
+bn = b;
+cn = c;
+a0 = 1.0;
+sum = 1.0;
+n = 1.0;
+t = 1.0;
+max = 0.0;
+do
+        {
+        if( an == 0 )
+                goto done;
+        if( bn == 0 )
+                goto error;
+        if( cn == 0 )
+                goto error;
+        if( (a0 > 1.0e34) || (n > 200) )
+                goto error;
+        a0 *= (an * x) / (bn * cn * n);
+        sum += a0;
+        an += 1.0;
+        bn += 1.0;
+        cn += 1.0;
+        n += 1.0;
+        z = fabs( a0 );
+        if( z > max )
+                max = z;
+        if( sum != 0 )
+                t = fabs( a0 / sum );
+        else
+                t = z;
+        }
+while( t > stop );
+
+done:
+
+*err = fabs(MACHEP * max / sum);
+
+  goto xit;
+
+ error:
+  *err = 1.0e38;
+
+ xit:
+   return(sum);
+ }
+
+
+
+
+
  
 double poch(double a, double m)
 {
@@ -74,7 +131,7 @@ double poch(double a, double m)
 }
 
 
-
+/*
 double onef2(double a,double b,double c,double z)
 {
 double term,s1=0.0;int k=0;
@@ -86,7 +143,7 @@ if(fabs(term)<MACHEP)  {break;}
 k++;
 }
 return(s1);
-}
+}*/
 
 
 
@@ -176,7 +233,7 @@ void  reghyperg_call(int *a,int *b,double *x,double *res)
 {
     *res = log_regularized1F1(*a,*b,*x);
 }
-/************ pochammer symbols*******************/
+/************ pochammer symbols******************
 double Poch(int q,int n)
 {
     if(n==0) return(1.0);
@@ -189,7 +246,7 @@ double Poch(int q,int n)
          return(res);
     }
        
-}
+}*/
 
 
 
@@ -1335,6 +1392,47 @@ done:
 }
 //************************************* END igam.c*****************************************
 
+
+
+/* integrand  in  generalized wendland function*/
+double int_onef2(double x,double a, double b1,double b2,double y)
+{
+    double res=0.0,of1;
+    of1=gammafn(b1)*R_pow(x*y,1-b1/2)*bessel_i(2*sqrt(x*y),b1-1,1);
+    res=R_pow(1-x,b2-a-1)*R_pow(x,a-1)*of1;
+    return (res);
+}
+void integr_onef2(double *x, int n, void *ex){
+    int i;double a,b1,b2,y;
+    a =    ((double*)ex)[0];  //smooth
+    b1 = ((double*)ex)[1];  //alpha
+    b2 =     ((double*)ex)[2];  //h
+    y =     ((double*)ex)[3];  //h
+    for (i=0;i<n;i++) {x[i]=int_onef2(x[i],a,b1,b2,y);}
+    return;
+}
+// function computing generalized wendland
+double onef2integral(double x, double *param) {
+    
+    double ex[4], lower, upper, epsabs, epsrel, result, abserr, *work;
+    int neval, ier, subdiv, lenw, last, *iwork;
+    subdiv = 100;
+    epsabs = R_pow(DBL_EPSILON, 0.25);
+    epsrel = epsabs;
+    lenw = 4 * subdiv;           /* as instructed in WRE */
+    iwork =   (int *) Calloc(subdiv, int);  /* idem */
+    work = (double *) Calloc(lenw, double); /* idem */
+    ex[0] = param[0]; ex[1] = param[1];ex[2]= param[2];ex[3]=x;
+    lower=0;
+    upper=1;
+    // Compute the integral
+    Rdqags(integr_onef2, (void *) &ex,
+               &lower, &upper, &epsabs, &epsrel, &result,
+               &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
+    Free(iwork);Free(work);
+    return(result);
+}
+
 /******************************************************************************/
 /******************************************************************************/
 /* Wendland covariance */
@@ -1848,7 +1946,7 @@ return(res);
 }
 
 
-
+/*
 double biv_gamma2(double rho,double x,double y,double shape1, double shape2, double rate)
 {
 double  ss,yr,xr,xi;  
@@ -1897,7 +1995,7 @@ else
 }
   return(res);
 }
-
+*/
                 
 
 
@@ -2086,12 +2184,13 @@ double dNnorm(int N,double **M, double *dat)
 return(pdf);
 }
 
+/*
 void mult_pmnorm( int *nvar , double *lower , double *upper , int *infin , double *corr , int *maxpts , double *abseps , double *releps , double *esterror , double *result , int *fail )
 { 
   F77_CALL(sadmvn)( nvar, lower, upper, infin, corr, maxpts, abseps, releps, esterror, result, fail ) ;
-} 
+} */
 
-// compute the trivariate normal cdf  for bernoulli  RF :
+/*
 double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, double u1,double u2, 
                  double *nuis, double *par, double thr)
 {  
@@ -2161,7 +2260,7 @@ double p3norm(int *cormod, double h0,double h1,double h2, double u0, double u1,d
   Free(lower);Free(upper);Free(infin);
   return(res2);
 }
-
+*/
 
 
 // cdf of  a bivariate Gausssian distribution
@@ -4015,9 +4114,6 @@ int N=2,i=0;
 double **M;M= (double **) Calloc(N,double *);
 for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
 double *dat;dat=(double *) Calloc(N,double);
-
-
-
 double dens=0.0,p,p00,p10,p01,p11,pdf2,corr1,pdf1i,pdf1j;
 
 p=pnorm(mup,0,1,1,0);
@@ -4323,7 +4419,7 @@ else{
     double dens2= t*log(1/(1+beta_j))+a*log(beta_j/(1+beta_j))+lgammafn(a+t)-lgammafn(t+1)-lgammafn(a);
     dens=exp(dens1+dens2);
 }
-Rprintf("%f \n",dens);
+//Rprintf("%f \n",dens);
 return(dens);
 
 }
@@ -4592,22 +4688,27 @@ double biv_cop(double rho,int type_cop,int cond,
              double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN1,int NN2)
              {
 double dens=0.0,rho1=0.0,nu=0.0;
-double g1=0.0,g2=0.0,a1=0.0,a2=0.0,b1,b2=0.0,s1,s2;
+double g1=0.0,g2=0.0,a1=0.0,a2=0.0,b1,b2=0.0;
 
 
+/**
+ * 
+ * g1 and g2 are marginal pdfs
+ * a1 and a2 are marginal cdfs
 
+*/
 switch(model) // Correlation functions are in alphabetical order
     {
+
+/******* models on the real line ****************/
     case 1: // gaussian
       rho1=(1-nuis[0])*rho;
-      b1=(z1-mu1)/sqrt(nuis[1]);
-      b2=(z2-mu2)/sqrt(nuis[1]);
-      a1=pnorm(b1,0,1,1,0);  
-      a2=pnorm(b2,0,1,1,0); 
+      b1=(z1-mu1)/sqrt(nuis[1]);b2=(z2-mu2)/sqrt(nuis[1]);
+      a1=pnorm(b1,0,1,1,0);  a2=pnorm(b2,0,1,1,0); 
       g1=dnorm(b1,0,1,0)/sqrt(nuis[1]); //marginal 1
       g2=dnorm(b2,0,1,0)/sqrt(nuis[1]); //marginal 2
     break;
-        case 34:  // Tukeyh
+ case 34:  // Tukeyh
       rho1=(1-nuis[0])*rho;  
       b1=1;
       b2=1;
@@ -4618,27 +4719,24 @@ switch(model) // Correlation functions are in alphabetical order
    break;
     case 25:  // Logistic
       rho1=(1-nuis[0])*rho;
-      b1=1;
-      b2=1;
+      b1=1;b2=1;
       a1=plogis(z1, mu1, sqrt(nuis[1]),1,0);
       a2=plogis(z2, mu2, sqrt(nuis[1]),1,0);
       g1=dlogis(z1, mu1, sqrt(nuis[1]),0);
       g2=dlogis(z2, mu2, sqrt(nuis[1]),0);
    break;
    case 12: // t student
-    Rprintf("%f %f \n",1/nuis[0],nuis[1]);
+    //Rprintf("%f %f \n",1/nuis[0],nuis[1]);
       rho1=(1-nuis[1])*rho; 
-      b1=(z1-mu1)/sqrt(nuis[2]);
-      b2=(z2-mu2)/sqrt(nuis[2]);
-      a1=pt(b1,1/nuis[0],1,0);   //revisar
-      a2=pt(b2,1/nuis[0],1,0);
+      b1=(z1-mu1)/sqrt(nuis[2]);b2=(z2-mu2)/sqrt(nuis[2]);
+      a1=pt(b1,1/nuis[0],1,0);  a2=pt(b2,1/nuis[0],1,0);
       g1=dt(b1,1/nuis[0],0)/sqrt(nuis[2]); //marginal 1
       g2=dt(b2,1/nuis[0],0)/sqrt(nuis[2]); //marginal 2
    break;
+/******* models on the  positive real line ****************/
      case 24: // lognormal
       rho1=(1-nuis[0])*rho; 
-      b1=mu1-nuis[1]/2;
-      b2=mu2-nuis[1]/2;
+      b1=mu1-nuis[1]/2; b2=mu2-nuis[1]/2;
       a1=plnorm(z1,b1, sqrt(nuis[1]),1,0);
       a2=plnorm(z2,b2, sqrt(nuis[1]),1,0);
       g1=dlnorm(z1,b1, sqrt(nuis[1]),0);
@@ -4666,79 +4764,17 @@ switch(model) // Correlation functions are in alphabetical order
       rho1=(1-nuis[0])*rho;      
       b1=1;
       b2=1;
+      //Rprintf("%f\n",nuis[2]);
       a1=pweibull(z1,nuis[2],exp(mu1)/(gammafn(1+1/nuis[2])),1,0);
       a2=pweibull(z2,nuis[2],exp(mu2)/(gammafn(1+1/nuis[2])),1,0);
       g1=dweibull(z1,nuis[2],exp(mu1)/(gammafn(1+1/nuis[2])),0);
       g2=dweibull(z2,nuis[2],exp(mu2)/(gammafn(1+1/nuis[2])),0);
    break;
-      case 30: // Poisson
-      rho1=(1-nuis[0])*rho; 
-      s1=exp(mu1);s2=exp(mu2);
-      b2=dpois(z2,s2,0);
-      a1=qnorm(ppois(z1,  s1,1,0),0,1,1,0);
-      a2=qnorm(ppois(z1-1,s1,1,0),0,1,1,0);
-      g1=qnorm(ppois(z2,  s2,1,0),0,1,1,0);      
-      g2=qnorm(ppois(z2-1,s2,1,0),0,1,1,0);  
-      if(z1==0) {a2=-99;}
-      if(z2==0) {g2=-99;}
-   break;
-      case 43: // Poisson inflated
-      rho1=(1-nuis[0])*rho; 
-      s1=exp(mu1);s2=exp(mu2);
-      b2=dpois(z2,s2,0);
-      a1=qnorm(ppoisinflated(z1,  s1,nuis[1]),0,1,1,0);
-      a2=qnorm(ppoisinflated(z1-1,s1,nuis[1]),0,1,1,0);
-      g1=qnorm(ppoisinflated(z2,  s2,nuis[1]),0,1,1,0);      
-      g2=qnorm(ppoisinflated(z2-1,s2,nuis[1]),0,1,1,0);  
-      if(z1==0) {a2=-99;}
-      if(z2==0) {g2=-99;}
-   break;
-     case 11: // binomial     /// 
-      rho1=(1-nuis[0])*rho;
-      s1=pnorm(mu1,0,1,1,0);
-      s2=pnorm(mu2,0,1,1,0);
-      b2=dbinom(z2,NN2,s2,0);
-      a1=qnorm(pbinom(z1,  NN1,s1,1,0),0,1,1,0);
-      a2=qnorm(pbinom(z1-1,NN1,s1,1,0),0,1,1,0);
-      g1=qnorm(pbinom(z2,  NN2,s2,1,0),0,1,1,0);      
-      g2=qnorm(pbinom(z2-1,NN2,s2,1,0),0,1,1,0);
-      if((z1<NN1+MAXERR)&&(z1>NN1-MAXERR)) {a1=99;}
-      if(z1==0){a2=-99;}  
-      if((z2<NN2+MAXERR)&&(z2>NN2-MAXERR)) {g1=99;}
-      if(z2==0){g2=-99;}  
-   break;
-       case 16: // binomial neg     /// ok 
-      rho1=(1-nuis[0])*rho;
-      s1=pnorm(mu1,0,1,1,0);
-      s2=pnorm(mu2,0,1,1,0);
-      b2=dnbinom(z2,NN2,s2,0);
-      a1=qnorm(pnbinom(z1,  NN1,s1,1,0),0,1,1,0);
-      a2=qnorm(pnbinom(z1-1,NN1,s1,1,0),0,1,1,0);
-      g1=qnorm(pnbinom(z2,  NN2,s2,1,0),0,1,1,0);      
-      g2=qnorm(pnbinom(z2-1,NN2,s2,1,0),0,1,1,0);
-      if(z1==0) {a2=-99;}
-      if(z2==0) {g2=-99;}
-   break;
-    case 45: // binomial neg  inflated   /// ok 
-      rho1=(1-nuis[0])*rho;
-      s1=pnorm(mu1,0,1,1,0);
-      s2=pnorm(mu2,0,1,1,0);
-      b2=dnbinom(z2,NN2,s2,0);
-      a1=qnorm(pbneginflated(z1,  NN1,s1,nuis[1]),0,1,1,0);
-      a2=qnorm(pbneginflated(z1-1,NN1,s1,nuis[1]),0,1,1,0);
-      g1=qnorm(pbneginflated(z2,  NN2,s2,nuis[1]),0,1,1,0);      
-      g2=qnorm(pbneginflated(z2-1,NN2,s2,nuis[1]),0,1,1,0);
-      if(z1==0) {a2=-99;}
-      if(z2==0) {g2=-99;}
-   break;
-
-
+/******* models on the a bounded support ****************/
    case 28: //Beta
       rho1=(1-nuis[0])*rho; 
-      b1=(z1- nuis[4])/(nuis[5]-nuis[4]);
-      b2=(z2- nuis[4])/(nuis[5]-nuis[4]);
-      a1=pbeta(b1,nuis[2],nuis[3],0,0);
-      a2=pbeta(b2,nuis[2],nuis[3],0,0);
+      b1=(z1- nuis[4])/(nuis[5]-nuis[4]); b2=(z2- nuis[4])/(nuis[5]-nuis[4]);
+      a1=pbeta(b1,nuis[2],nuis[3],0,0); a2=pbeta(b2,nuis[2],nuis[3],0,0);
       g1=dbeta(b1,nuis[2],nuis[3],0)/(nuis[5]-nuis[4]);//marginal 1
       g2=dbeta(b2,nuis[2],nuis[3],0)/(nuis[5]-nuis[4]);//marginal 2
    break;   
@@ -4747,8 +4783,7 @@ switch(model) // Correlation functions are in alphabetical order
       mu1=1/(1+exp(-mu1));
       mu2=1/(1+exp(-mu2));
     //  Rprintf("%f %f %f %f %f \n",mu1,rho,nuis[2],nuis[4],nuis[3]);
-      b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
-      b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
+      b1=(z1- nuis[3])/(nuis[4]-nuis[3]); b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
       a1=pbeta(b1, nuis[2]*mu1,(1-mu1)*nuis[2],0,0);
       a2=pbeta(b2, nuis[2]*mu2,(1-mu2)*nuis[2],0,0);
       g1=dbeta(b1, nuis[2]*mu1,(1-mu1)*nuis[2],0)/(nuis[4]-nuis[3]); //marginal 1
@@ -4765,43 +4800,106 @@ switch(model) // Correlation functions are in alphabetical order
    break;
    case 42:  // kuma regression
     rho1=(1-nuis[0])*rho; 
-      mu1=1/(1+exp(-mu1));
-      mu2=1/(1+exp(-mu2));
+      mu1=1/(1+exp(-mu1));mu2=1/(1+exp(-mu2));
       b1=(z1- nuis[3])/(nuis[4]-nuis[3]);
       b2=(z2- nuis[3])/(nuis[4]-nuis[3]);
-      s1=log(1-R_pow(  mu1    ,nuis[2]))/log(0.5) ;
-      s2=log(1-R_pow(  mu2    ,nuis[2]))/log(0.5) ;
-      a1= cdf_kuma(b1, nuis[2],1/s1 );
-      a2= cdf_kuma(b2, nuis[2],1/s2 );
-      g1= pdf_kuma(b1, nuis[2],1/s1 )/(nuis[4]-nuis[3]);
-      g2= pdf_kuma(b2, nuis[2],1/s2 )/(nuis[4]-nuis[3]);
-
+      mu1=log(1-R_pow(  mu1    ,nuis[2]))/log(0.5) ;
+      mu2=log(1-R_pow(  mu2    ,nuis[2]))/log(0.5) ;
+      a1= cdf_kuma(b1, nuis[2],1/mu1 );
+      a2= cdf_kuma(b2, nuis[2],1/mu2 );
+      g1= pdf_kuma(b1, nuis[2],1/mu1 )/(nuis[4]-nuis[3]);
+      g2= pdf_kuma(b2, nuis[2],1/mu2 )/(nuis[4]-nuis[3]);
+   break;
+/************ discrete models *****************************/
+case 30: // Poisson
+      rho1=(1-nuis[0])*rho; 
+      mu1=exp(mu1);mu2=exp(mu2);
+      b2=dpois(z2,mu2,0);
+      a1=qnorm(ppois(z1,  mu1,1,0),0,1,1,0);
+      a2=qnorm(ppois(z1-1,mu1,1,0),0,1,1,0);
+      g1=qnorm(ppois(z2,  mu2,1,0),0,1,1,0);      
+      g2=qnorm(ppois(z2-1,mu2,1,0),0,1,1,0);  
+      if(z1==0) {a2=-99;}
+      if(z2==0) {g2=-99;}
+   break;
+      case 43: // Poisson inflated
+      rho1=(1-nuis[0])*rho; 
+      mu1=exp(mu1);mu2=exp(mu2);
+      b2=dpois(z2,mu2,0);
+      a1=qnorm(ppoisinflated(z1,  mu1,nuis[1]),0,1,1,0);
+      a2=qnorm(ppoisinflated(z1-1,mu1,nuis[1]),0,1,1,0);
+      g1=qnorm(ppoisinflated(z2,  mu2,nuis[1]),0,1,1,0);      
+      g2=qnorm(ppoisinflated(z2-1,mu2,nuis[1]),0,1,1,0);  
+      if(z1==0) {a2=-99;}
+      if(z2==0) {g2=-99;}
+   break;
+     case 11: // binomial     /// 
+      rho1=(1-nuis[0])*rho;
+      mu1=pnorm(mu1,0,1,1,0);
+      mu2=pnorm(mu2,0,1,1,0);
+      b2=dbinom(z2,NN2,mu2,0);
+      a1=qnorm(pbinom(z1,  NN1,mu1,1,0),0,1,1,0);
+      a2=qnorm(pbinom(z1-1,NN1,mu1,1,0),0,1,1,0);
+      g1=qnorm(pbinom(z2,  NN2,mu2,1,0),0,1,1,0);      
+      g2=qnorm(pbinom(z2-1,NN2,mu2,1,0),0,1,1,0);
+      if((z1<NN1+MAXERR)&&(z1>NN1-MAXERR)) {a1=99;}
+      if(z1==0){a2=-99;}  
+      if((z2<NN2+MAXERR)&&(z2>NN2-MAXERR)) {g1=99;}
+      if(z2==0){g2=-99;}  
+   break;
+       case 16: // binomial neg     /// ok 
+      rho1=(1-nuis[0])*rho;
+      mu1=pnorm(mu1,0,1,1,0);
+      mu2=pnorm(mu2,0,1,1,0);
+      b2=dnbinom(z2,NN2,mu2,0);
+      a1=qnorm(pnbinom(z1,  NN1,mu1,1,0),0,1,1,0);
+      a2=qnorm(pnbinom(z1-1,NN1,mu1,1,0),0,1,1,0);
+      g1=qnorm(pnbinom(z2,  NN2,mu2,1,0),0,1,1,0);      
+      g2=qnorm(pnbinom(z2-1,NN2,mu2,1,0),0,1,1,0);
+      //Rprintf("%f %f %d %d %f %f  %f\n",mu1,mu2,NN1,NN2,a1,a2,rho1);
+      /*if(z1==0) {a2=-99;}
+      if(z2==0) {g2=-99;}*/
+        //if((z1<NN1+MAXERR)&&(z1>NN1-MAXERR)) {a1=99;}
+      if(z1==0){a2=-99;}  
+      //if((z2<NN2+MAXERR)&&(z2>NN2-MAXERR)) {g1=99;}
+      if(z2==0){g2=-99;}  
+   break;
+    case 45: // binomial neg  inflated   /// ok 
+      rho1=(1-nuis[0])*rho;
+      mu1=pnorm(mu1,0,1,1,0);
+      mu2=pnorm(mu2,0,1,1,0);
+      b2=dnbinom(z2,NN2,mu2,0);
+      a1=qnorm(pbneginflated(z1,  NN1,mu1,nuis[1]),0,1,1,0);
+      a2=qnorm(pbneginflated(z1-1,NN1,mu1,nuis[1]),0,1,1,0);
+      g1=qnorm(pbneginflated(z2,  NN2,mu2,nuis[1]),0,1,1,0);      
+      g2=qnorm(pbneginflated(z2-1,NN2,mu2,nuis[1]),0,1,1,0);
+      if(z1==0) {a2=-99;}
+      if(z2==0) {g2=-99;}
    break;
        }
+/*********************** end cases ***************/
+
 
 /******************copula gaussiana*************************/
 if(type_cop==1)  { 
    if(!(model==16||model==11||model==30))   // continous  
-    { dens=log(biv_unif_CopulaGauss(a1,a2,rho1)) + log(g1) + log(g2);}
+     dens=log(biv_unif_CopulaGauss(a1,a2,rho1)) + log(g1) + log(g2);
     else                            // discrete                  
-     { 
-        dens= log( pbnorm22(a1,g1,rho1) -   pbnorm22(a2,g1,rho1) - pbnorm22(a1,g2,rho1) + pbnorm22(a2,g2,rho1) );
-      // Rprintf("%f %f %f %f--%f--%f\n ",a1,a2,g1,g2,rho1,dens);
-        }
+     dens= log( pbnorm22(a1,g1,rho1) -   pbnorm22(a2,g1,rho1)  - pbnorm22(a1,g2,rho1) + pbnorm22(a2,g2,rho1) );
+        
 }
 /******************copula clayton*************************/             
 if(type_cop==2) 
 {
-  
     if(model==50||model==42) nu=nuis[5];   // for beta2 regression
-    if(model==16||model==11||model==30) nu=nuis[2];   // for pois binom binomneg 
-    if(model==21||model==22||model==26) nu=nuis[3];   // gammma weibull 
-    if(model==24) nu=nuis[2];   // loggaussian
-    if(model==12) nu=nuis[3]; //t
-    if(model==25) nu=nuis[2]; //logistic
-
+    if(model==21||model==22||model==26||model==12) nu=nuis[3];   // gammma weibull t  
+    if(model==24||model==1||model==25||model==16||model==11||model==30) // loggaussian gaussian logistic pois binom binomneg 
+                      nu=nuis[2];   
+   //Rprintf("%f---%f %f\n",nu,g1,g2);
     dens= biv_unif_CopulaClayton(a1,a2,rho1,nu)+ log(g1)+log(g2);
 }
+
+
 
 if(cond)  {
                if(!(model==16||model==11||model==30))     dens=dens-log(g2);
@@ -4815,13 +4913,17 @@ return(dens);
 
 double one_log_SkewGauss(double z,double m, double vari, double skew)
 {
-    
+
   double  res=0.0;
-  double skew2  = R_pow(skew,2);
-  double q=z-m;
-  double ss=skew2+vari;
-  double y=q/sqrt(ss);
-  res=-0.5*log(ss)+ log(2)+dnorm(y,0,1,1)+pnorm( (skew*y)/(sqrt(vari)),0,1,1,1);
+  double q=(z-m);
+  double omega=skew*skew+vari;
+  res=log(2)-0.5*log(omega)+dnorm(q/sqrt(omega),0,1,1)+pnorm(skew*q/sqrt(vari*omega),0,1,1,1);
+
+  /*double y=(z-m)/sqrt(vari);
+  double alpha=skew/sqrt(vari);
+  double omega=skew*skew/vari+1;
+  res=log(2)-log(omega)+dnorm(y/sqrt(omega),0,1,1)+pnorm(alpha*y/sqrt(omega),0,1,1,1);
+*/
   return(res);
 }
 

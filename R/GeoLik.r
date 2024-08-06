@@ -15,9 +15,9 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
         #cc <- .C(corrmat,cr=corr,as.double(coordx),as.double(coordy),as.double(coordt),as.integer(corrmodel),as.double(nuisance),
         #as.double(paramcorr),as.double(radius),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)$cr
 
-           cc=dotCall64::.C64(as.character(corrmat),
+           cc=dotCall64::.C64(as.character(corrmat), #cr=dotCall64::numeric_dc(corr)
          SIGNATURE = c("double","double","double","double", "integer","double","double","double","integer","integer"),  
-                          cr=corr, coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
+                          cr=dotCall64::numeric_dc(length(corr)), coordx, coordy, coordt, corrmodel, nuisance,paramcorr,radius, ns,NS,
          INTENT =    c("rw","r","r","r","r","r","r","r","r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$cr
         return(cc)
@@ -32,7 +32,7 @@ Lik <- function(copula,bivariate,coordx,coordy,coordt,coordx_dyn,corrmodel,data,
         hh=1;nn=nuisance['nugget'];mm=c(mu)
   cc=dotCall64::.C64(as.character(corrmat),
          SIGNATURE = c("double","double","double","double", "integer","double", "integer","double","double","double","integer","integer","integer"),  
-                          cr=corr, coordx, coordy, coordt, corrmodel, mm,hh,nn,paramcorr,radius, ns,NS,model,
+                          cr=dotCall64::numeric_dc(length(corr)), coordx, coordy, coordt, corrmodel, mm,hh,nn,paramcorr,radius, ns,NS,model,
          INTENT =    c("rw","r","r","r","r","r","r","r","r","r","r","r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$cr
         return(cc)
@@ -681,28 +681,28 @@ loglik_sh <- function(param,const,coordx,coordy,coordt,corr,corrmat,corrmodel,da
       }
   #####################################################    
 
- loglikvecchia <- function(param,vecchia.approx,data,fixed,dimat,
-                    model,namescorr,namesnuis,namesparam,X,MM,aniso,namesaniso)
-    {
-        llik <- 1.0e8
-        names(param) <- namesparam
-        # Set the parameter vector:
-        pram <- c(param, fixed)
-        paramcorr <- pram[namescorr]
-        nuisance <- pram[namesnuis]
-        sel=substr(names(nuisance),1,4)=="mean"
-        mm=as.numeric(nuisance[sel])
-        Mean=c(X%*%mm)
-        if(!is.null(MM)) Mean=MM
-   
-          nuggets=as.numeric(nuisance['nugget'])+ 0.00001
-        data=c(data-X%*%mm)
-        ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
-    if(ppar[2]<0|| ppar[3]<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1){return(llik)}
-        loglik_u=GPvecchia::vecchia_likelihood(data,vecchia.approx,
-                         covparms=ppar,nuggets=nuggets,covmodel ="matern")
-        return(-loglik_u)
-      }
+# loglikvecchia <- function(param,vecchia.approx,data,fixed,dimat,
+ #                   model,namescorr,namesnuis,namesparam,X,MM,aniso,namesaniso)
+ #   {
+ #       llik <- 1.0e8
+ #       names(param) <- namesparam
+ #       # Set the parameter vector:
+ #       pram <- c(param, fixed)
+ #       paramcorr <- pram[namescorr]
+ #       nuisance <- pram[namesnuis]
+ #       sel=substr(names(nuisance),1,4)=="mean"
+ #       mm=as.numeric(nuisance[sel])
+ #       Mean=c(X%*%mm)
+ #       if(!is.null(MM)) Mean=MM
+ #  
+ #         nuggets=as.numeric(nuisance['nugget'])+ 0.00001
+ #       data=c(data-X%*%mm)
+ #       ppar=as.numeric(c(nuisance['sill'], paramcorr[1], paramcorr[2]))
+ #   if(ppar[2]<0|| ppar[3]<0||nuisance['sill']<0||nuisance['nugget']<0||nuisance['nugget']>1){return(llik)}
+ #       loglik_u=GPvecchia::vecchia_likelihood(data,vecchia.approx,
+ #                        covparms=ppar,nuggets=nuggets,covmodel ="matern")
+ #       return(-loglik_u)
+ #     }
 
       
 ################################################################################################                     
@@ -899,42 +899,22 @@ if(!onlyvar){   # performing optimization
   if(length(param)>1)
         {
   #### vecchia  approxxx
-    if(!is.null(neighb)) { 
-            locs=cbind(coordx,coordy)
-
-            #tt2 <- proc.time()
-            vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb,ordering="maxmin")#,conditioning="NN",cond.yz="SGV")
-          #tt2<- proc.time()-tt2;print(tt2[3])
-
-          if(optimizer=="nlminb"){
-             Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
-                             control = list( iter.max=100000),dimat=dimat,
-                         lower=lower,upper=upper, hessian=hessian,
-                           data=t(data),fixed=fixed,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM,aniso=aniso,namesaniso=namesaniso)
-             #tt3<- proc.time()-tt3;print(tt3[3]/as.numeric(Likelihood$iterations)) 
-         }
-       
-              if(optimizer=="nmkb")
-                  Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
-                        lower=lower,upper=upper,  vecchia.approx=vecchia.approx,
-                        dimat=dimat,data=t(data),fixed=fixed,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM,aniso=aniso,namesaniso=namesaniso)
-                        
-            if(optimizer=="Nelder-Mead")
-                  Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
-                             control=list(reltol=1e-14, maxit=maxit),dimat=dimat,hessian=hessian, data=t(data),fixed=fixed,
-                             model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM,aniso=aniso,namesaniso=namesaniso)
-
-             #Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-              #            corrmodel=corrmodel,control=list(
-               #              reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
-                #         fixed=fixed,method="Nelder-Mead",
-                 #         model=model,namescorr=namescorr,hessian=hessian,
-                  #        namesnuis=namesnuis,namesparam=namesparam,X=X)
-
-                       }
-        else{  ### no vecchia
+    #if(!is.null(neighb)) { 
+     #       locs=cbind(coordx,coordy)
+    #
+     #       vecchia.approx=GPvecchia::vecchia_specify(locs,m=neighb,ordering="maxmin")#,conditioning="NN",cond.yz="SGV")
+     #     if(optimizer=="nlminb")
+     #        Likelihood <- nlminb(objective=eval(as.name(lname)),start=param,vecchia.approx=vecchia.approx,
+     #                        control = list( iter.max=100000),dimat=dimat,
+     #                    lower=lower,upper=upper, hessian=hessian,
+     #                      data=t(data),fixed=fixed,
+     #                     model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM,aniso=aniso,namesaniso=namesaniso) 
+     #       if(optimizer=="Nelder-Mead")
+     #             Likelihood <- optim(param,eval(as.name(lname)),vecchia.approx=vecchia.approx,
+     #                        control=list(reltol=1e-14, maxit=maxit),dimat=dimat,hessian=hessian, data=t(data),fixed=fixed,
+     #                        model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,X=X,MM=MM,aniso=aniso,namesaniso=namesaniso)
+     #                  }
+     #   else{  ### no vecchia
 if(optimizer=='L-BFGS-B'&&!parallel)
                         Likelihood <- optim(param,fn=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
@@ -944,97 +924,48 @@ if(optimizer=='L-BFGS-B'&&!parallel)
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso) 
 
    if(optimizer=='L-BFGS-B'&&parallel){
-
-            #ncores=max(1, parallel::detectCores() - 1)
+         #ncores=max(1, parallel::detectCores() - 1)
         ncores=length(param) * 2 + 1
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
         else                                   cl <- parallel::makeCluster(ncores,type = "FORK")
         parallel::setDefaultCluster(cl = cl)
                           Likelihood <- optimParallel::optimParallel(param,fn=eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-                          corrmodel=corrmodel,control=list(pgtol=1e-14, maxit=100000,factr = 1e8),
+                          corrmodel=corrmodel,   control=list(factr=1e-10,pgtol=1e-14, maxit=100000), 
                           data=t(data),dimat=dimat,fixed=fixed,
                           fname=fname,grid=grid,ident=ident,lower=lower,mdecomp=mdecomp,method=optimizer,
-                          model=model,namescorr=namescorr,hessian=hessian,  parallel = list(forward = FALSE),
+                          model=model,namescorr=namescorr,hessian=hessian,    parallel = list(forward = FALSE,loginfo=FALSE),
                           namesnuis=namesnuis,upper=upper,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
      parallel::setDefaultCluster(cl=NULL)
      parallel::stopCluster(cl)
   }
   if(optimizer=='BFGS')
-     Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
-                        pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
+                          pgtol=1e-14,maxit=maxit),data=t(data),dimat=dimat,
                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
   if(optimizer=='Nelder-Mead')
-                   Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
+                      Likelihood <- optim(param,eval(as.name(lname)),const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,control=list(
-                             reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
-                         fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
+                          reltol=1e-14, maxit=maxit),data=t(data),dimat=dimat,
+                          fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,method=optimizer,
                           model=model,namescorr=namescorr,hessian=hessian,
                           namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
-
-
-
-
   if(optimizer=='nlm')
                       Likelihood <- nlm(eval(as.name(lname)),param,const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,hessian=hessian,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,setup=setup,iterlim = maxit,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
   if(optimizer=='nlminb')
-  { #print(lname);print(fname);print(mdecomp)
-
-
-
-                       Likelihood <-nlminb(objective=eval(as.name(lname)),start=param,
+                      Likelihood <-nlminb(objective=eval(as.name(lname)),start=param,
                              control = list( iter.max=100000),
-                         lower=lower,upper=upper, hessian=hessian,
+                          lower=lower,upper=upper, hessian=hessian,
                           const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
                           corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
                           model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
                           setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
-                   }
-  # if(optimizer=='multinlminb'){
-   #                    Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
-    #                      const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-     #                     corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-      #                    model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-       #                   setup=setup,X=X,ns=ns,NS=NS,MM=MM,
-        #                     lower=lower,upper=upper,method = "nlminb", nbtrials = 500, 
-         #                     control = list( iter.max=100000),#
-          #                 typerunif = "sobol")#,nbclusters=2,
-           #        }
-    # if(optimizer=='multiNelder-Mead'){
-     #                  Likelihood <-mcGlobaloptim::multiStartoptim(objectivefn=eval(as.name(lname)),
-      #                    const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,
-       #                   corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-        #                  model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,radius=radius,
-         #                 setup=setup,X=X,ns=ns,NS=NS,MM=MM,
-          #                   lower=lower,upper=upper,method = "Nelder-Mead", nbtrials = 500, 
-           #                   control = list( iter.max=100000),
-            #               typerunif = "sobol")#,nbclusters=2,
-             #      }                 
-    #if(optimizer=='ucminf')    
-     #                   Likelihood <-ucminf::ucminf(par=param, fn=eval(as.name(lname)), hessian=as.numeric(hessian),  
-      #                  control=list( maxeval=100000),
-       #                 const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
-        #                  corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-         #                 model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-          #                radius=radius,setup=setup,X=X,ns=ns,NS=NS)
-    if(optimizer=='nmk')    
-                        Likelihood <- dfoptim::nmk(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-                          radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
-   if(optimizer=='nmkb')    
-                        Likelihood <- dfoptim::nmkb(par=param, fn=eval(as.name(lname)), control = list(maxfeval=100000,tol=1e-10),
-                        lower=lower,upper=upper,
-                        const=const,coordx=coordx,coordy=coordy,coordt=coordt,corr=corr,corrmat=corrmat,MM=MM,
-                          corrmodel=corrmodel,data=t(data),dimat=dimat,fixed=fixed,fname=fname,grid=grid,ident=ident,mdecomp=mdecomp,
-                          model=model,namescorr=namescorr,namesnuis=namesnuis,namesparam=namesparam,
-                          radius=radius,setup=setup,X=X,ns=ns,NS=NS,MM=MM,aniso=aniso,namesaniso=namesaniso)
-    }
+                               
+    #}
 }
 
 

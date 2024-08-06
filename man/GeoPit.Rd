@@ -5,9 +5,9 @@
 \description{
    The procedure  for a given GeoFit object applies  the probability integral tranformation or the normal score transformation to the data
 }
-\usage{GeoPit(fit,type="Uniform")}
+\usage{GeoPit(object,type="Uniform")}
 \arguments{
-  \item{fit}{A GeoFit object}.
+  \item{object}{A GeoFit object}.
 \item{type}{The type of transformation. If "Uniform" then  the probability integral tranformation is performed.
 If "Gaussian" then  the normal score transformation is performed. }
 }

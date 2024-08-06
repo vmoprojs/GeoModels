@@ -4,7 +4,7 @@
 
 # Simulate approximate spatial and spatio-temporal random felds:
 GeoSimapprox <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
-     local=c(1,1),max.ext=1,method="TB",M=30, L=2000,model='Gaussian', n=1, param, anisopars=NULL,radius=6371,X=NULL,spobj=NULL,nrep=1)
+     local=c(1,1),max.ext=1,method="TB", L=2000,model='Gaussian', n=1, param, anisopars=NULL,radius=6371,X=NULL,spobj=NULL,nrep=1)
 {
 ####################################################################
 ############  starting internal function ###########################
@@ -104,13 +104,33 @@ tbm2d<- function(coord, coordt, param, corrmodel,L,bivariate){
 
 simu11 = as.numeric( rep(0,N*P*sum(m)*(length(sequen)-1)))
 
-result <- .C("for_c", d_v = as.integer(d),a_v = as.double(c(a)),nu1_v = as.double(c(nu1)),C_v=as.double(c(1)) ,
-             nu2_v = as.double(c(a)), P = as.integer(P),N=as.integer(N),L=as.integer(L),model =  as.integer(CkCorrModel(corrmodel)),
-             u = as.double(c(u)),a0 = as.double(a0),nu0 = as.double(nu0),A = as.double(c(A)),B = as.double(c(B))
-             ,sequen = as.integer(c(sequen)), largo_sequen = as.integer(length(sequen)),n=as.integer(n),
-             coord = as.double(coord),phi = as.double(phi),vtype=as.integer(vtype),m1 = as.integer(m),simu1 = as.double(simu11),
-             L1 = as.double(L))
-  simu =  matrix(result$simu1,n,P)
+
+#result <- .C("for_c", d_v = as.integer(d),a_v = as.double(c(a)),nu1_v = as.double(c(nu1)),C_v=as.double(c(CC)) ,
+#             nu2_v = as.double(c(parameters$nu2)), P = as.integer(P),N=as.integer(N),L=as.integer(L),model =  as.integer(CkCorrModel(corrmodel)),
+#             u = as.double(c(u)),a0 = as.double(a0),nu0 = as.double(nu0),A = as.double(c(A)),B = as.double(c(B))
+#             ,sequen = as.integer(c(sequen)), largo_sequen = as.integer(length(sequen)),n=as.integer(n),
+#             coord = as.double(coord),phi = as.double(phi),vtype=as.integer(vtype),m1 = as.integer(m),simu1 = as.double(simu11),
+#             L1 = as.double(L))
+
+
+
+result=dotCall64::.C64("for_c",
+         SIGNATURE = c("integer","double","double", "double",
+                     "double","integer","integer","integer","integer",
+                     "double","double","double","double","double",
+                     "integer","integer","integer",
+                     "double","double","integer","integer","double",
+                     "double"), 
+                         d,c(a),c(nu1), c(CC), c(parameters$nu2),P,N,L,CkCorrModel(corrmodel),
+                         c(u),a0,nu0,c(A),c(B),c(sequen),length(sequen),n,coord,phi,vtype,m,
+                         simu1=dotCall64::numeric_dc(length(simu11)),L,
+         INTENT =    c("r","r","r","r","r","r","r","r","r", "r",
+                       "r","r","r","r","r","r","r","r","r", "r",
+                       "r", "rw","r"),
+             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$simu1
+
+
+  simu =  matrix(result,n,P)
   return(simu)
 }
 ######################## space time case: separable with Circ embeeding+ftt ##########################
@@ -155,9 +175,9 @@ if(corrmodel=="Kummer_Matern_Kummer_Matern"){
   ## cholesky decomposition
   chol.s <- t(chol(cova.mat.s))
   auxiliar.seq <- c(time.seq, rev(time.seq[-c(1,Nt)]))
-  cova.mat.t <- (1 - param$nugget)*GeoModels::GeoCorrFct(x = auxiliar.seq, 
+  cova.mat.t <- (1 - param$nugget)*GeoCorrFct(x = auxiliar.seq, 
                                                               corrmodel = corrmodel, 
-                                                              param = param_t)
+                                                              param = param_t)$corr
   cova.mat.t[auxiliar.seq == 0] <- 1
   spectrum.t <- sqrt(Re( fft(cova.mat.t) ))
   
@@ -173,6 +193,7 @@ if(corrmodel=="Kummer_Matern_Kummer_Matern"){
   return(result)
 }
 
+M=NULL
 ######################################################################
 ############## main  internal function  ##############################
 ######################################################################
@@ -188,20 +209,20 @@ if(!spacetime){
   
     }     
 ## Vecchia
-if(method=="Vecchia"){ 
-   if(corrmodel=="Matern") model1="matern_isotropic"
-   simu=GpGp::fast_Gp_sim(covparms=c(as.numeric(param['sill']),
-                                  as.numeric(param['scale']),
-                                  as.numeric(param['smooth']),
-                                  as.numeric(param['nugget'])), 
-                                  covfun_name = model1, coords, m = M)
-                      }
+#if(method=="Vecchia"){ 
+ #  if(corrmodel=="Matern") model1="matern_isotropic"
+  # simu=GpGp::fast_Gp_sim(covparms=c(as.numeric(param['sill']),
+   #                               as.numeric(param['scale']),
+    #                              as.numeric(param['smooth']),
+     #                             as.numeric(param['nugget'])), 
+      #                            covfun_name = model1, coords, m = M)
+       #               }
  ## Circulant embeeding           for regular grid          
   if(method=="CE") simu= c(SimCE(numxgrid,numygrid,coordx,coordy,corrmodel,param,mean.val=0, max.ext)$X)        
 }
 ##### spacetime case ######
 if(spacetime)  {
-  if(method=="Vecchia") print("ciao") 
+ # if(method=="Vecchia") print("ciao") 
   if(method=="CE")simu=CE_Space_Time(coords=coords,time.seq=coordt, param=param,corrmodel= corrmodel,distance=distance)
     }
 return(simu)
@@ -212,7 +233,7 @@ return(simu)
 ####################################################################
 
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
-    if(!(method=="Vecchia"||method=="TB"||method=="CE")) stop("The method of simulation is not correct\n")
+    if(!(method=="TB"||method=="CE")) stop("The method of simulation is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
@@ -254,7 +275,7 @@ if(!is.null(spobj)) {
     ##############################################################################
 
     if(space)    {if(method=="CE"&&!grid) stop("CE method works only for regular grid\n")
-                  if(!(corrmodel=="Matern")) stop("Not implemented for this correlation model  \n")
+                  #if(!(corrmodel=="Matern")) stop("Not implemented for this correlation model  \n")
                  } 
     
     if(spacetime)
@@ -381,8 +402,12 @@ SIM=list()
 ###################################################
 ### starting number of replicates
 ###################################################
-for( LL in 1:nrep){
+progressr::handlers(global = TRUE)
+progressr::handlers("txtprogressbar")
+pb <- progressr::progressor(along = 1:nrep)
 
+for( LL in 1:nrep){
+    if(nrep>1) pb(sprintf("LL=%g", LL))
     k=1;npoi=1
 ################################# how many random fields ################
     if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1

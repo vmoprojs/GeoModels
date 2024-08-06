@@ -64,15 +64,15 @@ NuisParam("Beta2")
 param=list(smooth=0.5,sill=1,scale=0.2/3,nugget=0,mean=0,min=0,max=1,shape=0.5)
 corr1= GeoCorrFct_Cop(x=x, corrmodel="Matern", param=param,copula="Gaussian",model="Beta2")
 
+plot(corr1,ylab="corr",main="Gauss copula correlation",lwd=2)
+
 # corr Clayton copula
 param=list(smooth=0.5,sill=1,scale=0.2/3,nugget=0,mean=0,min=0,max=1,shape=0.5,nu=2)
 corr2= GeoCorrFct_Cop(x=x, corrmodel="Matern", param=param,copula="Clayton",model="Beta2")
+lines(x,corr2$corr,ylim=c(0,1),lty=2)
 
-plot(x,corr1,ylim=c(0,1),type="l",xlab="distance",ylab="corr")
-lines(x,corr2,ylim=c(0,1),lty=2)
+plot(corr1,ylab="corr",main="Clayton copula correlation",lwd=2)
 
-legend("topright", legend=c("Gaussian Copula", "Clayton Copula"),
-       , lty=1:2, cex=1.2)
 
 
 }

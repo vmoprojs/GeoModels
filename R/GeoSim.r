@@ -32,6 +32,7 @@ return(dims*dimt)
                                sel=substr(names(nuisance),1,4)=="mean";
                                num_betas=sum(sel);mm=NULL
                                if(num_betas==1) {mm=nuisance$mean;
+                                    
                                                  sim = X*mm+simd
                                                 }
                                if(num_betas>1)  { mm=c(mm,as.numeric((nuisance[sel])));
@@ -181,6 +182,7 @@ ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coor
                    distance=distance,grid=grid,model="Gaussian", n=n,
                 param=append(mc,pc), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
 
+
 ######################
 # matrix decomposition and square root
 if(!sparse) {
@@ -260,8 +262,15 @@ SIM=list()
 ###################################################
 ### starting number of replicates
 ###################################################
+if(nrep>1){
+progressr::handlers(global = TRUE)
+progressr::handlers("txtprogressbar")
+pb <- progressr::progressor(along = 1:nrep)
+}
 for( L in 1:nrep){
     k=1;  npoi=1
+
+    if(nrep>1) pb(sprintf("L=%g", L))
 ################################# how many random fields ################
     if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1
     if(model %in% c("Weibull","Wrapped")) k=2
@@ -322,9 +331,12 @@ if(model%in% c("SkewGaussian","StudentT","SkewStudentT","TwoPieceTukeyh",
       else         #simd=crossprod(sqrtvarcov,ss) 
                    simd=sqrtvarcov%*%ss
 
+
+
     #######################################################################
     nuisance<-param[ccov$namesnuis]
     sim<-RFfct1(ccov,dime,nuisance,simd,ccov$X,ns)
+
     ####################################
     ####### starting cases #############
     ####################################
@@ -722,10 +734,12 @@ if(bivariate){
 zz=param[grep("mean", names(param))]   
 pc=param[CorrParam(corrmodel)]
 
-#print(append(pc,zz))
+
 ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
                    distance=distance,grid=grid,model="Gaussian", n=n,
                 param=append(pc,zz), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
+
+
 
 #######################
 ## matrix decomposition and square root
@@ -859,12 +873,9 @@ while(KK<=npoi) {
 #########################################################################################################
 
 if(model %in% c("SkewGaussian"))   {
-
-
-if(model %in% c("SkewGaussian"))   {
 aa=cbind(mm[1]+sk[1]*abs(dd[,,1][,1])+sqrt(vv[1])*dd[,,2][,1],
                                   mm[2]+sk[2]*abs(dd[,,1][,2])+sqrt(vv[2])*dd[,,2][,2])
-        }
+        
     if(!grid)  sim <- matrix(aa, nrow=numtime, ncol=numcoord,byrow=TRUE)
         else   sim <- array(aa, c(numxgrid,numygrid, numtime))       
 }

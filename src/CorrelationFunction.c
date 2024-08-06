@@ -62,6 +62,31 @@ double CheckCor(int *cormod, double *par)
       
             if(scale<=0 ||smooth<-0.5||R_power1>(1.5+smooth) ) rho=-2;
       break;
+          case 26: // Generalised wendland hole
+          case 29:  
+               R_power1=par[0];
+        scale=par[1];
+        smooth=par[2];
+       //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+      
+            if(scale<=0 ||smooth<-0.5||R_power1>(3.5+smooth) ) rho=-2;
+      break;
+           case 27: // Matern hole
+               R_power1=par[0];
+        scale=par[1];
+        smooth=par[2];
+       //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+            if(scale<=0 ||smooth<0.0 ) rho=-2;
+      break;
+         case 28: // Matern hole
+        scale=par[0];
+        smooth=par[1];
+       //if(scale<=0 ||  R_power1>(1.5+smooth) ||smooth<0) rho=-2;
+            if(scale<=0 ||smooth<0.0 ) rho=-2;
+      break;
+
+
+
     case 6:
         R_power1=1/par[0];
         scale=par[1];
@@ -580,6 +605,20 @@ case 23: // hyperg correlation 1 parameter with matern
         scale=par[1];
         smooth=par[2];
   rho=CorFunW_gen(h, R_power1, smooth, scale);
+      break;
+    case 26: // original   Generalised wend hole
+         R_power=par[0];
+        R_power1=par[1];
+        scale=par[2];
+        smooth=par[3];
+  rho=CorFunW_genhole(h, R_power1, smooth, scale, R_power);
+        break;
+    case 29: // reparametrized original   Generalised wend hole
+         R_power=par[0];
+        R_power1=par[1];
+        scale=par[2];
+        smooth=par[3];
+   rho=CorFunW_genhole(h, R_power1, smooth-0.5, scale*R_power1, R_power);
         break;
      case 24: // original   kummer
         R_power1=par[0];
@@ -593,6 +632,17 @@ case 23: // hyperg correlation 1 parameter with matern
         smooth=par[2];
   rho=CorKummer(h, R_power1, smooth, scale*2*sqrt(smooth*(R_power1+1)));
         break;
+
+ case 27://  Whittle-Matern correlation function with hole effect
+      R_power1=par[0];
+      scale=par[1];
+      smooth=par[2];
+      rho=CorFunWitMathole(h, scale, smooth,R_power1);
+      break;
+ case 28://  Schoemberg with hole effect;
+      scale=par[0];
+      rho=Corschoenberg(h, scale);
+      break;
     case 6: // Bevilacqua Generalised wend correlation function  "better"  parametrization
         R_power1=1/par[0];
         scale=par[1];
@@ -600,12 +650,11 @@ case 23: // hyperg correlation 1 parameter with matern
         sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
         rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
         break;
-     case 7: // Bevilacqua Generalised wend correlation function  first parametrization
+     case 7: // emery second parametrization
         R_power1=par[0];
         scale=par[1];
         smooth=par[2];
-        sep=exp(  (lgammafn(2*smooth+R_power1+1)-lgammafn(R_power1))/ (1+2*smooth) );
-        rho=CorFunW_gen(h, R_power1, smooth,  scale * sep);
+        rho=CorFunW_gen(h, R_power1, smooth-0.5,  scale * R_power1);
         break;
      case 20://  smoke correlation function
       scale=par[0];
@@ -621,12 +670,11 @@ case 23: // hyperg correlation 1 parameter with matern
            (pow(1,2*smooth+1)-pow(0.75,2*smooth+1));
         break;*/
  /***************** spatial tapers****************************/
-   case 28:// Bohman taper
+   /*case 28:// Bohman taper
       rho=CorFunBohman(h,maxdist[0]);
-      break;
    case 29:// Bohman model
       rho=CorFunBohman(h,par[0]);
-        break;
+        break;*/
   case 30:// Wendland0 for tap
       rho= CorFunW0(h,maxdist[0],2);
       break;
@@ -1982,6 +2030,163 @@ double CorKummer(double lag,double R_power,double smooth,double scale)  // mu al
 }    
 
 
+
+// Whittle=matern class of correlation models:
+double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
+{
+  double rho=0.0;
+  
+  double d=2;
+  double x=lag/scale; 
+  if(x<1e-32) {rho=1; return(rho);}
+
+  int k = (int) R_power1;
+  if(k==0) {rho=CorFunWitMat(lag,scale,smooth);
+             return(rho);}  
+  else{   
+
+ /*first version    with onef2      
+   double a1,a2,K1,K2,x2,d2,m,ll,smooth1;
+   x2=x*x; d2=d*0.5;
+   m=smooth+d2;
+   ll=m+k;
+   smooth1=  smooth+1;
+   double err = 0.0;
+   a1=onef2( k+d2,1-smooth ,d2 ,x2*0.25,&err);
+   a2=R_pow(x*0.5,2*smooth)*onef2( ll,m ,smooth1 ,x2*0.25,&err);
+  K1=gammafn(ll)*gammafn(d2)*gammafn(-smooth);
+  K2=gammafn(k+d2)*gammafn(smooth)*gammafn(smooth1);
+  rho=a1+(K1/K2)*a2;*/
+    /*
+   double a1,a2,a3,a4,res1=0.0,res2=0.0;
+   int n;
+ for(n=0;n<=k;n++){
+    a1=(gammafn(k+1)*gammafn(1-smooth))/(gammafn(n+1)*gammafn(k-n+1));
+    a2=bessel_i(x,n-smooth,1);
+    res1=res1+a1*a2*R_pow(0.5*x,n+smooth);
+}
+ for(n=0;n<=k;n++){
+    a1=gammafn(k+1)*gammafn(smooth+d/2+k)*gammafn(d/2)*gammafn(-smooth)*smooth;
+    a2=gammafn(d/2+k)*gammafn(smooth+d/2+n)*gammafn(n+1)*gammafn(k-n+1);
+     a4=bessel_i(x,n+smooth,1);
+    res2=res2+a1*a4*R_pow(0.5*x,n+smooth)/a2;
+}*/
+
+   double a1,a2,a3;
+      int n;
+ for(n=0;n<=k;n++){
+    a1=gammafn(k+1)*gammafn(d/2)*gammafn(1-smooth)/(gammafn(n+1)*gammafn(k-n+1));
+    a2=bessel_i(x,n-smooth,1)/gammafn(d/2+n);
+    a3=gammafn(d/2+smooth+k)*bessel_i(x,n+smooth,1)/(gammafn(d/2+k)*gammafn(d/2+n+smooth));
+  rho=rho+ a1*R_pow(0.5*x,n+smooth)*(a2-a3);
+ }
+   return(rho);
+ }
+ 
+}
+
+double CorFunW_genhole(double lag,double R_power1,double smooth,double scale,double kk)  // mu alpha beta
+{
+ double rho=0.0;
+ double d=2; 
+ double x=lag/scale;
+ if(x<1e-32) {rho=1; return(rho);}
+ double mu=R_power1;
+
+
+int k = (int) kk;
+if(k==0) {rho=CorFunW_gen(lag,mu,smooth,scale);
+             return(rho);}  
+else /* 
+if(k==1){
+ if(smooth==0||smooth==1||smooth==2||smooth==3||smooth==4||smooth==5||smooth==6)
+  { 
+  double A1,B1,K1,K2,KK;int n=0;int smooth1 = (int) smooth;
+     if(smooth1==0)
+             {
+              if(x<=1) {
+               A1=R_pow(1-x,R_power1-1)/(1+x);B1=1-x*(mu+d)/d;
+             rho=(A1*B1);
+              }
+              else rho=0;
+    return(rho);
+             }
+    else {  
+          rho=0.0;
+             if(x<=1) {
+            for(n=0;n<=smooth1;n++){
+             A1=R_pow(1-x,n+smooth1+mu-1)*R_pow(1+x,smooth1-n-1);
+             B1=1- x*(2*n+mu)/d - x*x*(2*smooth1+mu+d)/d;
+             K1=gammafn(smooth1)*gammafn(1+2*smooth1+mu)*poch(mu,n)*poch(-smooth1,n);
+             K2=2*gammafn(2*smooth1)*gammafn(1+smooth1+mu)*poch(1+smooth1+mu,n)*gammafn(n+1);
+             KK=K1/K2;
+             rho=rho+KK*A1*B1;
+              }
+           }
+           else rho=0;
+    return(rho);
+  }
+ }
+}
+else{
+    */
+             {
+double alpha,beta,gama,a1,a2,a3,a4,A,B,B1,B2,cc,tt,uu,c1,c2,c3,c4,C;
+ if(x<=1)
+    {
+alpha=smooth+(d+1)/2+k;
+beta=alpha+mu/2;
+gama=beta+0.5;
+double x2=x*x;
+int n;
+A=0.0;
+for(n=0;n<=k;n++){
+    cc=1+d/2+k;
+a1=R_pow(-1,n)*gammafn(k+1)*poch(cc-beta,n)*poch(cc-gama,n);
+a2=gammafn(n+1)*gammafn(k-n+1)*poch(1-d/2-n,n)*poch(cc-alpha,n);
+a3=R_pow(x,2*n);
+a4=hypergeo(cc-beta+n , cc-gama+n, cc-alpha+n,x2);
+A=A+(a1*a3*a4/a2);
+}
+
+uu=d/2+k;
+/*B1=lgammafn(beta-uu)+lgammafn(gama-uu)+lgammafn(d/2)+lgammafn(uu-alpha);
+B2=lgammafn(uu)+lgammafn(alpha-uu)+lgammafn(beta-alpha)+lgammafn(gama-alpha);
+B=exp(B1-B2);*/
+
+B1=gammafn(beta-uu)*gammafn(gama-uu)*gammafn(d/2)*gammafn(uu-alpha);
+B2=gammafn(uu)*gammafn(alpha-uu)*gammafn(beta-alpha)*gammafn(gama-alpha);
+B=B1/B2;
+
+tt=1+alpha;
+C=0.0;
+for(n=0;n<=k;n++){
+c1=R_pow(-1,n+k)*gammafn(k+1)*poch(1-alpha,k-n)*poch(1+alpha-beta,n)*poch(1+alpha-gama,n);
+c2=gammafn(n+1)*gammafn(k-n+1)*poch(1+alpha-uu,n);
+c3=R_pow(x,2*alpha-d-2*(k-n));
+c4=hypergeo(tt-beta+n , tt-gama+n, tt-d/2-k+n,x2);
+C=C+(c1*c3*c4/c2);
+}
+rho=A+B*C;
+}
+else {rho=0;}
+return(rho);
+}
+}
+
+double Corschoenberg(double lag,double scale)
+{
+double rho=0.0,x=0.0;
+double d=2;
+    x=lag/scale;
+    if(x<1e-32) {rho=1; return(rho);}
+double d2=d*0.5;
+rho=gamma(d2)*R_pow(x*0.5,1-d2)*bessel_j(x,d2-1);
+return(rho);
+}    
+
+
+
 /* generalized wendland function*/
 double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu alpha beta
 {
@@ -2008,20 +2213,19 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
          else rho=0;
          return(rho);
     }
-      if(smooth==3) {
+    if(smooth==3) {
        if(x<1) rho=R_pow(1-x,R_power1+3)*( 1+R_pow(x,1)*(R_power1+3)+
                     R_pow(x,2)*(2*R_pow(R_power1,2) +12*R_power1 +15 )/5 +
                     R_pow(x,3)*(R_pow(R_power1,3)+9*R_pow(R_power1,2)+ 23*R_power1+15)/15);
          else rho=0;
          return(rho);
     }
-      /*first version  */
+
     if(x<=1)
-         {
-        rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+lgammafn(smooth+R_power1+1)))
-         *R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
-      }
-  else {rho=0;}
+    {rho=exp((lgammafn(smooth)+lgammafn(2*smooth+R_power1+1))-(lgammafn(2*smooth)+
+            lgammafn(smooth+R_power1+1)))*R_pow(2,-R_power1-1)*R_pow(1-x*x,smooth+R_power1)*hypergeo(R_power1/2,(R_power1+1)/2,smooth+R_power1+1, 1-x*x);
+    }
+    else rho=0;
    /*/second version
         x=lag;
         double *param;
@@ -2030,7 +2234,9 @@ double CorFunW_gen(double lag,double R_power1,double smooth,double scale)  // mu
         rho=wendintegral(x,param);
         Free(param);*/
     return(rho);
+     
 }
+
 double CorFunWend0_tap(double lag,double scale,double smoo)
 {
     double rho=0.0,x=0;
@@ -2144,9 +2350,12 @@ void CorrelationMat2(double *rho,double *coordx, double *coordy, double *coordt,
      for(i=0;i<(ncoord[0]-1);i++){
 	    for(j=(i+1);j<ncoord[0];j++){
 
+
         dd=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
 
+
     rho[h]=CorFct(cormod,dd,0,par,0,0);
+     // Rprintf("%d- %f %f %f %f -- %f %f --%f\n",type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH,dd,rho[h]);
        h++;
     }}
 

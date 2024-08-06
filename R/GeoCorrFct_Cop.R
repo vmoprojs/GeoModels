@@ -11,16 +11,26 @@ GeoCorrFct_Cop<- function(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian"
 ## C functions
 biv_unif_CopulaClayton<- function(a,b,c,d)
 {
-  sol = .C("biv_unif_CopulaClayton_call", as.double(a), as.double(b),
-           as.double(c),as.double(d), ress = as.double(0),
-           PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+  #sol = .C("biv_unif_CopulaClayton_call", as.double(a), as.double(b),
+  #         as.double(c),as.double(d), ress = as.double(0),
+  #         PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+ sol=dotCall64::.C64("biv_unif_CopulaClayton_call",SIGNATURE = c("double","double","double","double","double"),  
+                         a, b,c,d,ress=dotCall64::numeric_dc(1),
+                        INTENT =    c("r", "r","r", "r","rw"),
+                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+
   return(exp(sol$ress))
 }
 biv_unif_CopulaGauss<- function(a,b,c)
 {
-  sol = .C("biv_unif_CopulaGauss_call", as.double(a), as.double(b),
-           as.double(c),ress = as.double(0),
-           PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+  #sol = .C("biv_unif_CopulaGauss_call", as.double(a), as.double(b),
+   #        as.double(c),ress = as.double(0),
+    #       PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+   sol=dotCall64::.C64("biv_unif_CopulaGauss_call",SIGNATURE = c("double","double","double","double"),  
+                         a, b,c,ress=dotCall64::numeric_dc(1),
+                        INTENT =    c("r", "r","r","rw"),
+                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
   return(sol$ress)
 }
 ###################
@@ -53,25 +63,34 @@ corr_copula<-function(rho,copula,q1,q2,e1,e2,v1,v2,nu){
 ###########################################
 CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param,N)
     {
-       if(!bivariate) { 
-                             p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
-                             as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model),as.double(nuisance),as.double(param),
-                             as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-                             cc=p$corr
-                    }
-        else    {
-                             p=.C('VectCorrelation_biv', corr=double(numlags*4),vario=double(numlags*4), as.integer(corrmodel), as.double(lags),
-                             as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
-                             as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-                             cc=c(p$corr,p$vario)   
-
-                    }
-        return(cc)
+       if(!bivariate) 
+                           #  p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
+                           #  as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model),as.double(nuisance),as.double(param),
+                           #  as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                           #  cc=p$corr
+                         p=dotCall64::.C64('VectCorrelation',SIGNATURE = c("double","integer","double","integer", "integer",
+                          "double","integer","double","double","double","integer"),  
+                        corr=dotCall64::numeric_dc(numlags*numlagt), corrmodel, lags,numlags,numlagt, mu,model,nuisance,param,lagt,N,
+                        INTENT =    c("rw","r","r","r", "r", "r","r", "r","r", "r","r"),
+                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+        else    
+                           #  p=.C('VectCorrelation_biv', corr=double(numlags*4),vario=double(numlags*4), as.integer(corrmodel), as.double(lags),
+                           #  as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
+                           #  as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                           #  cc=c(p$corr,p$vario) 
+                       p=dotCall64::.C64('VectCorrelation_biv',SIGNATURE = c("double","double","integer", "double",
+                       "integer", "integer","double","integer","double","double",
+                       "double","integer"),  
+                        corr=dotCall64::numeric_dc(numlags*4),vario=numlags*4, corrmodel, lags,numlags,numlagt,mu,model,nuisance, param,lagt, N,
+                        INTENT =    c("rw","r","r","r", "r", "r","r", "r","r", "r","r"),
+                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE) 
+        return(p$corr)
     }
 #############################################################################################
 #################### end internal function ##################################################
 #############################################################################################
     # Check the user input
+    call=match.call()
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     if(is.null(CkModel(model)))   stop("The name of the  model  is not correct\n")
     if(!is.numeric(x)) stop("Distances must be numeric\n")
@@ -79,13 +98,13 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
     spacetime<-CheckST(CkCorrModel(corrmodel))
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
    
-mu=0;nuisance=0
+mu=0;nuisance=0;
 mm=0
 num_beta=c(1,1)
 
 nx=length(x)
-if(spacetime) nt=length(t)
-else nt=1
+if(spacetime) {nt=length(t) ; A=as.matrix(expand.grid(x,t)) }
+else {t=0;nt=1}
 
 num_betas=c(1,1)
 if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
@@ -108,7 +127,13 @@ mu=as.numeric(param$mean)
 
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
                                      CkModel(model), nuisance,parcorr,n)
+
 cc=correlation*(1-as.numeric(nuisance['nugget'] )  )
+
+   if(length(t)>1) correlation<- correlation*(1-as.numeric(nuisance["nugget"])) + as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
+             else   correlation <- correlation*(1-as.numeric(nuisance["nugget"]))+as.numeric(nuisance["nugget"])*I(x==0)
+
+
 ######################################
 ######################################
 ######################################
@@ -155,6 +180,22 @@ if(!covariance) vs=1
  res=cova*vs; 
 if(variogram) res=vs*(1-cova)
 
-return(res)
+GeoCorrFct <- list(corr=res,
+                   distances=x,
+                    times=t,
+                    model=model,
+                    distance=distance,  
+                    param=param,
+                    radius=radius,
+                    n=n,
+                    covariance=covariance,
+                    variogram=variogram,
+                    spacetime=spacetime,
+                    bivariate=bivariate)
+
+structure(c(GeoCorrFct, call = call), class = c("GeoCorrFct"))
+
+
+
 }
 

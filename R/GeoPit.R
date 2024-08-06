@@ -1,30 +1,51 @@
-GeoPit=function(fit,type="Uniform")
+GeoPit=function(object,type="Uniform")
 {
 
-if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
+
+#if(class(object)!="GeoFit"||class(object)!="GeoKrig")  stop("A GeoFit or GeoKrig object is needed as input\n")
 if(!(type=="Uniform"||type=="Gaussian")) stop("The type parameter can be Uniform or Gaussian")
 
-model=fit$model        #type of model
-fit$param=unlist(fit$param)
-fit$fixed=unlist(fit$fixed)
-pp=c(fit$param,fit$fixed)
-dd=fit$data
+model=object$model        #type of model
 
-if(!fit$bivariate){
+
+if(inherits(object,"GeoFit"))  {EST=TRUE ;pp=c(unlist(object$param),unlist(object$fixed))}
+if(inherits(object,"GeoKrig")||inherits(object,"GeoKrigloc")) {EST=FALSE;pp=c(unlist(object$param))}
+
+
+
+#pnorm(param[, "data"], mean = param[, "pred"], sd = param[, 
+ #           "se.pred"])
+
+
+if(EST){     ### for estimation 
+dd=object$data
+allmean=pp["mean"] ### modify here for non contant mean }
+allsill=pp["sill"]
+}
+else ## for prediction
+{
+dd=object$data_to_pred
+allmean=object$pred
+allsill=object$mse
+}
+
+
+
+if(!object$bivariate){
 
 ## spatial and spatio temporal case
 #######################################   OK
 if(model %in% c("Gaussian","Gaussian_misp_Binomial",
               "Gaussian_misp_Poisson","Gaussian_misp_BinomialNeg"))
 {
-mm=pp["mean"]
-vv=pp["sill"]
+mm=allmean
+vv=allsill
 data=pnorm(dd,mean=mm,sd=sqrt(vv))
 }  
 #######################################   OK
 if(model %in% c("Weibull"))
 {
-mm=pp["mean"]
+mm=allmean
 sh=pp["shape"]
 data= pweibull(dd,shape=sh,scale=exp(mm)/(gamma(1+1/sh)))
 } 
@@ -32,7 +53,7 @@ data= pweibull(dd,shape=sh,scale=exp(mm)/(gamma(1+1/sh)))
 
 if(model %in% c("Beta2"))
 {
-MM=pp["mean"]
+MM=allmean
 mm=1/(1+exp(-MM))
 sh=pp["shape"]
 pmin=pp["min"];pmax=pp["max"];
@@ -40,7 +61,7 @@ data=pbeta((dd-pmin)/(pmax-pmin),shape1=mm*sh,shape2=(1-mm)*sh)
 }
 #######################################   OK
 if(model %in% c("Kumaraswamy2")){
-MM=pp["mean"]
+MM=allmean
 mm=1/(1+exp(-MM))
 sh=as.numeric(pp["shape"])
 pmin=as.numeric(pp["min"]);pmax=as.numeric(pp["max"]);
@@ -51,36 +72,36 @@ data=(1-(1-((dd-pmin)/(pmax-pmin))^(sh))^(shape1))
 #######################################   OK
 if(model %in% c("SkewGaussian"))
 {
-   MM=pp["mean"]
-   omega=as.numeric(sqrt((pp["skew"]^2 + pp["sill"])/pp["sill"]))
+   MM=allmean
+   omega=as.numeric(sqrt((pp["skew"]^2 + allsill)/allsill))
    alpha=as.numeric(pp["skew"]/pp["sill"]^0.5)
-   data=sn::psn((dd-MM)/sqrt(pp["sill"]),xi=0,omega= as.numeric(omega),alpha= as.numeric(alpha))
+   data=sn::psn((dd-MM)/sqrt(allsill),xi=0,omega= as.numeric(omega),alpha= as.numeric(alpha))
 }
 #######################################   OK
 if(model%in%c("StudentT","Gaussian_misp_StudentT"))
 {
-  MM=pp["mean"]
-  data=pt((dd-MM)/sqrt(pp["sill"]),df=as.numeric(round(1/pp["df"])))
+  MM=allmean
+  data=pt((dd-MM)/sqrt(allsill),df=as.numeric(round(1/pp["df"])))
 }
 #######################################   OK
 if(model%in%c("SkewStudentT","Gaussian_misp_SkewStudentT"))
 {
-  MM=pp["mean"]
+  MM=allmean
   alpha=as.numeric(pp["skew"])
   nu=as.numeric(round(1/pp["df"]))
-  data=sn::pst((dd-MM)/sqrt(pp["sill"]), xi=0, omega=1, alpha=alpha, nu=nu)
+  data=sn::pst((dd-MM)/sqrt(allsill), xi=0, omega=1, alpha=alpha, nu=nu)
 }
 #######################################   OK
 if(model %in% c("Gamma"))
 {
-   MM=pp["mean"]
+   MM=allmean
    shape=pp["shape"]
    data=pgamma(dd,shape=shape/2,rate=shape/(2*exp(MM)))
 }
 #######################################   revisar
 if(model %in% c("LogGaussian"))    
 { 
-   MM=pp["mean"]
+   MM=allmean
    VV=pp["sill"]
   data = pnorm((dd-exp(MM)-VV/2)/sqrt(VV))
  # data = plnorm(dd, exp(MM)-VV/2, sqrt(VV))
@@ -88,7 +109,7 @@ if(model %in% c("LogGaussian"))
 #######################################   OK
 if(model %in% c("LogLogistic"))
 {
-MM=pp["mean"]
+MM=allmean
 shape=pp["shape"]
 cc=gamma(1+1/shape)*gamma(1-1/shape)
 data = actuar::pllogis(dd,shape = shape,scale=exp(MM)/cc)
@@ -96,14 +117,14 @@ data = actuar::pllogis(dd,shape = shape,scale=exp(MM)/cc)
 #######################################   OK
 if(model %in% c("Logistic"))   
 { 
-  MM=pp["mean"]
+  MM=allmean
   VV=pp["sill"]
   data = (1+exp(-(dd-MM)/sqrt(VV)))^(-1)
 }
 #######################################   OK
 if(model %in% c("SinhAsinh"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 tail = as.numeric(pp["tail"])
 skew = as.numeric(pp["skew"])
@@ -112,7 +133,7 @@ data=pnorm(sinh(tail *asinh((dd-MM)/sqrt(VV))-skew))
 #######################################   OK
 if(model %in% c("Tukeyh"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 tail = as.numeric(pp["tail"])
 inverse_lamb=function(x,tail)
@@ -126,7 +147,7 @@ data=pnorm(inverse_lamb(x,tail));
 ####################################### 
 if(model %in% c("Tukeyh2"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 tail1 = as.numeric(pp["tail1"]);tail2 = as.numeric(pp["tail2"])
 ll=seq(min(dd),max(dd),0.1)
@@ -151,7 +172,7 @@ data=pdfTukeyh22(x,tail1,tail2)
 #######################################   OK
 if(model %in% c("TwoPieceGaussian"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 skew = as.numeric(pp["skew"])
 ptpG=function(x,eta){
@@ -170,7 +191,7 @@ data=ptpG(x,skew)
 ####################################### OK
 if(model %in% c("TwoPieceStudentT"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 skew = as.numeric(pp["skew"])
 df   = 1/as.numeric(pp["df"])
@@ -190,7 +211,7 @@ data=ptpt(x,skew,df)
 ####################################### OK
 if(model %in% c("TwoPieceTukeyh"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 skew= as.numeric(pp["skew"])
 tail= as.numeric(pp["tail"])
@@ -222,7 +243,7 @@ data=pTTukeyh(x,tail,skew)
 #######################################  OK
 if(model %in% c("TwoPieceBimodal"))
 {
-MM=pp["mean"]
+MM=allmean
 VV=pp["sill"]
 skew = as.numeric(pp["skew"])
 df   = as.numeric(pp["df"])
@@ -245,15 +266,15 @@ data=pdfbimodal(x,skew,delta,df)
 }
 #######################################  discrete
 if(model %in% c("Binomial")) {
-   MM=pp["mean"]
-   data=pbinom(dd, size=fit$n, prob=pnorm(MM))
+   MM=allmean
+   data=pbinom(dd, size=object$n, prob=pnorm(MM))
 }
 if(model %in% c("BinomialNeg")) {
-   MM=pp["mean"]
-   data=pnbinom(dd, size=fit$n, prob=pnorm(MM))
+   MM=allmean
+   data=pnbinom(dd, size=object$n, prob=pnorm(MM))
 }
 if(model %in% c("Poisson")) {
-   MM=pp["mean"]
+   MM=allmean
    data=ppois(dd, lambda=exp(MM))
 }
 
@@ -264,6 +285,6 @@ stop("The spatial bivariate case is not implemented yet")
 }
 ###########
 if(type=="Gaussian") data=qnorm(data)
-fit$data=data
-return(fit)
+object$data=data
+return(object)
 }

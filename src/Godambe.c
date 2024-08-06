@@ -676,7 +676,7 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
             //  scoordx    scoordy are the spatial coords of the subwindow // sdata the associated data // npts number of loc sites in the window
             if(       //Anche le finestre che hanno "pochi" punti(griglia irregolare)
                (npts[0]>5))   {//OJO
-                nsub1++;
+                nsub1=nsub1+1;
                           nwpair=0;//initialize the number of pairs in the window
                 for(f=0;f<nsub_t;f++){//loop for the number of tmporal sub-sampling:
                     

@@ -8,13 +8,14 @@
   with given  underlying covariance model and a  set of spatial location sites (and temporal instants).
 }
 \usage{
-GeoCovmatrix(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
+GeoCovmatrix(estobj=NULL,coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
           distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
           model="Gaussian", n=1, param, anisopars=NULL, radius=6371, sparse=FALSE,
           taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL,spobj=NULL)
 }
 
 \arguments{
+  \item{estobj}{An object of class Geofit that includes information about data, model and estimates.}
   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
     \code{d} is the number of spatial sites) giving 2-dimensions 
     of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
@@ -168,6 +169,9 @@ The associated parameters in the argument \code{param} are
 
     \item \eqn{GenWend_{\_}Matern} (Generalized Wendland Matern in  Bevilacqua et al. (2022)). It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be divided by 
     \eqn{(\Gamma(\beta+2\kappa+1)/\Gamma(\beta))^{1/(1+2\kappa)}}. When  \eqn{\beta} goes to infinity it is the Matern model.
+
+    \item \eqn{GenWend_{\_}Matern2} (Generalized Wendland Matern second parametrization. It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be multiplied  by \eqn{\beta}  and the smoothness parameter is
+    \eqn{\kappa-0.5}. When  \eqn{\beta} goes to infinity it is the Matern model.
     
      \item \eqn{Hypergeometric} (Parsimonious Hypegeometric model in Alegria and Emery (2022)) defined as the model \eqn{Hypergeometric2} with the restriction \eqn{\beta=\alpha}. 
 
@@ -424,28 +428,42 @@ Christian", Caamaño-Carrillo, \email{chcaaman@ubiobio.cl},\url{https://www.rese
 
 \examples{
 library(GeoModels)
-
-
 ################################################################
 ###
-### Example 1. Spatial covariance matrix associated to
-### the Matern correlation model
+### Example 1.Estimated  spatial covariance matrix associated to
+### a WCL estimates using the Matern correlation model
 ###
 ###############################################################
 
-# Define the spatial-coordinates of the points:
-x = runif(500, 0, 1)
-y = runif(500, 0, 1)
-coords = cbind(x,y)
+set.seed(3)
+N=300  # number of location sites
+x <- runif(N, 0, 1)
+y <- runif(N, 0, 1)
+coords <- cbind(x,y)
+# Set the covariance model's parameters:
+corrmodel <- "Matern"
+mean=0.5; 
+sill <- 1
+nugget <- 0
+scale <- 0.2/3
+smooth=0.5
 
-# Correlation Parameters for Matern model 
-CorrParam("Matern")
+param<-list(mean=mean,sill=sill,nugget=nugget,scale=scale,smooth=smooth)
+data <- GeoSim(coordx=coords,corrmodel=corrmodel, param=param)$data
+fixed<-list(nugget=nugget,smooth=smooth)
+start<-list(mean=mean,scale=scale,sill=sill)
 
-# Matern Parameters 
-param=list(smooth=0.5,sill=1,scale=0.2,nugget=0)
+fit0 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, 
+                    neighb=3,likelihood="Conditional",optimizer="BFGS",
+                    type="Pairwise", start=start,fixed=fixed)
+print(fit0)
 
-matrix1 = GeoCovmatrix(coordx=coords, corrmodel="Matern", param=param)
-dim(matrix1$covmatrix)
+#estimated covariance matrix using Geofit object
+mm=GeoCovmatrix(fit0)$covmatrix
+#estimated covariance matrix
+mm1 = GeoCovmatrix(coordx=coords,corrmodel=corrmodel,
+           param=c(fit0$param,fit0$fixed))$covmatrix
+sum(mm-mm1)
 
 ################################################################
 ###

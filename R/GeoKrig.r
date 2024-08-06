@@ -3,7 +3,7 @@
 ####################################################
 
 
-GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
+GeoKrig= function(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
                maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE, lin_opt=TRUE, param, anisopars=NULL,
                radius=6371, sparse=FALSE,taper=NULL, tapsep=NULL, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE,
                which=1, copula=NULL,X=NULL,Xloc=NULL,Mloc=NULL,spobj=NULL,spdata=NULL)
@@ -13,11 +13,18 @@ GeoKrig= function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrm
 getInv=function(covmatrix,b,mse){
   cInvc=NULL    
 if(!covmatrix$sparse){
-               U =MatDecomp(covmatrix$covmatrix,method);Inv=0
+               U =MatDecomp(covmatrix$covmatrix,"cholesky");Inv=0
                if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}
+               #print("1")
                vec=forwardsolve(U, b)
+               rm(b)
+              #  print("2")
                Invc=forwardsolve(U, vec,transpose=T) ## R^-1 %*% c
-               if(mse) cInvc=crossprod(vec,vec) # t(c)%*% R^-1 %*% c
+               rm(U)
+              #     print("3")
+               if(mse) cInvc=crossprod(vec) # t(c)%*% R^-1 %*% c
+              # if(mse) cInvc=Rfast::Crossprod(vec,vec)
+               #print("4")
              }
 if(covmatrix$sparse){
                cc=covmatrix$covmatrix
@@ -26,15 +33,57 @@ if(covmatrix$sparse){
                if(inherits(U,"try-error")) {print(" Covariance matrix is not positive definite");stop()}#Inv=spam::chol2inv.spam(U)
              
                vec=  spam::forwardsolve(U, b)
+                rm(b)
                Invc= spam::backsolve(U, vec) ## R^-1 %*% c
-               if(mse) cInvc=spam::crossprod.spam(vec,vec) 
-             
+               rm(U)
+               if(mse) cInvc=spam::crossprod.spam(vec)  # t(c)%*% R^-1 %*% c
         }
      return(list(a=Invc,b=cInvc))
 }
 ######################################
 ########## START #####################
 ######################################
+call <- match.call()
+
+###############################
+## checking if there is a  GeoFit object
+if(!is.null(estobj)){
+   if(!inherits(estobj,"GeoFit"))
+               stop("need  a 'GeoFit' object as input\n")
+   data=estobj$data
+
+if(!estobj$grid){  #not regular grid 
+
+ if(!estobj$bivariate){  if(is.null(estobj$coordx_dyn)) coordx=cbind(estobj$coordx,estobj$coordy)
+                         else cord=estobj$coordx_dyn
+                      } ## spatial (temporal) non regular case
+ else  {    if(is.null(estobj$coordx_dyn))  { coordx=estobj$coordx[1:estobj$ns[1]]    # bivariate not dynamic    
+                                              coordy=estobj$coordy[1:estobj$ns[2]] 
+                                            }  
+            else {coordx_dyn=estobj$coordx_dyn}                                      # bivariate  dynamic  
+       }
+ }
+else  { coordx=estobj$coordx; 
+        coordy=estobj$coordy
+      }
+
+   if(length(estobj$coordt)==1) coordt=NULL
+   else coordt=estobj$coordt
+   coordx_dyn=estobj$coordx_dyn
+   corrmodel=estobj$corrmodel
+   model=estobj$model
+   distance=estobj$distance
+   grid=estobj$grid
+   n=estobj$n
+   param=append(estobj$param,estobj$fixed)
+   radius=estobj$radius
+   copula=estobj$copula
+   anisopars=estobj$anisopars
+   if(ncol(estobj$X)==1) X=NULL
+   else X=estobj$X
+}
+##################################
+
 if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
 if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
 corrmodel=gsub("[[:blank:]]", "",corrmodel); model=gsub("[[:blank:]]", "",model)
@@ -129,7 +178,7 @@ if((model %in% c("LogGaussian","SinhAsinh","Tukeyh2","Tukeyh"))&&type_krig=="Opt
 ######################################################## 
 ######################################################## 
 Mtemp=NULL
-   if(model %in% c("Weibull","Gamma","LogLogistic","LogGaussian")&&type_krig=="Simple")          # we need a x covariane matrix with with mean=0   x=gamma,weibull,loglogistic
+   if(model %in% c("Weibull","Gamma","LogLogistic","LogGaussian")&&type_krig=="Simple")          # we need a x covariane matrix with mean=0   x=gamma,weibull,loglogistic
 {
      paramtemp=param; sel=substr(names(param),1,4)=="mean";  ## selecting mean values
      meantemp=names(param[sel])             ## saving   mean parameters
@@ -141,9 +190,18 @@ Mtemp=NULL
 #####################################################
 ##### computing covariance matrix  ##################
 #####################################################
+
     covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn,
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n,
           param=param, anisopars=anisopars, radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X)
+ #print(param)
+ #print(model)
+ #print(head(coordx))
+ #print(head(coordy))
+ #print(covmatrix$nozero)
+
+
+
 #####################################################
     covmatrix$param=unlist(covmatrix$param)
     if(bivariate) tloc=1
@@ -152,6 +210,9 @@ Mtemp=NULL
     if(!spacetime_dyn) dimat=covmatrix$numcoord*covmatrix$numtime
     if(spacetime_dyn)  dimat =sum(covmatrix$ns)
     dimat2=numloc*tloc
+    if(is.null(X)) XX=rep(1,dimat)
+    else XX=X
+
     MM=NULL
     if(!is.null(Mtemp))  {MM=Mtemp;param$mean=0}
     else  { if(length(param$mean)>1)  { MM=param$mean; param$mean=0 } } ## in the case of non constant  external mean        
@@ -164,6 +225,7 @@ Mtemp=NULL
           covmatrix$namesnuis=unique(c(meantemp,covmatrix$namesnuis))   
     }
     else { X=covmatrix$X }
+
     ###############
     num_betas=ncol(X); NS=0
     if(spacetime||bivariate) { NS=cumsum(covmatrix$ns); NS=c(0,NS)[-(length(covmatrix$ns)+1)] }
@@ -179,14 +241,16 @@ Mtemp=NULL
                     sel2=substr(names(nuisance),1,6)=="mean_2"; betas2=as.numeric(nuisance[sel2])   ## mean1 paramteres
                   }
     other_nuis=as.numeric(nuisance[!sel])
-
+ 
 ##############################################################
 ########## setting means for data and loc to predict#########
 ##############################################################
 if(type_krig=="Simple"){ if(is.null(MM)) {mu=X%*%betas; muloc=Xloc%*%betas}
-                         else {mu=MM;muloc=Mloc}        }          # for non constant external mean    
+                         else            {mu=MM;         muloc=Mloc}      }          # for non constant external mean    
 ##############################################################
 #}       
+
+
     ############
     cmodel=corrmodel
     cdistance=distance
@@ -206,16 +270,17 @@ if(type_krig=="Simple"){ if(is.null(MM)) {mu=X%*%betas; muloc=Xloc%*%betas}
       if((spacetime||bivariate)&&( spacetime_dyn)) ccc=do.call(rbind,args=c(coordx_dyn))
         }
     ###############################################################
-
+ 
     if((spacetime||bivariate)&&spacetime_dyn) 
            dataT=t(unlist(data))  else dataT=t(data)
-
+  
     ###############################################################
     if(bivariate){ X11=X[1:covmatrix$ns[1],]; X22=X[(covmatrix$ns[1]+1):(covmatrix$ns[1]+covmatrix$ns[2]),]
                    if(!is.null(Xloc)) { X11_loc=Xloc[(1:(nrow(Xloc)/2)),]; X22_loc=Xloc[(nrow(Xloc)/2+1):nrow(Xloc),]}
                    mu=c(X11%*%matrix(betas1),X22%*%matrix(betas2))
                    if(!is.null(Xloc)) muloc=c(X11_loc%*%matrix(betas1),X22_loc%*%matrix(betas2))
                  }
+
 ####################################################################
 ############### computing  correlation vector ######################
 ####################################################################
@@ -239,8 +304,9 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,39,28,9, 34,40,20,22))
 ## tukey=34
 ## tukeyyh2=40
 ## sihasin=20
+
 if((type=="Standard"||type=="standard")) {
-        corri=double(dimat*dimat2)
+       # corri=double(dimat*dimat2)
          #Computing gaussian CORRELATIONS between the locations to predict and the locations observed
      #  cc=.C('Corr_c',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),as.integer(corrmodel),
      #   as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
@@ -253,15 +319,17 @@ if((type=="Standard"||type=="standard")) {
                    "integer","double","double","integer","integer",
                    "integer","integer","integer","integer","double",
                    "integer","integer","double","integer","integer","double"),
-   corri=corri,ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
+   #corri=corri,ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
+  corri=dotCall64::numeric_dc(dimat*dimat2),ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
          0, locx , locy , covmatrix$numcoord ,numloc ,
          tloc , covmatrix$ns , NS ,covmatrix$numtime , corrparam ,
          covmatrix$spacetime ,covmatrix$bivariate , time , distance , which-1 , covmatrix$radius ,
- INTENT = c("rw","r","r","r","r",
+ INTENT = c("w","r","r","r","r",
             "r","r","r","r","r",
             "r","r","r","r","r",
             "r","r","r","r","r","r"),
         PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
 
 ####  transforming gaussian correlations depending on the (non)Gaussian  model
 if(bivariate){  corri=cc$corri  }  #  adding models.....
@@ -516,10 +584,17 @@ else    {
 ##################################################################
 ##########computing kriging weights##################################
 ##################################################################
+
 CC = matrix(corri*vvar,nrow=dimat,ncol=dimat2)
+
+
 MM=getInv(covmatrix,CC,mse)  #compute (\Sigma^-1) %*% cc
+
+rm(CC)
 krig_weights = MM$a
 BB=MM$b
+
+
 ##################################################################
 ################# simple kriging #################################
 ##################################################################
@@ -531,11 +606,15 @@ if(!bivariate) ## space and spacetime simple kringing
    if(type_krig=='Optim'){
                if(SinhAsinhtemp) # Sinh
                {
-                    
                      ss= (c(dataT)-c(me))/sqrt(vvm)
                      zz=  sinh(tail*asinh(ss)-sk)
                      #kk=krig_weights %*% zz
-                     kk=crossprod(zz,krig_weights)
+                     #kk=crossprod(zz,krig_weights)
+                    
+                     #kk=Rfast::Crossprod(as.matrix(zz),krig_weights)
+
+                      kk=crossprod(zz,krig_weights)
+              
                      pp = c(meloc)      +  sqrt(vvm)*   sinh( (1/tail)*(asinh(kk)+sk))
                }
             if(Tukeyh2temp) # Tukeyh2
@@ -543,7 +622,9 @@ if(!bivariate) ## space and spacetime simple kringing
                      ss= (c(dataT)-c(me))/sqrt(vvm)
                      zz=ifelse(ss>=0,(VGAM::lambertW(t1*ss^2)/t1)^(1/2),-(VGAM::lambertW(t2*ss^2)/t2)^(1/2))
                       #kk=krig_weights %*% zz
-                     kk=crossprod(zz,krig_weights)
+                     #kk=crossprod(zz,krig_weights)
+                   # kk=Rfast::Crossprod(as.matrix(zz),krig_weights) 
+                         kk=crossprod(zz,krig_weights) 
                      pp = c(meloc)      +  sqrt(vvm)* ifelse(kk>=0,kk*exp(0.5*t1*kk^2), kk*exp(0.5*t2*kk^2))
                }
             if(Tukeyhtemp) # Tukeyh
@@ -553,7 +634,9 @@ if(!bivariate) ## space and spacetime simple kringing
                      #zz=(VGAM::lambertW(th*ss^2)/th)^(1/2)
                       zz=ifelse(ss>=0,(VGAM::lambertW(th*ss^2)/th)^(1/2),-(VGAM::lambertW(th*ss^2)/th)^(1/2))
                      #kk=krig_weights %*% zz
-                     kk=crossprod(zz,krig_weights)
+                    # kk=crossprod(zz,krig_weights)
+                     #kk=Rfast::Crossprod(as.matrix(zz),krig_weights)
+                       kk=crossprod(zz,krig_weights)
                      pp = c(meloc)      +  sqrt(vvm)* ifelse(kk>=0,kk*exp(0.5*th*kk^2), kk*exp(0.5*th*kk^2))
               }
 
@@ -562,8 +645,12 @@ if(!bivariate) ## space and spacetime simple kringing
               ## de oliveira 2006 (equation(2))
                 rp=vvm
                 #pp = c(meloc-0.5*rp) +  krig_weights %*% (c(log(dataT))-c(me-0.5*rp))
-                pp = c(meloc-0.5*rp) +  crossprod(c(log(dataT))-c(me-0.5*rp), krig_weights)
-                QQ=diag(as.matrix(diag(covmatrix$param['sill'],dimat2) - krig_weights%*%CC))
+                datas=as.matrix(c(log(dataT))-c(me-0.5*rp))
+               pp = c(meloc-0.5*rp) +  crossprod(datas, krig_weights)
+                #pp = c(meloc-0.5*rp)+Rfast::Crossprod(c(log(dataT))-c(me-0.5*rp), krig_weights)
+               
+                #QQ=diag(as.matrix(diag(covmatrix$param['sill'],dimat2) - krig_weights%*%CC))
+                 QQ=diag(as.matrix(diag(covmatrix$param['sill'],dimat2) - BB))
                 pp=exp(pp+QQ/2) #/exp(covmatrix$param['sill']/2)
             }
         }
@@ -572,8 +659,11 @@ if(!bivariate) ## space and spacetime simple kringing
                if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,37,28,9, 34,40,20))   ####gaussian, StudenT, two piece  skew gaussian bimodal tukeyh tukey hh
               {
                     # pp = c(muloc)      +  krig_weights %*% (c(dataT)-c(mu))
-                       pp = c(muloc)      +  crossprod(c(dataT)-c(mu),krig_weights)
+                        
+                      datas=as.matrix(c(dataT)-c(mu))
 
+                     pp = c(muloc)      +  crossprod(datas,krig_weights)
+                      # pp = c(muloc)    + Rfast::Crossprod(c(dataT)-c(mu),krig_weights)
               }
         }
                ###################################################
@@ -581,9 +671,10 @@ if(!bivariate) ## space and spacetime simple kringing
 if(covmatrix$model %in% c(21,24,26,22)&&type_krig=="Simple")
                       {       ones=rep(1,length(c(dataT)))
                               one=rep(1,length(c(muloc)))
-                            
                               #pp = c(emuloc) * ( one + krig_weights %*% (c(dataT)/emu-ones) )
-                              pp = c(emuloc) * ( one + crossprod(c(dataT)/emu-ones,krig_weights))
+                 datas=as.matrix(c(dataT)/emu-ones)
+                pp = c(emuloc) * ( one + crossprod(datas,krig_weights))
+               # pp = c(emuloc) * ( one + Rfast::Crossprod(c(dataT)/emu-ones,krig_weights))
                       }
                ####log gaussian   simple kriging
 #if(covmatrix$model==1&&logGausstemp)   {  
@@ -595,16 +686,15 @@ if(covmatrix$model %in% c(21,24,26,22)&&type_krig=="Simple")
       
 else  {   ## bivariate  case   cokriging
           dat = c(dataT) - as.numeric(c(rep(covmatrix$param['mean_1'],covmatrix$ns[1]),
-                            rep(covmatrix$param['mean_2'],covmatrix$ns[2])))
-                      if(which==1) pp = param$mean_1 + krig_weights %*% dat
-                      if(which==2) pp = param$mean_2 + krig_weights %*% dat
+                                        rep(covmatrix$param['mean_2'],covmatrix$ns[2])))
+
+                      if(which==1) pp = c(param$mean_1) + crossprod(dat,krig_weights)
+                      if(which==2) pp = c(param$mean_2) + crossprod(dat,krig_weights)
       }
    #### MSE COMPUTATION ##################
   if(mse) {
               
                 bb=0
-
-             
             #BB=crossprod(CC,krig_weights)
            # Gaussian,StudentT,skew-Gaussian,two piece linear kriging
            if(covmatrix$model %in% c(1,12,27,38,29,10,18,39,28,40,34,9,20))
@@ -639,6 +729,7 @@ else pred=c(pp)
 }#end gaussian standard kriging
 
 } ####
+
 ####################################################################################################################################
 ###################### binomial  binomial negative and poisson (inflated) #####################################
 ####################################################################################################################################
@@ -668,39 +759,46 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46))
      if(covmatrix$model==16||covmatrix$model==45) kk=n
 ## ojo que es la covarianza
 if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
-{   corri=double(dimat*dimat2)
+{   
+    #corri=double(dimat*dimat2)
     ## Computing correlation between the locations to predict and the locations observed
-    ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-    as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-    as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-    as.integer(kk),as.integer(n),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),
-    as.double(rep(c(mu),dimat2)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
-    as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-    as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
+   # ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
+   # as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
+   # as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
+  #  as.integer(kk),as.integer(n),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),
+  #  as.double(rep(c(mu),dimat2)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
+  #  as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
+  #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
 
-#     ccorr=dotCall64::.C64('Corr_c_bin',
- #   SIGNATURE = c("double","double","double","double", "integer","integer",  #6
- #                  "double","double","integer","integer","integer",        #5
- #                  "integer","integer","integer","integer","integer","double", #6
- #                  "double", "double","integer","integer","double","integer","integer","double"),  #8
- #  corri=corri,  ccc[,1], ccc[,2], covmatrix$coordt,corrmodel,0,
- #   locx, locy,covmatrix$numcoord,numloc,covmatrix$model,
- #   tloc,kk,covmatrix$ns,NS,covmatrix$numtime, rep(c(mu),dimat2),
- #    other_nuis, corrparam,covmatrix$spacetime, bivariate, time,distance,which-1, covmatrix$radius,
-#INTENT = c("rw","r","r","r","r","r",
-     #       "r","r","r","r","r",
-    #        "r","r","r","r","r","r",
-   #        "r","r","r","r","r","r","r","r"),
-   #   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+   ccorr=dotCall64::.C64('Corr_c_bin',
+   SIGNATURE = c("double","double","double","double", #4
+  "integer","integer", "double","double","integer",  #9
+  "integer","integer", "integer", #12
+  "integer","integer","integer","integer","integer", #17
+ "double", "double", "double","integer", #21
+ "integer","double","integer","integer","double"),   #26
+   corri=dotCall64::numeric_dc(dimat*dimat2),  ccc[,1], ccc[,2], covmatrix$coordt,corrmodel,0,
+   locx, locy,covmatrix$numcoord,numloc,covmatrix$model,  tloc,
+     kk,n,covmatrix$ns,NS,covmatrix$numtime, 
+    rep(c(mu),dimat2),  other_nuis, corrparam,covmatrix$spacetime,
+     bivariate, time,distance,which-1, covmatrix$radius,
+  INTENT = c("w","r","r","r",
+            "r","r","r","r","r",
+            "r","r","r",
+            "r","r","r","r","r",
+             "r","r","r","r",
+           "r","r","r","r","r"),
+      PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
  }
-corri=ccorr$corri
 
+corri=ccorr$corri
 ##################inverse of cov matrix##############################################
         if(!bivariate) cc = matrix(corri,nrow=dimat,ncol=dimat2)
         else           {}
         MM=getInv(covmatrix,cc,mse)  #compute (\Sigma^-1) %*% cc
         krig_weights = MM$a
         BB=MM$b
+        rm(MM)
 ######################################################################################
 
        if(type_krig=='Simple'||type_krig=='simple')  {
@@ -709,7 +807,12 @@ corri=ccorr$corri
         p0=exp(mu0); pmu=exp(mu)
             if(!bivariate) { 
             # pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) 
-            pp = c(p0) + crossprod(c(dataT)-c(pmu), krig_weights)
+           # pp = c(p0) + crossprod(c(dataT)-c(pmu), krig_weights)
+         #  datas=as.matrix(c(dataT)-c(pmu))
+         #   pp = c(p0) + Rfast::Crossprod(datas, krig_weights)
+
+                     datas=c(dataT)-c(pmu)
+            pp = c(p0) + crossprod(datas, krig_weights)
 
              }  ## simple kriging
             else{} #todo
@@ -721,7 +824,13 @@ corri=ccorr$corri
          b0=covmatrix$param['shape']/p0
          if(!bivariate) { 
            # pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) 
-            pp = c(p0) + crossprod(c(dataT)-c(pmu), krig_weights)
+           # pp = c(p0) + crossprod(c(dataT)-c(pmu), krig_weights)
+
+               #datas=as.matrix(c(dataT)-c(pmu))
+               #pp = c(p0) + Rfast::Crossprod(datas, krig_weights)
+               
+               datas=c(dataT)-c(pmu)
+               pp = c(p0) + crossprod(datas, krig_weights)
           }  ## simple kriging
         else{} #todo
         if(mse)  vvar=p0*(1+1/b0)  ### variance (possibly no stationary)     
@@ -733,7 +842,12 @@ corri=ccorr$corri
             if(!bivariate)  { 
 
             # pp = (1-p)*c(p0) + krig_weights %*% (c(dataT)-(1-p)*c(pmu))
-             pp = (1-p)*c(p0) + crossprod(c(dataT)-(1-p)*c(pmu),krig_weights)
+            # pp = (1-p)*c(p0) + crossprod(c(dataT)-(1-p)*c(pmu),krig_weights)
+            #datas=as.matrix(c(dataT)-(1-p)*c(pmu))
+             #pp = (1-p)*c(p0) + Rfast::Crossprod(datas,krig_weights)
+
+              datas=c(dataT)-(1-p)*c(pmu)
+             pp = (1-p)*c(p0) + crossprod(datas,krig_weights)
 
              }  ## simple kriging
             else{} #todo
@@ -741,11 +855,17 @@ corri=ccorr$corri
         }
        ##########################################################
        if(covmatrix$model==2||covmatrix$model==11){  ### binomial
+    
         p0=pnorm(mu0); pmu=pnorm(mu)
             if(!bivariate) { 
            # pp = kk*c(p0) + krig_weights %*% (c(dataT)-n*c(pmu)) 
-             pp = kk*c(p0) + crossprod(c(dataT)-n*c(pmu),  krig_weights) 
+           #  pp = kk*c(p0) + crossprod(c(dataT)-n*c(pmu),  krig_weights) 
+           #datas=as.matrix(c(dataT)-n*c(pmu))
+           #    pp = kk*c(p0) + Rfast::Crossprod(datas,  krig_weights) 
 
+                     datas=c(dataT)-n*c(pmu)
+               pp = kk*c(p0) + crossprod(datas,  krig_weights) 
+            
             }  ## simple kriging
             else{} #todo
            if(mse) vvar=kk*p0*(1-p0)  ### variance (possibly no stationary
@@ -755,7 +875,12 @@ corri=ccorr$corri
             p0=pnorm(mu0); pmu=pnorm(mu)
             if(!bivariate)   
               {#pp = nloc*c(p0) + krig_weights %*% (c(dataT)-c(n*pmu)) 
-               pp = nloc*c(p0) + crossprod( c(dataT)-c(n*pmu),krig_weights)
+              # pp = nloc*c(p0) + crossprod( c(dataT)-c(n*pmu),krig_weights)
+            #  datas=as.matrix(c(dataT)-c(n*pmu))
+            #pp = nloc*c(p0) + Rfast::Crossprod(datas,krig_weights)
+
+                  datas=c(dataT)-c(n*pmu)
+            pp = nloc*c(p0) + crossprod(datas,krig_weights)
               } ## simple kriging
             else{} #todo
           if(mse)    vvar=nloc*p0*t(1-p0) ### variance (possibly no stationary)
@@ -767,7 +892,12 @@ corri=ccorr$corri
             { k1=c(p0);k2=c(pmu);
               aa=n*(1-k1)/k1  
               #pp = aa + krig_weights %*% (c(dataT)-n*(1-k2)/k2) 
-                pp = aa + crossprod( c(dataT)-n*(1-k2)/k2 ,krig_weights)
+               # pp = aa + crossprod( c(dataT)-n*(1-k2)/k2 ,krig_weights)
+             #  datas=as.matrix(c(dataT)-n*(1-k2)/k2)
+             #  pp = aa + Rfast::Crossprod(datas ,krig_weights)
+
+                datas=c(dataT)-n*(1-k2)/k2
+               pp = aa + crossprod(datas ,krig_weights)
 
           }
             else{}   #tood
@@ -779,7 +909,12 @@ corri=ccorr$corri
             p=as.numeric(pnorm(covmatrix$param['pmu']))
             if(!bivariate) { k1=c(p0);k2=c(pmu);
               #  pp = (1-p)*n*(1-k1)/k1 + krig_weights %*% (c(dataT)-(1-p)*n*(1-k2)/k2)
-                 pp = (1-p)*n*(1-k1)/k1 + crossprod(c(dataT)-(1-p)*n*(1-k2)/k2,krig_weights)
+              #   pp = (1-p)*n*(1-k1)/k1 + crossprod(c(dataT)-(1-p)*n*(1-k2)/k2,krig_weights)
+             # datas=as.matrix(c(dataT)-(1-p)*n*(1-k2)/k2)
+             #   pp = (1-p)*n*(1-k1)/k1 + Rfast::Crossprod(datas,krig_weights)
+
+                 datas=c(dataT)-(1-p)*n*(1-k2)/k2
+                pp = (1-p)*n*(1-k1)/k1 + crossprod(datas,krig_weights)
 
             }
             else{}   #tood
@@ -790,6 +925,7 @@ corri=ccorr$corri
                   bb=0
                   #vv = diag(sqrt(tcrossprod(vvar))  - krig_weights%*%cc  + bb)
                     vv = diag(sqrt(tcrossprod(vvar))  - BB  + bb)
+                  #   vv = diag(sqrt(Rfast::Tcrossprod(vvar))  - BB  + bb)
 
                 }
         }
@@ -816,147 +952,23 @@ corri=ccorr$corri
     }}  ##end  binary or binomial or geometric kriging  poisson
 ########################################################################################
 ########################################################################################
-########################################################################################
+#rm(cc,BB,MM,mu,muloc,Mloc,Mtemp,dimat2,krig_weights,locx,locy,X,Xloc,corri,pp,getInv,
+ #   spdata,spobj,taper,tapsep,datas,dataT,dimat
+  #  ,vv,vv2,vvar)
 
 if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
     # Return the objects list:
-    Kg = list(     bivariate=bivariate,
+   GeoKrig= list(     bivariate=bivariate,
                    coordx = covmatrix$coordx,coordy = covmatrix$coordy,
                    coordt = covmatrix$coordt,coordx_dyn=covmatrix$coordx_dyn,
                    covmatrix=covmatrix$covmatrix,corrmodel = corrmodel,copula=copula,data=data,distance = distance,
-                   grid=covmatrix$grid,loc=loc_orig,nozero=covmatrix$nozero,ns=covmatrix$ns,
+                   grid=covmatrix$grid,loc=loc_orig,nozero=covmatrix$nozero,ns=covmatrix$ns,X=XX,
                    numcoord = covmatrix$numcoord,numloc= numloc,numtime = covmatrix$numtime,numt = tloc,
-                   maxdist=maxdist,maxtime=maxtime,model=covmatrix$model,param = covmatrix$param,pred=pred,
+                   maxdist=maxdist,maxtime=maxtime,model=model,param = covmatrix$param,pred=pred,n=n,
                    radius=radius,spacetime = covmatrix$spacetime,time=time,type=type,type_krig=type_krig,
                    mse=varpred,mse2=varpred2)
-    structure(c(Kg, call = call), class = c("Kg"))
+    structure(c(GeoKrig , call = call), class = c("GeoKrig"))
 }
 
-return(Kg)
 }
 
-############################################################################
-############################################################################
-
-Prscores=function(data,method="cholesky",matrix)   {
-
-
-########## internal function ############################
-getInv2=function(covmatrix,b){
-
-if(!covmatrix$sparse){
-               U =MatDecomp(covmatrix$covmatrix,method);Inv=0
-               if(is.logical(U)){print(" Covariance matrix is not positive definite");stop()}
-               vec=forwardsolve(U, b)
-               Invc=forwardsolve(U, vec,transpose=T) ## R^-1 %*% c
-               Inv=FastGP::rcppeigen_invert_matrix(covmatrix$covmatrix)
-             }
-if(covmatrix$sparse){
-               cc=covmatrix$covmatrix
-               if(spam::is.spam(cc))  U = try(spam::chol.spam(cc),silent=TRUE)
-               else                    U = try(spam::chol.spam(spam::as.spam(cc)),silent=TRUE)
-               if(inherits(U,"try-error")) {print(" Covariance matrix is not positive definite");stop()}#Inv=spam::chol2inv.spam(U)
-             
-               vec=  spam::forwardsolve(U, b)
-               Invc= spam::backsolve(U, vec) ## R^-1 %*% c
-               Inv= spam::solve.spam(U)
-             
-        }
-     return(list(a=Invc,b=Inv))
-}
-################################################
-if(!inherits(matrix,"GeoCovmatrix"))  stop("A GeoCovmatrix object is needed as input\n")
-
-varcov=matrix$covmatrix
-rownames(varcov)=c();colnames(varcov)=c()
-if(nrow(varcov)!=length(data)) stop("The dimension of the covariance  matrix and/or the vector data are not correct  \n")
-data=c(unname(data))
-
-
-###########################
-nsites=length(matrix$coordx)
-ntime=1
-if(matrix$spacetime) ntime=length(matrix$coordt)
-if(matrix$bivariate) ntime=2
-dime = nsites*ntime
-
-
-MM=0
-param=matrix$param
-
-
-namesnuis=matrix$namesnuis
-nuisance <- param[namesnuis]
-if(length(param$mean)==1){
- sel=substr(names(nuisance),1,4)=="mean"
- mm=as.numeric(nuisance[sel])
- MM=(matrix$X)%*%mm
-}
-else {MM=param$mean}
-########
-if(matrix$model %in% c(1,35,12,34,25))  data=data-MM#Gaussian #StudentT Tukey  Logistic
-if(matrix$model %in% c(10))             #SkewGauussian
-                 { kk=param['skew'];
-                   data=data-(MM+kk*sqrt(2/pi))}
-if(matrix$model %in% c(11))     data=data-(matrix$n)*pnorm(MM) #binomial
-if(matrix$model %in% c(30,36))  data=data-exp(MM) #poisson
-if(matrix$model %in% c(43,44))  {p=pnorm(param['pmu']);data=data-(1-p)*exp(MM)} #poisson inlated
-if(matrix$model %in% c(27)) #two piece t models
-     {kk=param['skew'];dd=param['df'];ss=param['sill'];
-      data=data-(MM-(2*kk*sqrt(ss*dd)*gamma((dd-1)/2))/(gamma(dd/2)*sqrt(pi)))
-     }
-if(matrix$model %in% c(29)) #two piece gaussian
-     {kk=param['skew'];ss=param['sill'];
-      data=data-(MM-(2*kk*sqrt(2*ss/pi)))
-     }
-if(matrix$model %in% c(38)) #two piece tukeyh
-     {kk=param['skew'];ss=param['sill'];tt=param['tail'];
-      data=data-(MM-(2*kk*sqrt(2*ss/pi)/(1-tt)))
-     }
-if(matrix$model %in% c(40))      #tukeyh2
-     {ss=param['sill'];t1=param['tail1'];t2=param['tail2'];
-      data=data-(MM+sqrt(ss)*(t1-t2)/(sqrt(2*pi)*(1-t1)*(1-t2)))
-     }
-if(matrix$model %in% c(16))     data=data-(matrix$n)*(1-pnorm(MM))/pnorm(MM) #binomialnegative
-if(matrix$model %in% c(45))     data=data-(1-pnorm(param['pmu']))*(matrix$n)*(1-pnorm(MM))/pnorm(MM) #binomialnegative inflated
-if(matrix$model %in% c(20))      #sas
-     {ss=param['sill'];kk=param['skew'];tt=param['tail']; 
-      data=data-(MM+sqrt(ss)*sinh(kk/tt)*exp(0.25)*(besselK(.25,(tt+1)/(2*tt))+besselK(.25,(1-tt)/(2*tt)))/(sqrt(8*pi)))
-     }
-if(matrix$model %in% c(39))      #twopiecebimodal
-     {ss=param['sill'];sk=param['skew'];nu=param['df'];delta=param['shape'];alpha=2*(delta+1)/nu;nn=2^(1-alpha/2)
-      data=data-(MM-sqrt(ss)*sk*2^(1/alpha+1)*gamma(nu/2+1/alpha)/(nn^(1/alpha)*gamma(nu*0.5)))
-     }
-#######
-
-
-cc=getInv2(matrix,data)
-
-
-temp=cc$a# inv%*%data
-inv=cc$b   #inv
-vv=diag(inv)
-
-D=diag(1/vv,dime,dime)
-DD=sqrt(D)
-
-z=crossprod(D,temp)
-zz=crossprod(DD,temp)
-#RMSE=sqrt((1/dime)*(t(z)%*%z))
-RMSE=sqrt((1/dime)*crossprod(z,z))
-MAE=(1/dime)*(sum(abs(z)))
-
-
-LSCORE=(1/(2*dime))*(sum(log(2*pi/vv))+sum(zz^2))
-CRPS=(1/dime)*(sum((1/vv)^0.5*zz*(2*pnorm(zz)-1))+2*sum((1/vv)^0.5*pnorm(zz))+sum((1/vv)^0.5)/sqrt(pi))
-
-###########################
-scores = list(RMSE = RMSE,
-               LSCORE = LSCORE,
-               CRPS = CRPS,
-               MAE=MAE)
-return(scores)
-}
-
-###################################################################################################
-###################################################################################################

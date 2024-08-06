@@ -94,9 +94,9 @@ grid.prep <- function(xrange, yrange, M, N, ext = 2){
 my.GeoCorrFct <- function(x = x, corrmodel = corrmodel, param = param){
   if(corrmodel != "none"){
     if(param$nugget == 0){
-      result <- GeoCorrFct(x = x, corrmodel = corrmodel, param = param)
+      result <- GeoCorrFct(x = x, corrmodel = corrmodel, param = param)$corr
     }else{
-      result <- GeoCorrFct(x = x, corrmodel = corrmodel, param = param) 
+      result <- GeoCorrFct(x = x, corrmodel = corrmodel, param = param)$corr
       result[x == 0] <- 1
     }
   }else{

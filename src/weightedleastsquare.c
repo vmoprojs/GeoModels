@@ -69,15 +69,16 @@ void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2,
   //define bins:
   for(h=1;h<*nbins;h++) bins[h]=bins[h-1]+step;
 
-   // Rprintf("%f\n",*maxdist);
+  // Rprintf("%f\n",*maxdist);
   //Computes the binned moments:
   for(k=0;k<*np;k++){
-      if(vdist[k]<= *maxdist){
+      //if(vdist[k]<= *maxdist){
                 for(h=0;h<(*nbins-1);h++){
                 if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){
                  x=data1[k];   y=data2[k];
                 if(!(ISNAN(x)||ISNAN(y))) {moms[h]+=0.5*pow(x-y,2);lbins[h]+=1;}
-                }}
+                }
+                //}
       }
     }
   return;
@@ -186,7 +187,16 @@ int h=0, i=0, j=0;
       }
 
       }}}}}}
- }    
+ }   
+
+
+
+
+
+
+
+
+
 
 
 // binned spatial-temporal variogram:
@@ -265,6 +275,48 @@ int h=0, i=0, j=0;
 
 
 
+void Binned_Variogram_biv2new(double *bins, int *np,double *data1, double *data2,  double *vdist, double *mm,
+     double *moms00,double *moms10,double *moms11,
+       int *lbins00,int *lbins10,int *lbins11,
+     int *nbins,int *first, int *second)
+{
+  int h=0,  k=0;
+  double step=0.0; 
+  double a=0.0,b=0.0,c=0.0,d=0.0;
+  step=(mm[1]-mm[0])/(*nbins-1);
+  bins[0]= mm[0];
+  //define bins:
+  for(h=1;h<*nbins;h++) bins[h]=bins[h-1]+step;
+
+
+
+            for(k=0;k<*np;k++){  
+            
+             
+                  for(h=0;h<(*nbins-1);h++){
+                 if((bins[h]<=vdist[k]) && (vdist[k]<bins[h+1])){ 
+    
+if(!(ISNAN(data1[k])||ISNAN(data2[k]))) {     
+
+if(!first[k]) a=  data1[k]-data2[k];
+if(first[k])  b=  data1[k]-data2[k];
+if(!second[k])c=  data1[k]-data2[k];
+if(second[k]) d=  data1[k]-data2[k];
+
+                  
+                if(!first[k]&&!second[k]) { moms00[h]+=0.5*a*c; lbins00[h]+=1;}
+
+                
+               if(first[k]&&!second[k])  { moms10[h]+=0.5*b*c;lbins10[h]+=1;}
+                if(!first[k]&&second[k])  { moms10[h]+=0.5*a*d;lbins10[h]+=1;}
+
+             
+                 if(first[k]&&second[k])      {moms11[h]+=0.5*b*d; lbins11[h]+=1;}
+     }}}}
+  return;
+
+}
+
 
 void Binned_Variogram_biv2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *cross_lbins, double *cross_moms, int *nbins,
                           int *marg_lbins, double *marg_moms,int *ns, int *NS)
@@ -296,6 +348,7 @@ int h=0, i=0, j=0;
                x=data[(i+NS[t])];
                y=data[(j+NS[v])];
               if(!(ISNAN(x)||ISNAN(y))){
+               // Rprintf("(%f -%f) (%f-%f)----%f, %d , %d\n",x,y,x,y,lags,t,v);
                   marg_moms[h+t*(*nbins-1)]+=0.5*pow(x-y,2);
                   marg_lbins[h+t*(*nbins-1)]+=1;}
                                               }
@@ -313,6 +366,7 @@ int h=0, i=0, j=0;
                 x=data[(i+NS[t])];y=data[(j+NS[t])];
                 a=data[(i+NS[v])];b=data[(j+NS[v])];
                  if(!(ISNAN(x)||ISNAN(y)||ISNAN(a)||ISNAN(b))){
+                 // Rprintf("(%f -%f) (%f-%f)----%f, %d , %d\n",x,y,a,b,lags,t,v);
                      cross_moms[h+(v-t-1)*(*nbins-1)]+=0.5*(x-y)*(a-b);
                      cross_lbins[h+(v-t-1)*(*nbins-1)]+=1;}
                    }
