@@ -74,8 +74,8 @@ void Grad_Pair_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gra
     double rhod,delta=0,*parC,*b1;int j=0,o=0,k=0;
 
 
-        b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+        b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   
@@ -138,8 +138,8 @@ void Grad_Cond_Gauss2(double rho,int *cormod,int *flag,int *flagcor, double *gra
        double ai, double aj,double **sX,int l,int m,double *betas)
 {
     double rhod,delta=0,*parC,*b1;int j=0,o=0,k=0;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 double nugget=nuis[nbetas],sill=nuis[nbetas+1];
@@ -205,8 +205,8 @@ void Grad_Cond_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,qqd=0.0,p11d=0.0,p11b=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -284,8 +284,8 @@ void Grad_Pair_Twopiecegauss(double rho,int *cormod,int *flag,int *flagcor, doub
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,qqd=0.0,p11d=0.0,p11b=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -365,8 +365,8 @@ void Grad_Cond_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *g
   uu=(int) u; vv=(int) v; N=(int) NN;
   double p1=0.0,p2=0.0,p11=0.0,p1_d=0.0,p2_d=0.0,p11_d=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double p11_dsill,p11_dcorr;
   //double sill=nuis[nbetas+1];
@@ -434,8 +434,8 @@ void Grad_Pair_Binomneg(double rho,int *cormod,int *flag,int *flagcor, double *g
   uu=(int) u; vv=(int) v; N=(int) NN;
   double p1=0.0,p2=0.0,p11=0.0,p1_d=0.0,p2_d=0.0,p11_d=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double p11_dsill,p11_dcorr;
   //double sill=nuis[nbetas+1];
@@ -500,8 +500,8 @@ void Grad_Cond_Binom(double rho,int *cormod,int *flag,int *flagcor, double *grad
   uu=(int) u; vv=(int) v; N=(int) NN;
   double p1=0.0,p2=0.0,p11=0.0,p1_d=0.0,p2_d=0.0,p11_d=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double p11_dsill,p11_dcorr;
   //double sill=nuis[nbetas+1];
@@ -571,8 +571,8 @@ void Grad_Pair_Binom(double rho,int *cormod,int *flag,int *flagcor, double *grad
   uu=(int) u; vv=(int) v; N=(int) NN;
   double p1=0.0,p2=0.0,p11=0.0,p1_d=0.0,p2_d=0.0,p11_d=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double p11_dsill,p11_dcorr;
   //double sill=nuis[nbetas+1];
@@ -639,8 +639,8 @@ void Grad_Cond_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -718,8 +718,8 @@ void Grad_Pair_Weibull(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double nugget=nuis[nbetas];
 
@@ -791,8 +791,8 @@ void Grad_Cond_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double nugget=nuis[nbetas];
 
@@ -850,8 +850,8 @@ void Grad_Pair_Poisson(double rho,int *cormod,int *flag,int *flagcor, double *gr
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
   double nugget=nuis[nbetas];
 
@@ -909,8 +909,8 @@ void Grad_Cond_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -983,8 +983,8 @@ void Grad_Pair_Gamma(double rho,int *cormod,int *flag,int *flagcor, double *grad
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -1057,8 +1057,8 @@ void Grad_Cond_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
  
   double nugget=nuis[nbetas];
@@ -1121,8 +1121,8 @@ void Grad_Pair_LogGauss(double rho,int *cormod,int *flag,int *flagcor, double *g
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-       b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+       b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
  
   double nugget=nuis[nbetas];
@@ -1188,8 +1188,8 @@ void Grad_Cond_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *g
   double delta=0,*b1,*parC;
  
 
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -1256,8 +1256,8 @@ void Grad_Pair_Logistic(double rho,int *cormod,int *flag,int *flagcor, double *g
   double delta=0,*b1,*parC;
  
 
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
    double nugget=nuis[nbetas];
@@ -1321,8 +1321,8 @@ void Grad_Cond_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,qqd=0.0,p11d=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
     
@@ -1409,8 +1409,8 @@ void Grad_Pair_TwopieceT(double rho,int *cormod,int *flag,int *flagcor, double *
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,qqd=0.0,p11d=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
     
@@ -1492,8 +1492,8 @@ void Grad_Cond_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
- b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+ b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -1564,8 +1564,8 @@ void Grad_Pair_StudenT(double rho,int *cormod,int *flag,int *flagcor, double *gr
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
- b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+ b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -1633,8 +1633,8 @@ void Grad_Cond_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gra
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
  
   double nugget=nuis[nbetas];
@@ -1704,8 +1704,8 @@ void Grad_Pair_Tukeyh(double rho,int *cormod,int *flag,int *flagcor, double *gra
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -1771,8 +1771,8 @@ void Grad_Cond_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradc
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -1852,8 +1852,8 @@ void Grad_Pair_Sinh(double rho,int *cormod,int *flag,int *flagcor, double *gradc
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -1929,8 +1929,8 @@ void Grad_Cond_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -2005,8 +2005,8 @@ void Grad_Pair_LogLogistic(double rho,int *cormod,int *flag,int *flagcor, double
  // double sum0=0.0,sum1=0.0,sum2=0.0,
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC;
-    b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+    b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
   double nugget=nuis[nbetas];
@@ -2081,8 +2081,8 @@ void Grad_Cond_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -2154,8 +2154,8 @@ void Grad_Pair_Skewgauss(double rho,int *cormod,int *flag,int *flagcor, double *
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0;
   double delta=0,*b1,*parC; 
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -2222,8 +2222,8 @@ void Grad_Cond_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,alfa=2.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -2287,8 +2287,8 @@ void Grad_Pair_Wrapped(double rho,int *cormod,int *flag,int *flagcor, double *gr
   int h=0, i=0, j=0,kk=0,o=0,k=0;
   double rhod=0.0,ai_d=0.0,aj_d=0.0,alfa=2.0;
   double delta=0,*b1,*parC;
-  b1=(double *) Calloc(nbetas,double);
-  parC=(double *) Calloc(nparcT[0],double);
+  b1=(double *) R_Calloc(nbetas,double);
+  parC=(double *) R_Calloc(nparcT[0],double);
   for(k=0;k<nparcT[0];k++) parC[k]=par[k];
 
 
@@ -2413,17 +2413,17 @@ void Grad_Cond_Gauss_biv(double *gradcorttii,double *gradcorvvii,double *gradcor
     int i=0,j=0,h,m=0,n=0;
     double mean1,mean2;    
     double **D;
-    D= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){D[i]=(double *) Calloc(N,double);}
+    D= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){D[i]=(double *) R_Calloc(N,double);}
     
     double **P1;
-    P1= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){P1[i]=(double *) Calloc(N,double);}
+    P1= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){P1[i]=(double *) R_Calloc(N,double);}
     
     
     double **P2;
-    P2= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){P2[i]=(double *) Calloc(N,double);}
+    P2= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){P2[i]=(double *) R_Calloc(N,double);}
     for(m=0;m<N;m++){
         for(n=0;n<N;n++) { P2[m][n]=0; P1[m][n]=0;}}
     mean1=par[0];mean2=par[1];
@@ -2449,7 +2449,7 @@ void Grad_Cond_Gauss_biv(double *gradcorttii,double *gradcorvvii,double *gradcor
         grad[j]=-0.5*(Trace(P1,N)-QFORM(P2,dat,dat,N));
         h++;}
     return;
-    Free(D);Free(P1);Free(P2);
+    R_Free(D);R_Free(P1);R_Free(P2);
 }
 
 

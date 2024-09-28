@@ -60,7 +60,7 @@ extern void C_tcrossprod(Rcomplex *z, Rcomplex *x,  int xrows, int xcols, Rcompl
 extern void C_mult_mat(Rcomplex *z, Rcomplex *x, int xrows, int xcols, Rcomplex *y, int yrows, int ycols);
 extern void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, int *N, int *L,int *model,double *u,double *a0,double *nu0,double *A,double *B,
     int *sequen,int *largo_sequen,int *n,double *coord,double *phi, int *vtype,int *m1,double *simu1,double *L1);
-
+extern void spectral_density_1d(double *norm_u, int *N, double *av, double *params_other, double *nu1v, int *model, double *result);
 /*****/
 
 extern void pairs(int *ncoords,double *data,double *coordx,double *coordy,double *numbins,double *bins,double *v0,double *v1,double *v2,double *maxdist);
@@ -953,7 +953,8 @@ static const R_CMethodDef CEntries[] = {
    /* {"simu_on_coords",              (DL_FUNC) &simu_on_coords,               8},*/
 
 /* for Turning band */
-    {"spectraldensityC",            (DL_FUNC) &spectraldensityC,            9},
+    {"spectraldensityC",            (DL_FUNC) &spectraldensityC,           9},
+    {"spectral_density_1d",         (DL_FUNC) &spectral_density_1d,        7},
     {"extraer",                     (DL_FUNC) &extraer,                    6},
     {"rellenar_indice",             (DL_FUNC) &rellenar_indice,            4},
     {"u_index_extraer",             (DL_FUNC) &u_index_extraer,            6},

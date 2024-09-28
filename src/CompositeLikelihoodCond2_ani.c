@@ -400,10 +400,10 @@ void Comp_Cond_Gauss_misp_Pois2mem_aniso(int *cormod, double *coord1, double *co
     double nugget=nuis[0];
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<*npairs;i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -420,8 +420,8 @@ double **M;
 
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -437,10 +437,10 @@ void Comp_Cond_BinomNNGauss_misp2mem_aniso(int *cormod, double *coord1, double *
     double p11=0.0;//probability of joint success
 
     double **M;
-    M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
 
     double nugget=nuis[0];
     if( nugget>=1 || nugget<0){*res=LOW; return;}
@@ -464,8 +464,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  bl= log(dNnorm(N,M,dat)) -l2; 
                  *res+= bl*weights;       
                 }}
-    for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+    for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -479,10 +479,10 @@ void Comp_Cond_Gauss_misp_PoisGamma2mem_aniso(int *cormod, double *coord1, doubl
     double nugget=nuis[0];
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<*npairs;i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -500,8 +500,8 @@ double **M;
                       bl=log(dNnorm(N,M,dat))-l2;
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;

@@ -97,7 +97,7 @@ fit = GeoFit(data, coordx=coords, corrmodel=corrmodel,model=model,
                     optimizer="nlminb", lower=lower,upper=upper,
                     start=start,fixed=fixed)
 
-#a=GeoCV(fit,K=100,estimation=TRUE) 
+#a=GeoCV(fit,K=100,estimation=TRUE,parallel=TRUE) 
 #a$rmse
 }
 

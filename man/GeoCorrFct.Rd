@@ -77,16 +77,16 @@ plot(cc,ylab="Cov",lwd=2,,main="GenWend covariance",type="l")
 
 ################################################################
 ###
-### Example 3. Semivariogram of a t random field with underlying 
+### Example 3. Semivariogram of a Tukeyh random field with underlying 
 ### Generalized Wendland correlation model
 ###
 ###############################################################
 CorrParam("GenWend")
-NuisParam("StudentT")
+NuisParam("Tukeyh")
 x = seq(0,1,0.005)
-param=list(sill=1,smooth=1,scale=0.5,nugget=0,power2=5,df=1/6,mean=0)
-cc= GeoCorrFct(x=x, corrmodel="GenWend", param=param,model="StudentT",variogram=TRUE)
-plot(cc,ylab="Corr",lwd=2,main="t correlation",type="l")
+param=list(sill=1,smooth=1,scale=0.5,nugget=0,power2=5,tail=0.1,mean=0)
+cc= GeoCorrFct(x=x, corrmodel="GenWend", param=param,model="Tukeyh",variogram=TRUE)
+plot(cc,ylab="Corr",lwd=2,main="Tukey semivariogram",type="l")
 
 ################################################################
 ###
@@ -101,7 +101,7 @@ param=list(smooth=1,sill=0.5,scale=0.1,nugget=0,power2=1,mean=0)
 cc= GeoCorrFct(x=x, corrmodel="Kummer", param=param,model="LogGaussian",
        ,covariance=TRUE,variogram=TRUE)
 plot(cc,ylab="Semivario",lwd=2,
-  main="LogGaussian variogran")
+  main="LogGaussian semivariogram",type="l")
 
 ################################################################
 ###
@@ -116,7 +116,7 @@ param=list(scale=0.2,nugget=0,power1=0.8, power2=0.8,shape=4,mean=0)
 cc= GeoCorrFct(x=x, corrmodel="GenCauchy", param=param,
      model="Weibull")
 plot(cc,ylab="Corr",lwd=2,
-  main="Weibull correlation")
+  main="Weibull correlation",type="l")
 
 ################################################################
 ###
@@ -130,7 +130,7 @@ x = seq(0,1,0.005)
 param=list(scale=0.6/3,nugget=0,smooth=0.5,mean=2)
 cc= GeoCorrFct(x=x, corrmodel="Matern", param=param,model="Poisson",covariance=TRUE)
 plot(cc,ylab="Cov",lwd=2,
-  main="Poisson covariance")
+  main="Poisson covariance",type="l")
 
 ################################################################
 ###
@@ -150,7 +150,7 @@ NuisParam("Gaussian")
 param=list(sill=1,scale_s=0.6/3,scale_t=0.5,nugget=0,mean=0,smooth_s=1.5,smooth_t=0.5)
 cc= GeoCorrFct(x=h,t=times,corrmodel="Matern_Matern", param=param,
         model="Gaussian",variogram=TRUE)
-plot(cc,lwd=2)
+plot(cc,lwd=2,type="l")
 
 
 ################################################################

@@ -128,7 +128,7 @@ i=i+1
 }
 
 ######################################################################
-#######  parallel version ...
+#######  parallel version 
 ######################################################################
 if(parallel) {
 
@@ -185,7 +185,6 @@ if(estimation)  ############### estimation ###################
 {
 cat("Performing",K,"estimations using",n.cores,"cores...\n")
 
-
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:K)
@@ -197,7 +196,6 @@ xx=foreach::foreach(i = 1:K,.combine = rbind,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
                             copula=fit$copula,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
                             model=model1,radius=fit$radius,n=fit$n,
-                            #local=fit$local,GPU=fit$GPU,
                            maxdist=fit$maxdist, neighb=fit$neighb,distance=fit$distance,
                             optimizer=optimizer, lower=lower,upper=upper,
                            start=fit$param,fixed=as.list(MEST[i,]))
@@ -212,8 +210,6 @@ else
  ff=append(fit$param,fit$fixed);xx=matrix(rep(c(ff),K),ncol=length(ff),byrow=TRUE) ;colnames(xx)=names(ff)
 }   
 ######################################################################################################
-
-
 
 rownames(xx)=NULL
 
@@ -246,8 +242,8 @@ if(!local) {
              c(pr$pred,pr$mse)
              
     }
-            res1=YY[,1];res1=matrix(unlist(res1),ncol=N-pp,byrow = T)
-            res2=YY[,2];res2=matrix(unlist(res2),ncol=N-pp,byrow = T)
+            res1= YY[,1:(N-pp)]
+            res2= YY[,(N-pp+1):(2*(N-pp))]
          
          future::plan(sequential)    
          }
@@ -257,10 +253,11 @@ if(local) {
     progressr::handlers("txtprogressbar")
     pb <- progressr::progressor(along = 1:K)
     future::plan(multisession, workers = n.cores)
-    YY=foreach::foreach(i = 1:K,.combine = rbind,.options.future = list(seed = TRUE)) %dofuture% {
+    YY=foreach::foreach(i = 1:K,.combine = rbind,
+          .options.future = list(seed = TRUE)) %dofuture% {
 
     pb(sprintf("i=%g", i))
-             pr=GeoKrigloc(data=data_to_est[i,], coordx=coords_est[[i]],  neighb=neighb,
+             pr=GeoKrigloc(data=data_to_est[i,], coordx=coords_est[[i]],  neighb=neighb,maxdist=maxdist,
                 corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords_to_pred[[i]], #ok
                 model=fit$model, n=fit$n, mse=TRUE,#ok
                 param=as.list(xx[i,]), anisopars=fit$anisopars, type_krig=type_krig,
@@ -268,15 +265,17 @@ if(local) {
               pr$data=pr$coordx=pr$coordy=pr$coordt=NULL
              c(pr$pred,pr$mse)
              }
-             
-            res1=YY[,1];res1=matrix(unlist(res1),ncol=N-pp,byrow = T)
-            res2=YY[,2];res2=matrix(unlist(res2),ncol=N-pp,byrow = T)
+            res1= YY[,1:(N-pp)]
+            res2= YY[,(N-pp+1):(2*(N-pp))]
          future::plan(sequential)   
           }
+
+##############
 for(i in  1:K){
 pp=GeoScores(data_to_pred[i,],pred=res1[i,],mse=res2[i,],score=c("brie","crps","lscore","pe"))
 rmse[i]=  pp$rmse; mae[i]=   pp$mae; mad[i]=   pp$mad
-lscore[i]=pp$lscore; brie[i]=  pp$brie; crps[i]=  pp$crps}
+lscore[i]=pp$lscore; brie[i]=  pp$brie; crps[i]=  pp$crps
+}
 }  #end parallel
 
 
@@ -301,17 +300,41 @@ if(is.null(X)) X=rep(1,NT)
 NS=cumsum(ns)
 NS=c(c(0,NS)[-(length(ns)+1)],NT)
 
+if(is.list(fit$data))
+{datos=do.call(c,args=c(fit$data))
+X <- do.call(rbind,args=c(X))
+}else{datos = fit$data}
+
 if(!space_dyn){
 data_tot=cc=NULL
 for(k in 1:T) {
 cc=rbind(cc,coords)
-data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),fit$data[k,]))
+data_tot=rbind(data_tot,cbind(rep(coordt[k],ns[k]),datos[k,]))
 }
-data_tot=cbind(cc,data_tot,fit$X)
+data_tot=cbind(cc,data_tot,X)
 }
 
+if(space_dyn){
+  ct=NULL
+  for(k in 1:T) {
+    ct=c(ct,rep(coordt[k],ns[k]))
+  }
+  data_tot=cbind(fit$coordx,fit$coordy,ct,datos,X)
+}
+
+coremax=parallel::detectCores()
+if(is.na(coremax)||coremax==1) parallel=FALSE
+
+if(is.null(ncores)){ n.cores <- coremax - 1 }
+else
+{  if(!is.numeric(ncores)) stop("number of cores not valid\n")
+  if(ncores>coremax||ncores<1) stop("number of cores not valid\n")
+  n.cores=ncores
+}
 
 #set.seed(round(seed))
+if(!parallel){
+
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:K)
@@ -320,7 +343,7 @@ while(i<=K){
 
 ####################################### 
 sel_data = sample(1:NT,round(NT*(1-n.fold))) 
-data_sel=data_tot[sel_data,]
+data_sel= data_tot[sel_data,]
 data_to_pred=data_tot[-sel_data,]
 
 data_sel_ord=data_sel[order(data_sel[,3]),]
@@ -355,10 +378,6 @@ if(ncol(Xnew[[1]])==1) Xnew=NULL
 param=append(fit$param,fit$fixed)
 if(estimation) {
 
-print(datanew)
-print(coordx_dynnew)
-print(utt)
-print(Xnew)
            fit_s= GeoFit(data=datanew,coordx_dyn=coordx_dynnew,coordt=utt,
                             corrmodel=fit$corrmodel,X=Xnew,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
@@ -369,15 +388,12 @@ print(Xnew)
                             optimizer=optimizer, lower=lower,upper=upper,
                             start=fit$param,fixed=fit$fixed)
                             #start=as.list(fit$param),fixed=as.list(fit$fixed))
-       
             if(!is.null(fit$anisopars))   
                    {   fit_s$param$angle=NULL;fit_s$param$ratio=NULL; fit_s$fixed$angle=NULL;fit_s$fixed$ratio=NULL}
            param=append(fit_s$param,fit_s$fixed)
               }
-
 #####################################
 if(!local) {
-
            pr_st=pr_mse=list()
            for(j in 1:length(utt_1) ){
             if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
@@ -389,15 +405,16 @@ if(!local) {
          }
  }
 if(local) {
+
      
            pr_st=pr_mse=list()
            for(j in 1:length(utt_1) ){
-            if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)}
+            if(is.null(Xnew)) {Xnew_loc[j]=list(NULL)} 
                pr=GeoKrigloc(data=datanew,   coordt=utt, coordx_dyn=coordx_dynnew,  #ok
-                   corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
-                   model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,type_krig=type_krig,
-                   neighb=neighb,maxdist=maxdist,maxtime=maxtime,
-                   X=Xnew,Xloc=Xnew_loc[[j]]) #ok  
+                             corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coordx_dynnew_loc[[j]], #ok
+                             model=fit$model, n=fit$n,  param=param, radius=fit$radius,   time=utt_1[j], mse=TRUE,type_krig=type_krig,
+                             neighb=neighb,maxdist=maxdist,maxtime=maxtime,
+                             X=Xnew,Xloc=Xnew_loc[[j]]) #ok 
                 pr_st[[j]]=pr$pred ; pr_mse[[j]]=pr$mse
                    }
 }   
@@ -412,18 +429,120 @@ mad[i]=   pp$mad
 lscore[i]=pp$lscore
 brie[i]=     pp$brie
 crps[i]=  pp$crps
-
-
 i=i+1
 pb(sprintf("i=%g", i))
-}               
+}  }### End Not Parallel       
+##################################################
+##################################################
 
-#dtp=dd_to_pred
-#pred=pr_st
+if(parallel)
+{
+  # Register parallel backend
+  future::plan(multisession)  
+  progressr::handlers(global = TRUE)
+  progressr::handlers("txtprogressbar")
+  # Set up a progressor for the foreach loop
+  pb <- progressr::progressor(along = 1:K)
+  # Initialize result variables
+  rmse <- mae <- mad <- lscore <- brie <- crps <- double(K)
+  # Parallelized foreach loop using %dopar%
+  results <- foreach::foreach(i = 1:K, .combine = 'rbind', 
+             .options.future = list(seed = TRUE)) %dofuture% {
+    # Sample and prepare data for each iteration                   
+    sel_data <- sample(1:NT, round(NT * (1 - n.fold)))
+    data_sel <- data_tot[sel_data, ]
+    data_to_pred <- data_tot[-sel_data, ]
+    data_sel_ord <- data_sel[order(data_sel[, 3]), ]
+    data_to_pred_ord <- data_to_pred[order(data_to_pred[, 3]), ]
+    DD <- ncol(data_sel_ord)
+    k <- 1
+    coordx_dynnew <- Xnew <- Xnew_loc <- datanew <- coordx_dynnew_loc <- list()
+    utt <- unique(data_sel_ord[, 3])
+    utt_1 <- unique(data_to_pred_ord[, 3])
+    # Create dynamic coordinates and data for prediction
+    for (k in 1:length(utt_1)) {
+      ll <- data_to_pred_ord[data_to_pred_ord[, 3] == utt_1[k], ]
+      coordx_dynnew_loc[[k]] <- if (is.matrix(ll)) as.matrix(ll)[, 1:2] else matrix(ll[1:2], nrow = 1)
+      if (!is.null(X)) Xnew_loc[[k]] <- if (is.matrix(ll)) as.matrix(ll)[, 5:DD] else matrix(ll[5:DD], nrow = 1, byrow = TRUE)
+    }
+    
+    for (k in 1:length(utt)) {
+      ss <- data_sel_ord[data_sel_ord[, 3] == utt[k], ]
+      datanew[[k]] <- as.vector((ss[, 4]))
+      coordx_dynnew[[k]] <- as.matrix(ss[, 1:2])
+      if (!is.null(X)) Xnew[[k]] <- as.matrix(ss[, 5:DD])
+    }
+    
+    if (ncol(Xnew[[1]]) == 1) Xnew <- NULL
+    param <- append(fit$param, fit$fixed)
+    # Estimation 
+    if (estimation) {
+      fit_s <- GeoFit(
+        data = datanew, coordx_dyn = coordx_dynnew, coordt = utt,
+        corrmodel = fit$corrmodel, X = Xnew, likelihood = fit$likelihood,
+        type = fit$type, grid = fit$grid, copula = fit$copula,
+        anisopars = fit$anisopars, est.aniso = fit$est.aniso,
+        model = model1, radius = fit$radius, n = fit$n, local = fit$local,
+        GPU = fit$GPU, maxdist = fit$maxdist, neighb = fit$neighb, 
+        maxtime = fit$maxtime, distance = fit$distance,
+        optimizer = optimizer, lower = lower, upper = upper,
+        start = fit$param, fixed = fit$fixed
+      )
+      if (!is.null(fit$anisopars)) {
+        fit_s$param$angle <- NULL
+        fit_s$param$ratio <- NULL
+        fit_s$fixed$angle <- NULL
+        fit_s$fixed$ratio <- NULL
+      }
+      param <- append(fit_s$param, fit_s$fixed)
+    }
+    # Kriging 
+    pr_st <- pr_mse <- list()
+    if (!local) {
+      for (j in 1:length(utt_1)) {
+        if (is.null(Xnew)) Xnew_loc[j] <- list(NULL)
+        pr <- GeoKrig(
+          data = datanew, coordt = utt, coordx_dyn = coordx_dynnew,
+          corrmodel = fit$corrmodel, distance = fit$distance, grid = fit$grid,
+          loc = coordx_dynnew_loc[[j]], model = fit$model, n = fit$n, param = param,
+          radius = fit$radius, time = utt_1[j], mse = TRUE, type_krig = type_krig,
+          X = Xnew, Xloc = Xnew_loc[[j]]
+        )
+        pr_st[[j]] <- pr$pred
+        pr_mse[[j]] <- pr$mse
+      }
+    }
+    
+    # Score calculation
+    pp <- GeoScores(
+      c(data_to_pred[, 4]), pred = as.numeric(unlist(pr_st)),
+      mse = as.numeric(unlist(pr_mse)), score = c("brie", "crps", "lscore", "pe")
+    )
+    # Store results
+    result <- c(pp$rmse, pp$mae, pp$mad, pp$lscore, pp$brie, pp$crps)
+    # Update progress bar
+    pb(sprintf("i=%g", i))
+    return(result)
+  }
+  
+  # Extract the results and assign them to respective variables
+  for (i in 1:K) {
+    rmse[i] <- results[i, 1]
+    mae[i] <- results[i, 2]
+    mad[i] <- results[i, 3]
+    lscore[i] <- results[i, 4]
+    brie[i] <- results[i, 5]
+    crps[i] <- results[i, 6]
+  }
+  # Optional: Reset the plan back to sequential execution
+  plan(sequential)
+  
+} #end  parallel
+
 } ## end spacetime
 
 ############################################################
-########### spatial bivariate case ###################################
+########### spatial bivariate case #########################
 ############################################################
 if(bivariate)
 {

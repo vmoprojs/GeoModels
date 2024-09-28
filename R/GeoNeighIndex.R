@@ -140,8 +140,6 @@ else  maxdist1=maxdist2=maxdist3=maxdist
 if(is.null(coordx_dyn)) 
    {  
    
-
-       print(N)
         cm=coords[1:(N/2),]
        
          inf1=nn2Geo(cm,cm,K1+1,distance,maxdist1,radius)

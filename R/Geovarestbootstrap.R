@@ -42,6 +42,7 @@ if(sum(fit$X[1:dimat]==1)==dimat&&!dim(fit$X)[2]>1) fit$X=NULL
 k=1;res=NULL
 
   coords=cbind(fit$coordx,fit$coordy)
+  if(fit$bivariate&&is.null(fit$coordx_dyn)) coords=coords[1:(length(fit$coordx)/2),]
   N=nrow(coords)
   pp=NULL
 ######## simulation ##########################################
@@ -52,7 +53,9 @@ if(is.null(fit$copula)){     ### non copula models
       data_sim = GeoSim(coordx=coords,coordt=fit$coordt,coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
       corrmodel=fit$corrmodel,model=fit$model,param=append(fit$param,fit$fixed),
       GPU=GPU,  local=local,sparse=sparse,grid=fit$grid, X=fit$X,n=fit$n,method=method,
-      distance=fit$distance,radius=fit$radius,nrep=K)}
+      distance=fit$distance,radius=fit$radius,nrep=K)
+   
+    }
 
    if(method=="TB"||method=="CE")    # ||method=="Vecchia"
      { data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
@@ -81,7 +84,9 @@ cat("Performing",K,"estimations...\n")
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:K)
+
 while(k<=K){
+
 res_est=GeoFit( data=data_sim$data[[k]], start=fit$param,fixed=fit$fixed,
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
    copula=fit$copula,sensitivity=FALSE,anisopars=fit$anisopars,est.aniso=fit$est.aniso,

@@ -150,7 +150,7 @@ void Comp_Cond_Gauss_misp_T2mem(int *cormod, double *data1,double *data2,int *N1
      for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
-           corr=(1-nugget)*CorFct(cormod,lags[i],0,par,0,0);
+           corr=CorFct(cormod,lags[i],0,par,0,0);
            corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
          
 
@@ -424,10 +424,10 @@ void Comp_Cond_Gauss_misp_Pois2mem(int *cormod, double *data1,double *data2,int 
     double nugget=nuis[0];
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -445,8 +445,8 @@ double **M;
 
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -462,10 +462,10 @@ void Comp_Cond_BinomNNGauss_misp2mem(int *cormod, double *data1,double *data2,in
     double p11=0.0;//probability of joint success
 
     double **M;
-    M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
 
     double nugget=nuis[0];
     if( nugget>=1 || nugget<0){*res=LOW; return;}
@@ -491,8 +491,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  bl= log(dNnorm(N,M,dat)) -l2; 
                  *res+= bl*weights;       
                 }}
-    for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+    for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -506,10 +506,10 @@ void Comp_Cond_Gauss_misp_PoisGamma2mem(int *cormod, double *data1,double *data2
     double nugget=nuis[0];
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -529,8 +529,8 @@ double **M;
 
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -1180,7 +1180,7 @@ void Comp_Cond_Gauss_misp_T_st2mem(int *cormod, double *data1,double *data2,int 
 
     for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                            corr=(1-nugget)*CorFct(cormod,lags[i],lagt[i],par,0,0);
+                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                  corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
                                u=data1[i];
                                 w=data2[i];
@@ -1459,11 +1459,11 @@ void Comp_Cond_Gauss_misp_Pois_st2mem(int *cormod, double *data1,double *data2,i
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
 
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -1480,8 +1480,8 @@ double **M;
                             bl=log(dNnorm(N,M,dat))-l2;
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -1497,11 +1497,11 @@ void Comp_Cond_Gauss_misp_PoisGamma_st2mem(int *cormod, double *data1,double *da
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
 
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -1520,8 +1520,8 @@ double **M;
                           bl=log(dNnorm(N,M,dat))-l2;
                       *res+= bl*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;

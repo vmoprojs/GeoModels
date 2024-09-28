@@ -233,20 +233,7 @@ void  reghyperg_call(int *a,int *b,double *x,double *res)
 {
     *res = log_regularized1F1(*a,*b,*x);
 }
-/************ pochammer symbols******************
-double Poch(int q,int n)
-{
-    if(n==0) return(1.0);
-    else {
-        double res=1.0;
-        int i;
-        for (i=1; i<=n;i++) {
-            res =res * (q + i - 1);
-        }
-         return(res);
-    }
-       
-}*/
+
 
 
 
@@ -1420,8 +1407,8 @@ double onef2integral(double x, double *param) {
     epsabs = R_pow(DBL_EPSILON, 0.25);
     epsrel = epsabs;
     lenw = 4 * subdiv;           /* as instructed in WRE */
-    iwork =   (int *) Calloc(subdiv, int);  /* idem */
-    work = (double *) Calloc(lenw, double); /* idem */
+    iwork =   (int *) R_Calloc(subdiv, int);  /* idem */
+    work = (double *) R_Calloc(lenw, double); /* idem */
     ex[0] = param[0]; ex[1] = param[1];ex[2]= param[2];ex[3]=x;
     lower=0;
     upper=1;
@@ -1429,7 +1416,7 @@ double onef2integral(double x, double *param) {
     Rdqags(integr_onef2, (void *) &ex,
                &lower, &upper, &epsabs, &epsrel, &result,
                &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
-    Free(iwork);Free(work);
+    R_Free(iwork);R_Free(work);
     return(result);
 }
 
@@ -1463,8 +1450,8 @@ double wendintegral(double x, double *param) {
     epsabs = R_pow(DBL_EPSILON, 0.25);
     epsrel = epsabs;
     lenw = 4 * subdiv;           /* as instructed in WRE */
-    iwork =   (int *) Calloc(subdiv, int);  /* idem */
-    work = (double *) Calloc(lenw, double); /* idem */
+    iwork =   (int *) R_Calloc(subdiv, int);  /* idem */
+    work = (double *) R_Calloc(lenw, double); /* idem */
     ex[0] = param[0]; ex[1] = param[1]; ex[2] = param[2];ex[3]=x;
     lower=x/param[2];
     upper=1;
@@ -1475,7 +1462,7 @@ double wendintegral(double x, double *param) {
                &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
 
     }else   {result=0;}
-    Free(iwork);Free(work);
+    R_Free(iwork);R_Free(work);
     return(result);
 }
 /******************************************************************************/
@@ -1683,104 +1670,111 @@ else
  a=psi( m, m, p1, p2, p11)- R_pow(m,2)/(p1*p2);
 return(a);
 }
+
 /*****************************************/
-
+/********* poisson gamma correlation******/
+/*****************************************/
 double corrPGs(double corr,double mean,double a){ //alpha=a
-
-    double rho2= R_pow(corr,2);
-    double beta= a/mean; double res, aux, aux1, aux2;
-    aux=beta*(1-rho2);
-    aux1= exp(log(beta)+0.5*log(aux)+a*log(2+aux)-log(1+beta)-(a+0.5)*log(4+aux));
-    aux2= (a+1)/(2+aux);
-    res = rho2*(1-aux1*(hypergeo((1-a)/2,-a/2, 1, 4/R_pow(2+aux,2))+aux2*hypergeo((2-a)/2,(1-a)/2, 2, 4/R_pow(2+aux,2))));
+double res=0.0;
+double corr2=R_pow(corr,2);
+double nu=a/mean;
+double KK=nu*(1-corr2);
+double cc=4/R_pow(2+KK,2);
+double dd=  exp(log(nu)+0.5*(log(nu)+log1p(-corr2))+a*log(2+KK)-log1p(nu)-(a+0.5)*log(4+KK));
+double aa=hypergeo((1 - a)/2, -a/2, 1, cc);
+double bb=((a+1)/(2+KK))*hypergeo((2-a)/2, (1-a)/2, 2, cc);
+res=corr2*(1-dd*(aa+bb));
     return(res);
    } 
-
+   
 double CorrPGns(double corr,double mean_i, double mean_j, double a){ //alpha=a
 
-    //if( (corr>(1-1e-3)) &&  corr<=1){return(1.0);}
-    if(fabs(corr)<1e-12){return(0.0);}
-    else{
-    if( (corr>(1-1e-3)) ){corr=1-1e-3;}
     double rho2= R_pow(corr,2);
-    double beta_i= a/mean_i;
-    double beta_j= a/mean_j;
+    double nu_i= a/mean_i;
+    double nu_j= a/mean_j;
     int r = 0, m = 0;
+    double res,sum = 0.0,term=0.0, aux3=0.0,aux4=0.0, aux1=0.0, aux2=0.0,H=0.0,a1m=0.0;
+    double lnuij=log(nu_i)+log(nu_j);
+    double lpnuij=log1p(nu_i)+log1p(nu_j);
+    double mnui=-1/(nu_i);
+    double mnuj=-1/(nu_j);
+    int iter1=1000;int iter2=1000,r2=0;
+while(r<iter1){     
+    m=0;
+    r2=r+2;
+for(m=0;m<iter2;m++){
+   a1m=1-a-m;
+   H= log(hypergeo(1, a1m, r2, mnui))+log(hypergeo(1,a1m, r2, mnuj))-2*lgammafn(r2);
+   aux1=2*m*log(corr)+m*lnuij*2*lgammafn(r+m+1+a);
+   aux2=(r+m)*(lpnuij )+lgammafn(m+a)+lgammafn(m);
+   term=log(H+aux1-aux2);
+            if((fabs(term)<1e-100)||!R_finite(term))   {break;}
+   sum =sum+term;
 
-    double res,sum = 0.0,res0=0.0,term=0.0, aux, aux1=0.0, aux2=0.0;
-
-    double vvi= mean_i*(1+1/beta_i);
-    double vvj= mean_j*(1+1/beta_j);
-
-    int iter=100000;
-    while(r<iter){
-        m=0;
-        while(m<iter){
-            aux1= m*(log(rho2)+log(beta_i*beta_j))-(r+m)*log((beta_i+1)*(beta_j+1));
-            aux2=2*lgammafn(r+a+m+1)-lgammafn(m+1)-lgammafn(m+a)-2*lgammafn(r+2);
-            term= exp(aux1+log(hypergeo(1, 1-a-m, r+2, -1/(beta_i)))+log(hypergeo(1,1-a-m, r+2, -1/(beta_j)))+aux2);
-            if((fabs(term)<1e-320)||!R_finite(term))   {break;}
-            sum =sum+term;
-             m++;
-        }
-        if((fabs(sum-res0)<1e-50 )) {break;}
-             else {res0=sum;}
-        r++;}
-    aux=R_pow(beta_i*beta_j,a-1)*R_pow((beta_i+1)*(beta_j+1),-a)*rho2*R_pow(1-rho2,a+1)/gammafn(a);
-    res = (aux*sum+(rho2*a/(beta_i*beta_j)))/sqrt(vvi*vvj);
-    return(res);}
    }
+   r++;
+  }
+aux3= exp(log(rho2)+ (a+1)*log1p(-rho2)+(a-0.5)*(lnuij)
+                     -(lgammafn(a)+(a+0.5)*lpnuij+0.5*log(mean_i*mean_j)));
+aux4=exp(log(rho2)+0.5*(lnuij-lpnuij));
+res = aux4+aux3*sum;
 
-
-
-
-
+return(res);
+   }
+/******************************************/
 double corr_pois_gen(double corr,double mean_i, double mean_j, double a){ 
 
-    double res;
-
+      //if( (corr>(1-1e-56)) &&  corr<=1 &&  fabs(mean_i-mean_j)<1e-320){return(1.0);}
+if(fabs(corr)<1e-200){return(0.0);}
+    else{
+    double res=0.0;
     if (fabs(mean_i-mean_j)<1e-320) res=corrPGs(corr,mean_i,a);
     else                            res=CorrPGns(corr,mean_i,mean_j,a);
     return(res);
 }
+}
 
-double corr_pois(double rho,double mi,double mj)
+/******************************************/
+/******** Poisson correlation *************/
+/******************************************/
+double corr_pois_s(double rho,double mi)
 {
-
-if( (rho>(1-1e-6)) &&  rho<=1 &&  fabs(mi-mj)<1e-320){return(1.0);}
-if(fabs(rho)<1e-10){return(0.0);}
-    else{
-if( (rho>(1-1e-2)) &&  fabs(mi-mj)>1e-320){rho=1-1e-2;}
-int r=0; double res0=0.0,sum=0.0;
+double res=0.0;
+double rho2=R_pow(rho,2);
+double gg=2*mi/(1-rho2);
+res=rho2*(1-exp(-gg)*(bessel_i(gg,0,1)+bessel_i(gg,1,1)));
+return(res);
+}   
+/******************************************/
+double corr_pois_ns(double rho,double mi,double mj)
+{
+int r=0,aa=0; double res0=0.0,sum=0.0;
 double rho2=rho*rho;
 double ki=mi/(1-rho2);
 double kj=mj/(1-rho2);
 double K=rho2*(1-rho2)/sqrt(mi*mj);
-while(r<10000){
-  sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
+while(r<8000){
+    aa=r+1;
+  sum=sum+ exp( log(igam(aa,ki))+log(igam(aa,kj)));
 if((fabs(sum-res0)<1e-100)  ) {break;}
 else {res0=sum;}
         r++;}
-return(sum*K);}
+return(sum*K);
 }
-/****************************************
-double corr_pois(double rho,double mi,double mj)
-{
-if( (rho>(1-1e-6)) &&  rho<=1){return(1.0);}
+/******************************************/
+double corr_pois(double rho,double mi,double mj){
+    if( (rho>(1-1e-6)) &&  rho<=1 &&  fabs(mi-mj)<1e-320){return(1.0);}
 if(fabs(rho)<1e-10){return(0.0);}
     else{
-int r=0; double res0=0.0,sum=0.0;
-double rho2=rho*rho;
-double ki=mi/(1-rho2);
-double kj=mj/(1-rho2);
-double K=rho2*(1-rho2)/sqrt(mi*mj);
-while(r<10000){
-  sum=sum+ exp( log(igam(r+1,ki))+log(igam(r+1,kj)));
-if((fabs(sum-res0)<1e-32)  ) {break;}
-else {res0=sum;}
-        r++;}
-return(sum*K);}
-}*/
+    double res=0.0;
+    if (fabs(mi-mj)<1e-320)         res=corr_pois_s(rho,mi);
+    else                            res=corr_pois_ns(rho,mi,mj);
+    return(res);
+}
+}
+/*****************************************/
+/*****************************************/
+
 
 double corr_tukeygh(double rho,double eta,double tail)
 {   
@@ -2164,11 +2158,11 @@ return(exp(dens));
 double dNnorm(int N,double **M, double *dat)
 {
  double dd,pdf=0.0; int m=0,n=0,i=0;
- int *indx; indx=(int *) Calloc(N,int);
- double *col; col=(double *) Calloc(N,double);
+ int *indx; indx=(int *) R_Calloc(N,int);
+ double *col; col=(double *) R_Calloc(N,double);
  double **inverse;
- inverse= (double **) Calloc(N,double *);
- for(i=0;i<N;i++){inverse[i]=(double *) Calloc(N,double);} 
+ inverse= (double **) R_Calloc(N,double *);
+ for(i=0;i<N;i++){inverse[i]=(double *) R_Calloc(N,double);} 
 
  ludcmp(M,N,indx,&dd);    //Lu decomposition
  for(m=0;m<N;m++){ dd *= M[m][m];}  //determinant using LU
@@ -2179,8 +2173,8 @@ double dNnorm(int N,double **M, double *dat)
  for(m=0;m<N;m++) inverse[m][n]=col[m];  // inverse using LU decomposition
  }
  pdf=R_pow(2*M_PI,-N/2)*R_pow(dd,-0.5)*exp(-0.5*QFORM(inverse,dat,dat,N)) ;   
- Free(indx);Free(col);
- for(i=0;i<N;i++)  {Free (inverse[i]);}Free(inverse);
+ R_Free(indx);R_Free(col);
+ for(i=0;i<N;i++)  {R_Free (inverse[i]);}R_Free(inverse);
 return(pdf);
 }
 
@@ -2198,9 +2192,9 @@ double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, d
   double esterror=10.0,abseps=1.0e-6, releps=0.0,res2=0.0;int fail=100;
   double a=(nuis[0]-thr)/(sqrt(nuis[2]+nuis[1]));
   double *lower;double *upper; int *infin;
-  lower=(double *) Calloc(3,double);
-  upper=(double *) Calloc(3,double);
-  infin=(int *) Calloc(3,int);
+  lower=(double *) R_Calloc(3,double);
+  upper=(double *) R_Calloc(3,double);
+  infin=(int *) R_Calloc(3,int);
   switch(which) //
               {
          case 1: /// 111
@@ -2230,8 +2224,8 @@ double ptnorm(int which,int *cormod, double h0,double h1,double h2, double u0, d
 
 
   mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &res2, &fail );
-  //Free(lim_inf);Free(lim_sup);Free(infin);
-  Free(lower);Free(upper);Free(infin);
+  //R_Free(lim_inf);R_Free(lim_sup);R_Free(infin);
+  R_Free(lower);R_Free(upper);R_Free(infin);
   return(res2);
 }
 
@@ -2244,9 +2238,9 @@ double p3norm(int *cormod, double h0,double h1,double h2, double u0, double u1,d
   double esterror=10.0,abseps=1.0e-6, releps=0.0,res2=0.0;int fail=100;
   double a=1;
   double *lower;double *upper; int *infin;
-  lower=(double *) Calloc(3,double);
-  upper=(double *) Calloc(3,double);
-  infin=(int *) Calloc(3,int);
+  lower=(double *) R_Calloc(3,double);
+  upper=(double *) R_Calloc(3,double);
+  infin=(int *) R_Calloc(3,int);
 
  lower[0]=0;lower[1]=0; lower[2]=0; 
  upper[0]=a;upper[1]=a; upper[2]=a;
@@ -2257,7 +2251,7 @@ double p3norm(int *cormod, double h0,double h1,double h2, double u0, double u1,d
                   nuis[2]*CorFct(cormod,h2,u2,par,0,0)};
 
   mult_pmnorm( &N, lower, upper, infin, corr, &maxpts, &abseps, &releps, &esterror, &res2, &fail );
-  Free(lower);Free(upper);Free(infin);
+  R_Free(lower);R_Free(upper);R_Free(infin);
   return(res2);
 }
 */
@@ -3288,26 +3282,27 @@ double biv_T(double rho,double zi,double zj,double nuu,double nugget)
   int k=0;
   double nu=1/nuu;
   double res0=0.0,RR=0.0,pp1=0.0,pp2=0.0;
+  double  r2=rho*rho;
   double bb1,bb2;
   double x=zi;double y=zj;        
   double cc=(nu+1)/2; double nu2=nu/2;
   double rho1=rho*(1-nugget);
-  double rho2=R_pow(1-rho*rho,-nu2-1);
-  double rho12=R_pow(1-rho1*rho1,-nu-0.5);
-  double x1=(x*x*(1-rho*rho)+nu*(1-rho1*rho1));
-  double y1=(y*y*(1-rho*rho)+nu*(1-rho1*rho1));
+  double rn=rho1*rho1;
+  double rho2=pow1p(-r2,-nu2-1);    // pow1p(x, y) computes (1 + x)^y
+  double rho12=pow1p(-rho1*rho1,-nu-0.5);
+  double x1=(x*x*(1-r2)+nu*(1-rn));
+  double y1=(y*y*(1-r2)+nu*(1-rn));
   double C,B;
-
 
   double b1 = exp( nu*log(nu)-cc*log(x1*y1)+2*lgammafn(cc));
   double c1 = exp(log(M_PI)+ 2*lgammafn(nu/2)+log(rho12)+log(rho2));
 
   double b2 = rho1*x*y*R_pow(nu,nu+2)*R_pow(x1*y1,-nu2-1);
-  double c2 = 2*M_PI*R_pow(1-rho1*rho1,-nu-0.5)*R_pow(1-rho*rho,-nu2-2);
+  double c2 = 2*M_PI*pow1p(-rn,-nu-0.5)*pow1p(-r2,-nu2-2);
 
   double a1 = 0; double a2 = 0;
-  double aux  = R_pow(rho1*x*y*(1-rho*rho),2)/(x1*y1);
-  double aux1 = R_pow(rho*nu*(1-rho1*rho1),2)/(x1*y1);
+  double aux  = R_pow(rho1*x*y,2)*pow1p(-r2,2)/(x1*y1);
+  double aux1 = R_pow(rho*nu,2)*pow1p(-rn,2)/(x1*y1);
  
   
   if(rho> DEPSILON){
@@ -3854,57 +3849,9 @@ double  binomialCoeff(int n, int k)
     return(exp(res)); 
 } 
 
-/***************************************************************************************
-double Prt(double corr,int r, int t, double mean_i, double mean_j){
-    double rho2= pow(corr,2);
-    double prt,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
-    double auxi= mean_i/(1-rho2);
-    double auxj= mean_j/(1-rho2);
-    int n,k=0,m=0, iter1=2000, iter2=2000;
-    n= r-t;
-        while(m<=iter1){
-            res0=0.0;
-                for(k=0;k<=iter2;k++){
-                        aux2= (k+m)*(log(rho2)-log(1-rho2))+lgammafn(t+m);
-                        aux3= lgammafn(m+1)+lgammafn(t);
-                        aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
-                        q1=log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1);  
-                       // q11=log_regularized1F1(n,t+m+n+k+1,rho2*auxi);     
-    //  if(try(n,t+m+n+k+1,rho2*auxi)< -999999999)
-        //Rprintf("%f %f %f %f + %f   -%d %d %f \n",q1,
-      //      log_regularized1F1(n,t+m+n+k+1,rho2*auxi), 
-      //      log_hyp1F1_reg( n,t+m+n+k+1,rho2*auxi),
-      //   log(try(n,t+m+n+k+1,rho2*auxi)),log(hyperg(n,t+m+n+k+1, rho2*auxi)),
-      //          n,t+m+n+k+1,rho2*auxi);    
-
- //if(t+m+n+k+1>160) Rprintf("%f %f  \n",q1,q11);
-      ///   try(n,t+m+n+k+1,rho2*auxi),log(hyperg(n,t+m+n+k+1, rho2*auxi)),
-        //        n,t+m+n+k+1,rho2*auxi,m);  
-                        term= exp(aux2-aux3+aux4+q1);
-                      if(!R_finite(term))   {break;}
-                       sum =sum+ term;     
-                         if((fabs(sum-res0)<1e-15)  ) {break;}
-                  else {res0=sum;}
-            }
-        aux= m*(log(rho2)-log(1-rho2)); 
-        aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
-        q2=log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1);  
-        //q2=log_regularized1F1(n+1,t+m+n+1, rho2*auxi);  
-       // Rprintf("%f %f %d \n",q2,log_regularized1F1(n+1,t+m+n+1, rho2*auxi),n+1);        
-        //if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
-        term1= exp(aux+aux1+q2)*igam(t+m, auxj);
-        if(!R_finite(term1))   {break;}
-           sum1 =sum1+ term1;     
-                         if((fabs(sum1-res00)<1e-10)  ) {break;}
-                         else {res00=sum1;}
-      
-        m++;
-    }
-     prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
-    return(prt);
-}*/
-
-
+/*******************************************************************************/
+/*******************************************************************************/
+/*******************************************************************************/
 
 
 double Prt(double corr,int r, int t, double mean_i, double mean_j){
@@ -3912,27 +3859,32 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
     double prt=0.0,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,k=0,m=0, iter1=4000, iter2=4000;
+    double lrho2=log(rho2);
+    double lmi=log(mean_i);
+    double rho2auxi=rho2*auxi;
+    int n,k=0,m=0,cc=0,tm=0, iter1=4000, iter2=3000;
     n= r-t;
         while(m<=iter1){
             res0=0.0;
+            tm=t+m;
                 for(k=0;k<=iter2;k++){
-                        aux2= (k+m)*(log(rho2)-log1p(-rho2))+lgammafn(t+m);
+                        cc=t+m+n+k+1;
+                        aux2= (k+m)*(lrho2-log1p(-rho2))+lgammafn(tm);
                         aux3= lgammafn(m+1)+lgammafn(t);
-                        aux4= (m+n+t+k)*log(mean_i)+log(igam(1+k+m+t,auxj));
-                        q1=exp(log(hyperg(n,t+m+n+k+1, rho2*auxi))-lgammafn(t+m+n+k+1));  
-                        if(!R_finite(q1)) q1=aprox_reg_1F1(n,t+m+n+k+1,rho2*auxi);                     
+                        aux4= (cc-1)*lmi+log(igam(1+k+tm,auxj));
+                        q1=exp(log(hyperg(n,cc, rho2*auxi))-lgammafn(cc));  
+                        if(!R_finite(q1)) q1=aprox_reg_1F1(n,tm+n+k+1,rho2auxi);                     
                         term= exp(aux2-aux3+aux4+log(q1));
                       if(!R_finite(term))   {break;}
                        sum =sum+ term;     
                          if((fabs(sum-res0)<1e-10)  ) {break;}
                   else {res0=sum;}
             }
-        aux= m*(log(rho2)-log1p(-rho2)); 
-        aux1= lgammafn(t+m)+(t+m+n)*log(mean_i)-lgammafn(m+1)-lgammafn(t);
-        q2=exp(log(hyperg(n+1,t+m+n+1, rho2*auxi))-lgammafn(t+m+n+1));         
-        if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,t+m+n+1,rho2*auxi);        
-        term1= exp(aux+aux1+log(q2)+log(igam(t+m, auxj)));
+        aux= m*(lrho2-log1p(-rho2)); 
+        aux1= lgammafn(tm)+(tm+n)*lmi-lgammafn(m+1)-lgammafn(t);
+        q2=exp(log(hyperg(n+1,tm+n+1, rho2*auxi))-lgammafn(tm+n+1));         
+        if(!R_finite(q2)) q2=aprox_reg_1F1(n+1,tm+n+1,rho2auxi);        
+        term1= exp(aux+aux1+log(q2)+log(igam(tm, auxj)));
         if(!R_finite(term1))   {break;}
            sum1 =sum1+ term1;     
                          if((fabs(sum1-res00)<1e-10)  ) {break;}
@@ -3942,9 +3894,6 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
     }
 
      prt= exp(-auxi+log(sum1))- exp(-auxi+log(sum));
-   //  if(!R_finite(prt)) prt=1e-320;
-    //  if(prt<1e-320) prt=1e-320;
-     ///if(prt<=0) prt=0;
     return(prt);
 }
 
@@ -3954,18 +3903,21 @@ double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
     double rho2= pow(corr,2);    
     double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
-    double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
+    double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0,rho2k=0.0;
     int k = 0, m=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int iter1=1000;  int iter2=1000;
+    double ei=exp(-mean_i);
+    double ej=exp(-mean_j);
+    int iter1=1500;  int iter2=1000;
 
     while(k<iter1){
+       rho2k= R_pow(rho2,k);
 //+++++++++++++++++++++++++++++++++++++++//
       m=0; 
       while(m<iter2){
                       //Rprintf("%d %d\n",m,k);      
-term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
+term=(1-rho2)*rho2k*R_pow(rho2,m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(igam(r+k+m+1,auxi))+log(igam(r+k+m+1,auxj)));
         if((fabs(term)<1e-10)||!R_finite(term))   {break;}
         sum =sum+term;
                   m++;    
@@ -3974,9 +3926,9 @@ term=(1-rho2)*R_pow(rho2,k+m)*exp(lgammafn(r+m)-lgammafn(r)-lgammafn(m+1)+log(ig
         aa=lgammafn(k+1)+lgammafn(r); bb=lgammafn(r+k);
         cc=igam(r+k,      auxi);  dd=igam(r+k,      auxj);
 
-term1 = pow(rho2,k)*                exp(bb + log(cc)                  +log(dd)-aa);
-term2 =exp(-mean_i)*R_pow(1/rho2,r)*exp(bb + log(igam(r+k, rho2*auxi))+log(dd)-aa);
-term3 =exp(-mean_j)*R_pow(1/rho2,r)*exp(bb + log(cc)                  +log(igam(r+k, rho2*auxj))-aa);
+term1 = rho2k*                exp(bb + log(cc)                  +log(dd)-aa);
+term2 =ei*R_pow(1/rho2,r)*exp(bb + log(igam(r+k, rho2*auxi))+log(dd)-aa);
+term3 =ej*R_pow(1/rho2,r)*exp(bb + log(cc)                  +log(igam(r+k, rho2*auxj))-aa);
 
 if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
       sum1 =sum1+ term1;
@@ -3986,7 +3938,7 @@ if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
                   else {res00=sum1;res11=sum2;}
           k++;      
       }
-    prr= R_pow((1-rho2),r)*(- sum1 + sum2  + sum);//Rprintf("%d %d\n",m,k); 
+    prr= pow1p(-rho2, r)*(- sum1 + sum2  + sum);//Rprintf("%d %d\n",m,k); 
     return(prr);
    
 }
@@ -3999,7 +3951,7 @@ double Pr0(double corr,int r, int t, double mean_i, double mean_j){
     double pr0,q2, res0 =0.0, sum = 0.0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    int n,m=0, iter=5000;
+    int n,m=0, iter=4000;
     n= r-t;
         while(m<=iter){
             aux= m*(log(rho2)-log1p(-rho2)); 
@@ -4028,7 +3980,7 @@ double P00(double corr,int r, int t, double mean_i, double mean_j){
     double p00,sum = 0.0,res0=0.0,term=0.0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
-    while(k<5000){
+    while(k<4000){
              term=exp( k*log(rho2) + log(igam(k+1, auxi)) + log(igam(k+1, auxj) )) ;
                  if(!R_finite(term))   {break;}
              sum =sum+term;
@@ -4111,9 +4063,9 @@ double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
                              double mean_i, double mean_j,double mup,double nugget1,double nugget2)
 {
 int N=2,i=0;
-double **M;M= (double **) Calloc(N,double *);
-for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
-double *dat;dat=(double *) Calloc(N,double);
+double **M;M= (double **) R_Calloc(N,double *);
+for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
+double *dat;dat=(double *) R_Calloc(N,double);
 double dens=0.0,p,p00,p10,p01,p11,pdf2,corr1,pdf1i,pdf1j;
 
 p=pnorm(mup,0,1,1,0);
@@ -4131,9 +4083,9 @@ if(data_i>0.0&&data_j>0.0)   dens=p11*pdf2;
 if(data_i>0.0&&data_j==0.0)  dens=p11*pdf2+p10*pdf1i;  
 if(data_i==0.0&&data_j>0.0)  dens=p11*pdf2+p01*pdf1j;
 if(data_i==0.0&&data_j==0.0)  dens=p11*pdf2+p01*pdf1i+p10*pdf1j+p00;
-for(i=0;i<N;i++)  {Free(M[i]);}
-Free(M);
-Free(dat);
+for(i=0;i<N;i++)  {R_Free(M[i]);}
+R_Free(M);
+R_Free(dat);
 return(dens);
 }
 /*****/
@@ -4187,7 +4139,6 @@ return(res);
 
 
 
-/************* POIsson gammma ************/
 
 
 /************* POIsson gammma ************/
@@ -4196,140 +4147,133 @@ double PG00(double corr,int r, int t, double mean_i, double mean_j, double a){ /
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
+    double beta_ij=beta_i*beta_j;
     int k = 0, l = 0;
-
     double p00,sum = 0.0,res0=0.0,term=0.0,aa=0.0,bb=0.0;
 
     double auxi= 1/(1+beta_i);
     double auxj= 1/(1+beta_j);
+    double auxij=auxi*auxj;
 
-    int iter1=800;  int iter2=600;
-    while(k<iter1){
-        l=0;
+    int iter1=500;  int iter2=500;
+    for(k=0;k<iter1;k++){
+        l=0;    
         while(l<iter2){
-
-          aa=R_pow(beta_i*beta_j,l+a-1)*R_pow(rho2,k+l)*R_pow(1-rho2,a+1)*R_pow(auxi*auxj,k+l+a);
+          aa=R_pow(beta_ij,l+a-1)*R_pow(rho2,k+l)*pow1p(-rho2, a+1)*R_pow(auxij,k+l+a);
           bb=2*lgammafn(k+l+a+1)-2*lgammafn(k+2)-lgammafn(l+1)-lgammafn(a)-lgammafn(l+a);
-
           term=aa*hypergeo(1,1-l-a,k+2,-1/beta_i)*hypergeo(1,1-l-a,k+2,-1/beta_j)*exp(bb);
-
-            if((fabs(term)<1e-10)||!R_finite(term))   {break;}
+            if((fabs(term)<1e-30)||!R_finite(term))   {break;}
             sum =sum+term;
              l++;
         }
-        if((fabs(sum-res0)<1e-10 )) {break;}
-             else {res0=sum;}
-        k++;}
-
+        if((fabs(sum-res0)<1e-30)) {break;} else {res0=sum;}
+        }
     p00 = -1+R_pow(auxi*beta_i,a)+R_pow(auxj*beta_j,a)+sum;
       if(p00<1e-320) p00=1e-320;
-
     return(p00);
    }
-
 double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
-    double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0;
+    double beta_ij=beta_i*beta_j;
+    double bmi=-1/beta_i;double bmj=-1/beta_j;
+    double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0,ff=0.0;
     double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0;
-    int k = 0, l=0, l1=0 ;
+    int k = 0, l=0, l1=0 ,mm=0, kll1=0,mml1=0;
 
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
-    int iter1=800;  int iter2=600; int iter3=400;
+    double auxij=auxj*auxi;
+    double bri=1+beta_i-rho2;
+    double brj=1+beta_j-rho2;
+    double fji=brj*beta_i*auxij;
+    double fij=bri*beta_j*auxij;
+    double ra=r+a;
+    double r2br=-rho2/bri;
+    int iter1=700;  int iter2=600; int iter3=400;
 
     while(k<iter1){
       l1=0;
+      mm=r+k+1;
       while(l1<iter2){
         l=0;
+        ff=1-l1-a;
         while(l<iter3){
-
-            aa=R_pow(beta_i*beta_j,l1+a-1)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,r+a+1)*R_pow(auxi*auxj,r+k+l+l1+a);
-            bb=lgammafn(r+l)+2*lgammafn(r+k+l+l1+a+1)-2*lgammafn(r+k+l+2)-lgammafn(l+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
-
-            term= aa*hypergeo(1,1-l1-a,r+k+l+2,-1/beta_i)*hypergeo(1,1-l1-a,r+k+l+2,-1/beta_j)*exp(bb);
-
+            mml1=mm+l+1;
+            kll1=k+l+l1;
+            aa=R_pow(beta_ij,l1+a-1)*R_pow(rho2,kll1)*pow1p(-rho2, ra+1)*R_pow(auxij,ra+kll1);
+            bb=lgammafn(r+l)+2*lgammafn(mm+l+l1+a)-2*lgammafn(mml1)-lgammafn(l+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
+            term= aa*hypergeo(1,1-l1-a,mml1,bmi)*hypergeo(1,ff,mml1,bmj)*exp(bb);
             if((fabs(term)<1e-30)||!R_finite(term))   {break;}
-
             sum =sum+term;
             l++;
         }
 
-        aa1= R_pow(beta_i*beta_j,l1+a)*R_pow(rho2,k+l1)*R_pow(1-rho2,r+a)*R_pow(auxi*auxj,r+k+l1+a);
-        bb1= lgammafn(r+k)+2*lgammafn(r+k+l1+a)-2*lgammafn(r+k+1)-lgammafn(k+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a);
+        aa1= R_pow(beta_ij,l1+a)*R_pow(rho2,k+l1)*pow1p(-rho2, ra)*R_pow(auxij,ra+k+l1);
+        bb1= exp(lgammafn(r+k)+2*lgammafn(ra+k+l1)-2*lgammafn(mm)-lgammafn(k+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a));
 
+        term1 = aa1*hypergeo(1,ff,mm,bmi)      *hypergeo(1,ff,mm,bmj)*R_pow(beta_ij*auxij,-1) *bb1;
+        term2 = aa1*hypergeo(1,ff,mm,r2br)*hypergeo(1,ff,mm,bmj)*R_pow(fij,-1)* bb1;
+        term3 = aa1*hypergeo(1,ff,mm,bmi)      *hypergeo(1,ff,mm,-rho2/brj)*R_pow(fji,-1)* bb1;
 
-        term1 = aa1*hypergeo(1,1-l1-a,r+k+1,-1/beta_i)  *hypergeo(1,1-l1-a,r+k+1,-1/beta_j)*R_pow(beta_i*beta_j*auxi*auxj,-1) *exp(bb1 );
-
-        term2 = aa1*hypergeo(1,1-l1-a,r+k+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,r+k+1,-1/beta_j)*R_pow((1+beta_i-rho2)*beta_j*auxi*auxj,-1)* exp(bb1 );
-
-        term3 = aa1*hypergeo(1,1-l1-a,r+k+1,-1/beta_i)     *hypergeo(1,1-l1-a,r+k+1,-rho2/(1+beta_j-rho2))*R_pow((1+beta_j-rho2)*beta_i*auxi*auxj,-1)* exp(bb1 );
-
-        if(fabs(term1)<1e-40||fabs(term2)<1e-40||fabs(term3)<1e-40||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
-
+        if(fabs(term1)<1e-30||fabs(term2)<1e-30||fabs(term3)<1e-30||!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
 
         sum1 = sum1+ term1;
         sum2 = sum2+ term2+term3;
         l1++;
       }
-
-          if((fabs(sum1-res00)<1e-10)&&(fabs(sum2-res11)<1e-10)  ) {break;}
+          if((fabs(sum1-res00)<1e-30)&&(fabs(sum2-res11)<1e-30)  ) {break;}
           else {res00=sum1;res11=sum2;}
           k++;
       }
-
-
     prr= - sum1 + sum2  + sum ;
-
     if(prr<1e-320) prr=1e-320;
 
     return(prr);
 }
-
 
 double PGr0(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
-    double pr0,  term1=0.0,aa=0.0,bb=0.0;
-    double res00=0.0, sum1 = 0.0;
-
-
+    double pr0=0.0,  term1=0.0,aa=0.0,bb=0.0,l1a=0.0;
+    double  sum1 = 0.0;
 
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
+    double auxij=auxi*auxj;
+        double brho=beta_i-rho2;
 
-
-    int n, l=0, l1=0 ;
-    int iter1=800;  int iter2=600;
+    int n, l=0, l1=0 ,cc=0,ii=0,q=0,nq=0;
+    int iter1=600;  int iter2=500;
     n= r-t;
+    double an=a+n;
+    double rb=-rho2/(1+brho);
+    double ib=-1/beta_j;
 
     double aux1= R_pow(beta_i,a)*R_pow(auxi,n+a)*exp(lgammafn(n+a)-lgammafn(n+1)-lgammafn(a));
 
     while(l<iter1){
         l1=0;
+        q=l+1;
+        nq=n+q;
         while(l1<iter2){
-
-            aa= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,l+l1)*R_pow(1-rho2,a+n)*R_pow(auxi*auxj,l+l1+a)*R_pow(1+beta_i-rho2,-n);
-            bb= lgammafn(n+l+l1+a)+lgammafn(l+l1+a+1)-lgammafn(n+l+1)-lgammafn(l+2)-lgammafn(l1+1)-lgammafn(a)-lgammafn(l1+a);
-
-
-            term1 = aa*hypergeo(n,1-l1-a,n+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,l+2,-1/beta_j)* exp(bb );
-
-            if(fabs(term1)<1e-10||!R_finite(term1))   {break;}
-
+            ii=l+l1;
+            cc=ii+a;
+            l1a=l1+a;
+            aa= R_pow(beta_i,l1a)*R_pow(beta_j,l1a-1)*R_pow(rho2,ii)*pow1p(-rho2, an)*R_pow(auxij,cc)*pow1p(brho,-n);
+            bb= lgammafn(n+cc)+lgammafn(cc+1)-lgammafn(nq)-lgammafn(q+1)-lgammafn(l1+1)-lgammafn(a)-lgammafn(l1a);
+            term1 = aa*hypergeo(n,1-l1a,nq,rb)*hypergeo(1,1-l1a,q+1,ib)* exp(bb);
+            if(fabs(term1)<1e-30)   {break;}
             sum1 =sum1+ term1;
             l1++;
         }
-        if((fabs(sum1-res00)<1e-10) ) {break;}
-             else {res00=sum1;}
-
+        //if((fabs(sum1-res00)<1e-15) ) {break;}else {res00=sum1;}
         l++;
     }
-
      pr0= aux1-sum1 ;
 if(pr0<1e-320) pr0=1e-320;
     return(pr0);
@@ -4341,42 +4285,47 @@ double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a){
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
-    double prt,  term1=0.0,term2=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0;
-
-    double res11=0.0, sum1 = 0.0,  sum2 = 0.0;
-
+    double prt=0.0,  term1=0.0,term2=0.0,aa=0.0,bb=0.0,aa1=0.0,bb1=0.0;
+    double res11=0.0, sum1 = 0.0,  sum2 = 0.0, jj=0.0,mm=0.0,jj1=0.0;
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
-
-    int n, k=0, l=0, l1=0 ;
-    int iter1=800;  int iter2=600; int iter3=500;
+    double auxij=auxi*auxj;
+    double brho=beta_i-rho2;
+    double rtrho=-rho2/(1+brho);
+    double mbj=-1/beta_j;
+    int n=0,s=0, k=0, l=0, l1=0, u=0,us=0,cc=0 ,ii=0,u1=0,tl=0,tna=0,ll1=0,f=0,d=0;
+    int iter1=600;  int iter2=500; int iter3=400;
     n= r-t;
-
+    s=n+1;
+    tna=t+n+a;
     while(l<iter1){
-        l1=0;
+        tl=t+l;
+        u=t+l;
+        u1=u+1;
+        us=u+s;
+        f=l+1;
+                l1=0;
         while(l1<iter2){
-            k=0;
+            jj=l1+a;
+            mm=u+jj;
+            jj1=1-jj;
+            ll1=l+l1;
+            d=l1+1;
+                k=0;
             while(k<iter3){
-
-
-                aa= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,k+l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi*auxj,t+k+l+l1+a)*R_pow(1+beta_i-rho2,-n);
-                bb= lgammafn(t+l)+lgammafn(t+n+k+l+l1+a)+lgammafn(t+k+l+l1+a+1)-lgammafn(t+n+k+l+1)-lgammafn(t+k+l+2)-lgammafn(l1+1)-lgammafn(l+1)-lgammafn(t)-lgammafn(a)-lgammafn(l1+a);
-
-
-                term1 = aa*hypergeo(n,1-l1-a,t+n+k+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,t+k+l+2,-1/beta_j)*exp(  bb );
-
+                cc=u+k;
+                ii=cc+n;
+                aa= R_pow(beta_i,jj)*R_pow(beta_j,jj-1)*R_pow(rho2,k+ll1)*pow1p(-rho2, tna)*R_pow(auxij,cc+jj)*pow1p(brho,-n);
+                bb= lgammafn(tl)+lgammafn(ii+jj)+lgammafn(cc+jj+1)-lgammafn(ii+1)-lgammafn(cc+2)-lgammafn(d)-lgammafn(f)-lgammafn(t)-lgammafn(a)-lgammafn(jj);
+                term1 = aa*hypergeo(n,jj1,ii+1,rtrho)*hypergeo(1,jj1,cc+2,mbj)*exp(bb);
                 if(fabs(term1)<1e-30||!R_finite(term1))   {break;}
                 sum1 =sum1+ term1;
-
-                k++;
+                k++; 
             }
-
-            aa1= R_pow(beta_i,l1+a)*R_pow(beta_j,l1+a-1)*R_pow(rho2,l+l1)*R_pow(1-rho2,t+n+a)*R_pow(auxi*auxj,t+l+l1+a-1)*R_pow(1+beta_i-rho2,-n-1);
-            bb1= lgammafn(t+l)+lgammafn(t+n+l+l1+a)+lgammafn(t+l+l1+a)-lgammafn(t+n+l+1)-lgammafn(t+l+1)-lgammafn(l1+1)-lgammafn(l+1)-lgammafn(t)-lgammafn(a)-lgammafn(l1+a);
-
-            term2 = aa1*hypergeo(n+1,1-l1-a,t+n+l+1,-rho2/(1+beta_i-rho2))*hypergeo(1,1-l1-a,t+l+1,-1/beta_j)*exp( bb1 );
-
-            if(fabs(term2)<1e-40||!R_finite(term2))   {break;}
+            aa1= R_pow(beta_i,jj)*R_pow(beta_j,-jj1)*R_pow(rho2,ll1)*pow1p(-rho2,tna)*R_pow(auxij,mm-1)* pow1p(brho,-s);
+            bb1= lgammafn(tl)+lgammafn(n+mm)+lgammafn(mm)-lgammafn(us)-lgammafn(u1)-lgammafn(d)-lgammafn(f)-lgammafn(t)-lgammafn(a)-lgammafn(jj);
+            term2 = aa1*hypergeo(s,jj1,us,rtrho)*hypergeo(1,jj1,u1,mbj)*exp(bb1);
+            if(fabs(term2)<1e-30)   {break;}
             sum2 =sum2+ term2;
             l1++;
         }
@@ -4387,7 +4336,6 @@ double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a){
 
      prt= sum2 - sum1;
      if(prt<1e-320) prt=1e-320;
-
     return(prt);
 }
 
@@ -4478,8 +4426,8 @@ double kumaintegral(double *param) {
     double ex[4], lower, upper, epsabs, epsrel, result, abserr, *work;
     int neval, ier, subdiv, lenw, last, *iwork;
     subdiv = 100;epsabs = R_pow(DBL_EPSILON, 0.25);epsrel = epsabs;    lenw = 4 * subdiv;           /* as instructed in WRE */
-    iwork =   (int *) Calloc(subdiv, int);  /* idem */
-    work = (double *) Calloc(lenw, double); /* idem */
+    iwork =   (int *) R_Calloc(subdiv, int);  /* idem */
+    work = (double *) R_Calloc(lenw, double); /* idem */
     ex[0] = param[0]; //eta
     ex[1] = param[1]; //gam 
     ex[2] = param[2];  //k
@@ -4489,7 +4437,7 @@ double kumaintegral(double *param) {
     Rdqags(integr_kuma, (void *) &ex,&lower, &upper, 
                &epsabs, &epsrel, &result,
                &abserr, &neval, &ier, &subdiv, &lenw, &last, iwork, work);
-    Free(iwork);Free(work);
+    R_Free(iwork);R_Free(work);
     return(result);
 }
 
@@ -4586,7 +4534,7 @@ if (eta!=1.0&&gam==1.0){
   if ((eta!=1.0)&&(gam!=1.0)){
    
        double *param;;
-       param=(double *) Calloc(4,double);
+       param=(double *) R_Calloc(4,double);
        param[0]=eta;param[1]=gam;  //mu,alpha //beta
        
  

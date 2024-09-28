@@ -8,7 +8,7 @@ if(!inherits(covmatrix,"GeoCovmatrix")) stop("A GeoCovmatrix object is needed as
 covmat=as.matrix(covmatrix$covmatrix)
 #if(!is.matrix(covmat)) stop("The function needs a covariance matrix as input\n")
 opar=par(no.readonly = TRUE)
-
+on.exit(par(opar))
 nrw=nrow(covmat)
 ncl=ncol(covmat)
 aa=1*(abs(covmat)>1e-150)
@@ -21,5 +21,5 @@ if(covmatrix$bivariate) {abline(h=0.5);
 if(covmatrix$spacetime) {abline(h=seq(0,1,covmatrix$numtime));
                         abline(v=seq(0,1,covmatrix$numtime))}
 }
- par(opar)
+invisible()
 }

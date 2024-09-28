@@ -65,13 +65,14 @@ GeoCovmatrix <- function(estobj=NULL,coordx, coordy=NULL, coordt=NULL, coordx_dy
     Cmatrix <- function(bivariate, coordx, coordy, coordt,corrmodel, dime, n, ns, NS, nuisance, numpairs,
                            numpairstot, model, paramcorr, setup, radius, spacetime, spacetime_dyn,type,copula,ML,other_nuis)
     {
-
 ###################################################################################
 ############### computing correlation #############################################
 ###################################################################################
 
+
 if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
 {
+
   if(type=="Standard") {
       fname <-"CorrelationMat2"
 
@@ -79,17 +80,14 @@ if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
         if(bivariate) {
             if(model==1) fname <- "CorrelationMat_biv_dyn2"
             if(model==10)fname <- "CorrelationMat_biv_skew_dyn2" }
-     
-#corr=double(numpairstot)
-
-
-cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
-    corr=dotCall64::numeric_dc(numpairstot),coordx,coordy,coordt,corrmodel,nuisance,paramcorr,radius,ns,NS,
- INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
+       cr=dotCall64::.C64(fname,SIGNATURE = c("double","double","double","double",  "integer","double","double","double","integer","integer"),
+            corr=dotCall64::numeric_dc(numpairstot),coordx,coordy,coordt,corrmodel,nuisance,paramcorr,radius,ns,NS,
+            INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-      }
+    
+}
 ###############################################################
-   if(type=="Tapering")  {
+if(type=="Tapering")  {
         fname <- "CorrelationMat_tap"
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
@@ -584,23 +582,17 @@ if(model==22)  {  ## Log Gaussian
 ###############################################################
 ################################ start discrete #models ########
 ###############################################################
-if(model %in% c(2,11,30,16,14,43,45,46,57,58)){ #  binomial (negative)Gaussian type , Poisson (inflated)
+if(model %in% c(2,11,30,16,14,43,45,46,57,58)){ #  binomial (negative)Gaussian type , Poisson (inflated) poissongamma
 
 if(model==2||model==11)
 {if(length(n)==1) n=rep(n,dime)}
 if(!bivariate){
-            mu=ML
+mu=ML
 
 if(type=="Standard")  {
-  #corr=double(numpairstot)
 
     fname <-"CorrelationMat_dis2"
     if(spacetime) fname <- "CorrelationMat_st_dyn_dis2"
-
-    #          cr=.C(fname, corr=corr,  as.double(coordx),as.double(coordy),as.double(coordt),
-    #          as.integer(corrmodel), as.double(c(mu)),as.integer(n), as.double(other_nuis), as.double(paramcorr),as.double(radius),
-    #          as.integer(ns), as.integer(NS),as.integer(model),
-    #          PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
 
   cr=dotCall64::.C64(fname,SIGNATURE =
       c("double","double","double","double", 
@@ -637,24 +629,28 @@ if(type=="Standard")  {
  #             cr=.C("CorrelationMat_dis_tap",  corr=corr, as.double(coordx),as.double(coordy),as.double(coordt),
   #      as.integer(corrmodel), as.double(other_nuis), as.double(paramcorr),as.double(radius),as.integer(ns),
    #        as.integer(NS),as.integer(n[idx[,1]]),as.integer(n[idx[,2]]),as.double(mu[idx[,1]]),as.double(mu[idx[,2]]),as.integer(model),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
- 
+
      cr=dotCall64::.C64(fname,SIGNATURE =
          c("double","double","double","double","integer","double","double","double","integer","integer","integer","integer","double","double","integer"),
         corr=dotCall64::numeric_dc(numpairs), coordx,coordy,coordt,corrmodel,other_nuis,paramcorr,radius,ns,NS,n[idx[,1]],n[idx[,2]],mu[idx[,1]],mu[idx[,2]],model,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r","r", "r", "r", "r","r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
 
-
         varcov <-new("spam",entries=cr$corr,colindices=setup$ja,
                          rowpointers=setup$ia,dimension=as.integer(rep(dime,2)))
+
         }
+
 
             ## updating the diagonal with variance
   if(model %in% c(2,11)) { pg=pnorm(mu);  vv=pg*(1-pg)*n; diag(varcov)=vv }
   if(model %in% c(14))   { pg=pnorm(mu); vv=  (1-pg)/pg^2; diag(varcov)=vv }
   if(model %in% c(16))   { pg=pnorm(mu); vv=n*(1-pg)/pg^2; diag(varcov)=vv }
-  if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv }
-  if(model %in% c(46))   { mm=exp(mu);b=param$shape/mm; vv=mm*(1+1/b); diag(varcov)=vv }
+  if(model %in% c(30))   { vv=exp(mu); diag(varcov)=vv } ## poisson
+
+
+  if(model %in% c(46))  
+   { mm=exp(mu); vv=mm*(1+mm/as.numeric(param$shape)); diag(varcov)=vv } ## poissongamma
 
   if(model %in% c(43))   { mm=exp(mu); pg=pnorm(param$pmu)
                            vv=(1-pg)*mm*(1+pg*mm)
@@ -822,7 +818,7 @@ else                    param$sill=1
     checkinput <- CkInput(coords[,1], coords[,2], coordt, coordx_dyn, corrmodel, NULL, distance, "Simulation",
                              NULL, grid, NULL, maxdist, maxtime,  model=model, n,  NULL,
                               param, radius, NULL, taper, tapsep,  "Standard", NULL, NULL, NULL,copula,X)
-    
+  
     if(!is.null(checkinput$error)) stop(checkinput$error)
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn))  spacetime_dyn=TRUE
@@ -845,21 +841,20 @@ else                    param$sill=1
     if(initparam$type=="Tapering")
     {
     
-      corr <- double(initparam$numpairs)
-      #tapmod <- setup$tapmodel
-      ### unit taperssss ####
-      if(sparse){
+       corr <- double(initparam$numpairs)
+       #tapmod <- setup$tapmodel
+       ### unit taperssss ####
+       if(sparse){
            if(spacetime) tapmod=230
            if(bivariate) tapmod=147
            if(space) tapmod=36
            }
-      else(tapmod=CkCorrModel(taper))
-    #######################
-
+       else(tapmod=CkCorrModel(taper))
+   
       if(initparam$spacetime) fname= "CorrelationMat_st_tap"
       else {
-      if(!initparam$spacetime) fname= "CorrelationMat_tap"
-      if(initparam$bivariate) fname= "CorrelationMat_biv_tap"
+         if(!initparam$spacetime) fname= "CorrelationMat_tap"
+         if(initparam$bivariate) fname= "CorrelationMat_biv_tap"
      }
 
  #tp=.C(fname,tapcorr=double(initparam$numpairs),as.double(cc[,1]),as.double(cc[,2]),as.double(initparam$coordt),as.integer(tapmod),
@@ -873,20 +868,19 @@ if(is.null(tapsep)) tapsep=1
         cc[,1],cc[,2],initparam$coordt,tapmod, 1,tapsep,1,1,1,
   INTENT = c("w","r","r","r","r","r","r","r", "r", "r"),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
         setup$taps<-tp$tapcorr
+
     }
+ ### end tapering   
     if(is.null(X))  initparam$X=as.matrix(rep(1,dime))
 
     if(bivariate) {if(is.null(X))  initparam$X=as.matrix(rep(1,initparam$ns[1]+initparam$ns[2])) }
-
     if(!space){
           initparam$NS=cumsum(initparam$ns);
             if(spacetime_dyn){  initparam$NS=c(0,initparam$NS)[-(length(initparam$ns)+1)]}
             else{               initparam$NS=rep(0,initparam$numtime)}
     }
     if(is.null(initparam$NS)) initparam$NS=0
-
 
     if(initparam$model %in% c(43,45)) initparam$namesnuis=initparam$namesnuis[!initparam$namesnuis %in% "nugget"]
 
@@ -902,22 +896,21 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB', 'PoissonGammaZIP','PoissonGammaZIP1','PoissonGamma',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',"LogGaussian",
         'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) 
-{
+  {
+  ### setting mean because mean affect variance in this case
+  parc=initparam$param[initparam$namescorr]
+  sel1=!(names(initparam$param) %in% names(parc))
+  inip=initparam$param[sel1] ## deleting corr parameters
 
-
-
-### setting mean because mean affect variance in this case
-parc=initparam$param[initparam$namescorr]
-sel1=!(names(initparam$param) %in% names(parc))
-inip=initparam$param[sel1] ## deleting corr parameters
-
-sel=substr(names(inip),1,4)=="mean"
-beta=as.numeric(inip[sel]) ## mean parameters
-other_nuis=as.numeric(inip[!sel]) # other nuis parameters
-if((dim(initparam$X)[2])>1){ ML=initparam$X%*%c(beta) }
-else     { if(sum(sel)>1)                  ML=beta 
-           else  ML=initparam$X*c(beta) }
-} 
+  sel=substr(names(inip),1,4)=="mean"
+  beta=as.numeric(inip[sel]) ## mean parameters
+  other_nuis2=inip[!sel]
+  other_nuis=as.numeric(other_nuis2[order(names(other_nuis2))]) # other nuis parameters ordered by names
+  if((dim(initparam$X)[2])>1){ ML=initparam$X%*%c(beta) }
+  else                       { if(sum(sel)>1)   ML=beta 
+                               else  ML=initparam$X*c(beta) 
+                             }
+  } 
 }
 
 

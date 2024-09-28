@@ -774,7 +774,7 @@ CorrelationPar <- function(corrmodel)
    if(corrmodel %in% c(8,5)) {
       param <- c('power1', 'power2','scale')
       return(param)}
-    # hypergeometric2
+    # hypergeometric2 gen_wend_matern hole gen_wend_matern hole
      if(corrmodel %in% c(21,26,29)) {
         param <- c('power1', 'power2','scale','smooth')
         return(param)}

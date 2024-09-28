@@ -37,9 +37,11 @@ if(!is.null(spobj)) {
 ###############################################################
 ###############################################################
 
-if((copula!="Clayton")&&(copula!="Gaussian")) stop("the type of copula is wrong")
+if((copula!="Clayton")&&(copula!="Gaussian")&&(copula!="AMH")&&(copula!="SkewGaussian")) stop("the type of copula is wrong")
 
-
+if(copula=="Clayton") {if(is.null(param$nu)) stop("Clayton copula need a nu parameter")}
+if(copula=="AMH"    ) {if(is.null(param$nu)) stop("AMH copula need a nu parameter")}
+if(copula=="SkewGaussian") {if(is.null(param$nu)) stop("Skew Gaussian copula need a nu parameter")}
 
 #### corr parameters
 paramcorr=param[CorrParam(corrmodel)]
@@ -63,6 +65,21 @@ sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,cor
      local=local,method=method,model='Gaussian', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
 unif=pnorm(sim$data,mean=0,sd=1);
 }
+
+####skewGaussian copula #############################################
+if(copula=="SkewGaussian")
+{
+param1=c(list(mean=0,sill=1,nugget=param$nugget,skew=param$nu),paramcorr)
+
+sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
+    distance=distance,GPU=GPU, grid=grid,
+     local=local,method=method,model='SkewGaussian', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
+omega=as.numeric(sqrt((param$nu^2 + param$sill)/param$sill))
+alpha=as.numeric(param$nu/param$sill^0.5)
+unif=sn::psn(sim$data,xi=0,omega= as.numeric(omega),alpha= as.numeric(alpha))
+}
+
+
 ####beta copula #############################################
 if(copula=="Clayton")
 {
@@ -73,10 +90,25 @@ sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,cor
      local=local,method=method,model='Beta', n=1, param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
 unif=(sim$data)^(pp/2)
 }
+####AMH copula #############################################
+if(copula=="AMH")
+{
+
+param1=c(list(mean=0,nugget=as.numeric(param$nugget),shape=2),paramcorr)
+sim=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
+    distance=distance,GPU=GPU, grid=grid,
+     local=local,method=method,model='Gamma', param=param1,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
+param2=c(list(mean=as.numeric(param['nu']),nugget=as.numeric(param$nugget)),paramcorr)
+sim2=GeoSim(coordx=coordx, coordy=coordy,coordt=coordt, coordx_dyn=coordx_dyn,corrmodel=corrmodel, 
+    distance=distance,GPU=GPU, grid=grid,
+     local=local,method=method,model='BinomialNeg', n=1, param=param2,anisopars=anisopars, radius=radius, sparse=sparse,nrep=1)
+kk=sim$data/(sim2$data+1)
+pp=pnorm(as.numeric(param['nu']))
+unif=pp/(exp(kk)+pp-1)
+}
 ####################################################################
 
-if(sim$spacetime||sim$bivariate) DD=dim(simcop)
-  if(!sim$bivariate){
+if(!sim$bivariate){
            if(is.null(dim(X))) {X=as.matrix(rep(1,sim$numcoord*sim$numtime))}
            sel=substr(names(param),1,4)=="mean";
            num_betas=sum(sel) 
@@ -143,6 +175,7 @@ if(model=="LogGaussian")
 ##############################
 ############ Real RF #########
 ##############################
+
 
 if(model=="Gaussian") {
          simcop=qnorm(unif,mean=mm,sd=sqrt(as.numeric(param$sill)))
@@ -340,9 +373,7 @@ simcop=pmin + (pmax-pmin)*qbeta(unif,shape1=mm*p2,shape2=(1-mm)*p2)
 
 
 ############
-if(sim$spacetime||sim$bivariate) {dim(simcop)=DD}
-else {if (!grid) simcop=c(simcop)
-     }
+if (!grid) simcop=c(simcop)
 ##############################
 
 

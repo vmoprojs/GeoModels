@@ -34,6 +34,11 @@ GeoFit <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copul
      if(is.null(coordt)) {if(is.null(neighb)&&is.null(maxdist)) stop("neighb or maxdist must be fixed\n")}
      else                {if((is.null(neighb)||is.null(maxdist))&&is.null(maxtime)) stop("neighb or maxdist and maxtime must be fixed\n")}
      }
+     if(type=='Standard'){
+        if(!is.null(neighb)||!is.infinite(maxdist)||!is.infinite(maxtime))
+        stop("neighb or maxdist or maxtime  shuold not be considered for Standard Likelihood\n")}
+
+
 
     if((likelihood=='Marginal'&&type=="Independence")) {anisopars=NULL;est.aniso=c(FALSE,FALSE)}
     ### Check the parameters given in input:
@@ -88,6 +93,7 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson","Binary_misp_BinomialNeg",
         'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
+        'Gaussian_misp_PoissonGamma',
         "PoissonGamma","PoissonGammaZIP","PoissonGammaZIP1",
         'Beta2','Kumaraswamy2','Beta','Kumaraswamy')) {
 if(!is.null(start$sill)) stop("sill parameter must not be considered for this model\n")    
@@ -339,7 +345,7 @@ if(!is.null(coordt)&is.null(coordx_dyn)){ initparam$coordx=initparam$coordx[1:(l
 
 if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma", 
         "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric",  "Binary_misp_BinomialNeg",
-        "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
+        "Gaussian_misp_Poisson", "PoissonZIP", "PoissonGammaZIP", "PoissonGammaZIP1","Gaussian_misp_PoissonZIP", 
         "BinomialNegZINB", "PoissonZIP1", "Gaussian_misp_PoissonZIP1", 
         "BinomialNegZINB1", "Beta2", "Kumaraswamy2", "Beta", 
         "Kumaraswamy")) {  if(!is.null(ff$sill)) ff$sill=NULL}
@@ -349,11 +355,14 @@ pvalues=NULL
 if(likelihood=="Full"&&type=="Standard") 
 {if(varest){
    alpha=0.05 
-   aa=qnorm(1-(1-alpha)/2)*fitted$stderr
+   conf.int=pvalues=NULL
+   if(is.numeric(fitted$stderr))
+   {aa=qnorm(1-(1-alpha)/2)*fitted$stderr
    pp=as.numeric(fitted$par)
    low=pp-aa; upp=pp+aa
    conf.int=rbind(low,upp)
    pvalues= 2*pnorm(-abs(pp/fitted$stderr))
+    }
    }
 }
 
@@ -439,6 +448,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
   if(x$model=='Gaussian_misp_PoissonGamma') { process <- 'PoissonGamma'; model <- 'Misspecified Gaussian PoissonGamma'}
   if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
+  if(x$model=='PoissonGammaZIP') { process <- 'PoissonGammaZIP'; model <- 'PoissonGammaZIP'}
   if(x$model=='Beta2') { process <- 'Beta2'; model <- 'Beta2'}
   if(x$model=='Gaussian_misp_StudentT') { process <- 'StudentT'; model <- 'Misspecified Gaussian  StudentT '}
   if(x$model=='StudentT'){ process <- 'StudentT';model <- 'StudentT'}

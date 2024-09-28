@@ -43,6 +43,11 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
     if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements\n")}
     if(!is.character(optimizer)) stop("invalid optimizer\n")
      if(!is.character(distance)) stop("invalid distance\n")
+
+    if(type=='Standard'){
+        if(!is.null(neighb)||!is.infinite(maxdist)||!is.infinite(maxtime))
+    stop("neighb or maxdist or maxtime  shuold not be considered for Standard Likelihood\n")}
+
  
 ##############################################################################
 ###### extracting sp object informations if necessary              ###########
@@ -68,7 +73,7 @@ if(!bivariate)
    if(!sum(names(unlist(append(start,fixed)))=="nugget")) fixed$nugget=0
   
 if(!bivariate){
-if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic",
+if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic","PoissonGamma","PoissonGammaZIP",
         "BinomialNeg","Bernoulli","Geometric","Gaussian_misp_Poisson",
         'PoissonZIP','Gaussian_misp_PoissonZIP','BinomialNegZINB',
         'PoissonZIP1','Gaussian_misp_PoissonZIP1','BinomialNegZINB1',
@@ -401,6 +406,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
   if(x$model=='Gaussian_misp_PoissonZIP') { process <- 'PoissonZIP'; model <- 'Misspecified Gaussian Poisson Inflated'}
   if(x$model=='Poisson') { process <- 'Poisson'; model <- 'Poisson'}
   if(x$model=='PoissonGamma') { process <- 'PoissonGamma'; model <- 'PoissonGamma'}
+   if(x$model=='PoissonGammaZIP') { process <- 'PoissonGammaZIP'; model <- 'PoissonGammaZIP'}
   if(x$model=='Gaussian_misp_PoissonGamma') { process <- 'PoissonGamma'; model <- 'Misspecified Gaussian PoissonGamma'}
   if(x$model=='PoissonZIP') { process <- 'PoissonZIP'; model <- 'PoissonZIP'}
   if(x$model=='Beta2') { process <- 'Beta2'; model <- 'Beta2'}

@@ -9,7 +9,7 @@ importFrom("grDevices", dev.cur,gray.colors)
 importFrom("graphics", abline, lines, par, persp,plot,points,image,plot.default,box,
 axis,plot.new,plot.window,title)
 importFrom("graphics", "hist")
-importFrom("stats", median, nlminb, dist, fft, quantile, qqnorm, qbinom,qpois,qnbinom,  pweibull, pgamma, plnorm, nlm, optim, optimize, integrate, pchisq,pnorm,qnorm,dnorm,dpois,dbeta,dnbinom,dbinom,dweibull,dgamma,dlnorm,pbinom, plogis, pnbinom, ppois,
+importFrom("stats", median, nlminb, dist, fft, quantile, qqnorm, qbinom,qpois,qnbinom,  pweibull, pgamma, plnorm, nlm, optim, optimize, integrate,approxfun,pchisq,pnorm,qnorm,dnorm,dpois,dbeta,dnbinom,dbinom,dweibull,dgamma,dlnorm,pbinom, plogis, pnbinom, ppois,
 pbeta,dt,dlogis,qlnorm,qgamma,qweibull, qbeta,qlogis,lm, rnorm, runif, rgamma, pt,qt,qunif,uniroot, var,cor)
 importFrom("methods","is", "new", "slot<-","as")
 importFrom("utils", "setTxtProgressBar", "txtProgressBar")

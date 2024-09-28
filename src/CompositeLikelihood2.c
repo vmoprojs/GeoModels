@@ -529,10 +529,10 @@ void Comp_Pair_BinomNNGauss_misp2mem(int *cormod, double *data1,double *data2,in
     double p11=0.0;//probability of joint success
 
     double **M;
-    M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
 
     double nugget=nuis[0];
     if( nugget>=1 || nugget<0){*res=LOW; return;}
@@ -555,8 +555,8 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                  bl=dNnorm(N,M,dat);
                  *res+= log(bl)*weights;       
                 }}
-           for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+           for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
@@ -720,23 +720,22 @@ void Comp_Pair_Gauss_misp_PoisGamma2mem(int *cormod, double *data1,double *data2
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,N=2;
-    double  weights=1.0,corr,corr1,mui,muj,bl,bi,bj,vvi,vvj;
+    double  weights=1.0,corr,corr1,mui,muj,bl,vvi,vvj;
     double nugget=nuis[0];
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
 
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
              //***********/
                     mui=exp(mean1[i]);muj=exp(mean2[i]);
-                    bi= nuis[2]/mui; bj= nuis[2]/muj;
-                    vvi= mui*(1+1/bi); vvj= muj*(1+1/bj);
+                    vvi= mui*(1+mui/nuis[2]); vvj= muj*(1+muj/nuis[2]);
                      corr=CorFct(cormod,lags[i],0,par,0,0)*(1-nugget);
                       corr1=corr_pois_gen(corr,mui, muj, nuis[2]);
                       //Rprintf("%f %f  %f \n",corr,corr1,nuis[2]);
@@ -748,8 +747,8 @@ double **M;
                       //Rprintf("%f %f  %f \n",corr,corr1,log(bl));
                       *res+= log(bl)*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -795,11 +794,11 @@ void Comp_Pair_Gauss_misp_Pois2mem(int *cormod, double *data1,double *data2,int 
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
 double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
 
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
     for(i=0;i<npairs[0];i++){
 
                   if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
@@ -814,8 +813,8 @@ double **M;
                       bl=dNnorm(N,M,dat);
                       *res+= log(bl)*weights;
                     }}
-   for(i=0;i<N;i++)  {Free(M[i]);}
-    Free(M);
+   for(i=0;i<N;i++)  {R_Free(M[i]);}
+    R_Free(M);
 
     if(!R_FINITE(*res))  *res = LOW;
     return;
@@ -897,7 +896,7 @@ void Comp_Pair_Gauss_misp_T2mem(int *cormod, double *data1,double *data2,int *N1
      for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
-                     corr=(1-nugget)*CorFct(cormod,lags[i],0,par,0,0);
+                     corr=CorFct(cormod,lags[i],0,par,0,0);
         //if(df<170) corr=0.5*(df-2)*R_pow(gammafn((df-1)/2),2)/(R_pow(gammafn(df/2),2))* corr *hypergeo(0.5,0.5,df/2,R_pow(corr,2));
         if(fabs(corr)>0)  corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
 
@@ -1240,7 +1239,7 @@ void Comp_Pair_Gauss_misp_T_st2mem(int *cormod, double *data1,double *data2,int 
 
     for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                            corr=(1-nugget)*CorFct(cormod,lags[i],lagt[i],par,0,0);
+                            corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                  corr=exp(log(df-2)+2*lgammafn(0.5*(df-1))-(log(2)+2*lgammafn(df/2))+log(hypergeo(0.5,0.5, df/2,corr*corr))+log(corr*(1-nugget)));
                                u=data1[i];
                                 w=data2[i];
@@ -1262,10 +1261,10 @@ void Comp_Pair_Gauss_misp_Pois_stmem(int *cormod, double *data1,double *data2,in
 
       if(nugget<0||nugget>=1){*res=LOW; return;}
     double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
      for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                           u=data1[i];      w=data2[i];
@@ -1334,7 +1333,7 @@ void Comp_Pair_PoisGamma_st2mem(int *cormod, double *data1,double *data2,int *N1
                           uu=(int) u;  ww=(int) w;
                       bl=biv_PoissonGamma((1-nugget)*corr,uu,ww,mui, muj,nuis[2]);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
-                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+               // if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
 
                                     }}
@@ -1351,29 +1350,28 @@ void Comp_Pair_Gauss_misp_PoisGamma_st2mem(int *cormod, double *data1,double *da
 
 {
      int i=0,N=2;
-     double weights=1.0,corr,corr2,mui,muj,bl,u=0.0, w=0.0,bi,bj,vvi,vvj;
+     double weights=1.0,corr,corr2,mui,muj,bl,u=0.0, w=0.0,vvi,vvj;
    double nugget=nuis[0];
      if(nugget<0||nugget>=1){*res=LOW; return;}
 // ###
     double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
 // ###
     for(i=0;i<npairs[0];i++){
        u=data1[i];w=data2[i];
 if(!ISNAN(u)&&!ISNAN(w) ){
                             corr=CorFct(cormod,lags[i],lagt[i],par,0,0)*(1-nugget);
                             mui=exp(mean1[i]);muj=exp(mean2[i]);
-                            bi= nuis[2]/mui; bj= nuis[2]/muj;
-                            vvi= mui*(1+1/bi); vvj= muj*(1+1/bj);
+                            vvi= mui*(1+mui/nuis[2]); vvj= muj*(1+muj/nuis[2]);
                             corr2=corr_pois_gen(corr,mui, muj, nuis[2]);
 
 
                             M[0][0]=vvi; M[1][1]=vvj;M[0][1]=sqrt(vvi*vvj)*corr2;M[1][0]= M[0][1];
                            dat[0]=u-mui;dat[1]=w-muj;
-                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                          //if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                               bl=dNnorm(N,M,dat);
                               *res+= log(bl)*weights;
                 }}
@@ -1406,7 +1404,7 @@ void Comp_Pair_PoisZIP_st2mem(int *cormod, double *data1,double *data2,int *N1,i
                           uu=(int) u;  ww=(int) w;
                       bl=biv_PoissonZIP(corr,uu,ww,mui, muj,mup,nugget1,nugget2);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
-                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+               // if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
 
                                     }}
@@ -1425,10 +1423,10 @@ void Comp_Pair_Gauss_misp_Pois_st2mem(int *cormod, double *data1,double *data2,i
      if(nugget<0||nugget>=1){*res=LOW; return;}
 // ###
     double **M;
-        M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+        M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     double *dat;
-    dat=(double *) Calloc(N,double);
+    dat=(double *) R_Calloc(N,double);
 // ###
     for(i=0;i<npairs[0];i++){
        u=data1[i];w=data2[i];
@@ -1439,7 +1437,7 @@ if(!ISNAN(u)&&!ISNAN(w) ){
 
                             M[0][0]=mui; M[1][1]=muj;M[0][1]=sqrt(mui*muj)*corr2;M[1][0]= M[0][1];
                            dat[0]=u-mui;dat[1]=w-muj;
-                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                          //if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                               bl=dNnorm(N,M,dat);
                               *res+= log(bl)*weights;
                 }}
@@ -1467,7 +1465,7 @@ void Comp_Pair_Gauss_misp_PoisZIP_st2mem(int *cormod, double *data1,double *data
 
                bl=biv_Mis_PoissonZIP(corr,data1[i],data2[i],mui, muj,mup,nugget1,nugget2);
                 //   Rprintf("%d %d--%f %f %f  %f \n",uu,ww,lags[i],lagt[i],corr,bl);
-                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+               // if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                        *res+= log(bl)*weights;
 
                                     }}
@@ -2232,7 +2230,7 @@ void Comp_Pair_SkewGauss_biv2mem(int *cormod, double *data1,double *data2,int *N
     int i=0;
     double u=0.0, w=0.0, rhotv=0.0,weights=1.0;
     int N=2;
-      double *vari;vari=(double *) Calloc(N,double);vari[0]=par[0];vari[1]=par[1];  /// variances of the skew gaussian
+      double *vari;vari=(double *) R_Calloc(N,double);vari[0]=par[0];vari[1]=par[1];  /// variances of the skew gaussian
     par[0]=1;par[1]=1;
     if(vari[0]<0||vari[1]<0){*res=LOW; return;}
       weights=1;
@@ -2245,7 +2243,7 @@ void Comp_Pair_SkewGauss_biv2mem(int *cormod, double *data1,double *data2,int *N
                      *res+= log(biv_skew2(rhotv,u,w,vari[first_1[i]],vari[second_1[i]],1,nuis[first_1[i]],nuis[second_1[i]]))*weights;
                                 }}
 
-        Free(vari);
+        R_Free(vari);
     if(!R_FINITE(*res))*res = LOW;
     return;
 }

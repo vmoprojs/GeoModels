@@ -54,146 +54,8 @@ RFfct1<- function(numcoord,numtime,spacetime,bivariate,dime,nuisance,simd,X,ns)
             else sim <- matrix(sim, nrow=numtime, ncol=numcoord,byrow=TRUE)
         return(sim)
     }
-################### turning bands ######################################
 #########################################################
-tbm2d<- function(coord, coordt, param, corrmodel,L,bivariate){
 
-  N=1; n <- dim(coord)[1]; d <- 2
-    if(corrmodel == "Matern"){
-       CC=1; N=1
-       a <- as.numeric(param['scale']);  nu1 <- as.numeric(param['smooth'])
-       a0 = a; nu0 =nu1
-       parameters <- list("CC" = CC, "a" = a,"nu1" = nu1,"nu2" = 0 )
-       P <- 1;  vtype = 0
-}
-
-  if (corrmodel=="Bi_matern"||corrmodel=="Bi_Matern"){
-    corrmodel <- "Matern"
-    a <- matrix(0,2,2)
-    a[1,1] <- as.numeric(param['scale_1'])
-    a[2,2] <- as.numeric(param['scale_2'])
-    a[1,2] <- a[2,1] <- as.numeric(param['scale_12'])
-    
-    nu1 <- matrix(0,2,2)
-    nu1[1,1] <- as.numeric(param['smooth_1'])
-    nu1[2,2] <- as.numeric(param['smooth_2'])
-    nu1[1,2] <- nu1[2,1] <- as.numeric(param['smooth_12'])
-    
-    
-    CC <- matrix(0,2,2)
-    CC[1,1] <- CC[2,2] <- 1
-    CC[1,2] <- CC[2,1] <- as.numeric(param['pcol'])
-    a0 <- min(a)
-    nu0 <- min(nu1)
-    parameters <- list("C" = CC, "a" = a,"nu1" = nu1,"nu2" =matrix(0,2,2) )
-    P<-2; vtype = 0  
-
-  }
-   parametersg <- list("a" = a0,"nu1" = nu0)
-
-      A <- matrix(0, P, P*L*N); B <- matrix(0, P, P*L*N)
-      #S <- ceiling(1e7*runif(3)); set.seed(S[1])
-      G <- matrix(rgamma(P*L*N, nu0, scale = 1),P*L*N,d); #set.seed(S[2])
-      u <- matrix(rnorm(P*L*N*d), P*L*N, d)/sqrt(G*2)/a0/(2*pi); #set.seed(S[3])
-      phi <- 2*pi*runif(P*L*N)
-      sequen <- c(seq(0,n-0.5, by = ceiling(1e6/P/N)),n)
-
-    m = c()
-   for (i in 1:(length(sequen)-1)){ m1 <- sequen[i+1]-sequen[i]; m = c(m1,m)} 
-
-
-simu11 = as.numeric( rep(0,N*P*sum(m)*(length(sequen)-1)))
-
-
-#result <- .C("for_c", d_v = as.integer(d),a_v = as.double(c(a)),nu1_v = as.double(c(nu1)),C_v=as.double(c(CC)) ,
-#             nu2_v = as.double(c(parameters$nu2)), P = as.integer(P),N=as.integer(N),L=as.integer(L),model =  as.integer(CkCorrModel(corrmodel)),
-#             u = as.double(c(u)),a0 = as.double(a0),nu0 = as.double(nu0),A = as.double(c(A)),B = as.double(c(B))
-#             ,sequen = as.integer(c(sequen)), largo_sequen = as.integer(length(sequen)),n=as.integer(n),
-#             coord = as.double(coord),phi = as.double(phi),vtype=as.integer(vtype),m1 = as.integer(m),simu1 = as.double(simu11),
-#             L1 = as.double(L))
-
-
-
-result=dotCall64::.C64("for_c",
-         SIGNATURE = c("integer","double","double", "double",
-                     "double","integer","integer","integer","integer",
-                     "double","double","double","double","double",
-                     "integer","integer","integer",
-                     "double","double","integer","integer","double",
-                     "double"), 
-                         d,c(a),c(nu1), c(CC), c(parameters$nu2),P,N,L,CkCorrModel(corrmodel),
-                         c(u),a0,nu0,c(A),c(B),c(sequen),length(sequen),n,coord,phi,vtype,m,
-                         simu1=dotCall64::numeric_dc(length(simu11)),L,
-         INTENT =    c("r","r","r","r","r","r","r","r","r", "r",
-                       "r","r","r","r","r","r","r","r","r", "r",
-                       "r", "rw","r"),
-             PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$simu1
-
-
-  simu =  matrix(result,n,P)
-  return(simu)
-}
-######################## space time case: separable with Circ embeeding+ftt ##########################
-CE_Space_Time <- function(coords, time.seq, param,corrmodel,distance){
-
-  time.seq <- time.seq - time.seq[1]
-  Ns <- nrow(coords); Nt <- length(time.seq)
-  Nt.ext <- (2*(Nt-1)); N0 <- Ns*Ns*Nt.ext
-#################################################
-###### main separable models ####################
-#################################################
-if(corrmodel=="Matern_Matern"){
-  param_s <- list(nugget = 0, sill = 1, scale = param$scale_s, smooth = param$smooth_s)
-  param_t <- list(nugget = 0, sill = 1, scale = param$scale_t, smooth = param$smooth_t) 
-  corrmodel="Matern"   
-  }
-if(corrmodel=="GenWend_GenWend"){
-  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
-  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
-  corrmodel="GenWend"                            
-  }
-if(corrmodel=="GenWend_Matern_GenWend_Matern"){
-  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
-  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
-  corrmodel="GenWend_Matern"                         
-  }
-if(corrmodel=="Kummer_Kummer"){
-  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
-  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
-  corrmodel="Kummer"                            
-  }
-if(corrmodel=="Kummer_Matern_Kummer_Matern"){
-  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
-  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
-  corrmodel="Kummer_Matern"                         
-  }
-#################################################
-################################################# 
-  cova.mat.s <- GeoCovmatrix(coordx = coords, corrmodel = corrmodel, param = param_s,distance=distance)$covmatrix
-  cova.mat.s <- (1 - param$nugget)*cova.mat.s
-  diag(cova.mat.s) <- 1
-  ## cholesky decomposition
-  chol.s <- t(chol(cova.mat.s))
-  auxiliar.seq <- c(time.seq, rev(time.seq[-c(1,Nt)]))
-  cova.mat.t <- (1 - param$nugget)*GeoCorrFct(x = auxiliar.seq, 
-                                                              corrmodel = corrmodel, 
-                                                              param = param_t)$corr
-  cova.mat.t[auxiliar.seq == 0] <- 1
-  spectrum.t <- sqrt(Re( fft(cova.mat.t) ))
-  
-  X <- complex(real = rep(0, Ns*Nt.ext), imaginary = rep(0, Ns*Nt.ext) ) 
-  for(t in 1:Nt.ext){
-    Z0 <- complex(real = rnorm(Ns), imaginary = rnorm(Ns) ) 
-    X[1:Ns + Ns*(t-1)] <- (spectrum.t[t]*chol.s)%*%Z0
-  }
-  X <- matrix(X, ncol = Ns, byrow = T)
-  X <- apply(X, 2, function(x) fft(x, T)/sqrt(Nt.ext))
-  X <- sqrt(param$sill)*X[1:Nt,]
-  result <-  c(t(Re(X)))
-  return(result)
-}
-
-M=NULL
 ######################################################################
 ############## main  internal function  ##############################
 ######################################################################
@@ -203,10 +65,12 @@ simu_approx=function(numxgrid,numygrid,coordx,coordy,coords,coordt,method,corrmo
 if(!spacetime){    
    ## Turning Bands
    if(method=="TB") { 
-        simu=tbm2d(coords,coordt, param, corrmodel,L,bivariate); 
-        if(!bivariate) simu=c(simu[,1])
-        else simu=c(simu)
-  
+        if(bivariate)
+        simu=tbm2d(coords,coordt, param, corrmodel,L,bivariate)
+        else
+        simu=tbm2d_uni(coords, coordt, param, corrmodel, L, bivariate)
+   if(!bivariate) simu=c(simu[,1])
+   else           simu=c(simu)
     }     
 ## Vecchia
 #if(method=="Vecchia"){ 
@@ -223,15 +87,16 @@ if(!spacetime){
 ##### spacetime case ######
 if(spacetime)  {
  # if(method=="Vecchia") print("ciao") 
-  if(method=="CE")simu=CE_Space_Time(coords=coords,time.seq=coordt, param=param,corrmodel= corrmodel,distance=distance)
+  if(method=="CE") simu=CE_Space_Time(coords=coords,time.seq=coordt, param=param,corrmodel= corrmodel,distance=distance)
     }
 return(simu)
 }
-
+####################################################################
 ####################################################################
 ############# END internal functions ###############################
 ####################################################################
-
+####################################################################
+    M=NULL
     if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
     if(!(method=="TB"||method=="CE")) stop("The method of simulation is not correct\n")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
@@ -239,8 +104,6 @@ return(simu)
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
     numxgrid=numygrid=NULL
-
-
     spacetime_dyn=FALSE
 ##############################################################################
 ###### extracting sp object informations if necessary              ###########

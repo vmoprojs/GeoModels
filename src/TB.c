@@ -1,13 +1,46 @@
 #include "header.h"
 
 
+double log_pochhammer(double a, int n){
+  return lgamma(a + n) - lgamma(a);
+}
+
+double hypergeometric_1F2(double a, double b, double c, double x, double tol){
+  double n, a0, sum, t;
+  double an, bn, cn, max, z;
+  static double stop = 1.37e-17;
+  an = a;
+  bn = b;
+  cn = c;
+  a0 = 1.0;
+  sum = 1.0;
+  n = 1.0;
+  t = 1.0;
+  max = 0.0;
+  do{
+    if( (a0 > 1.0e34) || (n > 250) ){
+      t = stop;
+    }
+    a0 *= (an*x)/(bn*cn*n);
+    sum += a0;
+    an += 1.0;
+    bn += 1.0;
+    cn += 1.0;
+    n += 1.0;
+    z = fabs( a0 );
+    if( z > max )
+      max = z;
+    if( sum != 0 )
+      t = fabs( a0 / sum );
+    else
+      t = z;
+  }
+  while( t > stop );
+  return(sum);
+}
 
 
-
-
-
-
-void spectraldensityC(double u,int model,int d,int L,double *f,double *av,double *Cv,double *nu1v,double *nu2v){
+void spectraldensityC(double u,int model,int d,int L,double *f,double *av,double *Cv,double *nu1v,double *nu2v, double *params_other){
     double norm_u = u;
     int h=0;
     for (int i=0;i<L*L;i++){if (av[i]>0){h = h+1;}}
@@ -22,23 +55,90 @@ void spectraldensityC(double u,int model,int d,int L,double *f,double *av,double
 
     double *r = (double *) R_Calloc(L*L,double);
    
-    if(model==14){   //Matern
+    if(model==14){  //Matern
         if((pos_nu1==0) &&(positive_a == 0 )){
-            for (size_t i = 0; i < L*L; i++){
+            for(size_t i = 0; i < L*L; i++){
                 double v = d/2;
-                r[i] =  d*log(2*PI*av[i]) + lgamma(nu1v[i]+v) - lgamma(nu1v[i]) - v*log(PI) - (nu1v[i]+v)*log(1+pow(2*PI*av[i]*norm_u,2));
-                r[i] =Cv[i]*exp(r[i]);
+                r[i] =  d*log(2*M_PI*av[i]) + lgamma(nu1v[i]+v) - lgamma(nu1v[i]) - v*log(M_PI) - (nu1v[i]+v)*log(1+R_pow(2*M_PI*av[i]*norm_u,2));
+                r[i] = Cv[i]*exp(r[i]);
             }}else{Rprintf("Parameter does not satisfy the model validity restriction");}
-
     }
-    //Wendland
-    if (model==19){if(positive_a==0 && d==2){} }
+    
+    if(model==24){  //Kummer
+      if((pos_nu1==0) &&(positive_a == 0 )){
+        for(size_t i = 0; i < L*L; i++){
+          double half_dim = d/2;
+          double bb = av[i];
+          double alpha = params_other[0], smooth = nu1v[i];
+          double  arg = 4*M_PI*M_PI*R_pow(norm_u*bb,2)*0.5;
+          r[i] = R_pow(bb,d)*gammafn(smooth + half_dim)/(Rf_beta(alpha, smooth)*R_pow( (2*M_PI), half_dim));
+          r[i] = r[i]*kummer(smooth + half_dim,1 - alpha + half_dim, arg );          
+          r[i] = 4*M_PI*M_PI*Cv[i]*r[i];
+        }
+        }else{
+          Rprintf("Parameter does not satisfy the model validity restriction");
+        }
+    }
+    
+    if(model==25){  //Kummer_Matern
+      if((pos_nu1==0) &&(positive_a == 0 )){
+        for(size_t i = 0; i < L*L; i++){
+          double half_dim = d/2;
+          double alpha = params_other[0], smooth = nu1v[i], bb = 0;
+          bb = 2*av[i]*sqrt(smooth*(alpha + 1));
+          double arg = norm_u*norm_u*bb*bb*0.5;
+          r[i] = R_pow(bb,d)*gammafn(smooth + half_dim)/(Rf_beta(alpha, smooth)*R_pow( (2*M_PI), half_dim));
+          r[i] = r[i]*kummer(smooth + half_dim,1 - alpha + half_dim, arg );          
+          r[i] = Cv[i]*r[i];
+        }
+      }else{
+        Rprintf("Parameter does not satisfy the model validity restriction");
+      }
+    }
+    
+    if(model==19){//GenWendland
+      double tol = 1e-12;
+      if((pos_nu1==0) &&(positive_a == 0 )){
+        for(size_t i = 0; i < L*L; i++){
+          double lambda_fun = 0, cte_u, cte_d, cte = 0, z = 0;
+          double nu = nu1v[i], beta = av[i];
+          double mu = params_other[0];
+          double z_sign = 0;
+
+        if(nu==0.0){ 
+          cte_u = lgamma(mu + 2*nu + 1) + lgamma(2*nu + d) + lgamma(2);
+          cte_d = lgamma(nu + 0.5*d) + lgamma(mu + 2*nu + d + 1)  ;
+      }
+       else {
+          cte_u = lgamma(mu + 2*nu + 1) + lgamma(2*nu + d) + lgamma(nu);
+          cte_d = lgamma(nu + 0.5*d) + lgamma(mu + 2*nu + d + 1) + lgamma(2*nu) ;
+      }
+
+
+          cte = R_pow(beta,d)/(4*M_PI);
+          cte = cte*exp(cte_u - cte_d);
+            if(d==2){
+              lambda_fun = 1.5 + nu;
+  
+              z = -(norm_u*norm_u*beta*beta*M_PI*M_PI);
+              
+              z_sign = (z > 0) - (z < 0);
+              if( fabs(z) < 20.2){
+                z =  -(norm_u*norm_u*beta*beta*M_PI*M_PI);
+              }else{
+                z =  z_sign*20.2;
+              }
+              r[i] = hypergeometric_1F2(lambda_fun, lambda_fun + 0.5*mu, lambda_fun + 0.5*(mu+1), z, tol);
+              r[i] = 4*M_PI*M_PI*cte*Cv[i]*r[i];
+            }else{
+              Rprintf("Parameter does not satisfy the model validity restriction");
+            }
+        }
+      }
+      }
     for (size_t i = 0; i < L*L; i++) {f[i] = r[i];}
     R_Free(r);
-
 }
-
-
 
 // preguntar si las coordenadas son enteras
 void extraer(double *coord,int sequen1,double *sub_coord,int fila,int col, int d){
@@ -169,21 +269,21 @@ void C_mult_mat(Rcomplex *z, Rcomplex *x, int xrows, int xcols, Rcomplex *y, int
 }
 
 
-void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, int *N, int *L,int *model,double *u,double *a0,double *nu0,double *A,double *B,
-    int *sequen,int *largo_sequen,int *n,double *coord,double *phi, int *vtype,int *m1,double *simu1,double *L1){
+void for_c(int *d_v, double *a_v, double *nu1_v, double *C_v, double *nu2_v, 
+           int *P, int *N, int *L, int *model, double *u,
+           double *a0, double *nu0, double *A, double *B,
+           int *sequen, int *largo_sequen, int *n,
+           double *coord, double *phi, int *vtype, int *m1, double *simu1, double *L1, double *params_other){
     
-
-
 /*Rprintf("  %f %f %f %f %f %d %d %d %f %f %f\n ", *u, *a0, *nu0, *A, *B,
      *sequen, *largo_sequen, *n,*simu1, *L1);*/
-
 
     // Iteraciones del for
     int prod = *P * *L * *N ;
     int d = *d_v;int p = *P;
     //variables utiles
 
-    int model_1 = 14;
+    //int model_1 = 14;
 
    double *f,*g,*u_1,*w,*trabajo_adicional;
    Rcomplex *autovalores,*autovectores;
@@ -215,10 +315,21 @@ void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, 
         int g1 = 1;
         double norm_u = F77_CALL(dnrm2)(&d, u_1, &g1);
 
-        spectraldensityC(norm_u,*model,d,p,f,a_v,C_v,nu1_v,nu2_v);
-        double C0[] = {1};
-        spectraldensityC(norm_u,model_1,2,1,g,a0,C0,nu0,nu2_v);
-        for (int i =0;i<p*p;i++){f[i] = 2*f[i]/g[0];}
+        //double other = 0.2;
+        spectraldensityC(norm_u,*model,d,p,f,a_v,C_v,nu1_v,nu2_v, params_other);
+        //printf("pasa la f");
+        double C0[] = {C_v[0]};
+        if(model[0] == 14){
+          spectraldensityC(norm_u, 14,2,1,g,a0,C0,nu0,nu2_v, 0); // 14 es Matern
+        }
+        else{
+          spectraldensityC(norm_u, model[0],2,1,g,a_v,C0,nu1_v,nu2_v, params_other); // 14 es Matern
+        }
+        //printf("pasa la g");
+        for (int i =0;i<p*p;i++){
+          //printf("valor f %f, valor g %f \n", f[i], g[i]);
+          f[i] = 2*f[i]/g[0];
+        }
         if (p>=2){
             F77_CALL(dsyev)(J, U, &p, f, &p, w, trabajo_adicional, &lwork, &info,N1,N1);
             for (int i=0;i<p;i++){
@@ -292,8 +403,7 @@ void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, 
     R_Free(w);
     R_Free(trabajo_adicional);
     R_Free(vdm);
-     //El otro for
-
+     //El otro for printf("el otro for \n");
     int lim = *(largo_sequen)-1;
     for (int i=0;i < lim;i++){
         int fila = sequen[i+1]-sequen[i];
@@ -316,7 +426,7 @@ void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, 
             double *x0;
             x0 = (double *) R_Calloc(fila*largo,double); 
             tcrossprod(x0,sub_coord,fila,d,ui,largo,d);
-            double cte =2*PI;
+            double cte =2*M_PI;
             mult_x_cons(x0,cte,fila*largo);
             double *phi_cross;
             phi_cross= (double*) R_Calloc(largo,double); 
@@ -450,10 +560,71 @@ void for_c(int *d_v,double *a_v,double *nu1_v,double *C_v,double *nu2_v,int *P, 
             R_Free(index);
         }
         //simu1 bla bla
+        //printf("simu :%f \n",simu[0]);
         llenar_simu1(simu1,simu,m1,P,N,lim,i,L1);
 
         R_Free(simu);
         R_Free(sub_coord);
     }
 }
+
+void spectral_density_1d(double *norm_u, int *N, double *av, double *params_other, double *nu1v, int *model, double *result){
+  double nu = nu1v[0], bbb = av[0];
+  double mu = params_other[0];
+  int mod = model[0];
+
+  if(mod==14){  //Matern
+    double z = 0;
+    for(int i=0;i < N[0];i++){
+      z = 2*M_PI*bbb*norm_u[i];
+      result[i] = 2*log(2*M_PI*bbb) + lgamma(nu+1) - lgamma(nu) - log(M_PI) - (nu+1)*log(1+z*z);
+      result[i] = exp(result[i]);
+    }
+  }
+  if(mod==19){ //GenWendland
+    double cte_u = 0, cte_d = 0, cte = 0, z = 0;
+
+
+if(nu==0.0){
+    cte_u = lgamma(mu + 2*nu + 1) + lgamma(2*nu + 2) + lgamma(2);
+    cte_d = lgamma(nu + 1) + lgamma(mu + 2*nu + 3)  ;
+}
+else {
+
+    cte_u = lgamma(mu + 2*nu + 1) + lgamma(2*nu + 2) + lgamma(nu);
+    cte_d = lgamma(nu + 1) + lgamma(mu + 2*nu + 3) + lgamma(2*nu) ;  
+     }
+
+    cte = R_pow(bbb,2)/(4*M_PI);
+    cte = cte*exp(cte_u - cte_d);
+    double lambda_fun = 0;
+    double tol = 1e-12;
+    for(int i=0;i < N[0];i++){
+      lambda_fun = 1.5 + nu;
+      z = -(norm_u[i]*norm_u[i]*bbb*bbb*M_PI*M_PI);
+      if( fabs(norm_u[i]) > 20.2){
+        z = -(20.2*20.2*bbb*bbb*M_PI*M_PI);
+      }else{
+        z = -(R_pow(norm_u[i]*bbb*M_PI,2));
+      }
+      result[i] = hypergeometric_1F2(lambda_fun, lambda_fun + 0.5*mu, lambda_fun + 0.5*(mu+1), z, tol);
+      result[i] = 4*M_PI*M_PI*cte*result[i];
+      //Rprintf("%f \n",result[i]);
+    }
+  }
+  
+  if(mod==24){  //Kummer
+    //Rprintf("Kummer\n");
+    double half_dim = 1;
+    double arg = 0;
+    for(int i=0;i < N[0];i++){
+      arg = 4*M_PI*M_PI*R_pow(norm_u[i]*bbb,2)*0.5;
+      result[i] = R_pow(bbb,2)*gammafn(nu + half_dim)/(Rf_beta(mu, nu)*R_pow( (2*M_PI), half_dim));
+      result[i] = result[i]*kummer(nu + half_dim,1 - mu + half_dim, arg );          
+      result[i] = 4*M_PI*M_PI*result[i];
+    }
+  }
+  
+}
+
 

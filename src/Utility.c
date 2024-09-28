@@ -214,13 +214,14 @@ void Maxima_Minima_time(double *res,double *coordt,int *nsize)
   int i=0,j=0;
     for(i=0; i<(*nsize-1);i++){
         for(j=(i+1); j<*nsize;j++){
-               lagt=fabs(coordt[i]-coordt[j]);
+          lagt=fabs(coordt[i]-coordt[j]);
           res1 = fmax(res1, lagt);
           res2 = fmin(res2, lagt);
 }}
 res[0]=res2;res[1]=res1;
 return;
 }
+
 
 
 

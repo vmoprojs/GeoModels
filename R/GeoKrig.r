@@ -731,9 +731,9 @@ else pred=c(pp)
 } ####
 
 ####################################################################################################################################
-###################### binomial  binomial negative and poisson (inflated) #####################################
+###################### binomial  binomial negative and poisson poissongamma (inflated) #####################################
 ####################################################################################################################################
-if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46))
+if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46,47))
 {
 
      if(type=="Standard"||type=="standard") {
@@ -821,7 +821,6 @@ corri=ccorr$corri
       ##########################################################
       if(covmatrix$model==46||covmatrix$model==47){  ### poisson gamma
          p0=exp(mu0); pmu=exp(mu)
-         b0=covmatrix$param['shape']/p0
          if(!bivariate) { 
            # pp = c(p0) + krig_weights %*% (c(dataT)-c(pmu)) 
            # pp = c(p0) + crossprod(c(dataT)-c(pmu), krig_weights)
@@ -833,7 +832,7 @@ corri=ccorr$corri
                pp = c(p0) + crossprod(datas, krig_weights)
           }  ## simple kriging
         else{} #todo
-        if(mse)  vvar=p0*(1+1/b0)  ### variance (possibly no stationary)     
+        if(mse)  vvar=p0*(1+p0/covmatrix$param['shape'])  ### variance (possibly no stationary)     
           }
       ##########################################################
        if(covmatrix$model==43||covmatrix$model==44){  ### poisson  inflated

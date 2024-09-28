@@ -190,14 +190,14 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
  
     
      //
-     X= (double **) Calloc(ncoord[0],double *);
+     X= (double **) R_Calloc(ncoord[0],double *);
      for(i=0;i<ncoord[0];i++){
-     X[i]=(double *) Calloc(nbetas[0],double);
+     X[i]=(double *) R_Calloc(nbetas[0],double);
              }
    //          
-      sX= (double **) Calloc(ncoord[0],double *);
+      sX= (double **) R_Calloc(ncoord[0],double *);
      for(i=0;i<ncoord[0];i++){
-     sX[i]=(double *) Calloc(nbetas[0],double);
+     sX[i]=(double *) R_Calloc(nbetas[0],double);
              }        
      /*********/  
 
@@ -211,21 +211,21 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
     /***********/   
     nvari=*npar * (*npar+1)/2;
     
-    gradcor=(double *) Calloc(*nparc,double);
-    gradient=(double *) Calloc(*npar,double);
-    sumgrad=(double *) Calloc(*npar,double);
-    subvari=(double *) Calloc(nvari,double);
+    gradcor=(double *) R_Calloc(*nparc,double);
+    gradient=(double *) R_Calloc(*npar,double);
+    sumgrad=(double *) R_Calloc(*npar,double);
+    subvari=(double *) R_Calloc(nvari,double);
     
     npts=(int *) R_alloc(1, sizeof(int));
     rangex=(double *) R_alloc(2, sizeof(double));
     rangey=(double *) R_alloc(2, sizeof(double));
-    scoordx=(double *) Calloc(ncoord[0],double);
-    scoordy=(double *) Calloc(ncoord[0],double);
-    sdata=(double *) Calloc(ncoord[0],double);
+    scoordx=(double *) R_Calloc(ncoord[0],double);
+    scoordy=(double *) R_Calloc(ncoord[0],double);
+    sdata=(double *) R_Calloc(ncoord[0],double);
     
     if(*grid){
-        ecoordx=(double *) Calloc(ncoord[0],double);
-        ecoordy=(double *) Calloc(ncoord[0],double);
+        ecoordx=(double *) R_Calloc(ncoord[0],double);
+        ecoordy=(double *) R_Calloc(ncoord[0],double);
         for(i=0;i<*ncoordx;i++)
             for(j=0;j<*ncoordy;j++){
                 ecoordx[h]=coordx[i];
@@ -481,13 +481,13 @@ void Vari_SubSamp(double *betas,double *coordx, double *coordy, double *coordt,i
         }}
     
     for(h=0;h<nvari;h++)   varimat[h]= np[0] * subvari[h]/(nsub);//update variability matrix
-    Free(gradcor);Free(gradient);
-    Free(sumgrad);Free(subvari);
-    Free(scoordx); Free(scoordy);
-    Free(sdata);
-    for(i=0;i<ncoord[0];i++) { Free(X[i]); Free(sX[i]);}
-    Free(X);Free(sX);
-    if(*grid){Free(ecoordx);Free(ecoordy);}
+    R_Free(gradcor);R_Free(gradient);
+    R_Free(sumgrad);R_Free(subvari);
+    R_Free(scoordx); R_Free(scoordy);
+    R_Free(sdata);
+    for(i=0;i<ncoord[0];i++) { R_Free(X[i]); R_Free(sX[i]);}
+    R_Free(X);R_Free(sX);
+    if(*grid){R_Free(ecoordx);R_Free(ecoordy);}
     return;
 }
 /********************************************************************************/
@@ -615,11 +615,11 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
    
     
     
-        X= (double **) Calloc(NTOT,double *);
-        sX= (double **) Calloc(NTOT,double *);
+        X= (double **) R_Calloc(NTOT,double *);
+        sX= (double **) R_Calloc(NTOT,double *);
         for(i=0;i<(NTOT);i++){
-            X[i]=(double *) Calloc(nbetas[0],double);
-            sX[i]=(double *) Calloc(nbetas[0],double);
+            X[i]=(double *) R_Calloc(nbetas[0],double);
+            sX[i]=(double *) R_Calloc(nbetas[0],double);
          }
 
         qq=0;
@@ -653,22 +653,22 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
     int nsub1 =0;
     
     double *res_sub;
-    res_sub=(double *) Calloc(NTOT,double);
+    res_sub=(double *) R_Calloc(NTOT,double);
 
     Rep(coordt,ns, res_sub);
-    gradcor=(double *) Calloc(*nparc,double);
-    gradient=(double *) Calloc(*npar,double);
-    subvari=(double *) Calloc(nvari,double);
+    gradcor=(double *) R_Calloc(*nparc,double);
+    gradient=(double *) R_Calloc(*npar,double);
+    subvari=(double *) R_Calloc(nvari,double);
     
     for(i=0;i<=numintx;i++){
         for(j=0;j<=numinty;j++){  // cycle for each block∫∫
             *npts=0;   // number of points in the block
-            ns_sub=(int *) Calloc(ntime[0],int);
-            NS_sub=(int *) Calloc(ntime[0],int);
+            ns_sub=(int *) R_Calloc(ntime[0],int);
+            NS_sub=(int *) R_Calloc(ntime[0],int);
           
-                scoordx=(double *) Calloc(NTOT,double);
-                scoordy=(double *) Calloc(NTOT,double);
-                sdata=(double *) Calloc(NTOT ,double);
+                scoordx=(double *) R_Calloc(NTOT,double);
+                scoordy=(double *) R_Calloc(NTOT,double);
+                sdata=(double *) R_Calloc(NTOT ,double);
             
             SetSampling_s(coordx,coordy,data,npts,nbetas[0],scoordx,scoordy,
                           sdata,xgrid[i]+dimwinx,xgrid[i],ygrid[j]+dimwiny,ygrid[j],
@@ -680,14 +680,14 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                           nwpair=0;//initialize the number of pairs in the window
                 for(f=0;f<nsub_t;f++){//loop for the number of tmporal sub-sampling:
                     
-                    sumgrad=(double *) Calloc(npar[0],double);
-                    s2data=(double *) Calloc(npts[0] ,double);
-                    s2cx=(double *) Calloc(npts[0] ,double);
-                    s2cy=(double *) Calloc(npts[0] ,double);
-                    s2X= (double **) Calloc(npts[0] ,double *);
+                    sumgrad=(double *) R_Calloc(npar[0],double);
+                    s2data=(double *) R_Calloc(npts[0] ,double);
+                    s2cx=(double *) R_Calloc(npts[0] ,double);
+                    s2cy=(double *) R_Calloc(npts[0] ,double);
+                    s2X= (double **) R_Calloc(npts[0] ,double *);
                     int iii = 0;
                     for(iii=0;iii<npts[0];iii++) 
-                       {s2X[iii]=(double *) Calloc(nbetas[0],double);}
+                       {s2X[iii]=(double *) R_Calloc(nbetas[0],double);}
                     // set the sub-sample of the data:
                     
                     *ntimeS=0;// number of spatial points for each time in the block
@@ -1100,27 +1100,27 @@ void Vari_SubSamp_st2(double *betas,double *coordx, double *coordy, double *coor
                         for(p=0;p<*npar;p++){
                                for(q=p;q<*npar;q++){subvari[h]=subvari[h]+sumgrad[p]*sumgrad[q]/nwpair;h++;}}
                         
-                        Free(sumgrad); Free(s2data);Free(s2cx);Free(s2cy);
+                        R_Free(sumgrad); R_Free(s2data);R_Free(s2cx);R_Free(s2cy);
                         int sss =0;
-                        for(sss=0;sss<(npts[0] );sss++) {Free(s2X[sss]);}
-                        Free(s2X);
+                        for(sss=0;sss<(npts[0] );sss++) {R_Free(s2X[sss]);}
+                        R_Free(s2X);
                         nsub++;}//END f loop
                 }
             }  //END ID xgrid[i]
-            Free(scoordx); Free(scoordy);Free(sdata);
+            R_Free(scoordx); R_Free(scoordy);R_Free(sdata);
         }//END j loop
     }//END i loop
     
-    Free(ns_sub);Free(NS_sub);Free(res_sub);
+    R_Free(ns_sub);R_Free(NS_sub);R_Free(res_sub);
     for(h=0;h<nvari;h++)  varimat[h]= np[0]*subvari[h]/(nsub); //update variability matrix
     
     
-    Free(gradcor);
-    Free(gradient);
-    Free(subvari);
-    //Free(Xl);Free(Xm);
-    for(i=0;i<NTOT;i++) { Free(X[i]); Free(sX[i]);}
-    Free(X);Free(sX);
+    R_Free(gradcor);
+    R_Free(gradient);
+    R_Free(subvari);
+    //R_Free(Xl);R_Free(Xm);
+    for(i=0;i<NTOT;i++) { R_Free(X[i]); R_Free(sX[i]);}
+    R_Free(X);R_Free(sX);
   
     return;
 }
@@ -1145,35 +1145,35 @@ void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coor
 
     nvari=*npar * (*npar+1)/2;
 
-    gradcortt=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcortv=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvt=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvv=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradient=(double *) Calloc(*npar,double);
-    score=(double *) Calloc(*npar,double);
-    subvari=(double *) Calloc(nvari,double);
+    gradcortt=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcortv=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvt=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvv=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradient=(double *) R_Calloc(*npar,double);
+    score=(double *) R_Calloc(*npar,double);
+    subvari=(double *) R_Calloc(nvari,double);
 
     double *gradcorttii,*gradcorvvii ,*gradcorvtii  ,*gradcortvii ,*gradcorttij ,*gradcorvvij ,*gradcorvtij,*gradcortvij;
-    gradcorttii=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvvii=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvtii=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcortvii=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorttij=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvvij=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcorvtij=(double *) Calloc(*nparc,double);// Correlation gradient
-    gradcortvij=(double *) Calloc(*nparc,double);// Correlation gradient
+    gradcorttii=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvvii=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvtii=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcortvii=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorttij=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvvij=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcorvtij=(double *) R_Calloc(*nparc,double);// Correlation gradient
+    gradcortvij=(double *) R_Calloc(*nparc,double);// Correlation gradient
     
     int *indx;
     indx = (int *) R_alloc(N, sizeof(int));
     double *col;
     col =(double *) R_alloc(N, sizeof(double));
     double **M;
-    M= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){M[i]=(double *) Calloc(N,double);}
+    M= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){M[i]=(double *) R_Calloc(N,double);}
     
     double **inverse;
-    inverse= (double **) Calloc(N,double *);
-    for(i=0;i<N;i++){inverse[i]=(double *) Calloc(N,double);}
+    inverse= (double **) R_Calloc(N,double *);
+    for(i=0;i<N;i++){inverse[i]=(double *) R_Calloc(N,double);}
     double *dat; //dataÁÁÁ
     dat=(double *) R_alloc(N, sizeof(double));
 
@@ -1183,13 +1183,13 @@ void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coor
     rangey=(double *) R_alloc(2, sizeof(double));
 
     
-    scoordx=(double *) Calloc(ncoord[0],double);
-    scoordy=(double *) Calloc(ncoord[0],double);
-    sdata=(double *) Calloc(ncoord[0],double);
+    scoordx=(double *) R_Calloc(ncoord[0],double);
+    scoordy=(double *) R_Calloc(ncoord[0],double);
+    sdata=(double *) R_Calloc(ncoord[0],double);
     
     if(*grid){
-        ecoordx=(double *) Calloc(ncoord[0],double);
-        ecoordy=(double *) Calloc(ncoord[0],double);
+        ecoordx=(double *) R_Calloc(ncoord[0],double);
+        ecoordy=(double *) R_Calloc(ncoord[0],double);
         for(i=0;i<*ncoordx;i++)
             for(j=0;j<*ncoordy;j++){
                 ecoordx[h]=coordx[i];
@@ -1567,30 +1567,30 @@ void Vari_SubSamp_biv(double *betas,double *coordx, double *coordy, double *coor
 
     for(h=0;h<nvari;h++) varimat[h]= np[0] * subvari[h]/(nsub* 1);//update variability matrix
     
-    Free(gradcortt);// Correlation gradient
-    Free(gradcortv);// Correlation gradient
-    Free(gradcorvt);// Correlation gradient
-    Free(gradcorvv);// Correlation gradient
-    Free(gradcorttii);// Correlation gradient
-    Free(gradcorvvii);// Correlation gradient
-    Free(gradcorvtii);// Correlation gradient
-    Free(gradcortvii);// Correlation gradient
-    Free(gradcorttij);// Correlation gradient
-    Free(gradcorvvij);// Correlation gradient
-    Free(gradcorvtij);// Correlation gradient
-    Free(gradcortvij);// Correlation gradient
-    Free(gradient);
-    Free(score);
-    Free(subvari);
-    for(i=0;i<N;i++)  {Free (inverse[i]);Free(M[i]);}
-    Free(M);Free(inverse);
+    R_Free(gradcortt);// Correlation gradient
+    R_Free(gradcortv);// Correlation gradient
+    R_Free(gradcorvt);// Correlation gradient
+    R_Free(gradcorvv);// Correlation gradient
+    R_Free(gradcorttii);// Correlation gradient
+    R_Free(gradcorvvii);// Correlation gradient
+    R_Free(gradcorvtii);// Correlation gradient
+    R_Free(gradcortvii);// Correlation gradient
+    R_Free(gradcorttij);// Correlation gradient
+    R_Free(gradcorvvij);// Correlation gradient
+    R_Free(gradcorvtij);// Correlation gradient
+    R_Free(gradcortvij);// Correlation gradient
+    R_Free(gradient);
+    R_Free(score);
+    R_Free(subvari);
+    for(i=0;i<N;i++)  {R_Free (inverse[i]);R_Free(M[i]);}
+    R_Free(M);R_Free(inverse);
     
-    Free(scoordx);
-    Free(scoordy);
-    Free(sdata);
+    R_Free(scoordx);
+    R_Free(scoordy);
+    R_Free(sdata);
     if(*grid){
-        Free(ecoordx);
-        Free(ecoordy);
+        R_Free(ecoordx);
+        R_Free(ecoordy);
     }
     
     return;

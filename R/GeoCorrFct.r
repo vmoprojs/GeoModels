@@ -10,14 +10,25 @@ GeoCorrFct<- function(x,t=NULL,corrmodel, model="Gaussian",distance="Eucl",
   #############################################################################################
 CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu,model, nuisance,param,N)
     {
+
+
        if(!bivariate) { 
-                             p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
-                             as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model),as.double(nuisance),as.double(param),
-                             as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-                             cc=p$corr
+         #print("·")
+         nn=numlags*numlagt
+         p=dotCall64::.C64('VectCorrelation',SIGNATURE = c("double","integer","double","integer","integer","double",
+                  "integer","double","double","double","integer"),  
+    corr=dotCall64::numeric_dc(nn),corrmodel,lags,numlags, numlagt,mu,model,nuisance,param,lagt,N,
+         INTENT =c("rw","r","r","r","r","r","r","r","r","r","r"),PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+             cc=p$corr
+           #p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
+            #                 as.integer(numlags), as.integer(numlagt), as.double(mu),as.integer(model)
+             #                ,as.double(nuisance),as.double(param), as.double(lagt),as.integer(N), PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+                            
                     }
         else    {
-                             p=.C('VectCorrelation_biv', corr=double(numlags*4),vario=double(numlags*4), as.integer(corrmodel), as.double(lags),
+                nn=numlags*4
+                             p=.C('VectCorrelation_biv', corr=double(nn),vario=double(nn), as.integer(corrmodel), as.double(lags),
                              as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
                              as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
                              cc=c(p$corr,p$vario)   
@@ -48,7 +59,7 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
 
 
 
-
+if(is.null(t)) t=0
    
 mu=0;nuisance=0
 mm=0
@@ -61,11 +72,9 @@ else nt=1
 num_betas=c(1,1)
 if(!bivariate) if(sum((names(param)=='mean'))==0) param$mean=0 # adding mean if missing
 
-
 mu=as.numeric(param$mean)
   ## selecting nuisance mean annd corr parameters
       if(!bivariate){
-       
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
         nuisance <- c(param)[NuisParam(model,FALSE,num_betas)]
         sel=substr(names(nuisance),1,4)=="mean"
@@ -73,14 +82,9 @@ mu=as.numeric(param$mean)
         nuisance=nuisance[!sel]
         }
       if(bivariate){
-
         if(!covariance) param$sill_1=param$sill_2=1
-        
-
         parcorr <- c(param)[CorrelationPar(CkCorrModel(corrmodel))]
         nuisance <- c(param)[NuisParam(model,bivariate,num_betas)]
-
-
     }
 
 correlation <- CorrelationFct(bivariate,CkCorrModel(corrmodel), x, t, nx, nt,mu,
@@ -117,7 +121,7 @@ if(!bivariate){
 ###### non Gaussian cases
 ##########################
 
-   if(model=="SkewGausssian") {    
+   if(model=="SkewGaussian") {    
             if(bivariate) {}
               else {
 
@@ -127,7 +131,6 @@ if(!bivariate){
               vv=as.numeric(nuisance['sill']);sk=as.numeric(nuisance['skew']);sk2=sk^2;corr2=correlation^2;  
               cc=(2*sk2)*(sqrt(1-corr2) + correlation*asin(correlation)-1)/(pi*vv+sk2*(pi-2)) + (correlation1*vv)/(vv+sk2*(1-2/pi))
               vs=(vv+sk2*(1-2/pi))
-              
               cova=cc; 
                }
                    }
@@ -506,10 +509,10 @@ plot.GeoCorrFct<- function(x,type="p",...)
 
 if(!inherits(x,"GeoCorrFct"))       stop("Enter an object obtained from the function GeoCorrFct\n")
 
-#opar=par(no.readonly = TRUE)
-#on.exit(par(opar))
+opar=par(no.readonly = TRUE)
+on.exit(par(opar))
 
-old.par <- par(no.readonly = TRUE)
+#old.par <- par(no.readonly = TRUE)
 
 space=!x$bivariate&&!x$spacetime
 ################################# spatial ###################################################################
@@ -589,7 +592,7 @@ persp(cc,x= x$distances,y=x$times, theta = 20, phi = 30,
 
 
  if(type=="p") {  plot( x$distances,cc[,1],type="p",xlab="Spatial Distances",main="Spatial Marginal",axes=FALSE,...)    ;axis(1);axis(2)
-                  print("gere")
+               
                   plot( x$times,cc[1,],    type="p",xlab="Times",main="Temporal marginal",axes=FALSE,...)    ;axis(1);axis(2)
               }
 
@@ -617,6 +620,6 @@ persp(cc,x= x$distances,y=x$times, theta = 20, phi = 30,
    }
 }
 ################################################################################################
-par(old.par)
+invisible()
 }  
 

@@ -448,10 +448,6 @@ int fmin_int(int u,int v);
 
 double bi_matern_bounds(double scale11,double scale22,double scale12,double nu11,double nu22,double nu12,double t,int c);
 
-
-
-
-
 double one_log_T(double z,double m, double sill, double df);
 double one_log_tukeyh(double z,double m, double sill, double tail);
 double one_log_tukeyhh(double z,double m, double sill, double h1,double h2);
@@ -475,8 +471,6 @@ double one_log_PoisgammaZIP(int z,double lambda, double mup,double shape);
 double one_log_loglogistic(double z,double m, double shape);
 double one_log_logistic(double z,double m, double sill);
 double one_log_negbinom_marg(int u,int N, double p);
-
-
 double biv_binom (int NN, int u, int v, double p01,double p10,double p11);
 double biv_binom2(int NN_i,int NN_j, int k, int u, int v, double p01,double p10,double p11);
 double log_biv2gauss(int *cormod, double dij,double *par, double data1, double data2, int first,int second);
@@ -485,15 +479,10 @@ double appellF4(double a,double b,double c,double d,double x,double y);
 double biv_PoissonGamma(double corr,int r, int t, double mean_i, double mean_j, double a);
 double biv_PoissonZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2);
 double biv_PoissonGammaZIP(double corr,int r, int t, double mean_i, double mean_j,double mup,double nugget1,double nugget2,double shape);
-
 double biv_binomnegZINB(int N,double corr,int r, int t, double mean_i, double mean_j,double nugget1,double nugget2,double mup);
-
-
 double biv_wrapped(double alfa,double u, double v, double mi, double mj, double nugget,double sill,double corr);
-
 double biv_Weibull(double corr,double zi,double zj,double mui, double muj, double shape);
-double  biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2);
-
+double biv_Weibull2(double rho12,double zi,double zj,double mi,double mj, double shape1,double shape2);
 double biv_gamma(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma2(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_gamma_gen(double corr,double zi,double zj,double mui, double muj, double shape,double n);
@@ -503,7 +492,6 @@ double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1
 //double log_biv_binom (int NN, double u, double v, double psm,double psj);
 double biv_LogLogistic(double corr,double zi,double zj,double mui, double muj, double shape);
 double biv_Logistic(double corr,double zi,double zj,double mui, double muj, double sill);
-
 double biv_binomneg (int NN, int u, int v, double p01,double p10,double p11);
 double biv_binegbinary(int NN, int u, int v,double pu,double pv, double p11);
 double biv_binom222(int n1,int n2, int u, int v, double p01,double p10,double p11);
@@ -517,10 +505,8 @@ double psi(int i, int j, double p1, double p2, double p12);
 double cov_binom_neg(int m,double p11,double p1, double p2);
 double biv_poisbin (int NN,  int u, int v, double p01,double p10,double p11);
 double biv_poisbinneg(int NN, int u, int v, double p01,double p10,double p11);
-
 double biv_two_piece_bimodal(double rho,double zi,double zj,double sill,double nuu,double delta,double eta,
              double p11,double mui,double muj);
-
 double cor_pois(double rho,double mi,double mj);
 double e_n(int k,double x);
 double biv_skew(double corr,double zi,double zj,double mi,double mj,double vari,double skew,double nugget);
@@ -534,35 +520,27 @@ double biv_Mis_PoissonZIP(double corr,double data_i, double data_j,
                              double mean_i, double mean_j,double mup,double nugget1,double nugget2);
 double triv_skew(double x,double c_0i,double c_0j, double rho,double data_i,double data_j,double *nuis);
 
-
 double LambertW(double z);
 double inverse_lamb(double x,double tail);
 double dbnorm(double x_i,double x_j,double mean_i,double mean_j,double sill,double corr);
 double biv_tukey_h(double data_i, double data_j, double mean_i, double mean_j, double tail, double sill, double corr);
 double biv_tukey_hh(double corr,double data_i,double data_j,double mui,double muj,
     double sill,double hl,double hr);
-
 double cond_exp_skew(double c_0i,double c_0j,double rho, double data_i,double data_j,double *nuis);
 double cond_exp_bin(int *cormod,double data_i,double data_j,double lags_i,double lags_j,double lags,double *nuis,double *par,double psm);
-
-
 double biv_cop(double rho,int type_cop,int cond,
              double z1,double z2,double mu1,double mu2,double *nuis,int model, int NN1,int NN2);
-
 double marg_binom(int n,double x,double p);
-
 double marg_binomneg(int n,int x,double p);
-
 double marg_pois(int n,double x,double p);
-
 double marg_geom(int x,double p);
-
+double corr_pois_gen(double corr,double mean_i, double mean_j, double a);
+double corr_pois_s(double rho,double mi);
 double corr_pois(double rho,double mi,double mj);
 double corr_pois_gen(double corr,double mean_i, double mean_j, double a);
 double corr_tukeygh(double rho,double eta,double tail);
 double corr_skewt(double corr,double df,double skew);
 double corr_pois1(double rho,double lambda1,double lambda2);
-
 double marg_p(double categ_0,double psm,int *model,int n);
 
 double CheckCor(int *cormod, double *par);
@@ -1315,8 +1293,8 @@ End
 
 
 
-
-
+double log_pochhammer(double a, int n);
+double hypergeometric_1F2(double a, double b, double c, double x, double tol);
 double hyp2f1_neg_c_equal_bc(double a, double b, double x);
 double hyp2f1ra(double a, double b, double c, double x,double *loss);
 double lgam(double x);

@@ -219,6 +219,6 @@ for(i in 1:ln){
  if(spacetime){}
 
 }
- #par(opar)
+ invisible()
 ###### end scatterplot based on neighb
 }

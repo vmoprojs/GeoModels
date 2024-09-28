@@ -71,41 +71,35 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
     lenbint <- NULL
     variogramst <- NULL
     variogramt <- NULL  
+    centert=NULL
+    regular=NULL
   #***********************************************************************************************#
-  #***********************************************************************************************#
+  #********************** bivariate *************************************************************************#
   #***********************************************************************************************#
     if(initparam$bivariate){
-
-           memdist=FALSE
+  memdist=FALSE
   if(!is.null(neighb)) memdist=TRUE
-
 
     n_var=initparam$numtime
     spacetime_dyn=FALSE
     if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
     ns=initparam$ns
     NS=cumsum(ns)
-
-    if(!spacetime_dyn){
-                                  data=c(t(data))
-                                  if(memdist){coordx=rep(coordx,n_var)
-                                             coordy=rep(coordy,n_var)}
-
-                         }
+    if(!spacetime_dyn){  data=c(t(data))
+                         if(memdist){coordx=rep(coordx,n_var)
+                                     coordy=rep(coordy,n_var)}
+                      }
     if(spacetime_dyn) data=unlist(data)
     NS=c(0,NS)[-(length(ns)+1)]
     if(!memdist)  {  
-         
                moments_marg<-double(n_var*numvario)   # vect of square differences for each component (n_var) 11  e 22
                lenbins_marg<-integer(n_var*numvario)  #
                moments_cross<-double(0.5*n_var*(n_var-1)*numvario)  # vect of square differences for cross components (12)
                lenbins_cross<-integer(0.5*n_var*(n_var-1)*numvario) #
-                
-                     DEV=dotCall64::.C64("Binned_Variogram_biv2", 
+               DEV=dotCall64::.C64("Binned_Variogram_biv2", 
                      SIGNATURE = c("double","double","double","double","double", "integer","double","integer","integer","double","integer","integer"),
                       bins=bins, coordx,coordy,coordt,data,lenbins_cross=lenbins_cross, moments_cross=moments_cross, numbins,lenbins_marg=lenbins_marg,
                        moments_marg=moments_marg,ns,NS,INTENT = c("rw","r","r","r","r","rw","rw","rw","rw","rw","r","r"),NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
-              
                bins=DEV$bins
                lenbins_cross=DEV$lenbins_cross; moments_cross=DEV$moments_cross
                lenbins_marg=DEV$lenbins_marg; moments_marg=DEV$moments_marg
@@ -122,16 +116,12 @@ GeoVariogram <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL
                variograms=rbind(variograms_11,variograms_22) 
                variogramst=variograms_12
             }   
-
              else {
              idx=GeoNeighIndex(coordx=cbind(coordx,coordy),coordx_dyn=coordx_dyn,
                   distance = distance, neighb = neighb, maxdist = maxdist,maxtime=1,radius=1,bivariate=TRUE)
-    
              mm=range(idx$lags)
              moments00=double(numvario);moments10=double(numvario);moments11=double(numvario)
              lenbins00=double(numvario);lenbins10=double(numvario);lenbins11=double(numvario);
-        
-
 DEV=dotCall64::.C64("Binned_Variogram_biv2new", 
                     SIGNATURE = c("double","integer","double","double", 
                       "double","double","double","double","double",
@@ -154,15 +144,11 @@ DEV=dotCall64::.C64("Binned_Variogram_biv2new",
                   }  
     }
   #***********************************************************************************************#
+  #********************** spacetime *************************************************************************#
   #***********************************************************************************************#
-  #***********************************************************************************************#
-    if(initparam$spacetime){
-
-  
+if(initparam$spacetime){
      memdist=FALSE
-  if(!is.null(neighb)) memdist=TRUE
-
-
+   if(!is.null(neighb)) memdist=TRUE
       numtime=initparam$numtime
       spacetime_dyn=FALSE
       if(!is.null(coordx_dyn)) spacetime_dyn=TRUE
@@ -178,20 +164,33 @@ DEV=dotCall64::.C64("Binned_Variogram_biv2new",
       lenbinst <- integer(numbinst)  # vector of spatial-temporal bin sizes
       #if(cloud) fname <- 'Cloud_Variogram_st' else 
       fname <- 'Binned_Variogram_st'
+
       if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2]; }
       else{
-      if(!spacetime_dyn){
-                                  data=c(t(data))
-                                  coordx=rep(coordx,numtime)
-                                  coordy=rep(coordy,numtime)
+              if(!spacetime_dyn){ data=c(t(data))
+                          coordx=rep(coordx,numtime)
+                          coordy=rep(coordy,numtime)
                          }
-      if(spacetime_dyn) data=unlist(data)
+               if(spacetime_dyn) data=unlist(data)
       }
-         NS=c(0,NS)[-(length(ns)+1)]
-
+       NS=c(0,NS)[-(length(ns)+1)]
       if(spacetime_dyn) fname <- paste(fname,"2_dyn",sep="") 
       if(!spacetime_dyn) fname <- paste(fname,"2",sep="") 
-
+##### temporal bint #############
+    if(var(diff(coordt))==0)           ### regular times   
+         { regular=TRUE
+           #bint=c(0,coordt[-numtime]);bint=unique(bint)
+           u=unique(diff(coordt)); bint=seq(0,max(coordt)-u,u)
+           
+         }
+     else  {     ### not regular times
+           regular=FALSE
+           step=max(nabor::knn(coordt,  k=length(coordt))$nn.dists)/(numbint-1);
+           bint[1]=0;
+           for(h in 2:(numbint)) bint[h]=bint[h-1]+step
+         }
+#################################
+  
   if(!memdist)  { 
                     EV=dotCall64::.C64(fname, 
                     SIGNATURE = c("double","double","double","double","double","double",
@@ -203,38 +202,38 @@ DEV=dotCall64::.C64("Binned_Variogram_biv2new",
                                  NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
     }
     else {
-              stop("not implemented")
+             stop("not implemented")
              idx=GeoNeighIndex(cbind(coordx,coordy),coordt=coordt,coordx_dyn=coordx_dyn,distance = distance, neighb = neighb, maxdist = maxdist,maxtime=maxtime,radius=radius)
-
-
         }
-       bins=EV$bins
-       bint=EV$bint
-       lenbins=EV$lenbins
-       lenbint=EV$lenbint
+     #print(bint)
+     #print(numbint)
+     #print(regular)
+
+       bins=EV$bins;   lenbins=EV$lenbins
+       bint=EV$bint;  lenbint=EV$lenbint
+ 
+       #print(bint)
        lenbinst=EV$lenbinst
-       moments=EV$moments
-       momentt=EV$momentt
+       moments=EV$moments; momentt=EV$momentt
+       #print(momentt)
        momentst=EV$momentst
        centers <- bins[1:numvario]+diff(bins)/2
-     
-      indbin <- lenbins>0
-      indbint <- lenbint>0
-      indbinst <- lenbinst>0
+       if(!regular) centert <- bint[1:(numbint-1)]+diff(bint)/2
+       ###  make sure that lengths in bins/t >0
+      indbin <- lenbins>0; indbint <- lenbint>0; indbinst <- lenbinst>0
       bins <- bins[indbin]; bint <- bint[indbint]
-      centers <- centers[indbin]; 
+      centers <- centers[indbin];    centert <- centert[indbint]; 
       moments <- moments[indbin]; lenbins <- lenbins[indbin]
       momentt <- momentt[indbint]; lenbint <- lenbint[indbint]; 
       momentst <- momentst[indbinst]; lenbinst <- lenbinst[indbinst]
+      ####
       variograms <- moments/lenbins; variogramt <- momentt/lenbint; variogramst <- momentst/lenbinst
     }
-  #***********************************************************************************************#
-  #***********************************************************************************************#
-  #***********************************************************************************************#
-
-  ## spatial univariate case
+#***********************************************************************************************#
+#********************** spatial *************************************************************************#
+#***********************************************************************************************#
+ 
     if(!initparam$bivariate&&!initparam$spacetime){  
-
       memdist=FALSE
   if(!is.null(neighb)) memdist=TRUE
      
@@ -270,11 +269,7 @@ DEV=dotCall64::.C64("Binned_Variogram_biv2new",
                     idx$lags,lenbins=lenbins, moments=moments, numbins,mm,
                     INTENT = c("w","r","r","r","r","w","w","r","r"), 
                     NAOK = TRUE, PACKAGE = "GeoModels", VERBOSE = 0)
-
-
        }
-
-   
        bins=EV$bins
        lenbins=EV$lenbins
        moments=EV$moments
@@ -296,6 +291,7 @@ DEV=dotCall64::.C64("Binned_Variogram_biv2new",
                        bivariate=bivariate,
                        cloud=cloud,
                        centers=centers,
+                       centert= centert,
                        lenbins=lenbins,
                        lenbinst=lenbinst,
                        lenbint=lenbint,
@@ -375,32 +371,62 @@ if(x$bivariate)       bivariate=TRUE
     if(ispatim){
         par(mfrow=c(2,2)) 
 
-
-         evario = matrix(x$variogramst,nrow=length(x$centers),ncol=length(x$bint),byrow=TRUE)
+##############################     
+#####  spatio-temporal  graphic 
+############################## 
+   if(!is.null(x$centert))
+         {
+         evario = matrix(x$variogramst,nrow=length(x$centers),ncol=length(x$centert),byrow=TRUE)
+         evario = rbind(c(0,x$variogramt),cbind(x$variograms,evario))
+         evario.grid = as.matrix(expand.grid(c(0,x$centers),c(0,x$centert)))
+         }
+  else 
+        {
+          evario = matrix(x$variogramst,nrow=length(x$centers),ncol=length(x$bint),byrow=TRUE)
          evario = rbind(c(0,x$variogramt),cbind(x$variograms,evario))
          evario.grid = as.matrix(expand.grid(c(0,x$centers),c(0,x$bint)))
+        } 
     scatterplot3d::scatterplot3d(evario.grid[,1],evario.grid[,2], c(evario),
                               type="h",highlight.3d=TRUE,cex.axis=.7,cex.lab=.7,
                               main=paste("Empirical",vario.main),xlab="Distance",
                               ylab="Time",zlab=vario.zlab,mar=c(2,2,2,2),mgp=c(0,0,0))
     #par(mai=c(.2,.2,.2,.2),mgp=c(1,.3, 0))
     par(mai=c(.2,.2,.2,.2))
-     persp(c(0,x$centers), c(0,x$bint), evario,
+
+      if(!is.null(x$centert)) {
+      persp(c(0,x$centers), c(0,x$centert), evario,
       xlab="h", ylab="u", zlab=expression(gamma(h,u)),
       ltheta=90, shade=0.75, ticktype="detailed", phi=30,
       theta=30,main="Smoothed space-time semi-variogram",cex.axis=.8,
-      cex.lab=.8)
+      cex.lab=.8)}
+       
+      else {
+      persp(c(0,x$centers), c(0,x$bint), evario,
+      xlab="h", ylab="u", zlab=expression(gamma(h,u)),
+      ltheta=90, shade=0.75, ticktype="detailed", phi=30,
+      theta=30,main="Smoothed space-time semi-variogram",cex.axis=.8,
+      cex.lab=.8)}
+      
 
-
-
-
+##############################     
+#####  temporal  marginal  graphic 
+############################## 
    par(mai=c(.5,.5,.5,.5),mgp=c(1.6,.6,0))
+   if(!is.null(x$centert)){
+plot.default(x$centert, x$variogramt, xlab='t', ylab=expression(gamma(t)),
+     ylim=c(0, max(x$variogramt)),xlim=c(0,max(x$bint)),
+     main="Marginal temporal semi-variogram",...)
+  
+   }
+else{
 plot.default(x$bint, x$variogramt, xlab='t', ylab=expression(gamma(t)),
      ylim=c(0, max(x$variogramt)),xlim=c(0,max(x$bint)),
      main="Marginal temporal semi-variogram",...)
-
    par(mai=c(.5,.5,.5,.5),mgp=c(1.6,.6,0))
-
+ }
+##############################    
+#####  spatial  marginal  graphic 
+############################## 
 plot.default(x$centers, x$variograms, xlab='h', ylab=expression(gamma(h)),
      ylim=c(0, max(x$variograms)), xlim=c(0, max(x$centers)),
      main="Marginal spatial semi-variogram",...)

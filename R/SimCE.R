@@ -1,3 +1,64 @@
+
+######################## space time case: separable with Circ embeeding+ftt ##########################
+CE_Space_Time <- function(coords, time.seq, param,corrmodel,distance){
+
+  time.seq <- time.seq - time.seq[1]
+  Ns <- nrow(coords); Nt <- length(time.seq)
+  Nt.ext <- (2*(Nt-1)); N0 <- Ns*Ns*Nt.ext
+#################################################
+###### main separable models ####################
+#################################################
+if(corrmodel=="Matern_Matern"){
+  param_s <- list(nugget = 0, sill = 1, scale = param$scale_s, smooth = param$smooth_s)
+  param_t <- list(nugget = 0, sill = 1, scale = param$scale_t, smooth = param$smooth_t) 
+  corrmodel="Matern"   
+  }
+if(corrmodel=="GenWend_GenWend"){
+  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
+  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
+  corrmodel="GenWend"                            
+  }
+if(corrmodel=="GenWend_Matern_GenWend_Matern"){
+  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
+  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
+  corrmodel="GenWend_Matern"                         
+  }
+if(corrmodel=="Kummer_Kummer"){
+  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
+  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
+  corrmodel="Kummer"                            
+  }
+if(corrmodel=="Kummer_Matern_Kummer_Matern"){
+  param_s <- list(nugget = 0,sill = 1, scale = param$scale_s, smooth = param$smooth_s,power2=param$power2_s)
+  param_t <- list(nugget = 0,sill = 1, scale = param$scale_t, smooth = param$smooth_t,power2=param$power2_t)  
+  corrmodel="Kummer_Matern"                         
+  }
+#################################################
+################################################# 
+  cova.mat.s <- GeoCovmatrix(coordx = coords, corrmodel = corrmodel, param = param_s,distance=distance)$covmatrix
+  cova.mat.s <- (1 - param$nugget)*cova.mat.s
+  diag(cova.mat.s) <- 1
+  ## cholesky decomposition
+  chol.s <- t(chol(cova.mat.s))
+  auxiliar.seq <- c(time.seq, rev(time.seq[-c(1,Nt)]))
+  cova.mat.t <- (1 - param$nugget)*GeoCorrFct(x = auxiliar.seq, 
+                                                              corrmodel = corrmodel, 
+                                                              param = param_t)$corr
+  cova.mat.t[auxiliar.seq == 0] <- 1
+  spectrum.t <- sqrt(Re( fft(cova.mat.t) ))
+  
+  X <- complex(real = rep(0, Ns*Nt.ext), imaginary = rep(0, Ns*Nt.ext) ) 
+  for(t in 1:Nt.ext){
+    Z0 <- complex(real = rnorm(Ns), imaginary = rnorm(Ns) ) 
+    X[1:Ns + Ns*(t-1)] <- (spectrum.t[t]*chol.s)%*%Z0
+  }
+  X <- matrix(X, ncol = Ns, byrow = T)
+  X <- apply(X, 2, function(x) fft(x, T)/sqrt(Nt.ext))
+  X <- sqrt(param$sill)*X[1:Nt,]
+  result <-  c(t(Re(X)))
+  return(result)
+}
+
 ############################################################
 SimCE<-function(M,N,x,y,corrmodel,param,mean.val,max.ext)
 {

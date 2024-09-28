@@ -103,6 +103,13 @@ if(model %in% c("Poisson")) {
  q_t1=qpois(probabilities1, lambda=exp(pp["mean"]))
  plot(q_t,q_e,main="Poisson qq-plot",xlab=xlab,ylab=ylab,...)
 }
+
+if(model %in% c("PoissonGamma")) {
+  ff=exp(pp["mean"])
+ q_t=qnbinom(probabilities, size=as.numeric(pp["shape"]), prob=as.numeric(pp["shape"])/(ff+as.numeric(pp["shape"])))
+ q_t1=qnbinom(probabilities1, size=as.numeric(pp["shape"]), prob=as.numeric(pp["shape"])/(ff+as.numeric(pp["shape"])))
+ plot(q_t,q_e,main="Poisson qq-plot",xlab=xlab,ylab=ylab,...)
+}
 #######################################  OK
 if(model %in% c("SkewGaussian"))
 {
@@ -660,40 +667,58 @@ ds=ptpbimodal1((ll-MM)/sqrt(VV),skew,delta,df,VV)
 if(!add) hist(dd,freq=F,xlim=c(min(dd),max(dd)),ylab="Density",xlab="",main="Two-Piece Bimodal Histogram",ylim=ylim,breaks=breaks,...)
 lines(ll,ds,...)
 }
-
+###############################################
+############## discrete #######################
 ###############################################  OK
 if(model %in% c("BinomialNeg")) {
-ll=as.numeric(table(dd)/length(dd))
+count=as.numeric(table(dd))
+ll=count/sum(count)
 y=sort(unique(as.numeric(dd)))#min(dd):max(dd)
 ds=dnbinom(y, size=fit$n, prob=pnorm(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Negative Histogram", ylab="Density",xlab="",  lwd = 2,...)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Negative Histogram", ylab="Density",xlab="",  ylim=ylim,lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
 ###############################################  OK
 if(model %in% c("Binomial")) {
-ll=as.numeric(table(dd)/length(dd))
+count=as.numeric(table(dd))
+ll=count/sum(count)
 y=sort(unique(as.numeric(dd)))
 ds=dbinom(y, size=fit$n, prob=pnorm(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Histogram",ylab="Density", xlab="",  lwd = 2,...)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial Histogram",ylab="Density", xlab="", ylim=ylim, lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
 
 if(model %in% c("BinomialLogistic")) {
-ll=as.numeric(table(dd)/length(dd))
+count=as.numeric(table(dd))
+ll=count/sum(count)
 y=sort(unique(as.numeric(dd)))
 ds=dbinom(y, size=fit$n, prob=plogis(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial-Logistic Histogram", ylab="Density",xlab="",  lwd = 2,...)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Binomial-Logistic Histogram", ylab="Density",xlab="", ylim=ylim,lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
 ###############################################  OK
 if(model %in% c("Poisson")) {
-ll=as.numeric(table(dd)/length(dd))
+count=as.numeric(table(dd))
+ll=count/sum(count)
 y=sort(unique(as.numeric(dd)))
 ds=dpois(y, lambda=exp(MM))
-if(!add) plot(y,ll,type = "h", col = "blue",main="Poisson Histogram", ylab="Density",xlab="",  lwd = 2,...)
+if(!add) plot(y,ll,type = "h", col = "blue",main="Poisson Histogram", ylab="Density",xlab="",ylim=ylim, lwd = 2,...)
+points(y,ds,type = "p", col = "black", lwd = 3)
+lines(y,ds)
+}
+
+
+if(model %in% c("PoissonGamma")) {
+
+count=as.numeric(table(dd))
+ll=count/sum(count)
+y=sort(unique(as.numeric(dd)))
+ff=exp(MM)
+ds=dnbinom(y, size=as.numeric(pp["shape"]), prob=as.numeric(pp["shape"])/(ff+as.numeric(pp["shape"])))
+if(!add) plot(y,ll,type = "h", col = "blue",main="Poisson Gamma (Binomial Negative) Histogram", ylab="Density",xlab="",  ylim=ylim,lwd = 2,...)
 points(y,ds,type = "p", col = "black", lwd = 3)
 lines(y,ds)
 }
@@ -703,7 +728,7 @@ lines(y,ds)
 }
  
 }
-
+invisible()
 ##########################################################
 
 }
