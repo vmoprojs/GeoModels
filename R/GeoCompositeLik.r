@@ -211,10 +211,8 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
     {
       # fname <- paste(fname,"_OCL",sep="")
       # #cat("fname de GeoComposite.r: ",fname,"\n")
-      # #print(fname)
       # 
       # path <- system.file("CL", paste(fname,".cl",sep = ""), package = "GeoModels")
-      # #print(path)
       # path <- gsub(paste("/",paste(fname,".cl",sep = ""),sep = ""),"/",path)
       # 
       # setwd(path)
@@ -600,7 +598,6 @@ colnames(CompLikelihood$hessian)=namesparam
             
             #namesgod=namesparam
             #names(CompLikelihood$score )=namesparam
-#print(namesgod)
             dimnames(CompLikelihood$sensmat) <- list(namesgod, namesgod)
             dimnames(CompLikelihood$varimat) <- list(namesgod, namesgod)
 

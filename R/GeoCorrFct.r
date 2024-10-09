@@ -13,8 +13,8 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
 
 
        if(!bivariate) { 
-         #print("·")
          nn=numlags*numlagt
+         #print(nn)
          p=dotCall64::.C64('VectCorrelation',SIGNATURE = c("double","integer","double","integer","integer","double",
                   "integer","double","double","double","integer"),  
     corr=dotCall64::numeric_dc(nn),corrmodel,lags,numlags, numlagt,mu,model,nuisance,param,lagt,N,
@@ -56,8 +56,6 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
     bivariate<-CheckBiv(CkCorrModel(corrmodel))
 
     if(!bivariate) {if(is.null(param$sill)) param$sill=1}
-
-
 
 if(is.null(t)) t=0
    

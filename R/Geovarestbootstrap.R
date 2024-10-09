@@ -65,6 +65,8 @@ if(is.null(fit$copula)){     ### non copula models
 }
 else{    ### copula models
   cat("Performing",K,"simulations....\n")
+
+
         if(method=="cholesky")
      { data_sim = GeoSimCopula(coordx=coords,coordt=fit$coordt,coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
        corrmodel=fit$corrmodel,model=fit$model,copula=fit$copula,param=append(fit$param,fit$fixed),
@@ -89,8 +91,8 @@ while(k<=K){
 
 res_est=GeoFit( data=data_sim$data[[k]], start=fit$param,fixed=fit$fixed,
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   copula=fit$copula,sensitivity=FALSE,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
-   lower=lower,upper=upper,memdist=TRUE,neighb=fit$neighb,
+   copula=fit$copula,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
+   lower=lower,upper=upper,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
@@ -99,11 +101,12 @@ if(res_est$convergence=='Successful'&&res_est$logCompLik<1.0e8)
  {
  res=rbind(res,unlist(res_est$param)) 
  pb(sprintf("k=%g", k))
-
+  k=k+1   
 }   
-  k=k+1          
+       
 
 }
+#print(res)
 #############
 }
 
@@ -133,8 +136,8 @@ xx=foreach::foreach(k = 1:K,.combine = rbind,
       pb(sprintf("k=%g", k))
       GeoFit( data=data_sim$data[[k]], start=fit$param,fixed=fit$fixed,
    coordx=coords, coordt=fit$coordt, coordx_dyn=fit$coordx_dyn,
-   copula=fit$copula,sensitivity=FALSE,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
-   lower=lower,upper=upper,memdist=TRUE,neighb=fit$neighb,
+   copula=fit$copula,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
+   lower=lower,upper=upper,neighb=fit$neighb,
    corrmodel=fit$corrmodel, model=model, sparse=FALSE,n=fit$n,
    GPU=GPU,local=local,  maxdist=fit$maxdist, maxtime=fit$maxtime, optimizer=optimizer,
    grid=fit$grid, likelihood=fit$likelihood, type=fit$type,
@@ -150,7 +153,6 @@ rm(xx,res1,conve)
 future::plan(sequential)
 ####################################################################
 }
-
 
 numparam=length(fit$param)
 invG=var(res); G=try(solve(invG),silent=TRUE);if(!is.matrix(G)) print("Bootstrap estimated Godambe matrix is singular")

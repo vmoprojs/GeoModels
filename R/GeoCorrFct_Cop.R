@@ -148,10 +148,8 @@ if(model=="Beta2")        { if(bivariate) {}
                         b1=(1-mu1)*delta;b2=(1-mu2)*delta
                         e1=a1/(a1+b1); e2=a2/(a2+b2)   
                         v1=a1*b1/((a1+b1)^2*(a1+b1+1));v2=a2*b2/((a2+b2)^2*(a2+b2+1))
-
                         min=as.numeric(param['min']);max=as.numeric(param['max'])
                         dd=max-min
-                        #print(dd);print(v1);print(v2)
                         vs= sqrt(v1*v2)*dd^2
                      }
 }        

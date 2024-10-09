@@ -2,8 +2,8 @@ Package: GeoModels
 Type: Package
 Title: Procedures for Gaussian and Non Gaussian Geostatistical (Large)
         Data Analysis
-Version: 2.0.5
-Date: 2024-08-31
+Version: 2.0.6
+Date: 2024-09-30
 Authors@R: c(person("Moreno", "Bevilacqua", role = c("aut", "cre"),
                email = "moreno.bevilacqua89@gmail.com",comment = c(ORCID = "0000-0001-8384-840X")),
               person("Víctor", "Morales-Oñate", role = "aut",email = "victor.morales@uv.cl",comment = c(ORCID = "0000-0003-1922-6571")),person("Christian", "Caamaño-Carrillo", role = "aut",email = "chcaaman@ubiobio.cl",comment = c(ORCID = "0000-0001-7241-3099")))

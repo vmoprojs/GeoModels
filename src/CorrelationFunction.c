@@ -916,7 +916,8 @@ case 23: // hyperg correlation 1 parameter with matern
           scale_s=par[2];
           scale_t=par[3];
 
-          rho=CorFunW0(h,scale_s,R_power_s)*CorFunW0(u,scale_t,R_power_t);
+          rho=CorFunW_gen(h, R_power_s, 0, scale_s)*CorFunW_gen(u, R_power_t, 0, scale_t);
+          //rho=CorFunW0(h,scale_s,R_power_s)*CorFunW0(u,scale_t,R_power_t);
         break;
         case 70:
               R_power_s=par[0];
@@ -981,6 +982,7 @@ case 23: // hyperg correlation 1 parameter with matern
             smooth_t=par[3];
             R_power_s=par[4];
             R_power_t=par[5];
+            //Rprintf("%f %f %f %f %f %f\n",h,u,scale_s,scale_t,  smooth_s,  smooth_t, R_power_s, R_power_t);
           rho=CorFunW_gen(h, R_power_s, smooth_s, scale_s)*CorFunW_gen(u, R_power_t, smooth_t, scale_t);
         break;
       // END non-separable correlation functions
@@ -2029,7 +2031,62 @@ double CorKummer(double lag,double R_power,double smooth,double scale)  // mu al
 
 
 
-/*** version 1 */
+double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
+{
+ double rho=0.0;
+  double d=2.0;
+  double x=lag/scale; 
+  if(x<1e-32) {rho=1; return(rho);}
+  int k = (int) R_power1;
+  if(k==0) {rho=CorFunWitMat(lag,scale,smooth);}  
+  else{ 
+   double delta;
+   int q,r,s,t;
+    if (smooth - 0.5 == floor(smooth - 0.5)) {
+    // case nu=0.5+k
+                for (q = 0; q <= k; q++) {
+                    for (r = 0; r <= fmax(0, q - 1); r++) {
+                        delta = 0.0;
+                        for (s = 0; s <= q - r; s++) {
+                            for (t = 0; t <= (int)(smooth - 0.5); t++) {
+                                delta += sqrt(M_PI) * poch(smooth + 0.5 - t, 2 * t) * 
+                                poch(smooth + 0.5 - t - s, s) * R_pow(-1.0, q - r - s) *
+                                exp(lgammafn(q - r + 1) - lgammafn(s + 1) - lgammafn(q - r - s + 1) -
+                                (smooth - 0.5 + t) * log(2) + (smooth - 0.5 - s - t) * log(x) - 
+                                lgammafn(smooth) - lgammafn(t + 1) - (q - r) * log(scale));
+                        }}
+            rho += R_pow(-1.0, r) * poch(k - q + 1, q) * poch(q, r) * poch(q - r, r) / 
+                                R_pow(2, q + r) / gammafn(q + 1) / gammafn(r + 1) / poch(d/2, q) * 
+                                R_pow(lag, q - r) * exp(-x) * delta;
+                    }}
+    } 
+    else { // general case 
+                for ( q = 0; q <= k; q++) {
+                    for (r = 0; r <= fmax(0, q - 1); r++) {
+                        delta = 0.0;
+                        for (s = 0; s <= q - r; s++) {
+                            for (t = 0; t <= q - r - s; t++) {
+                                delta += exp(lgammafn(q - r + 1) - lgammafn(s + 1) + (smooth + q - r - s) * log(x) -
+                                              (q - r - s) * log(2) - lgammafn(t + 1) - lgammafn(q - r - s - t + 1)) *
+                                         poch(smooth + 1 - s, s) * R_pow(-1.0, q - r - s) * 
+                                         bessel_k( x,smooth + 2 * t + r + s - q, 1);
+                            }
+                        }
+                        delta = R_pow(2, 1 - smooth) / gammafn(smooth) * delta;
+                        rho += R_pow(-1.0, r) * poch(k - q + 1, q) * poch(q, r) * poch(q - r, r) /
+                                (R_pow(2, q + r) * gammafn(q + 1) * gammafn(r + 1) * 
+                                poch(d / 2, q) )* exp(-x) * delta;
+                    }
+                }
+         }
+}
+return(rho);
+}
+
+
+
+
+/*** unstable versions  with besselI
 double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
 {
   double rho=0.0;
@@ -2039,8 +2096,6 @@ double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
   int k = (int) R_power1;
   if(k==0) {rho=CorFunWitMat(lag,scale,smooth);return(rho);}  
   else{   
-
-  if(x>21) {rho=0; return(rho);} 
   double rho1=0.0,rho2=0.0;double const1,const2, nsm, nsp; int n=0;
   double k1=gammafn(k+1)*gammafn(1-smooth);
   double k2=gammafn(k+1)*gammafn(smooth+d/2+k)*gammafn(d/2)*gammafn(-smooth)*smooth/gammafn(k+d/2);
@@ -2050,7 +2105,6 @@ double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
     const1=k1/(gammafn(n+1)*gammafn(k-n+1)*poch(d/2,n));
   rho1=rho1+ const1*R_pow(x/2,nsp)*bessel_i(x,nsm,2);//exp( log(bessel_i(x,nsm,2))+x);
     }
-
  for(n=0;n<=k;n++){
      nsp=n+smooth;
 const2= k2/(gammafn(n+1)*gammafn(k-n+1)*gammafn(smooth+d/2+n));
@@ -2059,8 +2113,8 @@ rho2=rho2+const2*R_pow(x/2,nsp)*bessel_i(x,nsp,2);// exp( log(bessel_i(x,nsp,2))
 rho=exp(x)*(rho1+rho2);
    return(rho);
  }
-}
-/*** version 2 
+}*/
+/*
 double CorFunWitMathole(double lag, double scale, double smooth,double R_power1)
 {
   double rho=0.0;
@@ -4054,6 +4108,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
 {
   int i,j,t=0;
   double ai=0.0,aj=0.0,p1=0.0,p2=0.0,dd=0.0,psj=0.0,p11=0.0,p00=0.0,p=0.0,ccc=0.0;
+  
   for(j=0;j<*nlagt;j++)
     for(i=0;i<*nlags;i++){
       if((*model==1)||(*model==10)||(*model==12)||(*model==21)||(*model==30)||(*model==36)||(*model==18)
@@ -4087,6 +4142,7 @@ void VectCorrelation(double *rho, int *cormod, double *h, int *nlags, int *nlagt
   }
       /***************************************/
       t++;}
+    //Rprintf("%d %d %d \n",*nlags,*nlagt,t);
   return;
 }
 

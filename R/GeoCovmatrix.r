@@ -89,6 +89,7 @@ if(model %in% c(1,9,34,12,20,18,39,27,38,29,21,26,24,10,22,40,28,33,42))
 ###############################################################
 if(type=="Tapering")  {
         fname <- "CorrelationMat_tap"
+
         if(spacetime) fname <- "CorrelationMat_st_tap"
        if(bivariate) fname <- "CorrelationMat_biv_tap"
        #corr=double(numpairs)

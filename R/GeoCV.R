@@ -22,7 +22,7 @@ spacetime<-CheckST(CkCorrModel(fit$corrmodel))
 bivariate<-CheckBiv(CkCorrModel(fit$corrmodel))
 K=round(K)
 if(K<2) stop("K must be grater or equal  to 2")
-if(K>10000) stop("K is  too large")
+if(K>1000) stop("K is  too large")
 if(bivariate)
    {if(!(which==1||which==2))
           stop("which must be 1 or 2")}
@@ -127,6 +127,7 @@ i=i+1
 } ##end while
 }
 
+
 ######################################################################
 #######  parallel version 
 ######################################################################
@@ -140,8 +141,6 @@ else
 }
 
 rmse=crps=mae=rmse=double(K)
-
-
 pp=round(N*(1-n.fold))
 data_to_est=matrix(0,nrow=K,ncol=pp)
 data_to_pred=matrix(0,nrow=K,ncol=N-pp)
@@ -149,14 +148,15 @@ coords_est=coords_to_pred=list()
 
 #######################
 #######################
-Mloc=Mest=list()
+Mloc=Mest=X=Xloc=list()
 cat("Selecting",K,"sub-sample...\n")
 for(i in 1:K) {
 sel_data = sample(1:N,pp)  
 
-
 #### selecting X and Xloc
-if(!is.null(X)) {X[[i]]=tempX[sel_data,]; Xloc[[i]]=tempX[-sel_data,]}
+
+if(!is.null(X)) {X[[i]]=tempX[sel_data,]; 
+                 Xloc[[i]]=tempX[-sel_data,]}
 #### selecting mu and muloc for a fixed constant mean
 if(length(fit$fixed$mean)>1)  { Mloc[[i]]=tempM[-sel_data]
                                 Mest[[i]]=tempM[sel_data]   

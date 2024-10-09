@@ -518,12 +518,7 @@ print.GeoFit <- function(x, digits = max(3, getOption("digits") - 3), ...)
         print.default(x$stderr, digits = digits, print.gap = 2,
                       quote = FALSE)
       }
-    #if(!is.null(x$varcov))
-      #{
-      #  cat('\nVariance-covariance matrix of the estimates:\n')
-      #  print.default(x$varcov, digits = digits, print.gap = 3,
-      #                quote = FALSE)
-     # }
+   
 
     cat('\n##################################################################\n')
     invisible(x)

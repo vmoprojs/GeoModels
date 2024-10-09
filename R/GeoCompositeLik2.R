@@ -28,9 +28,7 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed
 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
 
-#print(fan)
-#print(type_cop)
-#print(cond_pair)
+
 ############################################
 #if(!type_cop) { # not copula models 
 
@@ -483,7 +481,6 @@ if(!onlyvar){
 
      if(optimizer=='bobyqa')   
   {
-   # print(n);print(as.name(lname))
     #  CompLikelihood <-minqa::bobyqa(par=param, fn=eval(as.name(lname)),lower=lower,upper=upper,  
      #                   control = list( maxfun=100000),
       #                  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,namescorr=namescorr, 
@@ -501,7 +498,7 @@ if(!onlyvar){
                               lower=lower,upper=upper,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-     # tt1 <- proc.time()-tt1;print(tt1[3]/as.numeric(CompLikelihood$iterations))
+     # tt1 <- proc.time()-tt1;
     }
  
 
@@ -623,8 +620,7 @@ if(!onlyvar){
    }
  }  
  
- #a=proc.time() - ptm
- #print(a[3]/as.numeric(CompLikelihood$iterations))
+
       ########################################################################################   
       ########################################################################################
     # check the optimisation outcome
