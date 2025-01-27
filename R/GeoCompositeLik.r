@@ -4,10 +4,10 @@
 
 
 
-CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
+CompLik <- function(copula,bivariate, coordx, coordy ,coordz,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
                            numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
-                           upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,MM,aniso)
+                           upper, varest, weigthed, ns, X,sensitivity,MM,aniso)
   {
     ### Define the object function:
     comploglik <- function(param,coords,coordt, corrmodel, data, fixed, fan, n, namescorr, 
@@ -70,13 +70,13 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
         #           PACKAGE='GeoModels', DUP = TRUE, NAOK=TRUE)$res
 
         result=dotCall64::.C64(as.character(fan),
-        SIGNATURE = c("integer","double","double","double","double",
+        SIGNATURE = c("integer","double","double","double","double","double",
                          "integer","double","integer","double","double","double","double",
                           "integer","integer","integer","integer"),  
-                         corrmodel ,coordx,coordy , coordt ,  data , n , paramcorr ,  weigthed , 
+                         corrmodel ,coordx,coordy , coordz,coordt ,  data , n , paramcorr ,  weigthed , 
                    res=dotCall64::numeric_dc(1), c(X1%*%mm1,X2%*%mm2),0,other_nuis ,
                      ns , NS , local ,GPU,
-         INTENT =    c("r","r","r","r","r","r","r","r","w","r", "r","r","r","r","r","r"),
+         INTENT =    c("r","r","r","r","r","r","r","r","w","r", "r","r","r","r","r","r","r"),
          PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
         return(-result)
       }
@@ -106,91 +106,91 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
     if(all(model==1,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss'
     if(all(model==1,likelihood==3,type==1)) fname <- 'Comp_Diff_Gauss'
     if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==2,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomGauss'
-                                             if(varest & vartype==2) hessian <- TRUE}
+                                             if(varest ) hessian <- TRUE}
     if(all(model==11,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==19,likelihood==3,type==2)){ namesnuis=c(namesnuis,"z")
                                               fixed<- c(fixed, list(z=min(n)))
                                               fname <- 'Comp_Pair_Binom2Gauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==14,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==16,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==15,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisbinGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==17,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisbinnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}    
+                                              if(varest ) hessian <- TRUE}    
     if(all(model==13,likelihood==3,type==2)){ fname <- 'Comp_Pair_WrapGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==10,likelihood==3,type==2)){ fname <- 'Comp_Pair_SkewGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
      if(all(model==21,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
       if(all(model==21,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==33,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
       if(all(model==42,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy2'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}    
+                                              if(varest ) hessian <- TRUE}    
    if(all(model==26,likelihood==1,type==2)){ fname <- 'Comp_Cond_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}    
+                                              if(varest ) hessian <- TRUE}    
     if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
-                                              if(varest & vartype==2) hessian <- TRUE}                                   
+                                              if(varest ) hessian <- TRUE}                                   
     if(all(model==24,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogLogistic'
-                                              if(varest & vartype==2) hessian <- TRUE}     
+                                              if(varest ) hessian <- TRUE}     
     if(all(model==25,likelihood==3,type==2)){ fname <- 'Comp_Pair_Logistic'
-                                              if(varest & vartype==2) hessian <- TRUE}                                                                              
+                                              if(varest ) hessian <- TRUE}                                                                              
     if(all(model==23,likelihood==3,type==2)){ fname <- 'Comp_Pair_2Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}                                        
+                                              if(varest ) hessian <- TRUE}                                        
     if(all(model==22,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogGauss';
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==18,likelihood==3,type==2)){ fname <- 'Comp_Pair_SkewTGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}  
+                                              if(varest ) hessian <- TRUE}  
     if(all(model==27,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECET'
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==39,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEBIMODAL'
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==31,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==32,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
-                                              if(varest & vartype==2) hessian <- TRUE}  
+                                              if(varest ) hessian <- TRUE}  
     if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyhh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==35,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_T'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==37,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_SkewT'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==38,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECETukeyh'
-                                              if(varest & vartype==2) hessian <- TRUE} 
+                                              if(varest ) hessian <- TRUE} 
     if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(all(model==45,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGaussZINB'
-                                              if(varest & vartype==2) hessian <- TRUE}
+                                              if(varest ) hessian <- TRUE}
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
@@ -221,7 +221,8 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
     
     if((spacetime||bivariate)&&(!spacetime_dyn)){
                                   data=c(t(data))
-                                  coordx=rep(coordx,numtime);coordy=rep(coordy,numtime)
+                                  coordx=rep(coordx,numtime);coordy=rep(coordy,numtime);
+                                  if(!is.null) coordz=rep(coordz,numtime);
                 }
                 if((spacetime||bivariate)&&(spacetime_dyn)) data=unlist(data)          
     
@@ -229,7 +230,7 @@ CompLik <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmode
    if(is.null(GPU)) GPU=0
 
 
-coords=cbind(coordx,coordy)
+coords=cbind(coordx,coordy,coordz)
 
    if(!onlyvar){
   ##############################.  spatial or space time ############################################
@@ -538,110 +539,9 @@ colnames(CompLikelihood$hessian)=namesparam
 
 
 ####################################
-        if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15)  print("Optimization failed: try with other starting values ")
-          else{
-    if(varest)
-          {
-        
-            dimmat <- numparam^2
-            dmat <- numparam*(numparam+1)/2
-            eps <- (.Machine$double.eps)^(1/3)
-            param <- c(CompLikelihood$par, fixed)
-            score <- double(numparam)
-            paramcorr <- param[namescorr]
-            nuisance <- param[namesnuis]
-            sel=substr(names(nuisance),1,4)=="mean"
-            mm=as.numeric(nuisance[sel])   ## mean paramteres
-
-            if(bivariate){
-            sel1=substr(names(nuisance),1,6)=="mean_1"
-            mm1=as.numeric(nuisance[sel1])
-            sel2=substr(names(nuisance),1,6)=="mean_2"
-            mm2=as.numeric(nuisance[sel2])
-            mm=c(mm1,mm2)}
-
-            num_betas=length(mm)
-            other_nuis=as.numeric(nuisance[!sel]) 
-            nuisance=c(mm,other_nuis)
-            sensmat <- double(dmat);varimat <- double(dmat)
-
-
-            # Set the window parameter:
-           if(length(winconst)==1) winconst=c(winconst,0)
-
- 
-            GD=.C('GodambeMat',as.double(mm),as.integer(bivariate),as.double(coordx),as.double(coordy),
-              as.double(coordt),as.integer(corrmodel), as.double(data),as.integer(distance),as.double(eps),
-              as.integer(flagcorr), as.integer(flagnuis),as.integer(grid),as.integer(likelihood),
-              as.double(c(X%*%mm)),as.integer(model),as.double(n),as.integer(num_betas),
-              as.integer(numparam),as.integer(numparamcorr),as.integer(length(paramcorr)),as.double(paramcorr),as.double(nuisance),
-              score=score,sensmat=sensmat,as.integer(spacetime),as.integer(type),
-              varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
-              as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-            
-  
-            if(!sum(GD$varimat)) print("Std error estimation failed")
-            # Set score vectore:
-            CompLikelihood$winconst<-winconst
-            CompLikelihood$winstp<-winstp
-            CompLikelihood$score <- GD$score
-            # Set sensitivity matrix:
-            CompLikelihood$sensmat <- matrix(rep(0,dimmat),ncol=numparam)
-            # Set variability matrix:
-            CompLikelihood$varimat <- matrix(rep(0,dimmat),ncol=numparam)
-            
-          
-
-            namesgod <- c(namesnuis[as.logical(flagnuis)], namescorr[as.logical(flagcorr)])
-            names(CompLikelihood$score) <- namesgod
-            CompLikelihood$score <- CompLikelihood$score[namesparam]
-            
-            #namesgod=namesparam
-            #names(CompLikelihood$score )=namesparam
-            dimnames(CompLikelihood$sensmat) <- list(namesgod, namesgod)
-            dimnames(CompLikelihood$varimat) <- list(namesgod, namesgod)
-
-            if(numparam>1){
-             # CompLikelihood$sensmat[lower.tri(CompLikelihood$sensmat, diag=TRUE)] <- GD$sensmat
-             # CompLikelihood$sensmat <- t(CompLikelihood$sensmat)
-             # CompLikelihood$sensmat[lower.tri(CompLikelihood$sensmat, diag=TRUE)] <- GD$sensmat
-              CompLikelihood$varimat[lower.tri(CompLikelihood$varimat, diag=TRUE)] <- GD$varimat
-              CompLikelihood$varimat <- t(CompLikelihood$varimat)
-              CompLikelihood$varimat[lower.tri(CompLikelihood$varimat, diag=TRUE)] <- GD$varimat
-              CompLikelihood$sensmat <- CompLikelihood$sensmat[namesparam, namesparam]
-              CompLikelihood$varimat <- CompLikelihood$varimat[namesparam, namesparam]}
-            else {CompLikelihood$sensmat[1,1] <- sensmat
-                  CompLikelihood$varimat[1,1] <- varimat}
-            if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
-
-      
-            icholsensmat <- try(chol(CompLikelihood$sensmat), silent = TRUE)
-            isensmat <- try(chol2inv(icholsensmat), silent = TRUE)
-
-             if(!is.matrix(isensmat) || !is.matrix(CompLikelihood$varimat))
-              {
-                warning("observed information matrix is singular")
-                CompLikelihood$varcov <- 'none'
-                CompLikelihood$stderr <- 'none'
-              }
-            else
-              { 
-                penalty <- crossprod(CompLikelihood$varimat,isensmat)
-                CompLikelihood$claic <- -2 * CompLikelihood$value + 2*sum(diag(penalty))
-                CompLikelihood$clbic <- -2 * CompLikelihood$value + log(dimat)*sum(diag(penalty))
-                CompLikelihood$varcov <- crossprod(isensmat,penalty)
-                dimnames(CompLikelihood$varcov) <- list(namesparam, namesparam)
-                CompLikelihood$stderr <- diag(CompLikelihood$varcov)
-                if(any(CompLikelihood$stderr < 0))
-                  CompLikelihood$stderr <- 'none'
-                else
-                  CompLikelihood$stderr <- sqrt(CompLikelihood$stderr)
-              }
-        }
-   # setwd(path.parent)
-      }
-      if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
-    if(!is.null(GPU)) gc()
-    return(CompLikelihood)
+if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15)  print("Optimization failed: try with other starting values ")
+       if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
+if(!is.null(GPU)) gc()
+return(CompLikelihood)
   }
 

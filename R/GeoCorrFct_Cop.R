@@ -11,26 +11,24 @@ GeoCorrFct_Cop<- function(x,t=NULL,corrmodel, model="Gaussian",copula="Gaussian"
 ## C functions
 biv_unif_CopulaClayton<- function(a,b,c,d)
 {
-  #sol = .C("biv_unif_CopulaClayton_call", as.double(a), as.double(b),
-  #         as.double(c),as.double(d), ress = as.double(0),
-  #         PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
- sol=dotCall64::.C64("biv_unif_CopulaClayton_call",SIGNATURE = c("double","double","double","double","double"),  
-                         a, b,c,d,ress=dotCall64::numeric_dc(1),
-                        INTENT =    c("r", "r","r", "r","rw"),
-                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
-
-
+  sol = .C("biv_unif_CopulaClayton_call", as.double(a), as.double(b),
+           as.double(c),as.double(d), ress = double(1),
+           PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+ #sol=dotCall64::.C64('biv_unif_CopulaClayton_call',SIGNATURE = c(rep("double",5)),  
+  #                     a, b,c,d,ress=dotCall64::numeric_dc(1),
+   #                     INTENT=c(rep("r",4),"rw"),
+    #                    PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
   return(exp(sol$ress))
 }
 biv_unif_CopulaGauss<- function(a,b,c)
 {
-  #sol = .C("biv_unif_CopulaGauss_call", as.double(a), as.double(b),
-   #        as.double(c),ress = as.double(0),
-    #       PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
-   sol=dotCall64::.C64("biv_unif_CopulaGauss_call",SIGNATURE = c("double","double","double","double"),  
-                         a, b,c,ress=dotCall64::numeric_dc(1),
-                        INTENT =    c("r", "r","r","rw"),
-                        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+  sol = .C("biv_unif_CopulaGauss_call", as.double(a), as.double(b),
+           as.double(c),ress = double(1),
+           PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+  # sol=dotCall64::.C64("biv_unif_CopulaGauss_call",SIGNATURE = c(rep("double",4)),  
+   #                      a, b,c,ress=dotCall64::numeric_dc(1),
+    #                    INTENT =    c("r", "r","r","rw"),
+     #                   PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
   return(sol$ress)
 }
 ###################

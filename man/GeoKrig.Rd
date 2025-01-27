@@ -9,7 +9,7 @@ the function computes optimal linear prediction and associated mean square error
 for the Gaussian and non Gaussian case.
 }
 \usage{
-GeoKrig(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL, 
+GeoKrig(estobj=NULL,data, coordx, coordy=NULL, coordz=NULL, coordt=NULL, 
 coordx_dyn=NULL, corrmodel,distance="Eucl",
     grid=FALSE, loc, maxdist=NULL, maxtime=NULL,
     method="cholesky", model="Gaussian", n=1,nloc=NULL,mse=FALSE, 
@@ -23,11 +23,13 @@ coordx_dyn=NULL, corrmodel,distance="Eucl",
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data used for prediction.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates used for prediction. \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
+\item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
-    spatial coordinates used for prediction; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
   \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates used for prediction; the default is \code{NULL}
     then a spatial random field is expected.}
@@ -115,6 +117,7 @@ case of simple kriging, the known mean can be specified by the parameter
     \item{bivariate}{\code{TRUE} if spatial bivariate cokriging is performed, otherwise  \code{FALSE};}
   \item{coordx}{A \eqn{d}{d}-dimensional vector of spatial coordinates used for prediction;}
   \item{coordy}{A \eqn{d}{d}-dimensional vector of spatial coordinates used for prediction;}
+  \item{coordz}{A \eqn{d}{d}-dimensional vector of spatial coordinates used for prediction;}
   \item{coordt}{A \eqn{t}{t}-dimensional vector of temporal coordinates used for prediction;}
   \item{corrmodel}{String: the correlation model;}
   \item{covmatrix}{The covariance matrix if \code{type} is \code{Standard}. An object of class spam if \code{type} is \code{Tapering}   }
@@ -449,7 +452,6 @@ par(opar)
 
 ## estimation with maximum likelihood 
 #fit = GeoFit(data=data,coordx=coords, corrmodel="Bi_Matern",
- #likelihood="Full",type="Standard",optimizer="BFGS",
   #likelihood="Marginal",type="Pairwise",optimizer="BFGS",neighb=5,
   #start=start,fixed=fixed)
 

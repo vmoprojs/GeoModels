@@ -4,7 +4,11 @@
 \title{Computes fitted covariance and/or  variogram}
 \description{
   The procedure return a GeoFit object associated to  the estimated residuals. For  a random field Y defined on the real line (Gaussian, Skew Gaussian, Tukeyh etcc) they are computed as (Y-m)/sqrt(v) where m and v are the estimated mean and variance respectively.
-  For  a random field Y defined on the positive real line (Gamma, Weibull, Log-Gaussian) they are computed as Y/m where m is estimated mean.
+  For  a random field Y defined on the positive real line (Gamma, Weibull, Log-Gaussian) they are computed as Y/m where m is the  estimated mean.
+  In the first case residuals have zero mean and unut variance with a specific distribution defined on the real line.
+    In the second  case residuals have unit mean with a specific distribution defined on the positive  real line.
+When the function  is  coupled with the functions  \code{\link{GeoQQ}} and  \code{\link{GeoCovariogram}}, it  is useful as diagnostic tool
+(See examples).
 }
 \usage{GeoResiduals(fit)}
 \arguments{
@@ -31,9 +35,9 @@ library(GeoModels)
 
 
 
-##############
-###Example 1
-##############
+###########################
+###Example 1: Residuals using a Gaussian RF
+###########################
 set.seed(211)
 model="Gaussian";
 N=700 # number of location sites
@@ -80,9 +84,9 @@ GeoCovariogram(res, show.vario=TRUE, vario=vario,pch=20)
 
 
 
-##############
-###Example 2
-##############
+###########################
+###Example 2: Residuals using a Weibull RF
+###########################
 model="Weibull";shape=4
 N=700 # number of location sites
 # Set the coordinates of the points:

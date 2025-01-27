@@ -1,7 +1,7 @@
 #include "header.h"
 
 // get all pair between certain distance 
-void pairs(int *ncoords,double *data,double *coordx, double *coordy, double *numbins, double *bins, double *v0,double *v1, double *v2,double *maxdist)
+void pairs(int *ncoords,double *data,double *coordx, double *coordy,double *coordz, double *numbins, double *bins, double *v0,double *v1, double *v2,double *maxdist)
 {
   int ncrd,numbin,h=0,k=0,i,j;
   double max_dist;
@@ -14,7 +14,7 @@ void pairs(int *ncoords,double *data,double *coordx, double *coordy, double *num
   for(h=0;h<=numbin;h++){
       for(i=0; i<(ncrd-1);i++){
         for(j=(i+1);j<ncrd;j++){
-          distance = dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          distance = dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],coordz[i],coordz[j],*REARTH);
           if(distance <= max_dist){
             if((bins[h] < distance) && (distance <= bins[(h+1)])){
               v0[k] = bins[(h)];
@@ -29,13 +29,13 @@ return;
 }
 
 // binned spatial variogram:
-void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins)
+void Binned_Variogram2(double *bins, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *lbins, double *moms, int *nbins)
 {
   int h=0, i=0, j=0, n=0;
   double x,y,lags=0.0,step=0.0,*mm;
   //Set the binnes step:
   mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH);
+  Maxima_Minima_dist(mm, coordx, coordy,coordz, ncoord,type,REARTH);
   if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
   step=(mm[1]-mm[0])/(*nbins-1);
   bins[0]= mm[0];
@@ -43,9 +43,10 @@ void Binned_Variogram2(double *bins, double *coordx, double *coordy, double *coo
   for(h=1;h<*nbins;h++)
     bins[h]=bins[h-1]+step;
   //Computes the binned moments:
-  for(i=0;i<(ncoord[0]-1);i++)
+  for(i=0;i<(ncoord[0]);i++)
     for(j=(i+1);j<ncoord[0];j++){
-                         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+      //Rprintf("%f %f-- %d %d %d \n",coordz[i],coordz[j],i,j,ncoord[0]);
+                         lags=dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],coordz[i],coordz[j],*REARTH);
       if(lags<=*maxdist){
 	for(h=0;h<(*nbins-1);h++)
 	  if((bins[h]<=lags) && (lags<bins[h+1])){
@@ -86,13 +87,13 @@ void Binned_Variogram2new(double *bins, int *np,double *data1, double *data2,
 /***********************************************************************************************************************************/
 
 
-void Binned_Variogram_22(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins)
+void Binned_Variogram_22(double *bins, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *lbins, double *moms, int *nbins)
 {
   int h=0, i=0, j=0, n=0,p=0;
   double x,y,step=0.0,*mm;
   //Set the binnes step:
   mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH);
+  Maxima_Minima_dist(mm, coordx, coordy,coordz, ncoord,type,REARTH);
   if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
   step=(mm[1]-mm[0])/(*nbins-1);
   bins[0]= mm[0];
@@ -117,7 +118,7 @@ void Binned_Variogram_22(double *bins, double *coordx, double *coordy, double *c
 
 // binned spatial-temporal variogram:
 
-void Binned_Variogram_st2(double *bins, double *bint, double *coordx, double *coordy, double *coordt,double *data, int *lbins, int *lbinst,
+void Binned_Variogram_st2(double *bins, double *bint, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *lbins, int *lbinst,
        int *lbint, double *moms,double *momst, double *momt, int *nbins, int *nbint, int *ns,int *NS)
 {
 int h=0, i=0, j=0;
@@ -125,7 +126,7 @@ int h=0, i=0, j=0;
   double x,y,lags=0.0,lagt=0.0,step=0.0,*mm;
   //defines the spatial bins:
   mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH); // computing max and min distances
+  Maxima_Minima_dist(mm, coordx, coordy,coordz, ncoord,type,REARTH); // computing max and min distances
   if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
   //Set the binnes step:
   step=(mm[1])/(*nbins-1);
@@ -146,7 +147,9 @@ Rprintf("%f %f %f %f \n",bint[0],bint[1],bint[2],bint[3]);*/
       for(v=t;v<ntime[0];v++){
   if(t==v){// computes the marginal spatial variogram:
              for(j=i+1;j<ns[v];j++){
-                                lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                                lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+                                  coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
+                                 //Rprintf("%f %f \n",coordz[(i+NS[t])],coordz[(j+NS[v])]);
                          if(lags<=*maxdist){
                             for(h=0;h<(*nbins-1);h++){
                              if((bins[h]<=lags) && (lags<bins[h+1])){
@@ -158,9 +161,7 @@ Rprintf("%f %f %f %f \n",bint[0],bint[1],bint[2],bint[3]);*/
           } 
      else {
          lagt=fabs(coordt[t]-coordt[v]);
-
           for(j=0;j<ns[v];j++){
-
                // Rprintf("%f %f \n",bint[u],lagt);
                 if(i==j){// computes the marginal temp variogram:
                     if(lagt<=*maxtime)
@@ -173,11 +174,11 @@ Rprintf("%f %f %f %f \n",bint[0],bint[1],bint[2],bint[3]);*/
                           //  Rprintf("%f %f %f --%d\n",bint[u],lagt,bint[u+1],u);
                      x=data[(i+NS[t])];y=data[(i+NS[v])];
                     if(!(ISNAN(x)||ISNAN(y))){momt[u]+=0.5*pow(x-y, 2);lbint[u]+=1;}
-                  }}
-                }
-              }
+                  }}}}
           else{// computes the spatial-temporal variogram:
-                 lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                 lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+                  coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
+                 //Rprintf("%f %f \n",coordz[(i+NS[t])],coordz[(j+NS[v])]);
                   if(lags<=*maxdist && lagt<=*maxtime){
                     q=0;
                      for(h=0;h<(*nbins-1);h++){
@@ -207,7 +208,7 @@ Rprintf("%f %f %f %f \n",bint[0],bint[1],bint[2],bint[3]);*/
 
 
 // binned spatial-temporal variogram:
-void Binned_Variogram_st2_dyn(double *bins, double *bint, double *coordx, double *coordy, double *coordt,double *data, int *lbins, int *lbinst,
+void Binned_Variogram_st2_dyn(double *bins, double *bint, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *lbins, int *lbinst,
        int *lbint, double *moms,double *momst, double *momt, int *nbins, int *nbint, int *ns,int *NS)
 {
 int h=0, i=0, j=0;
@@ -215,7 +216,7 @@ int h=0, i=0, j=0;
   double x,y,lags=0.0,lagt=0.0,step=0.0,*mm;
   //defines the spatial bins:
   mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH); // computing max and min distances
+  Maxima_Minima_dist(mm, coordx, coordy,coordz, ncoord,type,REARTH); // computing max and min distances
   if(maxdist[0]<mm[1]) mm[1]=maxdist[0];
   //Set the binnes step:
   step=(mm[1])/(*nbins-1);
@@ -235,7 +236,8 @@ int h=0, i=0, j=0;
       for(v=t;v<ntime[0];v++){
   if(t==v){// computes the marginal spatial variogram:
              for(j=i+1;j<ns[v];j++){
-                          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+                          lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+                            coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
                          if(lags<=*maxdist){
                             for(h=0;h<(*nbins-1);h++){
                              if((bins[h]<=lags) && (lags<bins[h+1])){
@@ -248,7 +250,8 @@ int h=0, i=0, j=0;
      else {
          lagt=fabs(coordt[t]-coordt[v]);
           for(j=0;j<ns[v];j++){
-      lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+      lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+        coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
     // a "marginal" temporal semivariogram
              if((bins[0]/2<=lags) && (lags<bins[1]/2)  && lagt<=*maxtime)
         {
@@ -319,7 +322,7 @@ if(second[k]) d=  data1[k]-data2[k];
 }
 
 
-void Binned_Variogram_biv2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *cross_lbins, double *cross_moms, int *nbins,
+void Binned_Variogram_biv2(double *bins, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *cross_lbins, double *cross_moms, int *nbins,
                           int *marg_lbins, double *marg_moms,int *ns, int *NS)
 {
 int h=0, i=0, j=0;
@@ -329,7 +332,7 @@ int h=0, i=0, j=0;
   //Set the binnes step:
 
   mm=(double *) R_alloc(2, sizeof(double));
-  Maxima_Minima_dist(mm, coordx, coordy, ncoord,type,REARTH);
+  Maxima_Minima_dist(mm, coordx, coordy, coordz,ncoord,type,REARTH);
   md=fmax(dista[0][1],fmax(dista[1][1],dista[0][0])); // we consider the max of the ditances and we build bins on [0,mm]
   if(md<mm[1]) mm[1]=md;
   step=mm[1]/(*nbins-1);
@@ -342,7 +345,8 @@ int h=0, i=0, j=0;
       for(v=t;v<ntime[0];v++){
       if(t==v){
          for(j=i+1;j<ns[t];j++){
-           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+           lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+            coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
       if(lags<=dista[t][v]) {
       for(h=0;h<(*nbins-1);h++)     {
        if((bins[h]<=lags) && (lags<bins[h+1])){
@@ -359,7 +363,8 @@ int h=0, i=0, j=0;
 }
    else {
          for(j=0;j<ns[v];j++){
-             lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],*REARTH);
+             lags=dist(type[0],coordx[(i+NS[t])],coordx[(j+NS[v])],coordy[(i+NS[t])],coordy[(j+NS[v])],
+              coordz[(i+NS[t])],coordz[(j+NS[v])],*REARTH);
             if(lags<=dista[t][v]) {
              for(h=0;h<(*nbins-1);h++){
         if((bins[h]<=lags) && (lags<bins[h+1])){
@@ -379,13 +384,13 @@ int h=0, i=0, j=0;
 
 /***********************************************************************************************************************************/
 // variogram cloud:
-void Cloud_Variogram2(double *bins, double *coordx, double *coordy, double *coordt,double *data, int *lbins, double *moms, int *nbins)
+void Cloud_Variogram2(double *bins, double *coordx, double *coordy,double *coordz, double *coordt,double *data, int *lbins, double *moms, int *nbins)
 {
   int  h=0,i=0, j=0, n=0;double lags=0.0,x,y;
  //Computes the cloud moments:
   for(i=0;i<(ncoord[0]-1);i++)
     for(j=(i+1);j<ncoord[0];j++){
-          dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],*REARTH);
+          dist(type[0],coordx[i],coordx[j],coordy[i],coordy[j],coordz[i],coordz[j],*REARTH);
       bins[h]=lags;
         x=data[n+i ];  y=data[n+j ];
         if(!(ISNAN(x)||ISNAN(y))){

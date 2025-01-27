@@ -3,13 +3,15 @@
 ####################################################
 
 
-GeoKrig= function(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
+GeoKrig= function(estobj=NULL,data, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc, maxdist=NULL,
                maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE, lin_opt=TRUE, param, anisopars=NULL,
                radius=6371, sparse=FALSE,taper=NULL, tapsep=NULL, time=NULL, type="Standard",type_mse=NULL, type_krig="Simple",weigthed=TRUE,
                which=1, copula=NULL,X=NULL,Xloc=NULL,Mloc=NULL,spobj=NULL,spdata=NULL)
 
 {
-######################################
+##################################################################################################################
+##################################################################################################################
+##################################################################################################################
 getInv=function(covmatrix,b,mse){
   cInvc=NULL    
 if(!covmatrix$sparse){
@@ -21,7 +23,7 @@ if(!covmatrix$sparse){
                rm(U)
                if(mse) cInvc=crossprod(vec) # t(c)%*% R^-1 %*% c
               # if(mse) cInvc=Rfast::Crossprod(vec,vec)
-               #print("4")
+ 
              }
 if(covmatrix$sparse){
                cc=covmatrix$covmatrix
@@ -37,6 +39,9 @@ if(covmatrix$sparse){
         }
      return(list(a=Invc,b=cInvc))
 }
+##################################################################################################################
+##################################################################################################################
+##################################################################################################################
 ######################################
 ########## START #####################
 ######################################
@@ -44,28 +49,28 @@ call <- match.call()
 
 ###############################
 ## checking if there is a  GeoFit object
+###############################
 if(!is.null(estobj)){
    if(!inherits(estobj,"GeoFit"))
                stop("need  a 'GeoFit' object as input\n")
-   data=estobj$data
 
+data=estobj$data
+################################################################
 if(!estobj$grid){  #not regular grid 
-
- if(!estobj$bivariate){  if(is.null(estobj$coordx_dyn)) coordx=cbind(estobj$coordx,estobj$coordy)
-                         else cord=estobj$coordx_dyn
+ if(!estobj$bivariate){  if(is.null(estobj$coordx_dyn)) coordx=cbind(estobj$coordx,estobj$coordy,estobj$coordz) ####spatial and spacetime fixed loc
+                          else                          coordx=NULL
                       } ## spatial (temporal) non regular case
  else  {    if(is.null(estobj$coordx_dyn))  { coordx=estobj$coordx[1:estobj$ns[1]]    # bivariate not dynamic    
                                               coordy=estobj$coordy[1:estobj$ns[2]] 
                                             }  
-            else {coordx_dyn=estobj$coordx_dyn}                                      # bivariate  dynamic  
+            else {coordx=NULL}                                      # bivariate  dynamic  
        }
- }
-else  { coordx=estobj$coordx; 
-        coordy=estobj$coordy
-      }
+ }                  # regular grid
+else  { coordx=estobj$coordx; coordy=estobj$coordy; coordz=estobj$coordz} # grid(nunca)
 
    if(length(estobj$coordt)==1) coordt=NULL
    else coordt=estobj$coordt
+   
    coordx_dyn=estobj$coordx_dyn
    corrmodel=estobj$corrmodel
    model=estobj$model
@@ -80,12 +85,19 @@ else  { coordx=estobj$coordx;
    else X=estobj$X
 }
 ##################################
+###### end check geofit object####
+##################################
+
+
+
 
 if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
-if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if( !is.character(corrmodel)|| is.null(CkCorrModel(corrmodel)))       stop("the name of the correlation model is wrong")
 corrmodel=gsub("[[:blank:]]", "",corrmodel); model=gsub("[[:blank:]]", "",model)
 distance=gsub("[[:blank:]]", "",distance); method=gsub("[[:blank:]]", "",method)
 type_krig=gsub("[[:blank:]]", "",type_krig); type=gsub("[[:blank:]]", "",type)
+
+
 
 ########################################################
 ####### extracting sp objects if necessary 
@@ -109,7 +121,7 @@ if(!is.null(spobj)) {
 ######################################
 if(is.vector(loc))    loc=t(as.matrix(loc)) ## case of 1 location sites given as vector
 if(!is.matrix(loc))   loc=as.matrix(loc)
-if(!(ncol(loc)==2))   stop("loc parameter must be a matrix  N X 2")
+if(!(ncol(loc)==2||ncol(loc)==3))   stop("loc parameter must be a matrix  N X 2 or N X 3 ")
 if(!is.null(Xloc))
          { if(is.vector(Xloc)) Xloc=matrix(Xloc,nrow=1)
            else                Xloc=as.matrix(Xloc)
@@ -127,19 +139,63 @@ if(!is.null(Mloc))
 { 
     if(!is.vector(Mloc)) stop("Mloc must be a vector")
     if(space){ 
-       if(length(Mloc)==1) Mloc=rep(Mloc,nrow(loc));if(nrow(loc)!=length(Mloc)) stop("Lenght of the  mean vector fixed does not match the number of locations to predict")
+       if(length(Mloc)==1) Mloc=rep(Mloc,nrow(loc));if(nrow(loc)!=length(Mloc)) stop("Lenght of the  mean vector fixed does not match the number of locations to predict \n")
          }
     if(spacetime){
-       if(length(Mloc)==1) Mloc=rep(Mloc,nrow(loc)*length(time));if(nrow(loc)*length(time)!=length(Mloc)) stop("Lenght of the  mean vector fixed does not match the number of locations to predict")
+       if(length(Mloc)==1) Mloc=rep(Mloc,nrow(loc)*length(time));if(nrow(loc)*length(time)!=length(Mloc)) stop("Lenght of the  mean vector fixed does not match the number of locations to predict \n")
           }
 }
 if(!(type_krig=="Simple"||type_krig=="Optim")) stop("type_krig must be equal to Simple or Optim")
 ######################################
 ############ end some checks##########
 ######################################
+
+
+
+#### checking 2-d or 3-d compatibility ##########
+if(!is.null(estobj)){
+if(is.null(estobj$coordz)&&ncol(loc)==3) stop("locations to predict are three dimensional but location used to predict are two dimensional \n")
+if(!is.null(estobj$coordz)&&ncol(loc)==2) stop("locations to predict are two dimensional but location used to predict are three dimensional \n")
+}
+else{ if(is.null(coordx_dyn))
+       { 
+    if(is.null(coordz)){
+       if(ncol(coordx)==2&&ncol(loc)==3) stop("locations to predict are three dimensional but location used to predict are two dimensional \n")
+       if(ncol(coordx)==3&&ncol(loc)==2) stop("locations to predict are two dimensional but location used to predict are three dimensional \n")
+                        }
+       else {
+       if(ncol(loc)==2) stop("locations to predict are two dimensional but location used to predict are three dimensional \n")
+           }
+       }
+      else {} 
+}
+#################################################
+
+
+
+######################################
+######################################
 #### locations points to predict ###
 if(is.null(time)) time=0; numloc = nrow(loc); tloc = length(time);
-if(!tloc)  tloc = 1; locx = loc[,1];locy = loc[,2]; bb=0
+if(!tloc)  tloc = 1; 
+
+
+if(!is.null(estobj)){
+if(is.null(estobj$coordz)) {locx = loc[,1];locy = loc[,2]; locz=double(length(loc[,1]))}
+else                {locx = loc[,1];locy = loc[,2]; locz=loc[,3]}
+}
+else{
+if(ncol(loc) ==2) {locx = loc[,1];locy = loc[,2]; locz=double(length(loc[,1]))}
+if(ncol(loc) ==3) {locx = loc[,1];locy = loc[,2]; locz=loc[,3]}
+
+}
+
+
+
+bb=0
+######################################
+######################################
+
 ######################################
 ############ standard kriging ########
 ######################################
@@ -188,10 +244,13 @@ Mtemp=NULL
 ##### computing covariance matrix  ##################
 #####################################################
 
-    covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn,
+    covmatrix = GeoCovmatrix(coordx=coordx, coordy=coordy,coordz=coordz, coordt=coordt, coordx_dyn=coordx_dyn,
          corrmodel=corrmodel, distance= distance,grid=grid,maxdist= maxdist,maxtime=maxtime,model=model,n=n,
           param=param, anisopars=anisopars, radius=radius,sparse=sparse,taper=taper,tapsep=tapsep,type=type,copula=copula,X=X)
-#####################################################
+    
+
+
+    #####################################################
     covmatrix$param=unlist(covmatrix$param)
     if(bivariate) tloc=1
     spacetime_dyn=FALSE; if(!is.null(covmatrix$coordx_dyn)) spacetime_dyn=TRUE
@@ -243,18 +302,37 @@ Mtemp=NULL
     pred = NULL
     varpred=varpred2=vv=vv2=NULL
     k = 0
-    ccc=cbind(covmatrix$coordx,covmatrix$coordy)
+  
+
+
+###### spatial case not grid
+if(!grid){
+if(!spacetime&&!bivariate){
+    if(is.null(covmatrix$coordz))  ccc=cbind(covmatrix$coordx,covmatrix$coordy,0) 
+    else                           ccc=cbind(covmatrix$coordx,covmatrix$coordy,covmatrix$coordz)
+}
+}
+###### spatial anisotropy case 
     if(!is.null(anisopars)) {  ccc=GeoAniso(ccc,c(anisopars$angle,anisopars$ratio))}
-       
-    if(grid) {ccc=expand.grid(covmatrix$coordx,covmatrix$coordy);grid=FALSE}
-    else  {
-      if((spacetime||bivariate)&&(!spacetime_dyn)) ccc=cbind(rep(covmatrix$coordx,covmatrix$numtime),rep(covmatrix$coordy,covmatrix$numtime))
-      if((spacetime||bivariate)&&( spacetime_dyn)) ccc=do.call(rbind,args=c(coordx_dyn))
+
+if(grid) {if(is.null(coordz)) { ccc=as.matrix(expand.grid(covmatrix$coordx,covmatrix$coordy));ccc=cbind(ccc,0) }
+          else                { ccc=as.matrix(expand.grid(covmatrix$coordx,covmatrix$coordy,covmatrix$coordz)) }
+          grid=FALSE
+         }
+else  {
+      if((spacetime||bivariate)&&(!spacetime_dyn)) {  ## space time not dynamic
+             if(!is.null(covmatrix$coordz)) ccc=cbind(rep(covmatrix$coordx,covmatrix$numtime),rep(covmatrix$coordy,covmatrix$numtime),rep(covmatrix$coordz,covmatrix$numtime))
+             else                          ccc=cbind(rep(covmatrix$coordx,covmatrix$numtime),rep(covmatrix$coordy,covmatrix$numtime),0)
+              }
+      if((spacetime||bivariate)&&(spacetime_dyn)) {ccc=do.call(rbind,args=c(covmatrix$coordx_dyn));
+                                                   if(ncol(ccc)==2) ccc=cbind(ccc,0)
+                                                  }
         }
     ###############################################################
- 
-    if((spacetime||bivariate)&&spacetime_dyn) 
-           dataT=t(unlist(data))  else dataT=t(data)
+
+
+if((spacetime||bivariate)&&spacetime_dyn)  dataT=t(unlist(data))  
+else dataT=t(data)
   
       
 
@@ -278,35 +356,39 @@ if(covmatrix$model %in% c(1,10,18,21,12,26,24,27,38,29,39,28,9, 34,40,20,22))
 ## twopieceTukeyh=38
 ## twopiecebimodal=39
 ## tukeygh=9
-#------------
 ## tukey=34
 ## tukeyyh2=40
 ## sihasin=20
 
+
+
+
+
 if((type=="Standard"||type=="standard")) {
-       # corri=double(dimat*dimat2)
-         #Computing gaussian CORRELATIONS between the locations to predict and the locations observed
-     #  cc=.C('Corr_c',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),as.integer(corrmodel),
-     #   as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-     #   as.integer(numloc),as.integer(tloc),as.integer(covmatrix$ns),as.integer(NS),
-     #   as.integer(covmatrix$numtime),as.double(corrparam),as.integer(covmatrix$spacetime),
-     #   as.integer(covmatrix$bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-    #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-  cc=dotCall64::.C64('Corr_c',
-    SIGNATURE = c("double","double","double","double", "integer", #5
-                   "integer","double","double","integer","integer",
-                   "integer","integer","integer","integer","double",
-                   "integer","integer","double","integer","integer","double"),
-   #corri=corri,ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
-  corri=dotCall64::numeric_dc(dimat*dimat2),ccc[,1] , ccc[,2] , covmatrix$coordt ,corrmodel , #5
-         0, locx , locy , covmatrix$numcoord ,numloc ,
-         tloc , covmatrix$ns , NS ,covmatrix$numtime , corrparam ,
-         covmatrix$spacetime ,covmatrix$bivariate , time , distance , which-1 , covmatrix$radius ,
- INTENT = c("w","r","r","r","r",
-            "r","r","r","r","r",
-            "r","r","r","r","r",
-            "r","r","r","r","r","r"),
-        PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+
+      #cc=dotCall64::.C64('Corr_c',
+  #  SIGNATURE = c(rep("double",5), "integer",  #6
+  #                "integer","double","double","double","integer","integer", # 6 
+  #                rep("integer",4),"double","integer", #6
+  #                "integer","double","integer","integer","double"),      #5
+  #corri=dotCall64::numeric_dc(dimat*dimat2),ccc[,1] , ccc[,2] ,ccc[,3] , covmatrix$coordt ,corrmodel ,
+  #       as.integer(0), locx , locy ,locz, covmatrix$numcoord ,numloc ,
+  #       tloc , covmatrix$ns , NS ,covmatrix$numtime , corrparam ,covmatrix$spacetime ,
+  #       covmatrix$bivariate , time , distance , as.integer(which-1) , covmatrix$radius ,
+ #INTENT = c("w",rep("r",22)),
+ #       PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+
+ cc=.C("Corr_c",
+   corri=double(dimat*dimat2),as.double(ccc[,1] ), as.double(ccc[,2]) ,as.double(ccc[,3]) , as.double(covmatrix$coordt) ,as.integer(corrmodel) ,
+         as.integer(0), as.double(locx) , as.double(locy) ,as.double(locz), as.integer(covmatrix$numcoord) ,as.integer(numloc) ,
+         as.integer(tloc) , as.integer(covmatrix$ns), as.integer(NS) ,as.integer(covmatrix$numtime) , as.double(corrparam) ,as.integer(covmatrix$spacetime) ,
+         as.integer(covmatrix$bivariate) , as.double(time) , as.integer(distance) , as.integer(which-1) , as.double(covmatrix$radius) ,
+          PACKAGE='GeoModels',DUP = TRUE, NAOK=TRUE)
+
+
+
 
 ####  transforming gaussian correlations depending on the (non)Gaussian  model
 if(bivariate){  corri=cc$corri  }  #  adding models.....
@@ -708,13 +790,24 @@ else  {   ## bivariate  case   cokriging
 ######################################################
 ####formatting data ##################################
 ######################################################
-if(mse)
-{ if(spacetime||bivariate)  varpred=matrix(c(vv),nrow=tloc,ncol=numloc)
-     else                      varpred=c(vv)
-}
-if(spacetime||bivariate)  pred=matrix(t(pp),nrow=tloc,ncol=numloc)
-else pred=c(pp)
+
+cvv=c(vv)
+##### setting almost zero when zero mse
+if(mse) {
+    selp=(cvv<=0); 
+    if(any(selp)) {cvv[selp]=1e-30}
+    }
+####   formatting data  
+if(spacetime||bivariate) {
+            pred=matrix(t(pp),nrow=tloc,ncol=numloc);
+            varpred=matrix(cvv,nrow=tloc,ncol=numloc);
+            }
+else {pred=c(pp);varpred=cvv}
+
+
+
 }#end gaussian standard kriging
+
 
 } ####
 
@@ -730,7 +823,6 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46,47))
                if(is.null(MM)) {mu=X%*%betas; mu0=Xloc%*%betas}
                else {mu=MM;mu0=Mloc}        
       }
-
      if(bivariate)  {mu  = c(X11%*%betas1,X22%*%betas2)}
      kk=0
      if(covmatrix$model %in% c(2,11))    ### binomial
@@ -748,34 +840,20 @@ if(covmatrix$model %in% c(2,11,14,19,30,36,16,43,44,45,46,47))
 ## ojo que es la covarianza
 if(covmatrix$model %in% c(2,11,14,16,19,30,36,43,44,45,46,47))
 {   
-    #corri=double(dimat*dimat2)
-    ## Computing correlation between the locations to predict and the locations observed
-   # ccorr=.C('Corr_c_bin',corri=corri, as.double(ccc[,1]),as.double(ccc[,2]),as.double(covmatrix$coordt),
-   # as.integer(corrmodel),as.integer(FALSE),as.double(locx),as.double(locy),as.integer(covmatrix$numcoord),
-   # as.integer(numloc),as.integer(covmatrix$model),as.integer(tloc),
-  #  as.integer(kk),as.integer(n),as.integer(covmatrix$ns),as.integer(NS),as.integer(covmatrix$numtime),
-  #  as.double(rep(c(mu),dimat2)),as.double(other_nuis),as.double(corrparam),as.integer(covmatrix$spacetime),
-  #  as.integer(bivariate),as.double(time),as.integer(distance),as.integer(which-1),
-  #  as.double(covmatrix$radius),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-
+   
    ccorr=dotCall64::.C64('Corr_c_bin',
-   SIGNATURE = c("double","double","double","double", #4
-  "integer","integer", "double","double","integer",  #9
-  "integer","integer", "integer", #12
-  "integer","integer","integer","integer","integer", #17
- "double", "double", "double","integer", #21
- "integer","double","integer","integer","double"),   #26
-   corri=dotCall64::numeric_dc(dimat*dimat2),  ccc[,1], ccc[,2], covmatrix$coordt,corrmodel,0,
-   locx, locy,covmatrix$numcoord,numloc,covmatrix$model,  tloc,
+   SIGNATURE = c("double","double","double","double","double",
+                 "integer","integer", "double","double","double",
+                 "integer","integer","integer", "integer","integer",
+                 "integer","integer","integer","integer", "double", 
+                 "double", "double","integer","integer","double",
+                 "integer","integer","double"),   
+   corri=dotCall64::numeric_dc(dimat*dimat2),  ccc[,1], ccc[,2], ccc[,3] ,covmatrix$coordt,corrmodel,as.integer(0),
+   locx, locy,locz,covmatrix$numcoord,numloc,covmatrix$model,  tloc,
      kk,n,covmatrix$ns,NS,covmatrix$numtime, 
     rep(c(mu),dimat2),  other_nuis, corrparam,covmatrix$spacetime,
-     bivariate, time,distance,which-1, covmatrix$radius,
-  INTENT = c("w","r","r","r",
-            "r","r","r","r","r",
-            "r","r","r",
-            "r","r","r","r","r",
-             "r","r","r","r",
-           "r","r","r","r","r"),
+     bivariate, time,distance,as.integer(which-1), covmatrix$radius,
+  INTENT = c("w",rep("r",27)),
       PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
  }
 
@@ -899,23 +977,33 @@ corri=ccorr$corri
 
                 }
         }
+##############################################################
 
-      if(spacetime||bivariate) {
+cvv=c(vv)
+##### setting almost zero when zero mse
+if(mse) {
+    selp=(cvv<=0); if(any(selp)) {cvv[selp]=1e-30}
+    }
+####   formatting data  
+if(spacetime||bivariate) {
             pred=matrix(t(pp),nrow=tloc,ncol=numloc);
-            varpred=matrix(c(vv),nrow=tloc,ncol=numloc);
+            varpred=matrix(cvv,nrow=tloc,ncol=numloc);
             }
-          else {pred=c(pp);varpred=c(vv)}
+          else {pred=c(pp);varpred=cvv}
     }}  ##end  binary or binomial or geometric kriging  poisson
-########################################################################################
-########################################################################################
-#rm(cc,BB,MM,mu,muloc,Mloc,Mtemp,dimat2,krig_weights,locx,locy,X,Xloc,corri,pp,getInv,
- #   spdata,spobj,taper,tapsep,datas,dataT,dimat
-  #  ,vv,vv2,vvar)
 
-if(tloc==1)  {c(pred);c(varpred);c(varpred2)}
+
+
+
+
+
+if(tloc==1)  {pred=c(pred);varpred=c(varpred);varpred2=c(varpred2)}
+
+
+
     # Return the objects list:
    GeoKrig= list(     bivariate=bivariate,
-                   coordx = covmatrix$coordx,coordy = covmatrix$coordy,
+                   coordx = covmatrix$coordx,coordy = covmatrix$coordy,coordz = covmatrix$coordz,
                    coordt = covmatrix$coordt,coordx_dyn=covmatrix$coordx_dyn,
                    covmatrix=covmatrix$covmatrix,corrmodel = corrmodel,copula=copula,data=data,distance = distance,
                    grid=covmatrix$grid,loc=loc_orig,nozero=covmatrix$nozero,ns=covmatrix$ns,X=XX,

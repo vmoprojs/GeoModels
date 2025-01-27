@@ -7,9 +7,11 @@
   Maximum weighted composite-likelihood fitting for Gaussian  and some Non-Gaussian  
   univariate spatial, spatio-temporal and bivariate spatial random fieldss
   The function allows to fix any of the parameters and setting upper/lower bound in the optimization.
+  Different methods of optimization can be used.
+
 }
 \usage{
-GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
+GeoFit(data, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
       corrmodel=NULL,distance="Eucl",fixed=NULL,anisopars=NULL,
       est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal',
      local=c(1,1),  lower=NULL,maxdist=Inf,neighb=NULL,
@@ -19,8 +21,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
       radius=6371,  sensitivity=FALSE,sparse=FALSE, 
       start=NULL, taper=NULL, tapsep=NULL, 
       type='Pairwise', upper=NULL, varest=FALSE, 
-      vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-      winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
+      weighted=FALSE,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
 }
 
 \arguments{
@@ -29,14 +30,13 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)   or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid).
    For the description see the Section \bold{Details}.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) assigning 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector assigning
-    1-dimension of spatial coordinates.  Coordinates on a sphere for a  fixed radius \code{radius} 
+       \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
   \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates.  Optional argument, the default is \code{NULL}
     then a spatial random fields is expected.}
@@ -61,7 +61,7 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
     likelihood. \code{Marginal} is the default, see the Section \bold{Details}.}
     \item{local}{Numeric; number of local work-items of the OpenCL setup}
    \item{lower}{An optional named list giving the values  for the lower bound of the space parameter
-    when the optimizer is  \code{L-BFGS-B} or \code{nlminb}  or \code{optimize}. The 
+    when the optimizer is  \code{L-BFGS-B} or \code{nlminb} or \code{bobyqa}  or \code{optimize}. The 
     names of the list must be the same of the names in the   \code{start} list.}
   \item{maxdist}{Numeric; an optional positive value indicating the maximum
     spatial distance considered in the composite or tapered likelihood
@@ -84,8 +84,9 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
   without optimizing. \code{FALSE} is the default.}
   \item{optimizer}{String; the optimization algorithm
     (see \code{\link{optim}} for details). \code{Nelder-Mead} is the
-    default. Other possible choices are \code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B} and \code{nlminb}. 
-    In these last two cases upper and lower bounds can be passed by the user. In the case
+    default. Other possible choices are \code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B} and \code{nlminb} and
+    \code{bobyqa}.
+    In these last three cases upper and lower bounds can be passed by the user. In the case
     of one-dimensional optimization, the function \code{optimize} is used.}  
   \item{parallel}{Logical; if \code{TRUE} optmization is performed using optimParallel using the maximum number of cores,  when optimizer is  \code{L-BFGS-B}.\code{FALSE} is the default.}  
    \item{radius}{Numeric; the radius of the sphere in the case of lon-lat coordinates.
@@ -106,29 +107,16 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
     default) then the marginal composite likelihood is formed by
     pairwise marginal likelihoods (see \bold{Details}).}
   \item{upper}{An optional named list giving the values  for the upper bound 
-      of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{nlminb} or \code{optimize}. 
+      of the space parameter when the optimizer is or \code{L-BFGS-B} or  \code{bobyqa} or   \code{nlminb} or \code{optimize}. 
        The names of the list must be the same of the names in the   \code{start} list.}  
   \item{varest}{Logical; if \code{TRUE} the estimates' variances and
     standard errors are returned. For composite likelihood estimation it is deprecated.
     Use sensitivity TRUE and update the object using the function \code{GeoVarestbootstrap}
     \code{FALSE} is the default.}
-  \item{vartype}{String; (\code{SubSamp} the default) the type of
-    method used for computing
-  the estimates' variances, see the Section \bold{Details}.}
   \item{weighted}{Logical; if \code{TRUE} the likelihood objects are
     weighted, see the Section \bold{Details}. If \code{FALSE} (the
     default) the composite likelihood is not weighted.}
-  \item{winconst}{Numeric; a bivariate positive vector for computing the spatial  sub-window
-      in the sub-sampling procedure. See \bold{Details} for more information.}
- \item{winstp}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
-      overlapping in the spatial  sub-sampling procedure. The case \eqn{1} 
-    correspond to no overlapping. See \bold{Details} for more information.}
-   \item{winconst_t}{Numeric; a positive value for computing the temporal sub-window
-         in the sub-sampling procedure. See \bold{Details} for more information.}
- \item{winstp_t}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
-      overlapping in the temporal  sub-sampling procedure. The case \eqn{1} 
-    correspond to no overlapping. See \bold{Details} for more information.}
-  \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
+   \item{X}{Numeric; Matrix of spatio(temporal)covariates in the linear mean specification.}
     \item{nosym}{Logical; if TRUE simmetric weights are not considered. This allows a faster but less efficient CL estimation. }
       \item{spobj}{An object of class sp or spacetime}
    \item{spdata}{Character:The name of data in the sp or spacetime object}
@@ -138,8 +126,8 @@ GeoFit(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,
   \code{GeoFit} provides  weighted composite likelihood  estimation based on pairs and independence composite likelihood estimation
   for Gaussian and non Gaussian  random fields. Specifically, marginal and conditional  pairwise 
   likelihood are considered for each type of random field (Gaussian and not Gaussian).
-  The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are \code{ucminf}, \code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B},
-    and  \code{nlminb}. In the last two cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
+  The optimization method is specified using \code{optimizer}. The default method is \code{Nelder-mead} and other available methods are  \code{nlm}, \code{BFGS}, \code{SANN}, \code{L-BFGS-B}, \code{bobyqa}
+    and  \code{nlminb}. In the last three cases upper and lower bounds constraints in the optimization can be specified using \code{lower} and \code{upper} parameters.
 
   Depending on the dimension of \code{data} and on  the name of the correlation model, 
   the observations   are assumed as a realization of
@@ -279,8 +267,7 @@ random fields using Gaussian and Clayton copula (see Bevilacqua, Alvarado  and C
   For estimation of the variance-covariance matrix of  the  weighted composite likelihood  estimates
    the option \code{sensitivity=TRUE} must be specified. Then the  \code{GeoFit}  object  must be updated   using the function \code{GeoVarestbootstrap}. This allows to estimate  the Godambe Information matrix  (see  Bevilacqua et. al. (2012) , Bevilacqua and Gaetan (2013)).
   Then standard error estimation, confidence intervals,  pvalues  and composite likelihood information critera can be obtained.
-   
-  The option  \code{varest=TRUE}  is deprecated.
+  
   
 }
 
@@ -328,15 +315,7 @@ random fields using Gaussian and Clayton copula (see Bevilacqua, Alvarado  and C
   \item{stderr}{The vector of standard errors for  standard maximum likelihood estimation;}
   \item{sensmat}{The sensitivity matrix;}
   \item{varcov}{The matrix of the variance-covariance of the estimates;}
-  \item{varimat}{The variability matrix;}
-  \item{vartype}{The method used to compute the variance of the estimates;}
   \item{type}{The type of the likelihood objects.}
-  \item{winconst}{The constant used to compute the window size in the
-  spatial sub-sampling;}
-  \item{winstp}{The step used for moving the window in the spatial sub-sampling;}
-    \item{winconst_t}{The constant used to compute the window size in the
-  spatio-temporal sub-sampling;}
-  \item{winstp_}{The step used for moving the window in the spatio-temporal sub-sampling;}
   \item{X}{The matrix of covariates;}
 }
 
@@ -570,11 +549,11 @@ print(unlist(fit2$param))
 ################################################################
 ###
 ### Example 4. Maximum pairwise likelihood fitting of
-### a SinhAsinh-Gaussian spatial  random fields with Wendland correlation
+### a Skew-Gaussian spatial  random fields with Wendland correlation
 ###
 ###############################################################
 set.seed(261)
-model="SinhAsinh"
+model="SkewGaussian"
 # Define the spatial-coordinates of the points:
 x <- runif(500, 0, 1)
 y <- runif(500, 0, 1)
@@ -583,22 +562,24 @@ coords <- cbind(x,y)
 corrmodel="Wend0"
 mean=0;nugget=0
 sill=1
-skew=-0.5
-tail=1.5
+skew=-4.5
 power2=4
 c_supp=0.2
 
 # model parameters
-param=list(power2=power2,skew=skew,tail=tail,
+param=list(power2=power2,skew=skew,
              mean=mean,sill=sill,scale=c_supp,nugget=nugget)
 data <- GeoSim(coordx=coords, corrmodel=corrmodel,model=model, param=param)$data
 
 plot(density(data))
 fixed=list(power2=power2,nugget=nugget)
-start=list(scale=c_supp,skew=skew,tail=tail,mean=mean,sill=sill)
+start=list(scale=c_supp,skew=skew,mean=mean,sill=sill)
+lower=list(scale=0,skew=-I,mean=-I,sill=0)
+upper=list(scale=I,skew=I,mean=I,sill=I)
 # Maximum marginal pairwise likelihood:
 fit1 <- GeoFit(data=data,coordx=coords,corrmodel=corrmodel, model=model,
                     neighb=3,likelihood="Marginal",type="Pairwise",
+                    optimizer="bobyqa",lower=lower,upper=upper,
                     start=start,fixed=fixed)
 print(unlist(fit1$param))
 

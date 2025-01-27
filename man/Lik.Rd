@@ -8,7 +8,7 @@
   log-likelihood.
 }
 \usage{
-Lik(copula,bivariate,coordx,coordy,coordt,
+Lik(copula,bivariate,coordx,coordy,coordz,coordt,
 coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
            grid,lower,mdecomp,model,namescorr,
            namesnuis,namesparam,numcoord,
@@ -21,16 +21,15 @@ coordx_dyn,corrmodel,data,fixed,flagcor,flagnuis,
   \item{copula}{String; the type of copula. It can be "Beta" or "Gaussian"}
   \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field.
         Otherwise from a univariate random field.}
-    \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) assigning 2-dimensions of spatial coordinates 
-    or a numeric \eqn{d}{d}-dimensional vector assigning
-    1-dimension of spatial coordinates.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, 
-    the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
-  \item{coordt}{A numeric vector assigning 1-dimension of
+       \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
+    are passed in lon/lat format expressed in decimal degrees.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+
+      \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates. Optional argument, the default is \code{NULL}
     then a spatial random field is expected.}
     \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices

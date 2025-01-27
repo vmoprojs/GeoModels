@@ -6,19 +6,19 @@
   The function returns the indices associated with  a given spatial (temporal) neighbour and/or distance 
 }
 \usage{
-GeoNeighIndex(coordx,coordy=NULL,coordx_dyn=NULL,
-coordt=NULL,distance="Eucl",neighb=4,maxdist=NULL,
+GeoNeighIndex(coordx,coordy=NULL,coordz=NULL,
+coordt=NULL,coordx_dyn=NULL,distance="Eucl",neighb=4,maxdist=NULL,
 maxtime=1,radius=6371,bivariate=FALSE)
 }
 \arguments{
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) assigning 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector assigning
-    1-dimension of spatial coordinates.  Coordinates on a sphere for a  fixed radius \code{radius} 
+        \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+        
   \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates. Optional argument, the default is \code{NULL} then a spatial random field is expected.}
    \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
@@ -74,11 +74,11 @@ set.seed(951)
 data = GeoSim(coordx = coords,corrmodel = corrmodel,
                   model = "Gaussian",param = param)$data
 
-sel=GeoNeighIndex(coordx=coords,maxdist=0.05)        
+sel=GeoNeighIndex(coordx=coords,neighb=5)        
 
 data1=data[sel$colidx]; data2=data[sel$rowidx]
 ## plotting pairs  that are neighboord of order 5
-plot(data1,data2,xlab="",ylab="",main="h-scatterplot, dist=0.05")
+plot(data1,data2,xlab="",ylab="",main="h-scatterplot, neighb=5")
 
 }
 \keyword{Scatterplot}

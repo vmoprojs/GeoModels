@@ -7,7 +7,7 @@
   and p-values  using parametric bootstrap.}
 \usage{GeoVarestbootstrap(fit,K=100,sparse=FALSE, GPU=NULL,local=c(1,1),
   optimizer=NULL, lower=NULL, upper=NULL, 
-  method="cholesky",alpha=0.95, L=3000,parallel=FALSE,ncores=NULL)}
+  method="cholesky",alpha=0.95, L=1000,parallel=FALSE,ncores=NULL)}
 \arguments{
   \item{fit}{A fitted object obtained from the
     \code{\link{GeoFit}}.}

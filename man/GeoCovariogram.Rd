@@ -12,7 +12,7 @@ GeoCovariogram(fitted, distance="Eucl",answer.cov=FALSE,
             answer.vario=FALSE, answer.range=FALSE, fix.lags=NULL, 
              fix.lagt=NULL, show.cov=FALSE, show.vario=FALSE, 
             show.range=FALSE, add.cov=FALSE, add.vario=FALSE,
-            pract.range=95, vario, \dots)
+            pract.range=95, vario, invisible=FALSE, \dots)
 }
 \arguments{
   \item{fitted}{A fitted object obtained from the
@@ -50,6 +50,8 @@ GeoCovariogram(fitted, distance="Eucl",answer.cov=FALSE,
   \item{pract.range}{Numeric; the percent of the sill to be reached.}
   \item{vario}{A \code{Variogram} object obtained from the
     \code{\link{GeoVariogram}} procedure.}
+  \item{invisible}{Logical;If TRUE then a statistic the (sum of the squared diffeence
+  between the empirical semivariogram and the estimated  semivariogram) is computed.}  
   \item{\dots}{other optional parameters which are passed to plot functions.}
 }
 

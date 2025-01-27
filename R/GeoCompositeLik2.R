@@ -4,10 +4,10 @@
 
 ### Optim call for Composite log-likelihood maximization
 
-CompLik2 <- function(copula,bivariate, coordx, coordy ,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
+CompLik2 <- function(copula,bivariate, coordx, coordy ,coordz,coordt,coordx_dyn,corrmodel, data, distance, flagcorr, flagnuis, fixed, GPU,grid,
                            likelihood, local,lower, model, n, namescorr, namesnuis, namesparam,
                            numparam, numparamcorr, optimizer, onlyvar, parallel, param, spacetime, type,
-                           upper, varest, vartype, weigthed, winconst, winstp,winconst_t, winstp_t, ns, X,sensitivity,
+                           upper, varest,  weigthed, ns, X,sensitivity,
                            colidx,rowidx,neighb,MM,aniso)
   {
 
@@ -28,7 +28,6 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed
 
         other_nuis=as.numeric(nuisance[!sel])   ## or nuis parameters (nugget sill skew df)         
 
-
 ############################################
 #if(!type_cop) { # not copula models 
 
@@ -36,19 +35,23 @@ comploglik2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,fixed
             anisopar<-param[namesaniso]
             coords1=GeoAniso(coords, anisopars=anisopar)
           c1=c(t(coords1[colidx,]));c2=c(t(coords1[rowidx,]))
-
           result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double","double","double", "integer","integer","double","integer","double","double","double","double","integer","integer","integer","integer"),  
-                        corrmodel,c1,c2,data1, data2, n[colidx],n[rowidx],paramcorr,weigthed, res= dotCall64::numeric_dc(1),Mean[colidx], Mean[rowidx], other_nuis,local,GPU,type_cop,cond_pair,
-          INTENT =    c("r","r","r","r","r","r","r","r","r","w","r","r","r", "r","r","r","r"),
+                        corrmodel,c1,c2,data1, data2, n[colidx],n[rowidx],paramcorr,weigthed, res= dotCall64::numeric_dc(1),Mean[colidx], Mean[rowidx], other_nuis,local,GPU,
+                        type_cop,cond_pair,
+          INTENT =    c(rep("r",9),"w",rep("r",7)),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
+
+
         }
          else
          {
+            #print(fan)
+                  
          result=dotCall64::.C64(as.character(fan),
          SIGNATURE = c("integer","double","double", "integer","integer","double","integer","double","double","double","double","integer","integer","integer","integer"),  
                         corrmodel,data1, data2, n[colidx],n[rowidx],paramcorr,weigthed, res= dotCall64::numeric_dc(1),Mean[colidx], Mean[rowidx], other_nuis,local,GPU,type_cop,cond_pair,
-          INTENT =    c("r","r","r","r","r","r","r","rw","r","r","r","r","r", "r","r"),
+          INTENT =    c(rep("r",7),"w",rep("r",7)),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
        }
 return(-result)
@@ -78,9 +81,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
         result=dotCall64::.C64(as.character(fan),
           SIGNATURE = c("integer","double","double", "integer","double","integer","double","double","double","double","integer","integer"),  
                         corrmodel,data1, data2, n,paramcorr,weigthed, res=res,Mean[colidx],Mean[rowidx],other_nuis,local,GPU,
-          INTENT =    c("r","r","r","r","r","r","rw", "r", "r","r", "r","r"),
+          INTENT =    c(rep("r",6),"w", rep("r", 5)),
              PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)$res
-        
         return(-result)
       }
 
@@ -102,222 +104,118 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
     if(all(model==1,likelihood==4,type==2)) fname <- 'Comp_Diff_Gauss'
     
     namesaniso=c("angle","ratio")
+
    
-
-
-
    if(length(n)==1) n=rep(n,dimat)
 ####################### conditional ##############################################
-    if(all(model==1,likelihood==1,type==2)) {fname <- 'Comp_Cond_Gauss'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==21,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==26,likelihood==1,type==2)){ fname <- 'Comp_Cond_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok 
-    if(all(model==22,likelihood==1,type==2)){ fname <- 'Comp_Cond_LogGauss';
-                                              if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==28,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==50,likelihood==1,type==2)){ fname <- 'Comp_Cond_Beta2'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok  
-    if(all(model==33,likelihood==1,type==2)){ fname <- 'Comp_Cond_Kumaraswamy'
-                                              if(varest & vartype==2) hessian <- TRUE}#ok
-    if(all(model==42,likelihood==1,type==2)){ fname <- 'Comp_Cond_Kumaraswamy2'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==20,likelihood==1,type==2)){ fname <- 'Comp_Cond_SinhGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==10,likelihood==1,type==2)){ fname <- 'Comp_Cond_SkewGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==12,likelihood==1,type==2)){ fname <- 'Comp_Cond_T'
-                                              if(varest & vartype==2) hessian <- TRUE}  
-    if(all(model==34,likelihood==1,type==2)){ fname <- 'Comp_Cond_Tukeyh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==40,likelihood==1,type==2)){ fname <- 'Comp_Cond_Tukeyhh' 
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==35,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_T'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==39,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEBIMODAL'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==31,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==32,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==30,likelihood==1,type==2)){ fname <- 'Comp_Cond_Pois'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==46,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisGamma'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==36,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Pois'
-                                              if(varest & vartype==2) hessian <- TRUE}
-
-    if(all(model==2,likelihood==1,type==2)) { fname <- 'Comp_Cond_BinomGauss'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==1,type==2)&length(n)==1){ fname <- 'Comp_Cond_BinomGauss'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==51,likelihood==1,type==2)&length(n)>=1){ fname <- 'Comp_Cond_BinomNNGauss_misp'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==1,type==2)&length(n)>1){ fname <- 'Comp_Cond_BinomNNGauss'
-                                             if(varest & vartype==2) hessian <- TRUE}
-
-    if(all(model==49,likelihood==1,type==2)&length(n)==1){ fname <- 'Comp_Cond_BinomLogi'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==49,likelihood==1,type==2)&length(n)>1){ fname <- 'Comp_Cond_BinomNNLogi'
-                                             if(varest & vartype==2) hessian <- TRUE}
-                                                                                   
-    if(all(model==14,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==16,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==54,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegBinary'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==27,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECET'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==39,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEBIMODAL'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==29,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==38,likelihood==1,type==2)){ fname <- 'Comp_Cond_TWOPIECETukeyh'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==43,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==57,likelihood==1,type==2)){ fname <- 'Comp_Cond_PoisGammaZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}                                          
-    if(all(model==44,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==45,likelihood==1,type==2)){ fname <- 'Comp_Cond_BinomnegGaussZINB'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==24,likelihood==1,type==2)){ fname <- 'Comp_Cond_LogLogistic'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==25,likelihood==1,type==2)){ fname <- 'Comp_Cond_Logistic'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==41,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_Tukeygh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==37,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_SkewT'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==47,likelihood==1,type==2)){ fname <- 'Comp_Cond_Gauss_misp_PoisGamma'
-                                           if(varest & vartype==2) hessian <- TRUE} 
-
-
+    if(all(model==1, likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss'                          
+    if(all(model==21,likelihood==1,type==2)) fname <- 'Comp_Cond_Gamma'                                 
+    if(all(model==26,likelihood==1,type==2)) fname <- 'Comp_Cond_Weibull'
+    if(all(model==22,likelihood==1,type==2)) fname <- 'Comp_Cond_LogGauss'
+    if(all(model==28,likelihood==1,type==2)) fname <- 'Comp_Cond_Beta'
+    if(all(model==50,likelihood==1,type==2)) fname <- 'Comp_Cond_Beta2' 
+    if(all(model==13,likelihood==1,type==2)) fname <- 'Comp_Cond_WrapGauss'   
+    if(all(model==33,likelihood==1,type==2)) fname <- 'Comp_Cond_Kumaraswamy'
+    if(all(model==42,likelihood==1,type==2)) fname <- 'Comp_Cond_Kumaraswamy2'                                          
+    if(all(model==20,likelihood==1,type==2)) fname <- 'Comp_Cond_SinhGauss'                                           
+    if(all(model==38,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECETukeyh'                                          
+    if(all(model==27,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECET'                                          
+    if(all(model==29,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECEGauss'                                         
+    if(all(model==10,likelihood==1,type==2)) fname <- 'Comp_Cond_SkewGauss'                                        
+    if(all(model==12,likelihood==1,type==2)) fname <- 'Comp_Cond_T'                                          
+    if(all(model==34,likelihood==1,type==2)) fname <- 'Comp_Cond_Tukeyh'                                          
+    if(all(model==40,likelihood==1,type==2)) fname <- 'Comp_Cond_Tukeyhh'                                         
+    if(all(model==35,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_T'                                         
+    if(all(model==27,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECET'                                         
+    if(all(model==39,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECEBIMODAL'                                        
+    if(all(model==29,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECEGauss'                                        
+    if(all(model==31,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomTWOPIECEGauss'                                        
+    if(all(model==32,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomnegTWOPIECEGauss'                                       
+    if(all(model==38,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECETukeyh'                                        
+    if(all(model==30,likelihood==1,type==2)) fname <- 'Comp_Cond_Pois'                                      
+    if(all(model==46,likelihood==1,type==2)) fname <- 'Comp_Cond_PoisGamma'                                       
+    if(all(model==36,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_Pois'
+    if(all(model==2,likelihood==1,type==2))  fname <- 'Comp_Cond_BinomGauss'                                 
+    if(all(model==11,likelihood==1,type==2)&length(n)==1) fname <- 'Comp_Cond_BinomGauss'                                 
+    if(all(model==51,likelihood==1,type==2)&length(n)>=1) fname <- 'Comp_Cond_BinomNNGauss_misp'                                
+    if(all(model==11,likelihood==1,type==2)&length(n)>1) fname <- 'Comp_Cond_BinomNNGauss'
+    if(all(model==49,likelihood==1,type==2)&length(n)==1) fname <- 'Comp_Cond_BinomLogi'                        
+    if(all(model==49,likelihood==1,type==2)&length(n)>1) fname <- 'Comp_Cond_BinomNNLogi'                                                              
+    if(all(model==14,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomnegGauss'                                     
+    if(all(model==16,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomnegGauss'                                      
+    if(all(model==54,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomnegBinary'                                      
+    if(all(model==27,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECET'                                        
+    if(all(model==39,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECEBIMODAL'                                       
+    if(all(model==29,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECEGauss'                                       
+    if(all(model==38,likelihood==1,type==2)) fname <- 'Comp_Cond_TWOPIECETukeyh'                                      
+    if(all(model==43,likelihood==1,type==2)) fname <- 'Comp_Cond_PoisZIP'                                     
+    if(all(model==57,likelihood==1,type==2)) fname <- 'Comp_Cond_PoisGammaZIP'                                                                                 
+    if(all(model==44,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_PoisZIP'                                       
+    if(all(model==45,likelihood==1,type==2)) fname <- 'Comp_Cond_BinomnegGaussZINB'                                       
+    if(all(model==24,likelihood==1,type==2)) fname <- 'Comp_Cond_LogLogistic'                                        
+    if(all(model==25,likelihood==1,type==2)) fname <- 'Comp_Cond_Logistic'                                       
+    if(all(model==41,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_Tukeygh'                                         
+    if(all(model==37,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_SkewT'                                        
+    if(all(model==47,likelihood==1,type==2)) fname <- 'Comp_Cond_Gauss_misp_PoisGamma'                          
 ###################### pairwise ###############################################
-    if(all(model==1,likelihood==3,type==2)) {fname <- 'Comp_Pair_Gauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==2,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomGauss'
-                                             if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==3,type==2)&length(n)==1){ fname <- 'Comp_Pair_BinomGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==51,likelihood==3,type==2)&length(n)>=1){ fname <- 'Comp_Pair_BinomNNGauss_misp'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==11,likelihood==3,type==2)&length(n)>1){ fname <- 'Comp_Pair_BinomNNGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==49,likelihood==3,type==2)&length(n)==1){ fname <- 'Comp_Pair_BinomLogi'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==49,likelihood==3,type==2)&length(n)>1){ fname <- 'Comp_Pair_BinomNNLogi'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==19,likelihood==3,type==2)){ namesnuis=c(namesnuis,"z")
+    if(all(model==1,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss'                                        
+    if(all(model==2,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomGauss'                                       
+    if(all(model==11,likelihood==3,type==2)&length(n)==1) fname <- 'Comp_Pair_BinomGauss'                                       
+    if(all(model==51,likelihood==3,type==2)&length(n)>=1) fname <- 'Comp_Pair_BinomNNGauss_misp'                                       
+    if(all(model==11,likelihood==3,type==2)&length(n)>1) fname <- 'Comp_Pair_BinomNNGauss'                                       
+    if(all(model==49,likelihood==3,type==2)&length(n)==1) fname <- 'Comp_Pair_BinomLogi'                                       
+    if(all(model==49,likelihood==3,type==2)&length(n)>1) fname <- 'Comp_Pair_BinomNNLogi'                                      
+    if(all(model==19,likelihood==3,type==2)) { namesnuis=c(namesnuis,"z")
                                               fixed<- c(fixed, list(z=min(n)))
-                                              fname <- 'Comp_Pair_Binom2Gauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==14,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==16,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==54,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegBinary'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==15,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisbinGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==17,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisbinnegGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}    
-    if(all(model==13,likelihood==3,type==2)){ fname <- 'Comp_Pair_WrapGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==10,likelihood==3,type==2)){ fname <- 'Comp_Pair_SkewGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-     if(all(model==21,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==33,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==42,likelihood==3,type==2)){ fname <- 'Comp_Pair_Kumaraswamy2'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==28,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==50,likelihood==3,type==2)){ fname <- 'Comp_Pair_Beta2'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==26,likelihood==3,type==2)){ fname <- 'Comp_Pair_Weibull'
-                                              if(varest & vartype==2) hessian <- TRUE}                                      
-    if(all(model==24,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogLogistic'
-                                              if(varest & vartype==2) hessian <- TRUE}     
-    if(all(model==25,likelihood==3,type==2)){ fname <- 'Comp_Pair_Logistic'
-                                              if(varest & vartype==2) hessian <- TRUE}                                                                              
-    if(all(model==23,likelihood==3,type==2)){ fname <- 'Comp_Pair_2Gamma'
-                                              if(varest & vartype==2) hessian <- TRUE}                                        
-    if(all(model==22,likelihood==3,type==2)){ fname <- 'Comp_Pair_LogGauss';
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==18,likelihood==3,type==2)){ fname <- 'Comp_Pair_SkewTGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}  
-    if(all(model==27,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECET'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==39,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEBIMODAL'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==29,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==31,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==32,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==12,likelihood==3,type==2)){ fname <- 'Comp_Pair_T'
-                                              if(varest & vartype==2) hessian <- TRUE}  
-    if(all(model==34,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==40,likelihood==3,type==2)){ fname <- 'Comp_Pair_Tukeyhh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==41,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Tukeygh' 
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==36,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_Pois'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==35,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_T'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==37,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_SkewT'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==20,likelihood==3,type==2)){ fname <- 'Comp_Pair_SinhGauss'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==38,likelihood==3,type==2)){ fname <- 'Comp_Pair_TWOPIECETukeyh'
-                                              if(varest & vartype==2) hessian <- TRUE} 
-    if(all(model==30,likelihood==3,type==2)){ fname <- 'Comp_Pair_Pois'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==46,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGamma'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==43,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==57,likelihood==3,type==2)){ fname <- 'Comp_Pair_PoisGammaZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==44,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisZIP'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==45,likelihood==3,type==2)){ fname <- 'Comp_Pair_BinomnegGaussZINB'
-                                              if(varest & vartype==2) hessian <- TRUE}
-    if(all(model==47,likelihood==3,type==2)){ fname <- 'Comp_Pair_Gauss_misp_PoisGamma'
-                                           if(varest & vartype==2) hessian <- TRUE} 
+                                              fname <- 'Comp_Pair_Binom2Gauss'}                                      
+    if(all(model==14,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomnegGauss'                                      
+    if(all(model==16,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomnegGauss'                                      
+    if(all(model==54,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomnegBinary'                                      
+    if(all(model==15,likelihood==3,type==2)) fname <- 'Comp_Pair_PoisbinGauss'                                    
+    if(all(model==17,likelihood==3,type==2)) fname <- 'Comp_Pair_PoisbinnegGauss'                                         
+    if(all(model==13,likelihood==3,type==2)) fname <- 'Comp_Pair_WrapGauss'                                     
+    if(all(model==10,likelihood==3,type==2)) fname <- 'Comp_Pair_SkewGauss'
+    if(all(model==21,likelihood==3,type==2)) fname <- 'Comp_Pair_Gamma'                                         
+    if(all(model==33,likelihood==3,type==2)) fname <- 'Comp_Pair_Kumaraswamy'                                         
+    if(all(model==42,likelihood==3,type==2)) fname <- 'Comp_Pair_Kumaraswamy2'                                         
+    if(all(model==28,likelihood==3,type==2)) fname <- 'Comp_Pair_Beta'                                        
+    if(all(model==50,likelihood==3,type==2)) fname <- 'Comp_Pair_Beta2'                                        
+    if(all(model==26,likelihood==3,type==2)) fname <- 'Comp_Pair_Weibull'                                                                             
+    if(all(model==24,likelihood==3,type==2)) fname <- 'Comp_Pair_LogLogistic'                                            
+    if(all(model==25,likelihood==3,type==2)) fname <- 'Comp_Pair_Logistic'                                                                                                                      
+    if(all(model==23,likelihood==3,type==2)) fname <- 'Comp_Pair_2Gamma'                                                                               
+    if(all(model==22,likelihood==3,type==2)) fname <- 'Comp_Pair_LogGauss';                                       
+    if(all(model==18,likelihood==3,type==2)) fname <- 'Comp_Pair_SkewTGauss'                                         
+    if(all(model==27,likelihood==3,type==2)) fname <- 'Comp_Pair_TWOPIECET'                                          
+    if(all(model==39,likelihood==3,type==2)) fname <- 'Comp_Pair_TWOPIECEBIMODAL'                                         
+    if(all(model==29,likelihood==3,type==2)) fname <- 'Comp_Pair_TWOPIECEGauss'                                         
+    if(all(model==31,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomTWOPIECEGauss'                                        
+    if(all(model==32,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomnegTWOPIECEGauss'                                       
+    if(all(model==12,likelihood==3,type==2)) fname <- 'Comp_Pair_T'                                         
+    if(all(model==34,likelihood==3,type==2)) fname <- 'Comp_Pair_Tukeyh'                                         
+    if(all(model==40,likelihood==3,type==2)) fname <- 'Comp_Pair_Tukeyhh'                                        
+    if(all(model==41,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_Tukeygh'                                        
+    if(all(model==36,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_Pois'                                      
+    if(all(model==35,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_T'                                       
+    if(all(model==37,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_SkewT'                                         
+    if(all(model==20,likelihood==3,type==2)) fname <- 'Comp_Pair_SinhGauss'                                        
+    if(all(model==38,likelihood==3,type==2)) fname <- 'Comp_Pair_TWOPIECETukeyh'                                         
+    if(all(model==30,likelihood==3,type==2)) fname <- 'Comp_Pair_Pois'                                        
+    if(all(model==46,likelihood==3,type==2)) fname <- 'Comp_Pair_PoisGamma'                                        
+    if(all(model==43,likelihood==3,type==2)) fname <- 'Comp_Pair_PoisZIP'                                         
+    if(all(model==57,likelihood==3,type==2)) fname <- 'Comp_Pair_PoisGammaZIP'                                         
+    if(all(model==44,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_PoisZIP'                                        
+    if(all(model==45,likelihood==3,type==2)) fname <- 'Comp_Pair_BinomnegGaussZINB'                                        
+    if(all(model==47,likelihood==3,type==2)) fname <- 'Comp_Pair_Gauss_misp_PoisGamma'
+ #############################################################################
     if(sensitivity) hessian=TRUE
     if(spacetime) fname <- paste(fname,"_st",sep="")
     if(bivariate) fname <- paste(fname,"_biv",sep="")
 
-   #     if(!is.null(copula))
-   # {
-   #     if(copula=="Gaussian") fname <- paste(fname,"GCop",sep="")
-   #     if(copula=="Clayton")     fname <- paste(fname,"CCop",sep="")
-   # }
-
     type_cop=0
     cond_pair=0
+
+   
   if(!is.null(copula))
     {
         fname <- paste(fname,"Cop",sep="");
@@ -379,7 +277,8 @@ comploglik_biv2 <- function(param,colidx,rowidx, corrmodel, coords,data1,data2,f
 lname="comploglik2"
 
 
-coords=cbind(coordx,coordy)
+ 
+coords=cbind(coordx,coordy,coordz)
 
 if(!onlyvar){
   
@@ -401,12 +300,9 @@ if(!onlyvar){
                               colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords,data1=data1,data2=data2, fixed=fixed,
                               fan=fname, lower=lower, method='L-BFGS-B',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
-                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=TRUE,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-      #CompLikelihood<- nloptr::lbfgs(x0=param, fn=eval(as.name(lname)), lower=lower, upper=upper, control = list(xtol_rel=1e-8),
-       #   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords,data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
-        #                      namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
-         #                    weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso)
-      if(optimizer=='L-BFGS-B'&&parallel){
+                              upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+    
+    if(optimizer=='L-BFGS-B'&&parallel){
         #ncores=max(1, parallel::detectCores() - 1)
         ncores=length(param) * 2 + 1
         if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
@@ -419,7 +315,7 @@ if(!onlyvar){
                                data1=data1,data2=data2,fixed=fixed,fan=fname, lower=lower,n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                          parallel = list(forward = FALSE,loginfo=FALSE),
-                          upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=TRUE,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+                          upper=upper,weigthed=weigthed,X=X, local=local,GPU=GPU, hessian=FALSE,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
          parallel::setDefaultCluster(cl=NULL)
          parallel::stopCluster(cl)
          }
@@ -427,19 +323,19 @@ if(!onlyvar){
         CompLikelihood <- optim(par=param, fn=eval(as.name(lname)),  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                            control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000),data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=TRUE, method='BFGS',n=n,namescorr=namescorr,
+                              hessian=FALSE, method='BFGS',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
     if(optimizer=='SANN') 
         CompLikelihood <- optim(par=param, fn=eval(as.name(lname)),  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                            control=list(factr=1e-10,
                              reltol=1e-14, maxit=100000),data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=TRUE, method='SANN',n=n,namescorr=namescorr,
+                              hessian=FALSE, method='SANN',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
 
       if(optimizer=='Nelder-Mead')
         CompLikelihood <- optim(par=param, fn=eval(as.name(lname)),  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
           control=list( reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
-                              hessian=TRUE, method='Nelder-Mead',n=n,namescorr=namescorr,
+                              hessian=FALSE, method='Nelder-Mead',n=n,namescorr=namescorr,
                                   namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso,weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
 
  #if(optimizer=='multinlminb'){
@@ -475,17 +371,17 @@ if(!onlyvar){
     #}
     if(optimizer=='nlm')
     CompLikelihood <- nlm(f=eval(as.name(lname)),p=param,steptol = 1e-4, colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
-                               fan=fname,hessian=TRUE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, 
+                               fan=fname,hessian=FALSE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam,namesaniso=namesaniso, 
                                iterlim=100000, weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
   
 
      if(optimizer=='bobyqa')   
   {
-    #  CompLikelihood <-minqa::bobyqa(par=param, fn=eval(as.name(lname)),lower=lower,upper=upper,  
-     #                   control = list( maxfun=100000),
-      #                  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,namescorr=namescorr, 
-       #                 namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,
-        #                aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+     CompLikelihood <-minqa::bobyqa(par=param, fn=eval(as.name(lname)),lower=lower,upper=upper,  
+                        control = list( maxfun=100000),
+                        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,namescorr=namescorr, 
+                       namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso, weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,
+                        aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
     }
 
     if(optimizer=='nlminb'){
@@ -495,7 +391,7 @@ if(!onlyvar){
 
      CompLikelihood <-nlminb(objective=eval(as.name(lname)),start=param,colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,
                                 control = list( iter.max=100000),
-                              lower=lower,upper=upper,
+                              lower=lower,upper=upper,hessian=FALSE,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X, local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
      # tt1 <- proc.time()-tt1;
@@ -535,14 +431,7 @@ if(!onlyvar){
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,namesaniso=namesaniso,
                                    parallel = list(forward = FALSE,loginfo=FALSE),
                              weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)}
-     #  if(optimizer=='lbfgsb3')
-     # CompLikelihood <- lbfgsb3c::lbfgsb3c(param,comploglik_biv, 
-     #                         #control=list(pgtol=1e-14, maxit=100000),
-     #                         lower=lower, upper=upper,
-     #                          colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, 
-     #                         data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
-     #                         namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,
-     #                        weigthed=weigthed,X=X,local=local,GPU=GPU )
+  
     if(optimizer=='L-BFGS-B'&&parallel){
            ncores=max(1, parallel::detectCores() - 1)
            if(Sys.info()[['sysname']]=="Windows") cl <- parallel::makeCluster(ncores,type = "PSOCK")
@@ -569,32 +458,23 @@ if(!onlyvar){
                               reltol=1e-14, maxit=100000), data1=data1,data2=data2, fixed=fixed, fan=fname,
                               hessian=FALSE, method='Nelder-Mead',n=n,
                               namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,namesaniso=namesaniso,weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-   # if(optimizer=='nmk')
-    #    CompLikelihood <- dfoptim::nmk(par=param, fn=comploglik_biv2, control = list(maxfeval=100000,tol=1e-10),
-     #                         colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed, fan=fname,
-      #                      n=n, namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,namesaniso=namesaniso,weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-    #if(optimizer=='nmkb')
-     #   CompLikelihood <- dfoptim::nmkb(par=param, fn=comploglik_biv2, control = list(maxfeval=100000,tol=1e-10),
-      #                       lower=lower,upper=upper,
-       #                       colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed, fan=fname,
-        #                    n=n, namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam ,namesaniso=namesaniso,weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-     if(optimizer=='nlm') 
+    if(optimizer=='nlm') 
         CompLikelihood <- nlm( f=comploglik_biv2,p=param,  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel, coords=coords, data1=data1,data2=data2, fixed=fixed,
                                fan=fname,hessian=FALSE,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
     
    if(optimizer=='bobyqa')   {
-        #CompLikelihood <- minqa::bobyqa(fn=comploglik_biv2,par=param, 
-        #                             control = list(iter.max=100000),
-        #                      lower=lower,upper=upper,
-        #                        colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
-        #                       fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
-        #                       weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+        CompLikelihood <- minqa::bobyqa(fn=comploglik_biv2,par=param, 
+                                     control = list(iter.max=100000),
+                              lower=lower,upper=upper,
+                                colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
+                               fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
+                               weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
                       }
     if(optimizer=='nlminb') 
         CompLikelihood <- nlminb( objective=comploglik_biv2,start=param, 
                                      control = list(iter.max=100000),
-                              lower=lower,upper=upper,
+                              lower=lower,upper=upper, hessian=FALSE,
                                 colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,data1=data1,data2=data2, fixed=fixed,
                                fan=fname,n=n,namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                                weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
@@ -739,12 +619,12 @@ if(!onlyvar){
           if(hessian) 
           {
                if(!bivariate)  
-                CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=param,method="Richardson",  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
+                CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=as.numeric(param),method="Richardson",  colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                               data1=data1,data2=data2,fixed=fixed,fan=fname,n=n,type_cop=type_cop,
                               namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,namesaniso=namesaniso,
                               weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso)
                if(bivariate)  
-               CompLikelihood$hessian=numDeriv::hessian(func=comploglik_biv2,x=param,method="Richardson",colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
+               CompLikelihood$hessian=numDeriv::hessian(func=comploglik_biv2,x=as.numeric(param),method="Richardson",colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                              data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,type_cop=type_cop,
                              namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
                              weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso)
@@ -759,24 +639,21 @@ if((sensitivity||varest))
   {
 
  
-{
-if(!bivariate)  {
+if(!bivariate)  { if(is.null(CompLikelihood$hessian)) {CompLikelihood$hessian=matrix(c(1,2,3,2),2,2) }
+                  if( min(eigen( CompLikelihood$hessian )$values) <0)
+                                  {
+                                 CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=as.numeric(CompLikelihood$par),method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
+                                                        data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
+                                                        namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,namesaniso=namesaniso,
+                                                        weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+                                   }
+                 }
 
-if(is.null(CompLikelihood$hessian)) {CompLikelihood$hessian=matrix(c(1,2,3,2),2,2)}
-if( min(eigen( CompLikelihood$hessian )$values) <0)
-{
-  CompLikelihood$hessian=numDeriv::hessian(func=comploglik2,x=CompLikelihood$par,method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
-                              data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
-                              namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,namesaniso=namesaniso,
-                              weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)}
-}
-
-if(bivariate)  
-CompLikelihood$hessian=numDeriv::hessian(func=comploglik_biv2,x=CompLikelihood$par,method="Richardson", colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
+if(bivariate)   CompLikelihood$hessian=numDeriv::hessian(func=comploglik_biv2,x=as.numeric(CompLikelihood$par),method="Richardson", colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
                           data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
                           namescorr=namescorr, namesnuis=namesnuis,namesparam=namesparam, namesaniso=namesaniso,
-                               weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
-}
+                          weigthed=weigthed,X=X,local=local,GPU=GPU,MM=MM,aniso=aniso,type_cop=type_cop,cond_pair=cond_pair)
+
 rownames(CompLikelihood$hessian)=namesparam
 colnames(CompLikelihood$hessian)=namesparam
   }
@@ -785,105 +662,9 @@ colnames(CompLikelihood$hessian)=namesparam
 ####################################
        if( (CompLikelihood$convergence!='Successful')||CompLikelihood$value==-1e+15)  print("Optimization may have failed: try with other starting values ")
           else{
-    if(varest)
-          {
-        
-            dimmat <- numparam^2
-            dmat <- numparam*(numparam+1)/2
-            eps <- (.Machine$double.eps)^(1/3)
-            param <- c(CompLikelihood$par, fixed)
-            score <- double(numparam)
-            paramcorr <- param[namescorr]
-            nuisance <- param[namesnuis]
-            sel=substr(names(nuisance),1,4)=="mean"
-            
-            mm=as.numeric(nuisance[sel])   ## mean paramteres
-            
-           if(bivariate){
-             sel1=substr(names(nuisance),1,6)=="mean_1"
-             mm1=as.numeric(nuisance[sel1])
-             sel2=substr(names(nuisance),1,6)=="mean_2"
-             mm2=as.numeric(nuisance[sel2])
-             mm=length(c(mm1,mm2))}
-             num_betas=length(mm)
-      
-            other_nuis=as.numeric(nuisance[!sel]) 
-            nuisance=c(mm,other_nuis)
-            sensmat <- double(dmat);varimat <- double(dmat)
-
-            # Set the window parameter:
-           if(length(winconst)==1) winconst=c(winconst,0)
-           
-
-            GD=.C('GodambeMat',as.double(mm),as.integer(bivariate),as.double(coordx),as.double(coordy),
-              as.double(coordt),as.integer(corrmodel), as.double(data),as.integer(distance),as.double(eps),
-              as.integer(flagcorr), as.integer(flagnuis),as.integer(grid),as.integer(likelihood),
-              as.double(c(X%*%mm)),as.integer(model),as.double(n),as.integer(num_betas),
-              as.integer(numparam),as.integer(numparamcorr),as.integer(length(paramcorr)),as.double(paramcorr),as.double(nuisance),
-              score=score,sensmat=sensmat,as.integer(spacetime),as.integer(type),
-              varimat=varimat,as.integer(vartype),as.double(winconst),as.double(winstp),as.double(winconst_t),as.double(winstp_t),
-              as.integer(weigthed),c(t(X)),as.integer(ns),as.integer(NS),PACKAGE='GeoModels',DUP=TRUE,NAOK=TRUE)
-      
-            if(!sum(GD$varimat)) print("Std error estimation failed")
-            # Set score vectore:
-            CompLikelihood$winconst<-winconst
-            CompLikelihood$winstp<-winstp
-
-            GD$score=numDeriv::grad(func=comploglik2,x=CompLikelihood$par,method="Richardson",   colidx=colidx,rowidx=rowidx,corrmodel=corrmodel,  coords=coords,
-                              data1=data1,data2=data2, fixed=fixed,fan=fname,n=n,
-                              namescorr=namescorr, namesnuis=namesnuis, namesparam=namesparam,namesaniso=namesaniso,
-                              weigthed=weigthed,X=X,local=local,GPU=GPU)
-            CompLikelihood$score <- GD$score
-            # Set sensitivity matrix:
-            CompLikelihood$sensmat <- matrix(rep(0,dimmat),ncol=numparam)
-            # Set variability matrix:
-            CompLikelihood$varimat <- matrix(rep(0,dimmat),ncol=numparam)
-            
-
-            namesgod <- c(namesnuis[as.logical(flagnuis)], namescorr[as.logical(flagcorr)])
-            names(CompLikelihood$score) <- namesgod
-            CompLikelihood$score <- CompLikelihood$score[namesparam]
-            
-
-            dimnames(CompLikelihood$sensmat) <- list(namesgod, namesgod)
-            dimnames(CompLikelihood$varimat) <- list(namesgod, namesgod)
-
-            if(numparam>1){
-    
-              CompLikelihood$varimat[lower.tri(CompLikelihood$varimat, diag=TRUE)] <- GD$varimat
-              CompLikelihood$varimat <- t(CompLikelihood$varimat)
-              CompLikelihood$varimat[lower.tri(CompLikelihood$varimat, diag=TRUE)] <- GD$varimat
-              CompLikelihood$sensmat <- CompLikelihood$sensmat[namesparam, namesparam]
-              CompLikelihood$varimat <- CompLikelihood$varimat[namesparam, namesparam]}
-            else {CompLikelihood$sensmat[1,1] <- sensmat
-                  CompLikelihood$varimat[1,1] <- varimat}
-            if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
-
-      
-            icholsensmat <- try(chol(CompLikelihood$sensmat), silent = TRUE)
-            isensmat <- try(chol2inv(icholsensmat), silent = TRUE)
-
-             if(!is.matrix(isensmat) || !is.matrix(CompLikelihood$varimat))
-              {
-                warning("observed information matrix is singular")
-                CompLikelihood$varcov <- 'none'
-                CompLikelihood$stderr <- 'none'
-              }
-            else
-              { 
-                penalty <- crossprod(CompLikelihood$varimat,isensmat)
-                CompLikelihood$claic <- -2 * CompLikelihood$value + 2*sum(diag(penalty))
-                CompLikelihood$clbic <- -2 * CompLikelihood$value + log(dimat)*sum(diag(penalty))
-                CompLikelihood$varcov <- crossprod(isensmat,penalty)
-                dimnames(CompLikelihood$varcov) <- list(namesparam, namesparam)
-                CompLikelihood$stderr <- diag(CompLikelihood$varcov)
-                if(any(CompLikelihood$stderr < 0))
-                  CompLikelihood$stderr <- 'none'
-                else
-                  CompLikelihood$stderr <- sqrt(CompLikelihood$stderr)
-              }
-        }
-    #setwd(path.parent)
+    if(varest){
+           stop("subsambling is not working")
+            }
       }
       if(hessian) CompLikelihood$sensmat=CompLikelihood$hessian
     if(!is.null(GPU)) gc()

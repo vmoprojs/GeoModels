@@ -2,7 +2,7 @@
 ### File name: GeoSpoutlier.r
 ####################################################
 
-GeoOutlier <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
+GeoOutlier <- function(data, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL, 
                          distance="Eucl", grid=FALSE,  neighb=10,alpha=0.001,
                          method="Z-Median",radius=6371, bivariate=FALSE,X=NULL)
 
@@ -16,11 +16,17 @@ GeoOutlier <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
 spacetime=FALSE
 dyn=FALSE
   if(!is.null(coordx_dyn))  dyn=TRUE  
+
+
 ## handling spatial coordinates
-    if(is.null(coordy)) coords=as.matrix(coordx)
+    if(is.null(coordy)&&is.null(coordz)) coords=as.matrix(coordx)
     else{
-    if(grid) coords=as.matrix(expand.grid(coordx,coordy))
-    else     coords=cbind(coordx,coordy)  
+    if(is.null(coordz)) { if(grid) coords=as.matrix(expand.grid(coordx,coordy))
+                         else     coords=cbind(coordx,coordy)  
+                        }
+    else  { if(grid) coords=as.matrix(expand.grid(coordx,coordy,coordz))
+                         else     coords=cbind(coordx,coordy,coordz)  
+          }
     }
 
 #####################################
@@ -29,13 +35,27 @@ space=!spacetime&&!bivariate
 ##################################################################
 
 
-   if(grid)     {a=expand.grid(coordx,coordy);coordx=a[,1];coordy=a[,2] }
+   if(grid)     { if(is.null(coordz)) { a=expand.grid(coordx,coordy);
+                                        coordx=a[,1];coordy=a[,2] 
+                                      }
+                  else   { a=expand.grid(coordx,coordy,coordz);
+                           coordx=a[,1];coordy=a[,2];coordz=a[,3] 
+                         }
+                }
 
     if(is.null(coordx_dyn))
     {
-      if(!is.null(coordy)){coordy <- coordx[,2]
-                          coordx <- coordx[,1]
-                          coords=cbind(coordx,coordy)}
+      if(!is.null(coordy)){
+                          if(is.null(coordz)) {coordz=NULL
+                                              coordy <- coordx[,2]
+                                              coordx <- coordx[,1]
+                                              }
+                          else             {  
+                                              coordz <- coordx[,3]
+                                              coordy <- coordx[,2]
+                                              coordx <- coordx[,1]
+                                          }        
+                          coords=cbind(coordx,coordy,coordz)}
       else 
       {
         if(!bivariate) coords=coordx

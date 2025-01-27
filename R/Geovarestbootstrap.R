@@ -5,7 +5,7 @@
 
    
 GeoVarestbootstrap=function(fit,K=100,sparse=FALSE,GPU=NULL,  local=c(1,1),optimizer=NULL,
-  lower=NULL, upper=NULL,method="cholesky", alpha=0.95, L=3000,parallel=FALSE,ncores=NULL)
+  lower=NULL, upper=NULL,method="cholesky", alpha=0.95, L=1000,parallel=FALSE,ncores=NULL)
 {
 
 if(length(fit$coordt)==1) fit$coordt=NULL
@@ -60,7 +60,7 @@ if(is.null(fit$copula)){     ### non copula models
    if(method=="TB"||method=="CE")    # ||method=="Vecchia"
      { data_sim = GeoSimapprox(coordx=coords,coordt=fit$coordt,coordx_dyn=fit$coordx_dyn, anisopars=fit$anisopars,
       corrmodel=fit$corrmodel,model=fit$model,param=append(fit$param,fit$fixed),
-      GPU=GPU,  local=local,grid=fit$grid,X=fit$X,n=fit$n,method=method,
+      GPU=GPU,  local=local,grid=fit$grid,X=fit$X,n=fit$n,method=method,parallel=parallel,ncores=ncores,
        L=L,distance=fit$distance,radius=fit$radius,nrep=K)}
 }
 else{    ### copula models
@@ -100,10 +100,10 @@ res_est=GeoFit( data=data_sim$data[[k]], start=fit$param,fixed=fit$fixed,
 if(res_est$convergence=='Successful'&&res_est$logCompLik<1.0e8) 
  {
  res=rbind(res,unlist(res_est$param)) 
- pb(sprintf("k=%g", k))
-  k=k+1   
+ 
 }   
-       
+    pb(sprintf("k=%g", k))
+  k=k+1      
 
 }
 #print(res)

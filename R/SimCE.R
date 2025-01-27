@@ -60,7 +60,7 @@ if(corrmodel=="Kummer_Matern_Kummer_Matern"){
 }
 
 ############################################################
-SimCE<-function(M,N,x,y,corrmodel,param,mean.val,max.ext)
+SimCE<-function(M,N,x,y,z,corrmodel,param,mean.val,max.ext)
 {
 xlim=range(x);ylim=range(y)
 Covariate.sim.B <- GRF.CE.Sim(nsim = 1, xrange=c(xlim[1],xlim[2]), yrange=c(ylim[1],ylim[2]), M = M, N = N, 

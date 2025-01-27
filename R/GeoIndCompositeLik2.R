@@ -4,7 +4,7 @@
 
 ### Optim call for Indipendence Composite log-likelihood maximization
 
-CompIndLik2 <- function(bivariate, coordx, coordy ,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
+CompIndLik2 <- function(bivariate, coordx, coordy ,coordz,coordt,coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
                            lower, model, n, namescorr, namesnuis, namesparam,
                            numparam,  optimizer, onlyvar, parallel, param, spacetime, type,
                            upper,namesupper, varest, ns, X,sensitivity,copula,MM)

@@ -3,20 +3,20 @@
 \encoding{UTF-8}
 \title{Deleting  NA values (missing values) from a spatial or spatio-temporal dataset.}
 \description{The function deletes  NA  values from a spatial or spatio-temporal dataset  }
-\usage{GeoNA(data, coordx, coordy=NULL, coordt=NULL,
+\usage{GeoNA(data, coordx, coordy=NULL,coordz=NULL, coordt=NULL,
 coordx_dyn=NULL, grid=FALSE, X=NULL, setting="spatial")}
 \arguments{
   \item{data}{A \eqn{d}{d}-dimensional vector (a single spatial realisation) or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid) or a
    (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)  or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) giving the data.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates. \eqn{d}{d}-dimensional vector giving 1-dimension of spatial coordinates.   Coordinates on a sphere for a  fixed radius \code{radius} 
+       \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
-    spatial coordinates ; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
-  \item{coordt}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+    \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates; the default is \code{NULL}
     then a spatial random field is expected.}
   \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices

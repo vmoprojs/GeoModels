@@ -192,9 +192,6 @@ C       integration u from 0 to 1, i.e. t from C=12/X to infinity
         RETURN
         END
 
-
-
-
 C       **********************************
 
         SUBROUTINE GAMMA2(X,GA)

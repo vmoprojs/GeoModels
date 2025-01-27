@@ -1,4 +1,4 @@
-export(CheckBiv,CheckDistance,CheckSph,CheckST,	CkCorrModel,CkInput,CkLikelihood,CkModel,	CkType,	CkVarType,CompIndLik2,CompLik,CompLik2,	CorrelationPar,	CorrParam,GeoAniso,	GeoCorrFct_Cop,	GeoCorrFct,GeoCovariogram,GeoCovDisplay,GeoCovmatrix,GeoCV,GeoFit,GeoFit2,	GeoKrig,GeoKrigloc,GeoNA,GeoNeighborhood,GeoNeighIndex,	GeoNosymindices,GeoOutlier,GeoPit,	GeoQQ,GeoResiduals,GeoScatterplot,GeoSim,GeoSimapprox,GeoSimCopula,GeoScores,GeoTests,GeoVarestbootstrap,GeoVariogram,Lik,MatDecomp,NuisParam,NuisParam2,GeoDoScores,StartParam,WlsStart,MatSqrt, MatInv, MatLogDet,GeoWLS,sp2Geo)
+export(CheckBiv,CheckDistance,CheckSph,CheckST,	CkCorrModel,CkInput,CkLikelihood,CkModel,	CkType,CompIndLik2,CompLik,CompLik2,	CorrelationPar,	CorrParam,GeoAniso,	GeoCorrFct_Cop,	GeoCorrFct,GeoCovariogram,GeoCovDisplay,GeoCovmatrix,GeoCV,GeoFit,GeoFit2,	GeoKrig,GeoKrigloc,GeoNA,GeoNeighborhood,GeoNeighIndex,	GeoNosymindices,GeoOutlier,GeoPit,	GeoQQ,GeoResiduals,GeoScatterplot,GeoSim,GeoSimapprox,GeoSimCopula,GeoScores,GeoTests,GeoVarestbootstrap,GeoVariogram,Lik,MatDecomp,NuisParam,NuisParam2,GeoDoScores,StartParam,WlsStart,MatSqrt, MatInv, MatLogDet,GeoWLS,sp2Geo,GeoNeighbSelect)
 useDynLib(GeoModels, .registration = TRUE)
 S3method(print,GeoFit) 
 S3method(print,GeoCovmatrix) 
@@ -9,12 +9,13 @@ importFrom("grDevices", dev.cur,gray.colors)
 importFrom("graphics", abline, lines, par, persp,plot,points,image,plot.default,box,
 axis,plot.new,plot.window,title)
 importFrom("graphics", "hist")
-importFrom("stats", median, nlminb, dist, fft, quantile, qqnorm, qbinom,qpois,qnbinom,  pweibull, pgamma, plnorm, nlm, optim, optimize, integrate,approxfun,pchisq,pnorm,qnorm,dnorm,dpois,dbeta,dnbinom,dbinom,dweibull,dgamma,dlnorm,pbinom, plogis, pnbinom, ppois,
+importFrom("stats", median, nlminb, dist, fft, quantile, qqnorm, qbinom,qpois,qnbinom,  pweibull, pgamma, plnorm, nlm, optim, optimize, integrate,approxfun,pchisq,pnorm,rt,qnorm,dnorm,dpois,dbeta,dnbinom,dbinom,dweibull,dgamma,dlnorm,pbinom, plogis, pnbinom, ppois,
 pbeta,dt,dlogis,qlnorm,qgamma,qweibull, qbeta,qlogis,lm, rnorm, runif, rgamma, pt,qt,qunif,uniroot, var,cor)
 importFrom("methods","is", "new", "slot<-","as")
 importFrom("utils", "setTxtProgressBar", "txtProgressBar")
 importFrom("utils", "head")
 importFrom("sp", "coordinates","is.projected")
+importFrom("minqa","bobyqa")
 importFrom("plotrix", "draw.circle")
 importFrom("lamW","lambertW0")
 importFrom("FastGP","rcppeigen_get_chol","rcppeigen_invert_matrix")
@@ -27,6 +28,7 @@ importFrom(future,plan)
 importFrom(future,sequential)
 importFrom(doFuture,"%dofuture%")
 importFrom(progressr,handlers,progressor)
+
 
 
 

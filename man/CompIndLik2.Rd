@@ -8,7 +8,7 @@
   composite log-likelihood.
 }
 \usage{
-CompIndLik2(bivariate, coordx, coordy ,coordt,
+CompIndLik2(bivariate, coordx, coordy ,coordz,coordt,
 coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
               lower, model, n, namescorr, namesnuis, 
               namesparam,
@@ -20,13 +20,14 @@ coordx_dyn, data, flagcorr, flagnuis, fixed,grid,
 \arguments{
  \item{bivariate}{Logical; if \code{TRUE} then the data come froma a bivariate random field. 
                 Otherwise from a univariate random field.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of points) assigning 2-dimensions of coordinates 
-    or a numeric vector assigning 1-dimension of coordinates.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector otherwise it will be ignored.}
-  \item{coordt}{A numeric vector assigning 1-dimension of
+       \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
+    are passed in lon/lat format expressed in decimal degrees.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+    \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates. Optional argument, the default is \code{NULL}
     then a spatial random field is expected.}
     \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices

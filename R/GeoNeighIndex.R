@@ -1,5 +1,5 @@
 ####################################################
-GeoNeighIndex<-function(coordx,coordy=NULL,coordx_dyn=NULL,coordt=NULL,
+GeoNeighIndex<-function(coordx,coordy=NULL,coordz=NULL,coordt=NULL,coordx_dyn=NULL,
                               distance="Eucl",neighb=4,maxdist=NULL,maxtime=1,radius=6371,bivariate=FALSE)
 {
 
@@ -85,9 +85,10 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
       m_s[[i]]=data.frame(cbind(aa+N*(i-1),0,inf$lags))
       }
   }
-#######
-  if(!is.null(coordx_dyn)) ## spatial index (dynamic coordinates)
-  {        ns=lengths(coordx_dyn)/2 
+ else  ## spatial index (dynamic coordinates)
+  {   
+           if(ncol(coords)==2)  ns=lengths(coordx_dyn)/2 
+           if(ncol(coords)==3)  ns=lengths(coordx_dyn)/3
   for(i in 1:numtime){
     inf=nn2Geo(coordx_dyn[[i]],coordx_dyn[[i]],K+1,distance,maxdist,radius)
     aa=cbind(inf$rowidx,inf$colidx)
@@ -116,11 +117,21 @@ spacetime_index=function(coords,coordx_dyn=NULL,N,K=4,coordt=NULL
     }
   }
   ######
-  SS = data.table::rbindlist(m_s)
-  TT = data.table::rbindlist(m_t)
-  ST = data.table::rbindlist(m_st)
-  ##final space-time indexes and distances
-  final=data.table::rbindlist(list(SS,TT,ST))
+  # SS = data.table::rbindlist(m_s)
+  # TT = data.table::rbindlist(m_t)
+  # ST = data.table::rbindlist(m_st)
+  # ##final space-time indexes and distances
+  # final=data.table::rbindlist(list(SS,TT,ST))
+
+
+
+  SS <- do.call(rbind, m_s)
+  TT <- do.call(rbind, m_t)
+  ST <- do.call(rbind, m_st)
+
+  # Final space-time indexes and distances
+  final <- do.call(rbind, list(SS, TT, ST))
+  
   return(as.matrix(final))
 }
 ##############################################################
@@ -139,9 +150,7 @@ else  maxdist1=maxdist2=maxdist3=maxdist
 
 if(is.null(coordx_dyn)) 
    {  
-   
-        cm=coords[1:(N/2),]
-       
+         cm=coords[1:(N/2),]
          inf1=nn2Geo(cm,cm,K1+1,distance,maxdist1,radius)
          inf2=nn2Geo(cm,cm,K3+1,distance,maxdist3,radius)
          inf3=nn2Geo(cm,cm,K2+1,distance,maxdist2,radius)
@@ -175,9 +184,10 @@ if(is.null(coordx_dyn))
          # SS= as.matrix(rbind(aa1,aa2,aa3,aa4))     
         
    }
-if(!is.null(coordx_dyn))
+else #### coordx_dyn case
   {       
-     ns=lengths(coordx_dyn)/2
+     if(ncol(coords)==2)  ns=lengths(coordx_dyn)/2
+     if(ncol(coords)==3)  ns=lengths(coordx_dyn)/3
     inf1=nn2Geo(coordx_dyn[[1]],  coordx_dyn[[1]],  K1+1,distance,maxdist1,radius)
     inf2=nn2Geo(coordx_dyn[[2]],  coordx_dyn[[2]],  K3+1,distance,maxdist3,radius)
     inf3=nn2Geo(coordx_dyn[[1]],  coordx_dyn[[2]],  K2+1,distance,maxdist2,radius)
@@ -212,12 +222,19 @@ return(SS)
 K=neighb
 ## for spacetime or bivariate
 #if(!is.null(coordx_dyn)){
-      if(!is.null(coordy)){coordy <- coordx[,2]
+      if(!is.null(coordy)){
+               if(is.null(coordz)){
+                          coordy <- coordx[,2]
                           coordx <- coordx[,1]
                           coords=cbind(coordx,coordy)
-                          numcoord=nrow(coords)
-
-                          }
+                                  }
+                else {    coordz <- coordx[,3]
+                          coordy <- coordx[,2]
+                          coordx <- coordx[,1]
+                              coords=cbind(coordx,coordy,coordz)
+                     }        
+                numcoord=nrow(coords)
+           }
       else {
                        if(!bivariate)
                        { coords=coordx;  numcoord=nrow(coords) }

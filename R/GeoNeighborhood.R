@@ -1,4 +1,4 @@
-GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
+GeoNeighborhood = function(data=NULL, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL,bivariate=FALSE, 
             distance="Eucl", grid=FALSE, loc, neighb=NULL,maxdist=NULL,maxtime=NULL,
                  radius=6371, time=NULL, X=NULL,M=NULL,spobj=NULL,spdata=NULL,parallel=FALSE,ncores=NULL)
 {
@@ -61,12 +61,18 @@ GeoNeighborhood = function(data=NULL, coordx, coordy=NULL, coordt=NULL, coordx_d
   dyn=FALSE
   if(!is.null(coordx_dyn))  dyn=TRUE  
 
+
+
   ## handling spatial coordinates
-  if(is.null(coordy)) {coords=as.matrix(coordx)}else{
-    if(grid) {coords=as.matrix(expand.grid(coordx,coordy))}
-    else    { coords=cbind(coordx,coordy)  }
+  if(is.null(coordy)&&is.null(coordz)) {coords=as.matrix(coordx)}
+     else{
+          if(grid) {coords=as.matrix(expand.grid(coordx,coordy,coordz))}
+          else    { coords=as.matrix(cbind(coordx,coordy,coordz))  }
   }
   
+
+
+
   Nloc=nrow(loc) # number of location sites
   NN=nrow(coords)
   #####################################

@@ -2,7 +2,7 @@
 ### File name: GeoScatterplot.r
 ####################################################
 
-GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
+GeoScatterplot <- function(data, coordx, coordy=NULL, coordz=NULL, coordt=NULL, coordx_dyn=NULL, 
                            distance="Eucl", grid=FALSE, maxdist=NULL, neighb=NULL,
                            times=NULL, numbins=4, radius=6371, bivariate=FALSE,...)
 
@@ -21,9 +21,10 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
     if(!is.null(coordt))
       if(is.numeric(coordt)&&is.numeric(times)) if(length(coordt)>1&&length(times)>=1) {corrmodel <- 'gneiting'; spacetime=TRUE}
     # Checks the input:
-    checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, grid,
+    checkinput <- CkInput(coordx, coordy,coordz, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", NULL, grid,
                              'None', maxdist, maxtime, model,NULL, 'Nelder-Mead', NULL,
-                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, 'SubSamp', FALSE,NULL,NULL)
+                             radius,  NULL, NULL,NULL, 'GeoWLS', FALSE, FALSE,NULL,NULL)
+
 
     # Checks if there are errors in the input:
   #if(is.null(maxdist))         stop('maxdist must be specified\n')
@@ -42,25 +43,35 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
      }
 
          n=1
-    if(is.null(neighb)) {initparam <- StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
+    if(is.null(neighb)) {initparam <- StartParam(coordx, coordy, coordz,coordt,coordx_dyn, corrmodel, data,distance, "Fitting",
                            NULL, grid, 'None', maxdist,neighb,
                            maxtime, model, n, NULL, NULL, FALSE, radius, 
                            NULL, NULL, NULL, 'GeoWLS', 'GeoWLS', FALSE,
-                           'SubSamp', FALSE, 1, 1,1,1,NULL,NULL,FALSE)}
-
+                           FALSE,NULL,NULL,FALSE)}
   
     ### END -- Specific checks of the Empirical Variogram    
-    if(grid)     {a=as.matrix(expand.grid(coordx,coordy));coordx=a[,1];coordy=a[,2] }
+    if(grid)     {
 
+           if(is.null(coordz)) {a=as.matrix(expand.grid(coordx,coordy));coordx=a[,1];coordy=a[,2]; coordz=double(length(coordx)) }
+           else  {a=as.matrix(expand.grid(coordx,coordy,coordz));coordx=a[,1];coordy=a[,2]; coordz=a[,3]; }
+          }
     if(is.null(coordx_dyn))
     {
-      if(!is.null(coordy)){coordy <- coordx[,2]
-                          coordx <- coordx[,1]
-                          coords=cbind(coordx,coordy)}
-      else 
-      {
-        if(!bivariate) coords=coordx
-        if(bivariate)  coords=rbind(coordx,coordx)} 
+      if(!is.null(coordy)){
+                          if(is.null(coordz)) { coordy <- coordx[,2]
+                                                coordx <- coordx[,1]
+                                                coords=cbind(coordx,coordy,0)}
+                          else             {   coordz <- coordx[,3]
+                                               coordy <- coordx[,2]
+                                               coordx <- coordx[,1]
+                                               coords=cbind(coordx,coordy,coordz)}       
+                        }
+      else  {
+              if(!bivariate) {coords=coordx;if(is.null(coordz)) coords=cbind(coords,0) }
+              else { coords=rbind(coordx,coordx)
+                     if(is.null(coordz)) coords=cbind(coords,0)
+                   } 
+            }  
       data=c(t(data))   
       numcoord=nrow(coords)               
       ns<-rep(numcoord,length(coordt))
@@ -74,11 +85,14 @@ GeoScatterplot <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NU
        ns=lengths(coordx_dyn)/2 
     }
 
+
+
+
+
 ##################################################    
 ##### scatterplot based on distances 
 ##################################################
 if(is.null(neighb)) {
-
 
 #########################
 # spatial univariate case 
@@ -96,8 +110,7 @@ if(!bivariate&&!spacetime)
     v1 = rep(exp(-99),n_pairs)
     v2 = rep(exp(-99),n_pairs)
 
-
-    V  = .C("pairs",as.integer(numcoords),as.double(data),as.double(coords[,1]),as.double(coords[,2]),as.double(numbins), 
+    V  = .C("pairs",as.integer(numcoords),as.double(data),as.double(coords[,1]),as.double(coords[,2]),as.double(coords[,3]),as.double(numbins), 
             as.double(bins),as.double(v0),as.double(v1),as.double(v2),as.double(maxdist),PACKAGE='GeoModels', DUP = TRUE,NAOK = TRUE) 
     
     v0 = as.numeric(unlist(V[7]));v0 = v0[v0 != -1]
@@ -138,7 +151,7 @@ if(bivariate)
     v01 = rep(-1,n_pairs1)
     v11 = rep(exp(-99),n_pairs1)
     v21 = rep(exp(-99),n_pairs1)
- V1  = .C("pairs",as.integer(numcoords1),as.double(data1),as.double(coords1[,1]),as.double(coords1[,2]),as.double(numbins), 
+ V1  = .C("pairs",as.integer(numcoords1),as.double(data1),as.double(coords1[,1]),as.double(coords1[,2]),as.double(coords1[,3]),as.double(numbins), 
             as.double(bins1),as.double(v01),as.double(v11),as.double(v21),as.double(maxdist[1]),PACKAGE='GeoModels', DUP = TRUE,NAOK = TRUE) 
  ################################################################
     numcoords2 = nrow(coords2)
@@ -147,7 +160,7 @@ if(bivariate)
     v02 = rep(-1,n_pairs2)
     v12 = rep(exp(-99),n_pairs2)
     v22 = rep(exp(-99),n_pairs2)
- V2  = .C("pairs",as.integer(numcoords2),as.double(data2),as.double(coords2[,1]),as.double(coords2[,2]),as.double(numbins), 
+ V2  = .C("pairs",as.integer(numcoords2),as.double(data2),as.double(coords2[,1]),as.double(coords2[,2]),as.double(coords2[,3]),as.double(numbins), 
             as.double(bins2),as.double(v02),as.double(v12),as.double(v22),as.double(maxdist[2]),PACKAGE='GeoModels', DUP = TRUE,NAOK = TRUE) 
    
     v01 = as.numeric(unlist(V1[7]));v01 = v01[v01 != -1]

@@ -269,7 +269,7 @@ double igam(double a, double x);
 double igamc(double a, double x);
 
 void  reghyperg_call(int *a,int *b,double *x,double *res);
-
+void hyperg_1F2_e_call( double *a,  double *b,double *c,  double *x, double *val);
 
 
 void Maxima_Minima_time(double *res,double *coordt,int *nsize);
@@ -397,6 +397,7 @@ extern double *maxtime;// the threshould of the temporal distances below which t
 extern int *ncoord;// number of total spatial coordinates
 extern int *ncoordx;// number of the first spatial coordinates
 extern int *ncoordy;// number of the second spatial coordinates
+extern int *ncoordz;// number of the second spatial coordinates
 extern int *npairs;// effective number of pairs
 //int *nrep;// number of iid replicates of the random field
 extern int *ntime;// number of times
@@ -448,6 +449,7 @@ int fmin_int(int u,int v);
 
 double bi_matern_bounds(double scale11,double scale22,double scale12,double nu11,double nu22,double nu12,double t,int c);
 
+double one_log_wrapped(double alfa,double u,double mi,double sill);
 double one_log_T(double z,double m, double sill, double df);
 double one_log_tukeyh(double z,double m, double sill, double tail);
 double one_log_tukeyhh(double z,double m, double sill, double h1,double h2);
@@ -804,6 +806,9 @@ double QFORM2(double **A,double *x,double *y,int n, int m);
 double Trace(double **A,int n);
 void lubksb(double **a, int n, int *indx, double *b);
 void ludcmp(double **a, int n, int *indx, double *dd);
+
+
+
 
 
 
@@ -1223,7 +1228,7 @@ double biv_two_pieceGaussian(double rho,double zi,double zj,double sill,double e
 
 double stirling(double x);
 
-double dist(int type_dist,double coordx,double locx,double coordy,double locy, double radius); 
+double dist(int type_dist,double coordx,double locx,double coordy,double locy,double coordz,double locz, double radius); 
 
 double Dist_geodesic(double loni, double lati, double lonj, double latj,double radius);
 
@@ -1272,14 +1277,14 @@ void SetSampling_t(double *data,double *sdata, int nbetas,int npts,
 
 
 
-void Space_Dist(double *coordx,double *coordy,int *ia,int *idx,
+void Space_Dist(double *coordx,double *coordy,double *coordz,int *ia,int *idx,
         int *ismal,int *ja,int *colidx,int *rowidx ,double thres);
 
 
-void SpaceTime_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+void SpaceTime_Dist(double *coordx,double *coordy,double *coordz,double *coordt,int *ia,int *idx,int *ismal,int *ja,
                     int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres,double *thret);
 
-void SpaceBiv_Dist(double *coordx,double *coordy,double *coordt,int *ia,int *idx,int *ismal,int *ja,
+void SpaceBiv_Dist(double *coordx,double *coordy,double *coordz,double *coordt,int *ia,int *idx,int *ismal,int *ja,
                     int *tapmodel,int *ns, int  *NS,int *colidx,int *rowidx ,double *thres);
 /*----------------------------------------------------------------
 File name: Utility.c
@@ -1305,6 +1310,7 @@ double hyt2f1( double a, double b, double c, double x, double *loss );
 double hys2f1( double a,double b,double c,double x,double *loss );
 double hyp2f1( double a,double b,double c,double x);
 double hypergeo(double a,double b,double c,double x);
+double hypergeo_sem(double a,double b,double c,double x);
 
 double polevl(double x, const double coef[], int N);
 double p1evl(double x, const double coef[], int N);
@@ -1476,4 +1482,4 @@ double qnorm55(double p, double mu, double sigma, int lower_tail, int log_p);
 
 
 
-void Maxima_Minima_dist(double *res,double *coordx,double *coordy,int *nsize,int *type_dist,double *radius);
+void Maxima_Minima_dist(double *res,double *coordx,double *coordy,double *coordz,int *nsize,int *type_dist,double *radius);

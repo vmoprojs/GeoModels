@@ -17,7 +17,7 @@ covariance=FALSE,variogram=FALSE)
   \item{x}{A set of spatial distances.}
   \item{t}{A set of (optional) temporal distances.}
   \item{corrmodel}{String; the name of a correlation model, for the
-    description see the Section \bold{Details}.}
+    description see \code{\link{GeoCovmatrix}}.}
   \item{model}{String; the type of RF. See \code{\link{GeoFit}}.}
   \item{distance}{String; the name of the spatial distance. The default
   is \code{Eucl}, the euclidean distance. See \code{\link{GeoFit}}.}

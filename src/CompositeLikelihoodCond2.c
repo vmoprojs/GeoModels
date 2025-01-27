@@ -30,6 +30,29 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+
+/******************************************************************************************/
+void Comp_Cond_WrapGauss2mem(int *cormod, double *data1,double *data2,int *N1,int *N2,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
+{
+    int i=0;
+    double  u=0.0,v=0.0,weights=1.0,corr=0.0,bl,l2;
+    double alfa=2.0;double nugget=nuis[0];double sill=nuis[1];
+      if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
+ for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                u=data1[i];v=data2[i];
+                corr=CorFct(cormod,lags[i],0,par,0,0);
+                       if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
+                bl=log(biv_wrapped(alfa,u,v,mean1[i],mean2[i],nugget,sill,(1-nugget)*corr));
+                l2=one_log_wrapped (alfa,v,mean2[i],sill);
+                *res+= (bl-l2)*weights;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 /*********************************************************/
 void Comp_Cond_Tukeyh2mem(int *cormod, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -1358,13 +1381,37 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                    // l1=one_log_loggaussian(zi,mean1[i],sill);
                     l2=one_log_loggaussian(zj,mean2[i],sill);
                    if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
-           //  bl=2*log(d2lognorm(zi,zj,sill,nugget, mean1[i], mean2[i],(1-nugget)*corr)) -(l1+l2);
+   
           bl=log(d2lognorm(zi,zj,sill,nugget, mean1[i], mean2[i],(1-nugget)*corr)) -l2;
                     *res+= weights*bl;
                     }}
     if(!R_FINITE(*res))*res = LOW;
     return;
 }
+
+/******************************************************************************************/
+void Comp_Cond_WrapGauss_st2mem(int *cormod, double *data1,double *data2,int *N1,int *N2,
+ double *par, int *weigthed, double *res,double *mean1,double *mean2,
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
+{
+    int i=0;
+    double  u=0.0,v=0.0,weights=1.0,corr=0.0,bl,l2;
+    double alfa=2.0;double nugget=nuis[0];double sill=nuis[1];
+
+      if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
+ for(i=0;i<npairs[0];i++){
+if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
+                u=data1[i];v=data2[i];
+                corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
+                          if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                bl=log(biv_wrapped(alfa,u,v,mean1[i],mean2[i],nugget,sill,(1-nugget)*corr));
+                l2=one_log_wrapped (alfa,v,mean2[i],sill);
+                *res+= (bl-l2)*weights;
+                }}
+    if(!R_FINITE(*res))*res = LOW;
+    return;
+}
+
 /*********************************************************/
 void Comp_Cond_Beta_st2mem(int *cormod, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
@@ -2009,6 +2056,10 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
     return;
 }
 
+
+
+
+
 void Comp_Cond_Logistic_st2mem(int *cormod, double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
  double *nuis, int *local,int *GPU,int *type_cop, int *cond)
@@ -2020,7 +2071,7 @@ void Comp_Cond_Logistic_st2mem(int *cormod, double *data1,double *data2,int *N1,
      for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
                     zi=(data1[i]); zj=(data2[i]);
-                    corr=CorFct(cormod,lags[i],0,par,0,0);
+                    corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
                     //l1=one_log_logistic(zi,mean1[i],nuis[1]) ;
                     l2=one_log_logistic(zj,mean2[i],nuis[1])  ;
                     //bl=2*log(biv_Logistic((1-nugget)*corr,zi,zj,mean1[i],mean2[i],nuis[1])) -(l1+l2);

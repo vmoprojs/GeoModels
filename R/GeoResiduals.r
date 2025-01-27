@@ -10,13 +10,9 @@ if(!inherits(fit,"GeoFit"))  stop("A GeoFit object is needed as input\n")
 ######
 extmean=FALSE
 if(!fit$bivariate) {if(length(fit$fixed$mean)>1) {extmean=TRUE; mmext=fit$fixed$mean;fit$fixed$mean=0}}  ## external fixed mean
-     
-
-nm=names(fit$param)
-nf=names(fit$fixed)
-
-fit$param=unlist(fit$param)
-fit$fixed=unlist(fit$fixed)
+###
+nm=names(fit$param); nf=names(fit$fixed)
+fit$param=unlist(fit$param); fit$fixed=unlist(fit$fixed)
 model=fit$model        #type of model
 num_betas=fit$numbetas  #number of mean parameters
 
@@ -51,6 +47,7 @@ else mu=fit$X%*%beta2
 if(is.list(fit$coordx_dyn)) dd=unlist(fit$data)
 else dd=c(t(fit$data))
 
+
 ############################################################
 #if(!is.null(copula)){    #### copula models
 #if(copula=="Clayton"||copula=="Gaussian"){
@@ -79,6 +76,7 @@ if(model %in% c("Gaussian","SkewGaussian","Logistic",
                "StudentT",  "Gaussian_misp_StudentT","Gaussian_misp_SkewStudentT","SkewStudentT",
                "TwoPieceGaussian","TwoPieceTukeyh","TwoPieceGauss","TwoPieceStudentT","TwoPieceBimodal"))
 {res1=(dd-c(mu))/sqrt(as.numeric(param['sill']))}
+
 
 if(model=="Gaussian_misp_Binomial")
 {
@@ -167,8 +165,6 @@ if(!sum(names(fit$param)=="sill")) fit$param["sill"]=1
             if(sum(sel)>=1) fit$fixed=fit$fixed[!sel]
 }
 
-
-
 if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",  "LogGaussian", 
         "LogLogistic", "BinomialNeg", "Bernoulli", "Geometric", 
         "Gaussian_misp_Poisson", "PoissonZIP", "Gaussian_misp_PoissonZIP", 
@@ -181,9 +177,8 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",  "LogGaussian",
 }
 
 
-
 ### formatting data
-if(fit$spacetime) 
+if(fit$spacetime)     ## spacetime
 {if(!is.list(fit$coordx_dyn)) 
           data_res=matrix(res1,nrow=nrow(fit$data),ncol=ncol(fit$data),byrow=TRUE)
  else{ 
@@ -196,8 +191,7 @@ if(fit$spacetime)
     data_res=sim_temp  
  }
 }   
-else   {data_res=as.vector(res1)}
-
+else   {data_res=as.vector(res1)}   ## space
 }
 #####################################################################
 #####################################################################
@@ -255,6 +249,7 @@ GeoFit <- list(bivariate=fit$bivariate,
                          clbic = fit$clbic,
                          coordx = fit$coordx,
                          coordy = fit$coordy,
+                         coordz = fit$coordz,
                          coordt = fit$coordt,
                          coordx_dyn=fit$coordx_dyn,
                          copula=fit$copula,
@@ -289,13 +284,8 @@ GeoFit <- list(bivariate=fit$bivariate,
                          sensmat = fit$sensmat,
                          varcov = fit$varcov,
                          varimat = fit$varimat,
-                         vartype = fit$vartype,
                          type = fit$type,
                          weighted=fit$weighted,
-                         winconst = fit$winconst,
-                         winstp = fit$winstp,
-                         winconst_t = fit$winconst_t,
-                         winstp_t = fit$winstp_t,
                          X = fit$X)
     structure(c(GeoFit, call = call), class = c("GeoFit"))
 #########################

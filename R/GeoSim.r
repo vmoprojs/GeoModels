@@ -4,18 +4,22 @@
 
 
 # Simulate spatial and spatio-temporal random felds:
-GeoSim <- function(coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
+GeoSim <- function(coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL,corrmodel, distance="Eucl",GPU=NULL, grid=FALSE,
      local=c(1,1),method="cholesky",model='Gaussian', n=1, param, anisopars=NULL, radius=6371,
-      sparse=FALSE,X=NULL,spobj=NULL,nrep=1)
+      sparse=FALSE,X=NULL,spobj=NULL,nrep=1,progress=TRUE)
 {
 ####################################################################
 ############ internal function #####################################
 ####################################################################
-ddim<-function(coordx,coordy,coordt)
+ddim<-function(coordx,coordy,coordz,coordt)
 {
 dimt=1
+if(is.null(coordz))
+{
 if(is.null(coordy))  dims=dim(coordx)[1]
 else                 dims=length(coordx)*length(coordy)
+}
+else   dims=length(coordx)*length(coordy)*length(coordz)
 if(!is.null(coordt)) dimt=length(coordt)
 return(dims*dimt)
 }
@@ -66,17 +70,22 @@ return(dims*dimt)
 ############# END internal functions ###############################
 ####################################################################
 
-    if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
-    if(is.null(CkModel(model))) stop("The name of the  model  is not correct\n")
+
+    if( !is.character(corrmodel)|| is.null(CkCorrModel(corrmodel)))       stop("the name of the correlation model is wrong")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
     method=gsub("[[:blank:]]", "",method)
 
+if(is.null(coordz))
+{
     if(grid) { xgrid=coordx;ygrid=coordy;
                numxgrid=length(xgrid);numygrid=length(ygrid) }
+}
+else {if(grid) stop("grid can not be coupled with coordz \n ")}
 
-    spacetime_dyn=FALSE
+
+spacetime_dyn=FALSE
 ##############################################################################
 ###### extracting sp object informations if necessary              ###########
 ##############################################################################
@@ -178,10 +187,11 @@ mc=append(zz,ll)
 pc=param[CorrParam(corrmodel)]
 #print(append(pc,mc))
 
-ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
-                   distance=distance,grid=grid,model="Gaussian", n=n,
-                param=append(mc,pc), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
 
+ccov = GeoCovmatrix(coordx=coordx, coordy=coordy,coordz=coordz, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
+                   distance=distance,grid=grid,model="Gaussian", n=n,
+                param=append(mc,pc), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,
+                X=X)
 
 ######################
 # matrix decomposition and square root
@@ -196,6 +206,7 @@ else {
  iord <- spam::ordering(cholS, inv=TRUE)
  R <- spam::as.spam(cholS)
 }
+
 ######################
 ##############################################
 ## putting 2 nugget
@@ -247,15 +258,16 @@ if(is.logical(decompvarcov1)){print(" Covariance matrix is not positive definite
  dime<-numcoord*numtime
 
 ########################
+
    if(spacetime_dyn) {
-       coords=NULL
+        coords=NULL
        coords=do.call(rbind,args=c(coordx_dyn))
-       ns=lengths(coordx_dyn)/2
-       coordx <- coords[,1]; coordy <- coords[,2]
+      if(ncol(coords)==2) {ns=lengths(coordx_dyn)/2; coordx <- coords[,1]; coordy <- coords[,2];coordz=NULL}
+      if(ncol(coords)==3) {ns=lengths(coordx_dyn)/3; coordx <- coords[,1]; coordy <- coords[,2];coordz=coords[,3]}
        dime=sum(ns)
-       ccov$numtime=1
+      ccov$numtime=1
    }
-   else { dime=ddim(coordx,coordy,coordt)}
+   else { dime=ddim(coordx,coordy,coordz,coordt)}
 ########################
     
 SIM=list()
@@ -263,14 +275,16 @@ SIM=list()
 ### starting number of replicates
 ###################################################
 if(nrep>1){
+if(progress){
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:nrep)
 }
+}
 for( L in 1:nrep){
     k=1;  npoi=1
 
-    if(nrep>1) pb(sprintf("L=%g", L))
+   if(progress){ if(nrep>1) pb(sprintf("L=%g", L))}
 ################################# how many random fields ################
     if(model %in% c("SkewGaussian","LogGaussian","TwoPieceGaussian","TwoPieceTukeyh")) k=1
     if(model %in% c("Weibull","Wrapped")) k=2
@@ -280,7 +294,7 @@ for( L in 1:nrep){
     if(model %in% c("Geometric","BinomialNeg","BinomialNegZINB"))
                  { k=99999;if(model %in% c("Geometric")) {model="BinomialNeg";n=1}}
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*round(param$shape);npoi=999999999}
+    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*param$shape;npoi=999999999}
     if(model %in% c("PoissonWeibull")) {k=4;npoi=999999999}
     if(model %in% c("PoissonZIP","BinomialNegZINB","PoissonGammaZIP")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {k=round(param$shape)}
@@ -735,7 +749,7 @@ zz=param[grep("mean", names(param))]
 pc=param[CorrParam(corrmodel)]
 
 
-ccov = GeoCovmatrix(coordx=coordx, coordy=coordy, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
+ccov = GeoCovmatrix(coordx=coordx, coordy=coordy,coordz=coordz, coordt=coordt, coordx_dyn=coordx_dyn, corrmodel=corrmodel,
                    distance=distance,grid=grid,model="Gaussian", n=n,
                 param=append(pc,zz), anisopars=anisopars, radius=radius, sparse=sparse,copula=NULL,X=X)
 
@@ -800,7 +814,7 @@ else {
                                                  if(model %in% c("Geometric")) {model="BinomialNeg";n=1}
                                                }
     if(model %in% c("Poisson","PoissonZIP")) {k=2;npoi=999999999}
-    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*round(param$shape);npoi=999999999}
+    if(model %in% c("PoissonGamma","PoissonGammaZIP")) {k=2+2*param$shape;npoi=999999999}
     if(model %in% c("PoissonWeibull")) {k=4;npoi=999999999}
     if(model %in% c("PoissonZIP","BinomialNegZINB","PoissonGammaZIP")) {param$nugget=param$nugget1}
     if(model %in% c("Gamma"))  {  k=max(param$shape_1,param$shape_2)}
@@ -812,12 +826,15 @@ else {
         coords=NULL
       coordt=c(1,2)
        coords=do.call(rbind,args=c(coordx_dyn))
-       ns=lengths(coordx_dyn)/2
-       coordx <- coords[,1]; coordy <- coords[,2]
+      if(ncol(coords)==2) {ns=lengths(coordx_dyn)/2; coordx <- coords[,1]; coordy <- coords[,2];coordz=NULL}
+      if(ncol(coords)==3) {ns=lengths(coordx_dyn)/3; coordx <- coords[,1]; coordy <- coords[,2];coordz=coords[,3]}
        dime=sum(ns)
+    
    }
-   else { dime=ddim(coordx,coordy,coordt)
-          ns=c(length(coordx),length(coordx))/2
+   else { dime=ddim(coordx,coordy,coordz,coordt)
+
+          if(ncol(coords)==2) ns=c(length(coordx),length(coordx))/2
+          if(ncol(coords)==3) ns=c(length(coordx),length(coordx),length(coordz))/3
         }
    dd=array(0,dim=c(dime,2,k))
    cumu=NULL;#s=0 # for negative binomial  case
@@ -836,12 +853,12 @@ SIM=list()
 for( L in 1:nrep){
 
 if(spacetime_dyn) ccov$numtime=1
+
   numcoord=ccov$numcoord;numtime=ccov$numtime;
   dime<-numcoord*numtime
-  xx=double(dime)
+  xx=ssp=double(dime)
 
-#########################################################
-KK=1;sel=NULL;ssp=double(dime)
+KK=1;sel=NULL;
 
 while(KK<=npoi) {
   for(i in 1:k) {
@@ -974,6 +991,7 @@ if(nrep==1) SIM=SIM[[1]]
     GeoSim <- list(bivariate = bivariate,
     coordx = ccov$coordx,
     coordy = ccov$coordy,
+    coordz = ccov$coordz,
     coordt = ccov$coordt,
     coordx_dyn =coordx_dyn,
     corrmodel = corrmodel,

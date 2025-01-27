@@ -7,19 +7,24 @@
   The procedure initializes the parameters for the fitting procedure.
 }
 \usage{
-StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall, 
-          fixed, grid,likelihood,  maxdist, neighb, maxtime, model, n,  param, 
-          parscale, paramrange, radius,  start, taper, tapsep,
-          type,typereal,varest, vartype, weighted, winconst,
-          winstp, winconst_t, winstp_t,copula,X,memdist,nosym)
+
+
+
+
+StartParam(coordx, coordy,coordz ,coordt,coordx_dyn, corrmodel, data, distance, fcall,
+                      fixed, grid,likelihood,  maxdist, neighb,maxtime, model, n, 
+                      param, parscale,paramrange, radius, start, taper, tapsep, 
+                      type,typereal,  weighted,copula, X,memdist,nosym)
 }
 \arguments{
- \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of points) assigning 2-dimensions of coordinates or a numeric vector assigning
-    1-dimension of coordinates.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector otherwise it will be ignored.}
+   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
+    are passed in lon/lat format expressed in decimal degrees.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+
   \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates.}
     \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
@@ -71,22 +76,9 @@ StartParam(coordx, coordy, coordt,coordx_dyn, corrmodel, data, distance, fcall,
   \item{type}{String; the type of likelihood objects. Temporary value set
     to be "WLeastSquare" (weigthed least-square) in order to compute the starting values.}
   \item{typereal}{String; the real type of likelihood objects. See \code{\link{GeoFit}}.}
-  \item{varest}{Logical; if \code{TRUE} the estimates' variances and
-    standard errors are returned.
-    \code{FALSE} is the default.}
-  \item{vartype}{String; the type of estimation method for computing
-    the estimate variances, see the Section \bold{Details}.}
   \item{weighted}{Logical; if \code{TRUE} the likelihood objects are
     weighted, see \code{\link{GeoFit}}.}
-       \item{winconst}{Numeric; a positive value for computing the spatial  sub-window
-      in the sub-sampling procedure.}
- \item{winstp}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
-      overlapping in the spatial  sub-sampling procedure.}
-   \item{winconst_t}{Numeric; a positive value for computing the temporal sub-window
-         in the sub-sampling procedure.}
- \item{winstp_t}{Numeric; a value in \eqn{(0,1]} for defining the the proportion of 
-      overlapping in the temporal  sub-sampling procedure.}
-       \item{copula}{The type of copula.}
+   \item{copula}{The type of copula.}
     \item{X}{Numeric; Matrix of space-time covariates.}   
         \item{memdist}{ Logical; if \code{TRUE} then  the distances in the  composite likelihood 
       are computed before  the optmization. }

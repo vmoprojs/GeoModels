@@ -109,7 +109,7 @@ double poch(double a, double m)
     }
     else if (a > 1e4 && fabs(m) <= 1) {
         /* Avoid loss of precision */
-        return r * pow(a, m) * (
+        return r * R_pow(a, m) * (
             1
             + m*(m-1)/(2*a)
             + m*(m-1)*(m-2)*(3*m-1)/(24*a*a)
@@ -153,17 +153,17 @@ double res=0.0,term1=0.0,term2=0.0,term3=0.0;int k=0;
 if(n<m){  
 
 for (k=0;k<=(n-1);k++) {
-  term1=term1+ pow(-z,k)*(poch(1-n,k))/(gamma(k+1)*poch(2-m,k));}
+  term1=term1+ R_pow(-z,k)*(poch(1-n,k))/(gamma(k+1)*poch(2-m,k));}
 
 for (k=0;k<=(m-n-1);k++) {
-  term2=term2+pow(z,k)*(poch(1-m+n,k))/(gammafn(k+1)*poch(2-m,k));
+  term2=term2+R_pow(z,k)*(poch(1-m+n,k))/(gammafn(k+1)*poch(2-m,k));
 }  
-res=log(poch(2-m,n-1))+exp(log(pow(z,1-m))+log((exp(z)*term1- term2))-lgammafn(n));
+res=log(poch(2-m,n-1))+exp(log(R_pow(z,1-m))+log((exp(z)*term1- term2))-lgammafn(n));
 return(res) ; 
 }
 else{
 for (k=0;k<=(n-m);k++) {
-  term3=term3+exp(( log(poch(m-n,k))+log(pow(-z,k)))-(lgammafn(k+1)+log(poch(m,k))));
+  term3=term3+exp(( log(poch(m-n,k))+log(R_pow(-z,k)))-(lgammafn(k+1)+log(poch(m,k))));
 }
 return(z+log(term3)-lgammafn(m));    
   }
@@ -179,26 +179,26 @@ double res=0.0;
 if(n==1) {res=z+(1-m)*log(z)+log(igam(-1 + m, z));
          return(res);}
 if(n==2) {
-    res=    exp(-lgammafn(m-1))+  exp(z)*pow(z,1-m)* (2 - m + z)*igam(-1 + m, z);
+    res=    exp(-lgammafn(m-1))+  exp(z)*R_pow(z,1-m)* (2 - m + z)*igam(-1 + m, z);
          return(log(res));
      }
 if(n==3) {
 
-   res= 0.5*((4-m+z)/gammafn(-1+m) + exp(z)*pow(z,1-m)*(6-5*m + m*m + 6*z-2*m*z+z*z)*igam(-1 + m, z));
+   res= 0.5*((4-m+z)/gammafn(-1+m) + exp(z)*R_pow(z,1-m)*(6-5*m + m*m + 6*z-2*m*z+z*z)*igam(-1 + m, z));
           return(log(res));
          }
          
 if(n==4)
        {res=(1/6)*   (   (18 - 8*m + m*m + 10*z - 2*m*z + z*z)/(gammafn(-1 + m)) + 
-        exp(z)*pow(z,1-m)*(24 - 26*m + 9*m*m - m*m*m + 36*z - 21*m*z + 3*m*m*z + 
+        exp(z)*R_pow(z,1-m)*(24 - 26*m + 9*m*m - m*m*m + 36*z - 21*m*z + 3*m*m*z + 
     12*z*z - 3*m*z*z + z*z*z)*igam(-1 + m, z));
     return(log(res));}
 
 if(n==5)
        {res=(1/24)*   (   (96 - 58*m + 13*m*m - m*m*m + 86*z - 31*m*z + 3*m*m*z + 18*z*z - 
  3*m*z*z + z*z*z)/(gammafn(-1 + m)) + 
-        exp(z)*pow(z,1-m)*(120 - 154*m + 71*m*m - 14*m*m*m + pow(m,4) + 240*z - 188*m*z + 48*m*m*z - 
- 4*m*m*m*z + 120*z*z - 54*m*z*z + 6*pow(z*m,2) + 20*z*z*z - 4*m*z*z*z + pow(z,4))*igam(-1 + m, z));
+        exp(z)*R_pow(z,1-m)*(120 - 154*m + 71*m*m - 14*m*m*m + R_pow(m,4) + 240*z - 188*m*z + 48*m*m*z - 
+ 4*m*m*m*z + 120*z*z - 54*m*z*z + 6*R_pow(z*m,2) + 20*z*z*z - 4*m*z*z*z + R_pow(z,4))*igam(-1 + m, z));
   return(log(res));}
  
  res=log(hyperg(n,m, z))-lgammafn(m);    
@@ -222,10 +222,10 @@ return(p1*s1);
 double try(int m, double b,double z)
 { 
 double res=0.0,res1=0.0;int k=0;
-//res1=log(exp(z)*pow(z,m-b)*gammafn(b)/(gammafn(b-m)*gammafn(m)));
+//res1=log(exp(z)*R_pow(z,m-b)*gammafn(b)/(gammafn(b-m)*gammafn(m)));
 res1=z+(m-b)*log(z)+ lgammafn(b)-(lgammafn(b-m)+lgammafn(m));
 for(k=0; k<=m; k++)
-res=res+pow(-z,-k)*exp(lgammafn(m)+lgammafn(b+k-m)-(lgammafn(k+1)+lgammafn(m-k)))*igam(b+k-m,z);
+res=res+R_pow(-z,-k)*exp(lgammafn(m)+lgammafn(b+k-m)-(lgammafn(k+1)+lgammafn(m-k)))*igam(b+k-m,z);
 return(log(res)+res1);
 }
 
@@ -248,12 +248,12 @@ if(alpha>0 &&  b>1000000 && x>1000000)  // new bad approximation
     if(b<x+a+1){
         aux1=exp(lgammafn(b)+x+(a-1)*log1p(-alpha)-lgammafn(a)-lgammafn(b-a));
         aux2=exp((alpha*x)*(log(alpha)-1)+0.5*(log(2*alpha*M_PI)-log(x)));
-        aux3=((2-a*alpha)*(1-a))/((2*pow(1-alpha,2)))+(1/(12*alpha));
+        aux3=((2-a*alpha)*(1-a))/((2*R_pow(1-alpha,2)))+(1/(12*alpha));
         res=aux1*aux2*(1+aux3/x);
     }
     if(b>x+a+1){
-        aux1=exp(lgammafn(b)-lgammafn(b-a))/pow(b-a-x-1,a);
-        aux2=a*(a+1)*(a+1-b)/(2*pow(b-a-x-1,2));
+        aux1=exp(lgammafn(b)-lgammafn(b-a))/R_pow(b-a-x-1,a);
+        aux2=a*(a+1)*(a+1-b)/(2*R_pow(b-a-x-1,2));
         res=aux1*(1-aux2);
     }
  return(res);   
@@ -941,7 +941,7 @@ double igam_fac(double a, double x)
     res = sqrt(fac / exp(1)) / lanczos_sum_expg_scaled(a);
 
     if ((a < 200) && (x < 200)) {
-    res *= exp(a - x) * pow(x / fac, a);
+    res *= exp(a - x) * R_pow(x / fac, a);
     } else {
     num = x - a - lanczos_g + 0.5;
     res *= exp(a * log1pmx(num / fac) + x * (0.5 - lanczos_g) / fac);
@@ -1626,7 +1626,7 @@ return(dens);
 double asy_log_besselI(double z,double nu)
 {
      double val;
-     double K=4*pow(nu,2);
+     double K=4*R_pow(nu,2);
      val =  (z-0.5*log(2*M_PI*z))+
            log((1-(K-1)/(8*z)*(1-(K-9)/(2*8*z)*(1-(K-25)/(3*8*z)))));
      return(val);
@@ -1642,7 +1642,7 @@ double biv_Weibull(double corr,double zi,double zj,double mui, double muj, doubl
         a=1-R_pow(corr,2);
         z=2*fabs(corr)*R_pow(ui*uj,shape/2)*R_pow(k,-shape)/a;
         A=2*log(shape)  +  (-2*shape)*log(k) + (shape-1)*log(ui*uj) - log(a);
-        B= -R_pow(k,-shape)*(R_pow(ui,shape)+pow(uj,shape))/a;
+        B= -R_pow(k,-shape)*(R_pow(ui,shape)+R_pow(uj,shape))/a;
                res=A+B+ log(bessel_i(z,0,2))+z  - (mui+muj);
        
     return(exp(res));
@@ -1658,7 +1658,7 @@ double psi(int i, int j, double p1, double p2, double p12){
     if(i==1 && j==1){return (p1+p2-p1*p2)/(p2*p1*aux);}
     double aux1= (psi( i-1, j-1, p1, p2, p12)*p12+psi( i, j-1, p1, p2, p12)*(p1-p12)+psi( i-1, j, p1, p2, p12)*(p2-p12))/aux;
     double aux2= ( (i-p2/aux)/p2 + (j-p1/aux)/p1 )/aux;
-    double aux3= (2-aux)/pow(aux,2);
+    double aux3= (2-aux)/R_pow(aux,2);
     return(aux1+aux2+aux3);
 }
 
@@ -2049,16 +2049,19 @@ double biv_wrapped (double alfa,double u, double v,double mi,double mj,double nu
     //2*atan(mean[i])-M_PI
     x=u-2*atan(mi)-M_PI; y=v-2*atan(mj)-M_PI;
     s1=sill;
-    s12=sill*corr*(1-nugget);
+    s12=sill*corr;
     det=R_pow(s1,2)-R_pow(s12,2);
     double k1=-alfa,k2=-alfa;
+
      while(k1<=alfa){
      while(k2<=alfa){
      quadr = -0.5*(1.0/det)*(s1*R_pow((y+2*k1*M_PI),2.0)+s1*R_pow((x+2*k2*M_PI),2.0)
                                                     -2.0*s12*(x+2*k2*M_PI)*(y+2*k1*M_PI));
      wrap_gauss +=  (1/2.0*M_PI)*(1/sqrt(det)*exp(quadr)) ;
      k2 = k2+1;}
-     k1 = k1+1;k2 = -alfa;}
+     k1 = k1+1;
+     k2 = -alfa;
+     }
 return(wrap_gauss);
 }
 
@@ -2377,7 +2380,7 @@ double aux_biv_binomneg_simple(int NN, int u, double p01,double p10,double p11)
 
     for(i=fmax_int(0,NN-u-1);i<=NN-1;i++){
       kk1=exp(lgammafn(NN-1+u+1)-(lgammafn(i+1)+lgammafn(NN-i)+lgammafn(NN-i)+lgammafn(u-NN+2+i)));
-      dens+=kk1*pow(p11,i+1)*pow(1+p11-(p01+p10),u-NN+1+i)*pow(p01-p11,NN-1-i)*pow(p10-p11,NN-1-i);
+      dens+=kk1*R_pow(p11,i+1)*R_pow(1+p11-(p01+p10),u-NN+1+i)*R_pow(p01-p11,NN-1-i)*R_pow(p10-p11,NN-1-i);
        }
          return(dens);
 }
@@ -2390,16 +2393,16 @@ double aux_biv_binomneg (int NN, int u, int v, double x,double y,double p11)
    for(i=fmax_int(0,a-u);i<=fmin_int(a,NN-1);i++){
     kk1=exp(lgammafn(NN+u)-(lgammafn(i+1)+lgammafn(NN-i)+lgammafn(a-i+1)+lgammafn(u-a+i+1)));         
     kk2=exp(lgammafn(v-u)-(lgammafn(v+a-NN-u+2)+lgammafn(NN-a-1)));                        
-    dens1+=kk1*kk2*pow(p11,i+1)*pow(1+p11-(x+y),u-a+i)*
-             pow(x-p11,NN-i-1)*pow(y-p11,a-i)*pow(1-y,v-u-NN+a+1)*pow(y,NN-a-1);
+    dens1+=kk1*kk2*R_pow(p11,i+1)*R_pow(1+p11-(x+y),u-a+i)*
+             R_pow(x-p11,NN-i-1)*R_pow(y-p11,a-i)*R_pow(1-y,v-u-NN+a+1)*R_pow(y,NN-a-1);
   }}
 
     for(a=fmax_int(0,u-v+NN);a<=NN-1;a++){
     for(i=fmax_int(0,a-u);i<=fmin_int(a,NN-1);i++){
     kk1=exp(lgammafn(NN+u)-(lgammafn(i+1)+lgammafn(NN-1-i+1)+lgammafn(a-i+1)+lgammafn(u-a+i+1)));
     kk2=exp(lgammafn(v-u)-(lgammafn(v+a-NN-u+1)+lgammafn(NN-a)));                      
-    dens2+=kk1*kk2*pow(p11,i)*pow(1+p11-(x+y),u-a+i)*
-                 pow(x-p11,NN-i)*pow(y-p11,a-i)*pow(1-y,v-u-NN+a)*pow(y,NN-a);
+    dens2+=kk1*kk2*R_pow(p11,i)*R_pow(1+p11-(x+y),u-a+i)*
+                 R_pow(x-p11,NN-i)*R_pow(y-p11,a-i)*R_pow(1-y,v-u-NN+a)*R_pow(y,NN-a);
   }}
   return(dens1+dens2);
 }
@@ -2719,6 +2722,49 @@ double lgam_sgn(double x, int *sign)
 
 
 
+double hyp2f1_sem(double a, double b, double c, double x) {
+    double d, s, y=0.0;
+    double err = 0.0;
+    double ax = fabs(x);
+
+    s = 1.0 - x;
+    d = c - a - b;
+
+    // Return 1.0 for special cases where x is 0 or if a or b is 0
+    if (x == 0.0 || a == 0 || b == 0) {
+        return 1.0;
+    }
+
+    // Only consider the case where d > 0
+    if (d > 0) {
+        // The appropriate calculations and algorithms contingent on d > 0
+        if (ax < 1.0) {
+            if (fabs(b - c) < EPS) {
+                y = R_pow(s, -a);
+            } else if (fabs(a - c) < EPS) {
+                y = R_pow(s, -b);
+            } else {
+                // Additional calculations can be done here
+                // Implement the necessary logic keeping d > 0 in mind
+                y = hyt2f1(a, b, c, x, &err); // Assuming hyt2f1 defined elsewhere
+            }
+        } else if (ax == 1.0) {
+            if (x > 0.0) {
+                y = gamma(c) * gamma(d) / (gamma(c - a) * gamma(c - b));
+            }
+        } else {
+            // Handle cases where d is strictly positive and |x| > 1
+            // This part can use recurrence relations if necessary
+            // and be amended as required for specific cases.
+        }
+
+        return y;
+    } else {
+        return NPY_INFINITY; // Return infinity if d <= 0
+    }
+}
+
+
 
 double hyp2f1( double a,double b,double c,double x)
 {
@@ -2757,7 +2803,7 @@ double hyp2f1( double a,double b,double c,double x)
     
     if (d <= -1 && !(fabs(d - id) > EPS && s < 0)
         && !(neg_int_a || neg_int_b)) {
-        return pow(s, d) * hyp2f1(c - a, c - b, c, x);
+        return R_pow(s, d) * hyp2f1(c - a, c - b, c, x);
     }
     if (d <= 0 && x == 1 && !(neg_int_a || neg_int_b))
         goto hypdiv;
@@ -2768,12 +2814,12 @@ double hyp2f1( double a,double b,double c,double x)
             if (neg_int_b) {
                 y = hyp2f1_neg_c_equal_bc(a, b, x);
             } else {
-                y = pow(s, -a);    /* s to the -a power */
+                y = R_pow(s, -a);    /* s to the -a power */
             }
             goto hypdon;
         }
         if (fabs(a - c) < EPS) {    /* a = c */
-            y = pow(s, -b);    /* s to the -b power */
+            y = R_pow(s, -b);    /* s to the -b power */
             goto hypdon;
         }
     }
@@ -2802,8 +2848,8 @@ double hyp2f1( double a,double b,double c,double x)
          */
         p = hyp2f1(a, 1 - c + a, 1 - b + a, 1.0 / x);
         q = hyp2f1(b, 1 - c + b, 1 - a + b, 1.0 / x);
-        p *= pow(-x, -a);
-        q *= pow(-x, -b);
+        p *= R_pow(-x, -a);
+        q *= R_pow(-x, -b);
         t1 = gamma(c);
         s = t1 * gamma(b - a) / (gamma(b) * gamma(c - a));
         y = t1 * gamma(a - b) / (gamma(a) * gamma(c - b));
@@ -2811,10 +2857,10 @@ double hyp2f1( double a,double b,double c,double x)
     }
     else if (x < -1.0) {
         if (fabs(a) < fabs(b)) {
-            return pow(s, -a) * hyp2f1(a, c - b, c, x / (x - 1));
+            return R_pow(s, -a) * hyp2f1(a, c - b, c, x / (x - 1));
         }
         else {
-            return pow(s, -b) * hyp2f1(b, c - a, c, x / (x - 1));
+            return R_pow(s, -b) * hyp2f1(b, c - a, c, x / (x - 1));
         }
     }
     
@@ -2898,7 +2944,7 @@ hypdon:
      * AMS55 #15.3.3
      */
 hypf:
-    y = pow(s, d) * hys2f1(c - a, c - b, c, x, &err);
+    y = R_pow(s, d) * hys2f1(c - a, c - b, c, x, &err);
     goto hypdon;
     
     /* The alarm exit */
@@ -2939,10 +2985,10 @@ double hyt2f1( double a, double b, double c, double x, double *loss )
     s = 1.0 - x;
     if (x < -0.5 && !(neg_int_a || neg_int_b)) {
         if (b > a)
-            y = pow(s, -a) * hys2f1(a, c - b, c, -x / s, &err);
+            y = R_pow(s, -a) * hys2f1(a, c - b, c, -x / s, &err);
         
         else
-            y = pow(s, -b) * hys2f1(c - a, b, c, -x / s, &err);
+            y = R_pow(s, -b) * hys2f1(c - a, b, c, -x / s, &err);
         
         goto done;
     }
@@ -2969,7 +3015,7 @@ double hyt2f1( double a, double b, double c, double x, double *loss )
             w -= lgam_sgn(c-b, &sgngam);
             sign *= sgngam;
             q *= sign * exp(w);
-            r = pow(s, d) * hys2f1(c - a, c - b, d + 1.0, s, &err1);
+            r = R_pow(s, d) * hys2f1(c - a, c - b, d + 1.0, s, &err1);
             sign = 1;
             w = lgam_sgn(-d, &sgngam);
             sign *= sgngam;
@@ -3062,7 +3108,7 @@ double hyt2f1( double a, double b, double c, double x, double *loss )
             if ((aid & 1) != 0)
                 y = -y;
             
-            q = pow(s, id);    /* s to the id power */
+            q = R_pow(s, id);    /* s to the id power */
             if (id > 0.0)
                 y *= q;
             else
@@ -3268,6 +3314,15 @@ double hypergeo(double a,double b,double c,double x)
     sol =hyp2f1( a, b, c, x );
     return(sol);
 }
+
+
+double hypergeo_sem(double a,double b,double c,double x)
+{
+    double sol;
+    sol =hyp2f1_sem( a, b, c, x );
+    return(sol);
+}
+
 
 void hypergeo_call(double *a,double *b,double *c,double *x, double *res)
 {
@@ -3498,12 +3553,12 @@ double biv_beta(double rho,double zi,double zj,double ai,double aj,double shape1
 if(rho) {
   rho2=rho*rho;
 
-    p1=pow(zi*zj,shape1/2-1)*pow(ki*kj,shape2/2-1);
+    p1=R_pow(zi*zj,shape1/2-1)*R_pow(ki*kj,shape2/2-1);
     p3=exp(2*lgammafn(aa)-(2*lgammafn(shape1/2)+2*lgammafn(shape2/2)-aa*log1p(-rho2)));
     p2= appellF4(aa,aa,shape1/2,shape2/2,rho2*zi*zj,rho2*ki*kj);
   res=p1*p2*p3;
-} else  {p1=pow(zi,shape1/2-1)*pow(ki,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
-         p2=pow(zj,shape1/2-1)*pow(kj,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
+} else  {p1=R_pow(zi,shape1/2-1)*R_pow(ki,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
+         p2=R_pow(zj,shape1/2-1)*R_pow(kj,shape2/2-1)*exp(lgammafn(aa)-lgammafn(shape1/2)-lgammafn(shape2/2));
          res=p1*p2;}
 return(res/R_pow(dd,2));
 }
@@ -3532,16 +3587,16 @@ double biv_Kumara(double rho,double zi,double zj,double ai,double aj,double shap
     double dd=(max-min);
   zi=(zi-min)/dd;zj=(zj-min)/dd;
 
- ki=1-pow(zi,shape2); kj=1-pow(zj,shape2);
+ ki=1-R_pow(zi,shape2); kj=1-R_pow(zj,shape2);
 if(rho) {
   rho2=rho*rho;
-  xx=rho2*pow(ki*kj,shape1);
-  yy=rho2*(1-pow(ki,shape1))*(1-pow(kj,shape1));
-  p1=pow(shape1*shape2,2)*pow(zi*zj,shape2-1)*pow(ki*kj,shape1-1)*pow(1-rho2,2);
+  xx=rho2*R_pow(ki*kj,shape1);
+  yy=rho2*(1-R_pow(ki,shape1))*(1-R_pow(kj,shape1));
+  p1=R_pow(shape1*shape2,2)*R_pow(zi*zj,shape2-1)*R_pow(ki*kj,shape1-1)*R_pow(1-rho2,2);
   p2= appellF4(2,2,1,1,xx,yy);
   res=p1*p2;}
- else  {p1=shape1*shape2*pow(zi,shape2-1)* pow(ki,shape1-1);
-         p2=shape1*shape2*pow(zj,shape2-1)* pow(kj,shape1-1);
+ else  {p1=shape1*shape2*R_pow(zi,shape2-1)* R_pow(ki,shape1-1);
+         p2=shape1*shape2*R_pow(zj,shape2-1)* R_pow(kj,shape1-1);
          res=p1*p2;}
 return(res/R_pow(dd,2));
 }
@@ -3552,19 +3607,19 @@ double biv_Kumara2(double rho,double zi,double zj,double ai,double aj,double sha
 {
   double xx=0.0,yy=0.0,ki=0.0,kj=0.0,p1=0.0,p2=0.0,rho2=0.0,res=0.0;
   double mi=1/(1+exp(-ai)), mj=1/(1+exp(-aj));
-  double dd=(max-min), shapei=log(0.5)/log1p(-pow(mi,shape2)),shapej=log(0.5)/log1p(pow(mj,shape2));
+  double dd=(max-min), shapei=log(0.5)/log1p(-R_pow(mi,shape2)),shapej=log(0.5)/log1p(R_pow(mj,shape2));
   zi=(zi-min)/dd;zj=(zj-min)/dd;
 
- ki=1-pow(zi,shape2); kj=1-pow(zj,shape2);
+ ki=1-R_pow(zi,shape2); kj=1-R_pow(zj,shape2);
 if(rho) {
   rho2=rho*rho;
-  xx=rho2*pow(ki,shapei)*pow(kj,shapej);
-  yy=rho2*(1-pow(ki,shapei))*(1-pow(kj,shapej));
-  p1=pow(sqrt(shapei*shapej)*shape2,2)*pow(zi*zj,shape2-1)*pow(ki,shapei-1)*pow(kj,shapej-1)*pow(1-rho2,2);
+  xx=rho2*R_pow(ki,shapei)*R_pow(kj,shapej);
+  yy=rho2*(1-R_pow(ki,shapei))*(1-R_pow(kj,shapej));
+  p1=R_pow(sqrt(shapei*shapej)*shape2,2)*R_pow(zi*zj,shape2-1)*R_pow(ki,shapei-1)*R_pow(kj,shapej-1)*R_pow(1-rho2,2);
   p2= appellF4(2,2,1,1,xx,yy);
   res=p1*p2;}
-else  {p1=shapei*shape2*pow(zi,shape2-1)*pow(ki,shapei-1);
-       p2=shapej*shape2*pow(zj,shape2-1)*pow(kj,shapej-1);
+else  {p1=shapei*shape2*R_pow(zi,shape2-1)*R_pow(ki,shapei-1);
+       p2=shapej*shape2*R_pow(zj,shape2-1)*R_pow(kj,shapej-1);
          res=p1*p2;}
 return(res/R_pow(dd,2));
 }
@@ -3855,7 +3910,7 @@ double  binomialCoeff(int n, int k)
 
 
 double Prt(double corr,int r, int t, double mean_i, double mean_j){
-    double rho2= pow(corr,2);
+    double rho2= R_pow(corr,2);
     double prt=0.0,q1,q2,term =0, term1 =0, res0=0.0,res00=0.0,sum = 0.0, sum1 = 0,aux2=0, aux3=0, aux4=0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
@@ -3901,7 +3956,7 @@ double Prt(double corr,int r, int t, double mean_i, double mean_j){
 
 double Prr(double corr,int r, int t, double mean_i, double mean_j){
 
-    double rho2= pow(corr,2);    
+    double rho2= R_pow(corr,2);    
     double prr,  term=0.0,term1=0.0, term2=0.0, term3=0.0,aa=0.0,bb=0.0,cc=0.0,dd=0.0;
     double sum = 0.0, res00=0.0,res11=0.0, sum1 = 0.0, sum2 = 0.0,rho2k=0.0;
     int k = 0, m=0;
@@ -3947,7 +4002,7 @@ if(!R_finite(term1)||!R_finite(term2)||!R_finite(term3))   {break;}
 double Pr0(double corr,int r, int t, double mean_i, double mean_j){
 
 
-    double rho2= pow(corr,2),term=0.0;
+    double rho2= R_pow(corr,2),term=0.0;
     double pr0,q2, res0 =0.0, sum = 0.0,aux=0, aux1=0;
     double auxi= mean_i/(1-rho2);
     double auxj= mean_j/(1-rho2);
@@ -4106,7 +4161,7 @@ double p2=pnorm(mean_j,0,1,1,0);
 
 
 if(r==0&&t==0)
-     dens=ap00  + ap01*pow(p1,N) + ap10*pow(p2,N)+ap11*biv_binomneg(N,0, 0 ,p1, p2, p11);
+     dens=ap00  + ap01*R_pow(p1,N) + ap10*R_pow(p2,N)+ap11*biv_binomneg(N,0, 0 ,p1, p2, p11);
 if(r==0&&t>0)
       dens=      ap01*  exp(lgammafn(N+t)-lgammafn(t+1)-lgammafn(N) +N*log(p2)+t*log1p(-p2) ) +
                                ap11*biv_binomneg(N,0, t, p1, p2, p11);
@@ -4123,9 +4178,9 @@ double biv_binegbinary (int NN, int u, int v,double pu,double pv, double p11)
 {
 double res=0.0;double u_0,v_0,p00;
 
-u_0=pow(pu,NN);
-v_0=pow(pv,NN);
-p00=pow(p11,NN);
+u_0=R_pow(pu,NN);
+v_0=R_pow(pv,NN);
+p00=R_pow(p11,NN);
 
 if(u==0&&v==0)  res=p00;
 if(u==0&&v>0)   res=u_0-p00;
@@ -4143,18 +4198,15 @@ return(res);
 
 /************* POIsson gammma ************/
 double PG00(double corr,int r, int t, double mean_i, double mean_j, double a){ //alpha=a
-
     double rho2= R_pow(corr,2);
     double beta_i= a/mean_i;
     double beta_j= a/mean_j;
     double beta_ij=beta_i*beta_j;
     int k = 0, l = 0;
     double p00,sum = 0.0,res0=0.0,term=0.0,aa=0.0,bb=0.0;
-
     double auxi= 1/(1+beta_i);
     double auxj= 1/(1+beta_j);
     double auxij=auxi*auxj;
-
     int iter1=500;  int iter2=500;
     for(k=0;k<iter1;k++){
         l=0;    
@@ -4192,7 +4244,7 @@ double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
     double fij=bri*beta_j*auxij;
     double ra=r+a;
     double r2br=-rho2/bri;
-    int iter1=700;  int iter2=600; int iter3=400;
+    int iter1=500;  int iter2=400; int iter3=300;
 
     while(k<iter1){
       l1=0;
@@ -4210,10 +4262,8 @@ double PGrr(double corr,int r, int t, double mean_i, double mean_j, double a){
             sum =sum+term;
             l++;
         }
-
         aa1= R_pow(beta_ij,l1+a)*R_pow(rho2,k+l1)*pow1p(-rho2, ra)*R_pow(auxij,ra+k+l1);
         bb1= exp(lgammafn(r+k)+2*lgammafn(ra+k+l1)-2*lgammafn(mm)-lgammafn(k+1)-lgammafn(l1+1)-lgammafn(r)-lgammafn(a)-lgammafn(l1+a));
-
         term1 = aa1*hypergeo(1,ff,mm,bmi)      *hypergeo(1,ff,mm,bmj)*R_pow(beta_ij*auxij,-1) *bb1;
         term2 = aa1*hypergeo(1,ff,mm,r2br)*hypergeo(1,ff,mm,bmj)*R_pow(fij,-1)* bb1;
         term3 = aa1*hypergeo(1,ff,mm,bmi)      *hypergeo(1,ff,mm,-rho2/brj)*R_pow(fji,-1)* bb1;
@@ -4244,8 +4294,7 @@ double PGr0(double corr,int r, int t, double mean_i, double mean_j, double a){
 
     double auxi= 1/(beta_i+1);
     double auxj= 1/(beta_j+1);
-    double auxij=auxi*auxj;
-        double brho=beta_i-rho2;
+    double auxij=auxi*auxj;double brho=beta_i-rho2;
 
     int n, l=0, l1=0 ,cc=0,ii=0,q=0,nq=0;
     int iter1=600;  int iter2=500;
@@ -4253,7 +4302,6 @@ double PGr0(double corr,int r, int t, double mean_i, double mean_j, double a){
     double an=a+n;
     double rb=-rho2/(1+brho);
     double ib=-1/beta_j;
-
     double aux1= R_pow(beta_i,a)*R_pow(auxi,n+a)*exp(lgammafn(n+a)-lgammafn(n+1)-lgammafn(a));
 
     while(l<iter1){
@@ -4294,7 +4342,7 @@ double PGrt(double corr,int r, int t, double mean_i, double mean_j, double a){
     double rtrho=-rho2/(1+brho);
     double mbj=-1/beta_j;
     int n=0,s=0, k=0, l=0, l1=0, u=0,us=0,cc=0 ,ii=0,u1=0,tl=0,tna=0,ll1=0,f=0,d=0;
-    int iter1=600;  int iter2=500; int iter3=400;
+    int iter1=500;  int iter2=400; int iter3=300;
     n= r-t;
     s=n+1;
     tna=t+n+a;
@@ -4926,9 +4974,9 @@ double one_log_beta(double z, double shape1,double shape2,double min,double  max
 double one_log_kumma2(double z,double m, double shape1,double shape2,double min,double  max)
 {
   double  res=0.0,k;
-  double q=(z-min)/(max-min);k=1-pow(q,shape2);
+  double q=(z-min)/(max-min);k=1-R_pow(q,shape2);
   double m1=1/(1+exp(-m));
-  double shapei=log(0.5)/log1p(-pow(m1,shape2));
+  double shapei=log(0.5)/log1p(-R_pow(m1,shape2));
   res=log(shapei)+log(shape2)+(shape2-1)*log(q)+(shapei-1)*log(k)-log(max-min);
   return(res);
 }
@@ -4936,7 +4984,7 @@ double one_log_kumma2(double z,double m, double shape1,double shape2,double min,
 double one_log_kumma(double z,double m, double shape1,double shape2,double min,double  max)
 {
   double  res=0.0,k;
-  double q=(z-min)/(max-min);k=1-pow(q,shape2);
+  double q=(z-min)/(max-min);k=1-R_pow(q,shape2);
   res=log(shape1)+log(shape2)+(shape2-1)*log(q)+(shape1-1)*log(k)-log(max-min);
   return(res);
 }
@@ -4988,7 +5036,19 @@ double one_log_two_pieceGauss(double z,double m, double sill, double eta)
   return(res-log(sqrt(sill)));
 }
 
+double one_log_wrapped(double alfa,double u,double mi,double sill)
+{
+    double x,wrap_gauss=0.0; 
+    x=u-2*atan(mi)-M_PI; 
+    double k1=-alfa;
 
+     while(k1<=alfa){
+      wrap_gauss +=  dnorm((x+2*k1*M_PI),0,sqrt(sill),0); 
+     
+     k1 = k1+1;
+      }
+return(log(wrap_gauss));
+}
 
 /************************************************************************/
 double one_log_gammagem(double z,double shape,double n)
@@ -5095,15 +5155,15 @@ double hypU_wrap(double a, double b, double x) {
 
     F77_CALL(chgu)(&a, &b, &x, &out, &md, &isfer);
   if (out == 1e300) {
-      out = INFINITY;
-      Rprintf("\n chgu out == 1e300 %f\n", out);
+      out = -1;
+      //Rprintf("\n chgu out == 1e300 %f\n", out);
   }
   if (isfer == 6) {
-    out = NAN;
-      Rprintf("\n chgu isfer == 6 %f\n", out);
+    out = -1;
+     // Rprintf("\n chgu isfer == 6 %f\n", out);
   } else if (isfer != 0) {
-    out = NAN;
-      Rprintf("\n chgu isfer != 0 %f\n", out);
+    out = -1;
+     // Rprintf("\n chgu isfer != 0 %f\n", out);
   }
   return out;
 }

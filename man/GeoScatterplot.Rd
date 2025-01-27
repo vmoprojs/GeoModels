@@ -6,7 +6,7 @@
   The function produces h-scatterplots for the spatial, spatio-temporal and  bivariate setting. 
 }
 \usage{
-GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
+GeoScatterplot(data, coordx, coordy=NULL, coordz=NULL, coordt=NULL, coordx_dyn=NULL,
            distance='Eucl', grid=FALSE, maxdist=NULL,neighb=NULL,
            times=NULL, numbins=4, radius=6371, bivariate=FALSE,\dots)
 }
@@ -18,15 +18,15 @@ GeoScatterplot(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
    (\eqn{n} iid spatial-temporal realisations) or or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid) or an (\eqn{d \times d \times t \times n }{d x d x t x n})-array
    (\eqn{n} iid spatial-temporal realisations on regular grid). See \code{\link{GeoFit}} for details.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) assigning 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector assigning
-    1-dimension of spatial coordinates.  Coordinates on a sphere for a  fixed radius \code{radius} 
+   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
-  \item{coordt}{A numeric vector assigning 1-dimension of
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+
+    \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates. Optional argument, the default is \code{NULL} then a spatial random field is expected.}
    \item{coordx_dyn}{A list of \eqn{m} numeric (\eqn{d_t \times 2}{d x 2})-matrices
        containing dynamical (in time) spatial coordinates. Optional argument, the default is \code{NULL}

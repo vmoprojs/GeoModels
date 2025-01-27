@@ -19,11 +19,9 @@ if(inherits(probject,"GeoKrig")||inherits(probject,"GeoKrigloc"))
  if(N1!=N2) stop("length of data and predictions does not match\n")
 
 
-
  if(!is.null(mse)) sqrtvv=sqrt(mse)
 rmse=mae=mad=lscore=crps=pit=brie=NULL
  
-
 if(!is.null(mse)){
 if(sum(grepl("pit", score))==1) 
       if(!is.null(probject)){ probject$data_to_pred=data_to_pred
@@ -32,7 +30,6 @@ if(sum(grepl("pit", score))==1)
 if(sum(grepl("brie", score))==1) 
 brie = mean(pnorm(data_to_pred, mean = pred, sd = sqrtvv)-1*I(pred<data_to_pred))
 }
-
 
 if(sum(grepl("pe", score))==1 )
 {  err=data_to_pred-pred

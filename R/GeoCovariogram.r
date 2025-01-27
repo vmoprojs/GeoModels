@@ -8,7 +8,7 @@ GeoCovariogram <- function(fitted, distance="Eucl", answer.cov=FALSE, answer.var
                          answer.range=FALSE, fix.lags=NULL, fix.lagt=NULL,
                         show.cov=FALSE, show.vario=FALSE,  show.range=FALSE,
                         add.cov=FALSE, add.vario=FALSE, pract.range=95,
-                        vario=NULL, ...)
+                        vario=NULL,invisible=FALSE,...)
   {
     result <- NULL
 
@@ -61,11 +61,12 @@ if(show.range)  {
     
     }
 }
-################    
-### starting ###
-################
+###########################################################     
+#############  starting ###################################
+########################################################### 
 
     dyn=FALSE
+    OLS=NULL
     isvario <- !is.null(vario) # is empirical variogram is passed?
     bivariate <- fitted$bivariate
     if(bivariate) fitted$numtime=1
@@ -197,15 +198,24 @@ fitted$fixed=unlist(fitted$fixed)
      #############################################
     if(isvario) {
 
-    lags_m <- seq(slow,max(vario$centers),length.out =150)
-    if (ispatim) lagt_m <-seq(slow,max(vario$bint),length.out =150)
-    else         lagt_m<-0
-        }
+             if(!invisible) {   #### standard case
+                              lags_m <- seq(slow,max(vario$centers),length.out =150)
+                              if(ispatim)  lagt_m <-seq(slow,max(vario$bint),length.out =150)
+                              else         lagt_m<-0
+                            }
+             else           {   ### invisible case
+                                if (ispatim) {lags_m=c(slow,vario$centers)
+                                              lagt_m <-c(slow,vario$bint)}
+                                else         {lags_m=vario$centers
+                                             lagt_m<-0}
+                            }    
+     }
     else{
         mmm <- double(2)
         type_dist <- CheckDistance(distance)
-        p=.C("Maxima_Minima_dist",mmm=as.double(mmm),as.double(fitted$coordx),as.double(fitted$coordy)
-        ,as.integer(fitted$numcoord),as.integer(type_dist),as.double(fitted$radius),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+        p=.C("Maxima_Minima_dist",mmm=as.double(mmm),as.double(fitted$coordx),as.double(fitted$coordy),as.double(fitted$coordz),
+        as.integer(fitted$numcoord),as.integer(type_dist),as.double(fitted$radius),
+        PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
         lags_m <- seq(slow,p$mmm[2],length=150)
         if (ispatim) {
             tt <- double(2)
@@ -235,7 +245,11 @@ else                                     nui['nugget']=nuisance['nugget']
   
     correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
                                      CkModel(fitted$model), nui,param,fitted$n)
+        #correlation <- CorrelationFct(bivariate,corrmodel, lags_m, lagt_m, numlags_m, numlagt_m,mu,
+         #                            CkModel(fitted$model), nui,param,fitted$n)
 
+#print(correlation);print(lags_m);print(lagt_m)
+#print("hjhjhj")
 
 ##########################################
 ########### starting cases ###############
@@ -255,7 +269,7 @@ else                                     nui['nugget']=nuisance['nugget']
         covariance <- as.numeric(nuisance["sill"])*correlation*(1-as.numeric(nuisance["nugget"]))
         #variogram <- nuisance["nugget"]+nuisance["sill"]*(1-correlation)
         variogram <-as.numeric(nuisance["sill"])*(1-correlation*(1-as.numeric(nuisance["nugget"])))
-        
+       
         }
     }
 ##########################################
@@ -509,7 +523,9 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
                         vs=exp(mm)^2*(gamma(1+2/ssh)/gamma(1+1/ssh)^2-1)
                         auxcorr= (gamma(1+1/ssh))^2/((gamma(1+2/ssh))-(gamma(1+1/ssh))^2)
                         cc=auxcorr*(Re(hypergeo::hypergeo(-1/ssh, -1/ssh, 1,correlation^2)) -1)
-                        covariance=vs*cc;variogram=vs*(1-cc)  }
+                        covariance=vs*cc;variogram=vs*(1-cc) 
+                      #    print(cc) 
+                    }
                     }
 ##########################################
   if(loglogistic)    { if(bivariate) {}  
@@ -620,8 +636,7 @@ covariance=sill*vs*corr;variogram=sill*vs*(1-corr)
         if(show.range || answer.range){
             Range <- uniroot(PracRangeNorm, c(lower, upper), corrmodel=corrmodel,
                              nuisance=nuisance, numlags=1, numlagt=1, lagt=lagt,
-                             param=param, pract.range=pract.range)$root
-        }
+                             param=param, pract.range=pract.range)$root}
 
 
 
@@ -645,7 +660,7 @@ if(show.cov){
                      max(covariance22)), main="Second covariance",
                      xlab="Distance", ylab="Covariance",...)          
          }
-          if(bivariate&&dyn){
+     if(bivariate&&dyn){
             #par(mfrow=c(2,2))
        plot(lags_m, covariance11, type='l', ylim=c(min(covariance11),
                      max(covariance11)), main="First covariance",
@@ -654,6 +669,8 @@ if(show.cov){
                      max(covariance22)), main="Second covariance",
                      xlab="Distance", ylab="Covariance",...)          
          }
+
+        
 #######################################
 #### space time case  covariance ######
 #######################################
@@ -697,6 +714,9 @@ if(ispatim){
          }
 
 
+
+
+OLS=NULL
 ########################### 
 ########################### 
 ########################### 
@@ -706,7 +726,7 @@ if(ispatim){
 #####################################
 #### bivariate case semivariogram ###
 ##################################### 
-
+ if(bivariate){
       if(bivariate&&!dyn){
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
            xlim=c(0,max(vario$centers)),
@@ -725,7 +745,10 @@ if(ispatim){
        plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
          xlim=c(0,max(vario$centers)),
                      xlab="Distance", ylab="Semi-Variogram",...)
-       lines(lags_m, variogram22, type='l',...)  }
+       lines(lags_m, variogram22, type='l',...)  
+  if(invisible)  OLS= sum( (vario$variograms[2,]-variogram22)^2) + sum((vario$variograms[1,]-variogram11))^2 + sum((vario$variogramst-variogram12))^2
+
+   }
  
    if(bivariate&&dyn){
        plot(vario$centers,vario$variograms[1,], main="First semi-variogram",ylim=c(0,max(vario$variograms[1,])),
@@ -733,12 +756,19 @@ if(ispatim){
        lines(lags_m, variogram11, type='l',...)
        plot(vario$centers,vario$variograms[2,], main="Second semi-variogram",ylim=c(0,max(vario$variograms[2,])),
                      xlab="Distance", ylab="Semi-Variogram",...)
-       lines(lags_m, variogram22, type='l',...)  }
+       lines(lags_m, variogram22, type='l',...)  
 
+    if(invisible)  OLS= sum( (vario$variograms[2,]-variogram22)^2) + sum((vario$variograms[1,]-variogram11))^2
+
+        }
+}
 #######################################
 #### space time case  semivariogram ###
 #######################################
-        if(ispatim){# spatio-temporal case:
+
+ if(ispatim){
+
+ # spatio-temporal case:
             plagt <- !is.null(fix.lags)
             plags <- !is.null(fix.lagt)
             nrowp <- 1
@@ -754,11 +784,14 @@ if(ispatim){
                 
             if(is.null(vario$centert)) nbint <- length(vario$bint)
             else  nbint <- length(vario$centert)
-
-
          # if(!dyn) {
-                  evario <- matrix(vario$variogramst,nrow=nbins,ncol=nbint,byrow=TRUE)
-                  evario <- rbind(c(zero,vario$variogramt),cbind(vario$variograms,evario))
+
+            evario=matrix(vario$variogramst,nrow=length(vario$centers),ncol=nbint,byrow=TRUE)
+             evario=rbind(c(0,vario$variogramt),cbind(vario$variograms,evario))
+
+                  #evario <- matrix(vario$variogramst,nrow=nbins,ncol=nbint,byrow=TRUE)
+                  #evario <- rbind(c(zero,vario$variogramt),cbind(vario$variograms,evario))
+         
                   if(is.null(vario$centert)) 
                           evario.grid <- as.matrix(expand.grid(c(0,vario$centers),c(0,vario$bint)))
                   else  evario.grid <- as.matrix(expand.grid(c(0,vario$centers),c(0,vario$centert)))
@@ -778,6 +811,7 @@ if(ispatim){
             } 
 
             par(mai=c(.2,.2,.2,.2))
+            #print(variogram);print(lags_m);print(lagt_m)
             persp(lags_m, lagt_m, variogram, xlab="Distance",
                   ylab="Time", zlab=vario.zlab, ltheta=90,
                   shade=0.75, ticktype="detailed", phi=30,
@@ -794,8 +828,6 @@ if(ispatim){
             if(binomial)      vvv=fitted$n*pnorm(mm['mean'])*(1-pnorm(mm['mean']))
             if(poisson)       vvv=exp(mm['mean'])
             #if(poissongamma)  vvv=exp(mm['mean']*(1+1/nuisance["shape"]))
-
-
             if(poissongamma)  {MM=exp(mm['mean']); vvv=MM*(1+MM/as.numeric(nuisance["shape"]))}
 
 
@@ -818,11 +850,10 @@ if(ispatim){
                                   mm=(hr-hl)/(sqrt(2*pi)*(1-hl)*(1-hr))
                                   vvv=0.5*(1-2*hl)^(-3/2)+0.5*(1-2*hr)^(-3/2)-(mm)^2
                          }
-     
             ########
             if(plagt){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
-                plot(lagt_m[-1], variogram[fix.lags,][-1], xlab="Time",cex.axis=.8,cex.lab=.8,
+                plot(lagt_m, variogram[fix.lags,], xlab="Time",cex.axis=.8,cex.lab=.8,
                      ylab=vario.ylab, type="l", ylim=c(0,max(vvv,tup)), main=paste(vario.ylab,": temporal profile",
                      sep=""),...)
                 if(isvario) points(lagt[-1], evario[fix.lags,][-1],...)
@@ -830,39 +861,46 @@ if(ispatim){
 
             if(plags){
                 par(mai=c(.5,.5,.3,.3),mgp=c(1.6,.6,0))
-                plot(lags_m[-1], variogram[,fix.lagt][-1], xlab="Distance",cex.axis=.8,cex.lab=.8,
+                plot(lags_m, variogram[,fix.lagt], xlab="Distance",cex.axis=.8,cex.lab=.8,
                      ylab=vario.ylab, type="l", ylim=c(0,max(vvv,sup)), main=paste(vario.ylab,": spatial profile",
                      sep=""),...)
                 if(isvario) points(lags[-1], evario[,fix.lagt][-1],...)
-                }}
+                }
+  #################################
+
+                      if(invisible) OLS=sum(evario-variogram)^2
+ } ####### end space time
           
 ################################
 #### spaatial semivariogram ###
 #################################
     if(!ispatim && !bivariate){
+
+   #################################
+        if(invisible) OLS=sum(vario$variograms-variogram)^2
+  #################################
             if(add.vario & dev.cur()!=1){
                 points(vario$centers, vario$variograms,...)
                 lines(lags_m, variogram,...)
                 if(show.range) abline(v=Range)}
             else{
-
                 bnds <- range(variogram)
-
                 bnds[1] <- min(bnds[1], min(vario$variograms))
                 bnds[2] <- max(bnds[2], max(vario$variograms))
-                #ylim=c(0,bnds[2])
-                #if(!is.null(ylim))ylim=c(0,bnds[2])
+        
                 plot(lags_m, variogram, type='l',  
                      main=vario.main,xlab="Distance",
                      ylab=vario.ylab,...)
                 points(vario$centers, vario$variograms,...)
                 if(show.range) abline(v=Range)}
-        }}
+        }
+ #################################       
+}
         
     if(ispatim) par(mai=c(1.02 ,0.85 ,0.85 ,0.45),mgp=c(3,1,0))
     # return the estimated covariance function
     if(answer.cov) {result <- list(lags=lags_m,lagt=lagt_m, covariance=covariance)}
-    # return the estimated variogram/lorelogram function
+    # return the estimated variogram function
     if(answer.vario) {
         if(!is.list(result)) {if(!bivariate) if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram=variogram)
                               if(bivariate)  if(gaussian) result <- list(lags=lags_m,lagt=lagt_m, variogram11=variogram11,
@@ -874,7 +912,6 @@ if(ispatim){
                 if(gaussian) {result$variogram11 <- variogram11;result$variogram12 <- variogram12;result$variogram22 <- variogram22}
                 }}}
     
-    if(!is.null(result))
-    invisible()
-    return(result)
+    if(!is.null(result))invisible()
+    return(OLS)
   }

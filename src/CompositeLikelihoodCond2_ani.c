@@ -7,7 +7,7 @@
 /******************************************************************************************/
 void Comp_Cond_Gauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
       int i=0;double lag=0.0;
     double  weights=1.0,sill,nugget,corr,bl,l2;
@@ -32,7 +32,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Tukeyh2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,weights=1.0,l2=0.0;
     double sill=nuis[1];
@@ -55,7 +55,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Tukeyhh2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,weights=1.0 ,l2=0.0;
     double sill=nuis[1];
@@ -80,7 +80,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /******************************************************************************************/
 void Comp_Cond_SkewGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
       double sill=nuis[1],  skew=nuis[2], nugget=nuis[0],l2=0.0,bb=0.0;
      if(nugget<0|| nugget>=1||sill<0){*res=LOW;  return;}
@@ -101,7 +101,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_T2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,zi,zj,qi,qj,weights=1.0,l2=0.0;
     double sill=nuis[2];
@@ -127,7 +127,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Gauss_misp_T2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU ,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;
     double weights=1.0,corr,df=0.0,bl,l2=0.0,var=0.0;
@@ -156,7 +156,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Gauss_misp_SkewT2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;
     double weights=1.0,sill,nugget,skew,corr,corr2,df,bl,l2;
@@ -197,7 +197,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Gauss_misp_Tukeygh2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,corr2,zi,zj,weights=1.0,eta,tail,sill,nugget,u,eta2,mu,vv,l2;
     eta  = nuis[2];  //skewness parameter
@@ -236,7 +236,7 @@ if(!ISNAN(zi)&&!ISNAN(zj) ){
 /******************************************************************************************/
 void Comp_Cond_SinhGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
 
         int i=0;double lag=0.0;double corr,zi,zj,bb=0.0,l2=0.0,weights=1.0;
@@ -258,7 +258,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Gamma2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl=1.0,l2=0.0;
     double nugget=nuis[0];
@@ -279,7 +279,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Weibull2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl=0.0,l2=0.0;
       double nugget=nuis[0];
@@ -301,7 +301,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_LogGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl=0.0,l2=0.0;
     double sill=nuis[1];double nugget=nuis[0];
@@ -323,7 +323,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Beta2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl,l2=0.0;
     double nugget=nuis[0];
@@ -346,7 +346,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Kumaraswamy2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl,l2=0.0;
     double nugget=nuis[0];
@@ -370,7 +370,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Kumaraswamy22mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl,l2=0.0;
     double nugget=nuis[0];
@@ -393,7 +393,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Gauss_misp_Pois2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,N=2;
     double  weights=1.0,corr,corr1,mui,muj,bl,l2,lag=0.0;
@@ -429,7 +429,7 @@ double **M;
 /*********************************************************/
 void Comp_Cond_BinomNNGauss_misp2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, N=2,n1,n2;
     double u,v,m1,m2,l2,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,lag=0.0;
@@ -472,7 +472,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_Gauss_misp_PoisGamma2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,N=2;
     double  weights=1.0,corr,corr1,mui,muj,bl,l2,bi,bj,vvi,vvj,lag=0.0;
@@ -510,7 +510,7 @@ double **M;
 /*********************************************************/
 void Comp_Cond_PoisGamma2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu,ww;
     double weights=1.0,corr,mui,muj,bl,l2,lag=0.0;
@@ -538,7 +538,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_Pois2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu,ww;
     double weights=1.0,corr,mui,muj,bl,l2,lag=0.0;
@@ -566,7 +566,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /******************************************************************************************/
 void Comp_Cond_BinomGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -597,7 +597,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /******************************************************************************************/
 void Comp_Cond_BinomLogi2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -625,7 +625,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 }
 void Comp_Cond_BinomNNGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu=0,vv=0,n1,n2;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -655,7 +655,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_BinomNNLogi2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0, uu=0,vv=0,n1,n2;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -686,7 +686,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_BinomnegGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,  uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -717,7 +717,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_BinomnegLogi2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,  uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -747,7 +747,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_TWOPIECETukeyh2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,zi,zj,weights=1.0,p11,eta,tail,qq,sill,nugget,l2=0.0;
     eta  = nuis[2];  //skewness parameter
@@ -781,7 +781,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_TWOPIECET2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,zi,zj,weights=1.0,p11,qq,l2=0.0;
     double eta=nuis[3];  //skewness parameter
@@ -811,7 +811,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /*********************************************************/
 void Comp_Cond_TWOPIECEGauss2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,zi,zj,weights=1.0,p11,eta,qq,sill,nugget,l2=0.0;
     eta=nuis[2];  //skewness parameter
@@ -841,7 +841,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /********************************************************/
 void Comp_Cond_TWOPIECEBIMODAL2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;double bl,corr,zi,zj,weights=1.0,p11,eta,qq,sill,df,nugget,delta ,l2=0.0;
 
@@ -875,7 +875,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /********************************************************/
 void Comp_Cond_BinomnegGaussZINB2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0,  uu=0,vv=0;
     double u,v,bl=0.0,weights=1.0,ai=0.0,aj=0.0,corr=0.0,l2=0.0,lag=0.0;
@@ -901,7 +901,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 /************************************************/
 void Comp_Cond_PoisZIP2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
 
     int i=0, uu,vv;
@@ -934,7 +934,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_Gauss_misp_PoisZIP2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
     int i=0;double lag=0.0;
     double weights=1.0,corr,mui,muj,bl ,l2=0.0;
@@ -969,7 +969,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_LogLogistic2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
 
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl=1.0,l2=0.0;
@@ -995,7 +995,7 @@ if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
 
 void Comp_Cond_Logistic2mem_aniso(int *cormod, double *coord1, double *coord2,double *data1,double *data2,int *N1,int *N2,
  double *par, int *weigthed, double *res,double *mean1,double *mean2,
- double *nuis, int *local,int *GPU)
+ double *nuis, int *local,int *GPU,int *type_cop, int *cond)
 {
 
     int i=0;double lag=0.0;double corr,zi,zj,weights=1.0,bl=1.0,l2=0.0;

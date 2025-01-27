@@ -61,18 +61,14 @@ void Comp_Pair_WrapGauss2mem(int *cormod, double *data1,double *data2,int *N1,in
 {
     int i=0;
     double  u=0.0,v=0.0,weights=1.0,corr=0.0;
-    double wrap_gauss;
-    double alfa=2.0;
-     double nugget=nuis[0];
-    double sill=nuis[1];
+    double wrap_gauss;double alfa=2.0;double nugget=nuis[0];double sill=nuis[1];
 
       if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
  for(i=0;i<npairs[0];i++){
 if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                u=data1[i];
-                v=data2[i];
+                u=data1[i];v=data2[i];
                 corr=CorFct(cormod,lags[i],0,par,0,0);
-                wrap_gauss=biv_wrapped(alfa,u,v,mean1[i],mean2[i],nuis[0],nuis[1],corr);
+                wrap_gauss=biv_wrapped(alfa,u,v,mean1[i],mean2[i],nugget,sill,(1-nugget)*corr);
                     if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0]);
                     *res+=log(wrap_gauss)*weights ;
                 }}
@@ -1182,14 +1178,12 @@ void Comp_Pair_WrapGauss_st2mem(int *cormod, double *data1,double *data2,int *N1
     double bl=0.0,corr=0.0;
     double alfa=2.0;  double nugget=nuis[0];  double sill =nuis[1];
    if(sill<0 || nugget<0||nugget>=1){*res=LOW; return;}
-   //    if(nuis[1]<0 || nuis[0]<0) {*res=LOW;  return;}
    for(i=0;i<npairs[0];i++){
              if(!ISNAN(data1[i])&&!ISNAN(data2[i]) ){
-                                u=data1[i];//-2*atan(mean[i])-M_PI;
-                                w=data2[i];//-2*atan(mean[i])-M_PI;
+                                u=data1[i];w=data2[i];
                                     corr=CorFct(cormod,lags[i],lagt[i],par,0,0);
-                                    bl=biv_wrapped(alfa,u,w,mean1[i],mean2[i],nuis[0],nuis[1],(1-nugget)*corr);
-                                             if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
+                                    bl=biv_wrapped(alfa,u,w,mean1[i],mean2[i],nugget,sill,(1-nugget)*corr);
+                                if(*weigthed) weights=CorFunBohman(lags[i],maxdist[0])*CorFunBohman(lagt[i],maxtime[0]);
                              *res+= weights*log(bl);
                                 }}
 

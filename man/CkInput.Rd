@@ -7,19 +7,21 @@
   The procedure controls the the validity of the input inserted by the users.
 }
 \usage{
-CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance, 
+CkInput(coordx, coordy, coordz,coordt, coordx_dyn,corrmodel, data, distance, 
            fcall, fixed, grid,likelihood, maxdist, maxtime, 
             model, n,  optimizer, param, radius,
-           start, taper, tapsep,  type, varest, vartype, 
+           start, taper, tapsep,  type, varest, 
            weighted,copula,X)
 }
 \arguments{
-   \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of points) assigning 2-dimensions of coordinates or a numeric vector assigning
-    1-dimension of coordinates.}
-  \item{coordy}{A numeric vector assigning 1-dimension of
-    coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector otherwise it will be ignored.}
+     \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
+    are passed in lon/lat format expressed in decimal degrees.}
+  \item{coordy}{A numeric vector giving 1-dimension of
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
+    
   \item{coordt}{A numeric vector assigning 1-dimension of
     temporal coordinates.}
   \item{corrmodel}{String; the name of a correlation model, for the
@@ -71,8 +73,6 @@ CkInput(coordx, coordy, coordt, coordx_dyn,corrmodel, data, distance,
   \item{varest}{Logical; if \code{TRUE} the estimate' variances and
     standard errors are returned.
     \code{FALSE} is the default.}
-  \item{vartype}{String; the type of estimation method for computing
-  the estimate variances, see \code{\link{GeoFit}}.}
   \item{weighted}{Logical; if \code{TRUE} the likelihood objects are
     weighted. If \code{FALSE} (the
     default) the composite likelihood is not weighted.}

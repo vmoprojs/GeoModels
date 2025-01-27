@@ -8,24 +8,21 @@
   with given  underlying covariance model and a  set of spatial location sites (and temporal instants).
 }
 \usage{
-GeoCovmatrix(estobj=NULL,coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel,
-          distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
+GeoCovmatrix(estobj=NULL,coordx, coordy=NULL,coordz=NULL, coordt=NULL,coordx_dyn=NULL, 
+            corrmodel,distance="Eucl", grid=FALSE, maxdist=NULL, maxtime=NULL,
           model="Gaussian", n=1, param, anisopars=NULL, radius=6371, sparse=FALSE,
           taper=NULL, tapsep=NULL, type="Standard",copula=NULL,X=NULL,spobj=NULL)
 }
 
 \arguments{
   \item{estobj}{An object of class Geofit that includes information about data, model and estimates.}
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions 
-    of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates. Coordinates on a sphere for a 
-    fixed radius \code{radius} are passed in lon/lat format expressed in decimal degrees.}
+       \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
+     Coordinates on a sphere for a  fixed radius \code{radius} 
+    are passed in lon/lat format expressed in decimal degrees.}
   \item{coordy}{A numeric vector giving 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only 
-    if \code{coordx} is a numeric vector or \code{grid=TRUE} otherwise it 
-    will be ignored. Optional argument, the default is \code{NULL} then
-     \code{coordx} is expected to be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
   \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates. At the moment implemented only for the
     Gaussian case. Optional argument, the default is \code{NULL}
@@ -149,12 +146,12 @@ The associated parameters in the argument \code{param} are
      If \eqn{h} is the geodesic distance then \eqn{\kappa \in (0,0.5]}
 
    \item \eqn{Kummer} (Kummer hypergeometric in  Ma and Bhadra (2022)) defined as:
-    \deqn{R(h) = \Gamma(\kappa+\alpha) U(\alpha,1-\kappa,\kappa h^2 ) / \Gamma(\kappa+\alpha)}
+    \deqn{R(h) = \Gamma(\kappa+\alpha) U(\alpha,1-\kappa,0.5 h^2 ) / \Gamma(\kappa+\alpha)}
      \eqn{U(.,.,.)} is the Kummer hypergeometric function.
      If \eqn{h} is the geodesic distance then \eqn{\kappa \in (0,0.5]}
 
     \item \eqn{Kummer{\_}Matern} It is a rescaled version of the  \eqn{Kummer} model  
-     that is \eqn{h} must be divided by \eqn{2(\kappa(1+\alpha)^{0.5}}.  When  \eqn{\alpha} goes to infinity it is the Matern model. 
+     that is \eqn{h} must be divided by \eqn{(2*(1+\alpha))^{0.5}}.  When  \eqn{\alpha} goes to infinity it is the Matern model. 
 
     \item \eqn{Wave} defined as:
     \deqn{R(h)=sin(h)/h} 
@@ -173,7 +170,11 @@ The associated parameters in the argument \code{param} are
     \item \eqn{GenWend_{\_}Matern2} (Generalized Wendland Matern second parametrization. It is defined as a rescaled version of the Generalized Wendland that is \eqn{h} must be multiplied  by \eqn{\beta}  and the smoothness parameter is
     \eqn{\kappa-0.5}. When  \eqn{\beta} goes to infinity it is the Matern model.
     
-     \item \eqn{Hypergeometric} (Parsimonious Hypegeometric model in Alegria and Emery (2022)) defined as the model \eqn{Hypergeometric2} with the restriction \eqn{\beta=\alpha}. 
+
+        \item \eqn{Hypergeometric2} (Hypegeometric model in Alegria and Emery (2022)). 
+
+
+     \item \eqn{Hypergeometric} (Optimal Hypegeometric model defined as ....). 
 
       \item \eqn{Multiquadric} defined as:
     \deqn{R(h) = (1-\alpha0.5)^{2\beta}/(1+(\alpha0.5)^{2}-\alpha cos(h))^{\beta}, \quad h \in [0,\pi]}

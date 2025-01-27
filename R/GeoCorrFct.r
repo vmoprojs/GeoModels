@@ -18,7 +18,7 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
          p=dotCall64::.C64('VectCorrelation',SIGNATURE = c("double","integer","double","integer","integer","double",
                   "integer","double","double","double","integer"),  
     corr=dotCall64::numeric_dc(nn),corrmodel,lags,numlags, numlagt,mu,model,nuisance,param,lagt,N,
-         INTENT =c("rw","r","r","r","r","r","r","r","r","r","r"),PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+         INTENT =c("rw",rep("r",10)),PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
 
              cc=p$corr
            #p=.C('VectCorrelation', corr=double(numlags*numlagt), as.integer(corrmodel), as.double(lags),
@@ -28,10 +28,16 @@ CorrelationFct <- function(bivariate,corrmodel, lags, lagt, numlags, numlagt, mu
                     }
         else    {
                 nn=numlags*4
-                             p=.C('VectCorrelation_biv', corr=double(nn),vario=double(nn), as.integer(corrmodel), as.double(lags),
-                             as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
-                             as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
-                             cc=c(p$corr,p$vario)   
+                         #    p=.C('VectCorrelation_biv', corr=double(nn),vario=double(nn), as.integer(corrmodel), as.double(lags),
+                         #    as.integer(numlags), as.integer(numlagt),  as.double(mu),as.integer(model),as.double(nuisance), as.double(param),
+                         #    as.double(lagt), as.integer(N),PACKAGE='GeoModels', DUP=TRUE, NAOK=TRUE)
+
+                            p=dotCall64::.C64('VectCorrelation_biv',SIGNATURE = c("double","double","integer","double","integer","integer","double",
+                  "integer","double","double","double","integer"),  
+    corr=dotCall64::numeric_dc(nn),vario=double(nn),corrmodel,lags,numlags, numlagt,mu,model,nuisance,param,lagt,N,
+         INTENT =c("rw",rep("r",11)),PACKAGE='GeoModels', VERBOSE = 0, NAOK = TRUE)
+
+                 cc=c(p$corr,p$vario)   
 
                     }
         return(cc)
@@ -456,8 +462,6 @@ if(model=="Poisson") {
                     if(!bivariate) {   
                            if(length(t)>1) correlation=(1-as.numeric(nuisance['nugget']))*correlation  +as.numeric(nuisance["nugget"])*I(A[,1]==0&A[,2]==0)
                            else correlation=(1-as.numeric(nuisance['nugget']))*correlation  +as.numeric(nuisance["nugget"])*I(x==0)
-
-
                            corr2=correlation^2    
                            vs=exp(mu);
                            z=2*vs/(1-corr2)

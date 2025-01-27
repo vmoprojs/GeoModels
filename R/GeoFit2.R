@@ -3,14 +3,13 @@
 ####################################################
 
 
-GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
+GeoFit2 <- function(data, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL,copula=NULL,corrmodel, distance="Eucl",
                          fixed=NULL,anisopars=NULL,est.aniso=c(FALSE,FALSE),GPU=NULL, grid=FALSE, likelihood='Marginal', local=c(1,1),
                          lower=NULL,maxdist=Inf,neighb=NULL,
                           maxtime=Inf, memdist=TRUE,method="cholesky", model='Gaussian',n=1, onlyvar=FALSE ,
                           optimizer='Nelder-Mead', parallel=FALSE,
                          radius=6371,  sensitivity=FALSE,sparse=FALSE, start=NULL, taper=NULL, tapsep=NULL, 
-                         type='Pairwise', upper=NULL, varest=FALSE, vartype='SubSamp', weighted=FALSE, winconst=NULL, winstp=NULL, 
-                         winconst_t=NULL, winstp_t=NULL,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
+                         type='Pairwise', upper=NULL, varest=FALSE, weighted=FALSE,X=NULL,nosym=FALSE,spobj=NULL,spdata=NULL)
 {
 
 ###########  first preliminary check  ###############
@@ -24,7 +23,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
 
     if(type=='Independence') stop("use Geofit for Independence composite likelihood \n")
     ### Check the parameters given in input:
-      if(is.null(CkCorrModel (corrmodel))) stop("The name of the correlation model  is not correct\n")
+    if( !is.character(corrmodel)|| is.null(CkCorrModel(corrmodel)))       stop("the name of the correlation model is wrong")
     corrmodel=gsub("[[:blank:]]", "",corrmodel)
     model=gsub("[[:blank:]]", "",model)
     distance=gsub("[[:blank:]]", "",distance)
@@ -39,7 +38,7 @@ GeoFit2 <- function(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,copu
           }
     if(type=='Pairwise') 
     
-    if(is.null(neighb)||is.null(maxdist)) stop("neighb and/or maxdist and/or  maxtime must be fixed\n")
+    if(is.null(neighb)&&is.null(maxdist)) stop("neighb and/or maxdist and/or  maxtime must be fixed\n")
     if(!is.null(anisopars)) {if(!is.list(anisopars)) stop("anisopars must be a list with two elements\n")}
     if(!is.character(optimizer)) stop("invalid optimizer\n")
      if(!is.character(distance)) stop("invalid distance\n")
@@ -85,14 +84,12 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic","PoissonGam
 
 
 
-
-       
 #############################################################################
 
-    checkinput <- CkInput(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
+    checkinput <- CkInput(coordx, coordy, coordz,coordt, coordx_dyn, corrmodel, data, distance, "Fitting",
                              fixed, grid, likelihood, maxdist, maxtime, model, n,
                               optimizer, NULL, radius, start, taper, tapsep, 
-                             type, varest, vartype, weighted,copula, X)
+                             type, varest, weighted,copula, X)
    
     if(!is.null(checkinput$error))
       stop(checkinput$error)
@@ -102,12 +99,15 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic","PoissonGam
     ### Initialization parameters:
     cooordt=unname(coordt);
     if(is.null(coordx_dyn)){
-    coordx=unname(coordx);coordy=unname(coordy)}
+    coordx=unname(coordx);coordy=unname(coordy);coordz=unname(coordz);}
 
-    initparam <- WlsStart(coordx, coordy, coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
+
+
+
+    initparam <- WlsStart(coordx, coordy, coordz,coordt, coordx_dyn, corrmodel, data, distance, "Fitting", fixed, grid,#10
                          likelihood, maxdist,neighb,maxtime,  model, n, NULL,#16
                          parscale, optimizer=='L-BFGS-B', radius, start, taper, tapsep,#22
-                         type, varest, vartype, weighted, winconst, winstp,winconst_t, winstp_t, copula,X,memdist,nosym)#32
+                         type, varest,  weighted, copula,X,memdist,nosym)#32
   
   ## in the case on external fixed mean
   MM=NULL
@@ -161,7 +161,7 @@ if(model %in% c("Weibull","Poisson","Binomial","Gamma","LogLogistic","PoissonGam
      }}
 
 ###############################################################################################
-fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+fitted_ini<-CompIndLik2(initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordz,initparam$coordt,
                                    coordx_dyn,unname(initparam$data), 
                                    initparam$flagcorr,initparam$flagnuis,initparam$fixed,grid,
                                     initparam$lower,initparam$model,initparam$n ,
@@ -219,7 +219,7 @@ if(!is.null(anisopars)) {
    # Full likelihood:
     if(likelihood=='Full')
           # Fitting by log-likelihood maximization:
-         fitted <- Lik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn, initparam$corrmodel,
+         fitted <- Lik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordz,initparam$coordt,coordx_dyn, initparam$corrmodel,
                                unname(initparam$data),initparam$fixed,initparam$flagcorr,
                                initparam$flagnuis,grid,initparam$lower,method,initparam$model,initparam$namescorr,
                                initparam$namesnuis,initparam$namesparam,initparam$numcoord,initparam$numpairs,
@@ -232,25 +232,23 @@ if(!is.null(anisopars)) {
 
 
     if(!memdist)
-          fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
+          fitted <- CompLik(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordz,initparam$coordt,coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
                                    initparam$namescorr,initparam$namesnuis,#19
                                    initparam$namesparam,initparam$numparam,initparam$numparamcorr,optimizer,onlyvar,parallel,
                                    initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
-                                   initparam$winconst_t,initparam$winstp_t,initparam$ns,
+                                   initparam$upper,varest,initparam$weighted,initparam$ns,
                                    unname(initparam$X),sensitivity,MM,aniso)
     if(memdist)
-        fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordt,
+        fitted <- CompLik2(copula,initparam$bivariate,initparam$coordx,initparam$coordy,initparam$coordz,initparam$coordt,
                                    coordx_dyn,initparam$corrmodel,unname(initparam$data), #6
                                    initparam$distance,initparam$flagcorr,initparam$flagnuis,initparam$fixed,GPU,grid, #12
                                    initparam$likelihood,local, initparam$lower,initparam$model,initparam$n,#17
                                    initparam$namescorr,initparam$namesnuis,#19
                                    initparam$namesparam,initparam$numparam,initparam$numparamcorr,optimizer,onlyvar,parallel,
                                    initparam$param,initparam$spacetime,initparam$type,#27
-                                   initparam$upper,varest,initparam$vartype,initparam$weighted,initparam$winconst,initparam$winstp,#33
-                                   initparam$winconst_t,initparam$winstp_t,initparam$ns,
+                                   initparam$upper,varest,initparam$weighted,initparam$ns,
                                    unname(initparam$X),sensitivity,initparam$colidx,initparam$rowidx,initparam$neighb,MM,aniso)
       }
 
@@ -272,7 +270,7 @@ if(!is.null(anisopars)) {
     numtime=1
     if(initparam$spacetime) numtime=length(coordt)
     if(initparam$bivariate) numtime=2
-    dimat <- initparam$numcoord*numtime#
+    dimat <- initparam$numcoord#*numtime#
     if(is.null(dim(initparam$X)))  initparam$X=as.matrix(rep(1,dimat))
     # Delete the global variables:
 
@@ -333,6 +331,7 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
                          clbic = fitted$clbic,
                          coordx = initparam$coordx,
                          coordy = initparam$coordy,
+                         coordz = initparam$coordz,
                          coordt = initparam$coordt,
                          coordx_dyn=coordx_dyn,
                          conf.int=conf.int,
@@ -374,13 +373,8 @@ if (model %in% c("Weibull", "Poisson", "Binomial", "Gamma",
                          upper=upper,
                          varcov = fitted$varcov,
                          varimat = fitted$varimat,
-                         vartype = vartype,
                          type = type,
                          weighted=initparam$weighted,
-                         winconst = initparam$winconst,
-                         winstp = initparam$winstp,
-                         winconst_t = initparam$winconst_t,
-                         winstp_t = initparam$winstp_t,
                          X = initparam$X)
     structure(c(GeoFit, call = call), class = c("GeoFit"))
   }

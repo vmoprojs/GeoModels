@@ -7,7 +7,7 @@ Given a set of spatio (temporal) locations and data, the procedure select the sp
 using a specific algorithm.
 }
 \usage{
-GeoOutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, 
+GeoOutlier(data, coordx, coordy=NULL,coordz=NULL, coordt=NULL, coordx_dyn=NULL, 
              distance="Eucl", grid=FALSE,  neighb=10,alpha=0.001,
              method="Z-Median", radius=6371, bivariate=FALSE,X=NULL)
 }
@@ -15,17 +15,13 @@ GeoOutlier(data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL,
   \item{data}{An optional \eqn{d}{d}-dimensional vector (a single spatial realisation)  or a (\eqn{d \times d}{d x d})-matrix (a single spatial realisation on regular grid)
    or a (\eqn{t \times d}{t x d})-matrix (a single spatial-temporal realisation)   or an (\eqn{d \times d \times t \times n }{d x d x t})-array
    (a single spatial-temporal realisation on regular grid).}
-
-  \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix (where
-    \code{d} is the number of spatial sites) giving 2-dimensions of spatial coordinates or a numeric \eqn{d}{d}-dimensional vector giving
-    1-dimension of spatial coordinates.
+     \item{coordx}{A numeric (\eqn{d \times 2}{d x 2})-matrix  or  (\eqn{d \times 3}{d x 3})-matrix 
      Coordinates on a sphere for a  fixed radius \code{radius} 
     are passed in lon/lat format expressed in decimal degrees.}
-
   \item{coordy}{A numeric vector giving 1-dimension of
-    spatial coordinates; \code{coordy} is interpreted only if \code{coordx} is a numeric
-    vector or \code{grid=TRUE} otherwise it will be ignored. Optional argument, the default is \code{NULL} then \code{coordx} is expected to
-    be numeric a (\eqn{d \times 2}{d x 2})-matrix.}
+    spatial coordinates; Optional argument, the default is \code{NULL}.}
+      \item{coordz}{A numeric vector giving 1-dimension of
+    spatial coordinates;  Optional argument, the default is \code{NULL}.}
 
   \item{coordt}{A numeric vector giving 1-dimension of
     temporal coordinates.  Optional argument, the default is \code{NULL}

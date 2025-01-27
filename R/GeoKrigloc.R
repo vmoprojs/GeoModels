@@ -2,7 +2,7 @@
 ### File name: GeoKrigloc.r
 ####################################################
 
-GeoKrigloc= function(estobj=NULL,data, coordx, coordy=NULL, coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,neighb=NULL,
+GeoKrigloc= function(estobj=NULL,data, coordx, coordy=NULL, coordz=NULL,coordt=NULL, coordx_dyn=NULL, corrmodel, distance="Eucl", grid=FALSE, loc,neighb=NULL,
               maxdist=NULL,maxtime=NULL, method="cholesky", model="Gaussian", n=1,nloc=NULL, mse=FALSE,  param, anisopars=NULL, 
               radius=6371, sparse=FALSE, time=NULL, type="Standard",
               type_mse=NULL, type_krig="Simple",weigthed=TRUE, which=1,copula=NULL, X=NULL,Xloc=NULL,Mloc=NULL,
@@ -14,6 +14,7 @@ call=match.call()
 
 ###############################
 ## checking if there is a  GeoFit object
+###############################
 if(!is.null(estobj)){
    if(!inherits(estobj,"GeoFit"))
                stop("need  a 'GeoFit' object as input\n")
@@ -21,7 +22,8 @@ if(!is.null(estobj)){
 
 if(!estobj$grid){  #not regular grid 
 
- if(!estobj$bivariate){  if(is.null(estobj$coordx_dyn)) coordx=cbind(estobj$coordx,estobj$coordy)
+ if(!estobj$bivariate){  
+                         if(is.null(estobj$coordx_dyn)) coordx=cbind(estobj$coordx,estobj$coordy,estobj$coordz)
                          else cord=estobj$coordx_dyn
                       } ## spatial (temporal) non regular case
  else  {    if(is.null(estobj$coordx_dyn))  { coordx=estobj$coordx[1:estobj$ns[1]]    # bivariate not dynamic    
@@ -32,6 +34,7 @@ if(!estobj$grid){  #not regular grid
  }
 else  { coordx=estobj$coordx; 
         coordy=estobj$coordy
+        coordz=estobj$coordz
       }
 
    if(length(estobj$coordt)==1) coordt=NULL
@@ -79,15 +82,18 @@ if(!is.null(spobj)) {
 if(is.null(coordx_dyn)){
 coords=coordx
 if(!is.null(coordy)){
- if(!grid)  coords=cbind(coordx,coordy) 
- if(grid)   coords=as.matrix(expand.grid(coordx,coordy))
+ if(!grid)  coords=cbind(coordx,coordy,coordz) 
+ else     {  if(!is.null(coordz)) coords=as.matrix(expand.grid(coordx,coordy,coordz))
+             else coords=as.matrix(expand.grid(coordx,coordy))
+
+          }
 }
 }
-else{coordx=NULL;coordy=NULL;coords=NULL}
+else{coordx=NULL;coordy=NULL;coordz=NULL;coords=NULL}
 
 
-if(is.null(dim(loc)))  loc= matrix(loc,1,2)
-
+#if(is.null(coordz)) {if(is.null(dim(loc)))  loc= matrix(loc,1,2)}
+#else                {if(is.null(dim(loc)))  loc= matrix(loc,1,3)}
 
 Nloc=nrow(loc)
 if(is.null(Nloc)) Nloc=1
@@ -114,11 +120,12 @@ if(!parallel) {
           {
               #update mean
          if(!is.null(M)) param$mean=neigh$M[[i]]         
+
             pr=GeoKrig(estobj=NULL,loc=loc[i,], data=neigh$data[[i]],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X[[i]],Xloc= Xloc[i,],Mloc=Mloc[i], type_krig=type_krig,sparse=sparse,
                 model=model, param=param,anisopars=anisopars, mse=mse,copula=copula)
                 res1[i]=pr$pred
-                if(mse) res2[i]=pr$mse
+            if(mse) res2[i]=pr$mse
           }
 }
 ##################### parallel version ####################################
@@ -147,7 +154,7 @@ if(parallel) {
             pr=GeoKrig(estobj=NULL,loc=loc[i,], data=neigh$data[[i]],coordx=neigh$coordx[[i]],corrmodel=corrmodel,distance=distance,n=n,
                 X=neigh$X[[i]],Xloc= Xloc[i,],Mloc=Mloc[i], type_krig=type_krig,sparse=sparse,
                 model=model, param=param,anisopars=anisopars, mse=mse,copula=copula)
-            pr$data=pr$coordx=pr$coordy=pr$coordt=NULL
+            pr$data=pr$coordx=pr$coordy=pr$coordz=pr$coordt=NULL
             c(pr$pred,pr$mse)
         }
    
@@ -157,9 +164,11 @@ if(mse) res2=as.numeric(xx[,2])
 rm(xx)
 future::plan(sequential)
 }
- #######################################################################
-} # end space
-######################################################################
+
+} 
+######################### end space ####################################
+
+######################## space time ####################################
 if(spacetime)
 {  
        ### computing spatio-temporal neighborhood
@@ -237,7 +246,7 @@ if(spacetime)
    }    
 } #### end spacetime
 
-
+################################# bivariate case ##################################################################
 if(bivariate)
 { 
 neigh=GeoNeighborhood(data, coordx=coords,distance=distance,loc=loc,maxdist=maxdist,neighb=neighb,bivariate=TRUE,X=X,parallel=FALSE,ncores=ncores)
@@ -281,30 +290,39 @@ if(parallel) {
          X=neigh$X,,Xloc= Xloc[i,],which=which,type_krig=type_krig,sparse=sparse,
          model=model, param=param,anisopars=anisopars, mse=mse, data=neigh$data[[i]],copula=copula)
     
-             pr$data=pr$coordx=pr$coordy=pr$coordt=NULL
+             pr$data=pr$coordx=pr$coordy=pr$coordz=pr$coordt=NULL
             c(pr$pred,pr$mse)
         }
 res1=as.numeric(xx[,1])
 if(mse) res2=as.numeric(xx[,2])
 rm(xx)
 future::plan(sequential)
-
 }
+
+
 }###### end bivariate #######################################
+
+
+
+
+ ## if(mse){ selp=(res2<=0); if(any(selp)) res2[selp]=1e-30}
+
 varpred=NULL
-  if(spacetime||bivariate) {
-            pred=matrix(t(res1),nrow=Tloc,ncol=Nloc);
-            if(mse) varpred=matrix(c(res2),nrow=Tloc,ncol=Nloc);
+if(spacetime||bivariate) {      
+    pred=matrix(t(res1),nrow=Tloc,ncol=Nloc);
+    if(mse) varpred=matrix(c(res2),nrow=Tloc,ncol=Nloc);
     } 
-  else{pred=c(res1)
-       if(mse)varpred=c(res2)}
+  else{ pred=c(res1)
+        if(mse) varpred=c(res2)
+       }
         
-if(Tloc==1)  {c(pred);c(varpred)}
+if(Tloc==1)  {pred=c(pred);varpred=c(varpred)}
     # Return the objects list:
    GeoKrigloc = list(   
                     bivariate=bivariate,
                     coordx = coordx,
                     coordy = coordy,
+                     coordz = coordz,
                     coordt = coordt,
                   # coordx_dyn=covmatrix$coordx_dyn,
                     corrmodel = corrmodel,

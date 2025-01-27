@@ -10,7 +10,7 @@ GeoCV=function(fit, K=100, estimation=TRUE,
 
 if(n.fold>0.99||n.fold<0.01) stop("n.fold must be beween 0.01 and 0.99")
 print("Cross-validation  kriging can be time consuming ...")
-if(ncol(fit$X)==1) {X=Xloc=NULL}
+if(ncol(fit$X)==1) {X=Xloc=NULL;tempX=NULL}
 mae=rmse=lscore=crps=mad=brie=NULL
 space_dyn=FALSE
 
@@ -58,8 +58,6 @@ if(!is.null(X)) tempX=fit$X
 coremax=parallel::detectCores()
 if(is.na(coremax)||coremax==1) parallel=FALSE
 
-
-
 ###################################
 ####### not parallel version 
 ###################################
@@ -70,10 +68,13 @@ rmse=crps=mae=rmse=double(K)
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:K)
+
+######################
 while(i<=K){
 sel_data = sample(1:N,round(N*(1-n.fold)))  
 # data and coord used for prediction
 if(!is.null(X)) {X=tempX[sel_data,]; Xloc=tempX[-sel_data,]}
+else X=Xloc=NULL
 if(length(fit$fixed$mean)>1)  { fit$fixed$mean=tempM[sel_data]; Mloc=tempM[-sel_data]}
 # data to predict
 data_to_pred  = fit$data[-sel_data]
@@ -83,7 +84,6 @@ coords_to_pred=coords[-sel_data,]
 param=append(fit$param,fit$fixed)
 ########### estimation 
 if(estimation) {
- 
           fit_s= GeoFit(data=data_to_est,coordx=coords_est,corrmodel=fit$corrmodel,X=X,
                             likelihood=fit$likelihood,type=fit$type,grid=fit$grid,
                             copula=fit$copula,anisopars=fit$anisopars,est.aniso=fit$est.aniso,
@@ -124,8 +124,9 @@ brie[i]=     pp$brie
 crps[i]=  pp$crps
 pb(sprintf("i=%g", i))
 i=i+1
-} ##end while
-}
+} 
+################end while
+} # end no parallel
 
 
 ######################################################################
@@ -150,13 +151,13 @@ coords_est=coords_to_pred=list()
 #######################
 Mloc=Mest=X=Xloc=list()
 cat("Selecting",K,"sub-sample...\n")
+
+
 for(i in 1:K) {
 sel_data = sample(1:N,pp)  
-
-#### selecting X and Xloc
-
-if(!is.null(X)) {X[[i]]=tempX[sel_data,]; 
+if(!is.null(tempX)) {X[[i]]=tempX[sel_data,]; 
                  Xloc[[i]]=tempX[-sel_data,]}
+else {X=Xloc=NULL}                 
 #### selecting mu and muloc for a fixed constant mean
 if(length(fit$fixed$mean)>1)  { Mloc[[i]]=tempM[-sel_data]
                                 Mest[[i]]=tempM[sel_data]   
@@ -169,7 +170,6 @@ data_to_pred[i,]  = c(fit$data[-sel_data])
 data_to_est[i,]=c(fit$data[sel_data])
 
 }
-
 #### fixed param organized as a matrix (MEST)
 if(length(fit$fixed$mean)>1) 
 { 
@@ -179,12 +179,9 @@ if(length(fit$fixed$mean)>1)
 else  {FF=fit$fixed;MEST=matrix(rep(c(FF),K),ncol=length(FF),byrow=TRUE);colnames(MEST)=names(FF)   }
 ###############################################################################################
 ###############################################################################################
-
-
-if(estimation)  ############### estimation ###################
+if(estimation)  
 {
 cat("Performing",K,"estimations using",n.cores,"cores...\n")
-
 progressr::handlers(global = TRUE)
 progressr::handlers("txtprogressbar")
 pb <- progressr::progressor(along = 1:K)
@@ -217,7 +214,6 @@ if(!is.null(fit$anisopars))   {   fit$param$angle=NULL;fit$param$ratio=NULL; fit
 
 ###############################################################################################
 ###############################################################################################
-###############################################################################################
 
 cat("Performing",K,"predictions...\n")
   
@@ -226,13 +222,11 @@ if(!local) {
     progressr::handlers(global = TRUE)
     progressr::handlers("txtprogressbar")
     pb <- progressr::progressor(along = 1:K)
-    
+
     future::plan(multisession, workers = n.cores)
     YY=foreach::foreach(i = 1:K,.combine = rbind,
                            .options.future = list(seed = TRUE)) %dofuture% {
-
            pb(sprintf("i=%g", i))
-       
              pr=GeoKrig(data=data_to_est[i,], coordx=coords_est[[i]],  
                 corrmodel=fit$corrmodel, distance=fit$distance,grid=fit$grid,loc=coords_to_pred[[i]], #ok
                 model=fit$model, n=fit$n, mse=TRUE,#ok
